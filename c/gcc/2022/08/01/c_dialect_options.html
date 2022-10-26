@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            C dialect options
+        
+    " 
+/>
+
+<meta property="og:url" content="http://localhost:4000//c/gcc/2022/08/01/c_dialect_options.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        C dialect options
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="http://localhost:4000/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">C dialect options</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            August 01, 2022
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <p>Ref: <a href="https://www.acrc.bris.ac.uk/acrc/RedHat/rhel-gcc-en-4/c-dialect-options.html">1</a>, <a href="https://stackoverflow.com/questions/17206568/what-is-the-difference-between-c-c99-ansi-c-and-gnu-c">2</a></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ISO C90</th>
+      <th>ISO C99</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>-ansi, -std=c89, iso9899:1990, (ISO C90)</td>
+      <td>-std=c99, iso9899:1999</td>
+    </tr>
+    <tr>
+      <td>-std=iso9899:199409 (ISO C90 as modified in amendment 1)</td>
+      <td>-std=gnu99 (iso c99 + gnu extensions, gcc default)</td>
+    </tr>
+    <tr>
+      <td>-std=gnu89 (iso c90 + gnu extensions + some c99 features)</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th>ISO C11</th>
+      <th>ISO C18</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>-std=c11</td>
+      <td>-std=c17, -std=c18</td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>iso9899 (C Lang Spec Number of ISO)</li>
+  <li><code class="language-plaintext highlighter-rouge">-ansi</code> for C++ mode means that remove conflics gnu extensions with ISO C++</li>
+  <li>The word <code class="language-plaintext highlighter-rouge">ansi</code> means American Nation Standard Institute, c89 means ansi 89 (the first standard version), however c99 is iso 1999.The history is <code class="language-plaintext highlighter-rouge">ansi89 -&gt; iso90(same with ansi89) -&gt; iso99</code>, in other words, iso take the ownership of the C Lang standard from ansi.</li>
+  <li>c18 is created on 2017 and released on 2018, so it’s called c17 or c18. It contains no new features, just corrections</li>
+</ol>
+
+<h2 id="runtime-environments">Runtime Environments</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>std</th>
+      <th>no_std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>-fhosted (takes place in a hosted env)</td>
+      <td>-fno-hosted</td>
+    </tr>
+    <tr>
+      <td>-fno-freestanding</td>
+      <td>-ffreestanding</td>
+    </tr>
+    <tr>
+      <td>-fno-builtin, -fno-builtin-&lt;xxx&gt;</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>
+    <p>fno-builtin: Don’t recognize built-in functions that do not begin with <code class="language-plaintext highlighter-rouge">__builtin_</code> as prefix, <code class="language-plaintext highlighter-rouge">__built_in_xxx</code> always existed.</p>
+  </li>
+  <li>
+    <p>fno-builtin-&lt;xxx&gt; such as <code class="language-plaintext highlighter-rouge">-fno-builtin-printf</code>.</p>
+  </li>
+  <li>
+    <p>on <code class="language-plaintext highlighter-rouge">no_std</code> env using <code class="language-plaintext highlighter-rouge">__builtin_xxx</code> instead</p>
+  </li>
+</ol>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>

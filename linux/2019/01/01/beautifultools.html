@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            易用工具
+        
+    " 
+/>
+
+<meta property="og:url" content="http://localhost:4000//linux/2019/01/01/beautifultools.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        易用工具
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="http://localhost:4000/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">易用工具</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            January 01, 2019
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <h2 id="sh-tool">sh tool</h2>
+
+<p><code class="language-plaintext highlighter-rouge">fish</code>
+<code class="language-plaintext highlighter-rouge">sudo apt install fish</code>
+直接在bash中运行 <code class="language-plaintext highlighter-rouge">fish</code></p>
+
+<h2 id="查看当前进程">查看当前进程</h2>
+
+<p>htop</p>
+
+<h2 id="查看ｉo">查看ｉo</h2>
+
+<p>iotop</p>
+
+<h2 id="合并目录">合并目录</h2>
+
+<p>AUFS
+inpired by http://coolshell.cn/articles/17061.html
+<code class="language-plaintext highlighter-rouge">sudo mount -t aufs -o dirs=~/Documents/tmp=rw:./tmp-dir=rw notify ./tmp-dir</code></p>
+
+<h2 id="视频下载工具">视频下载工具</h2>
+
+<h3 id="youtube-dl">youtube-dl</h3>
+
+<p>porn site 专用:
+<code class="language-plaintext highlighter-rouge">youtube-dl --proxy "socks5://127.0.0.1:1080/" &lt;url&gt;</code></p>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>

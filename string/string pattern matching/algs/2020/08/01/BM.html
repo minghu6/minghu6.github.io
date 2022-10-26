@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            Boyer-Moore算法
+        
+    " 
+/>
+
+<meta property="og:url" content="http://localhost:4000//string/string%20pattern%20matching/algs/2020/08/01/BM.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        Boyer-Moore算法
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="http://localhost:4000/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">Boyer-Moore算法</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">Algorithm</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            August 01, 2020
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <p>author: minghu6</p>
+
+<p><em>本章节内容需要以《前缀函数与KMP算法》作为前置章节。</em></p>
+
+<p>之前的KMP算法将前缀匹配的信息用到了极致，</p>
+
+<p>而BM算法背后的基本思想是通过后缀匹配获得比前缀匹配更多的信息来实现更快的跳转。</p>
+
+<h2 id="基础介绍">基础介绍</h2>
+
+<p>想象一下，如果我们的的模式字符串$pat$，被放在文本字符串$string$的左手起头部，使它们的第一个字符对齐。</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\texttt{EXAMPLE} \\
+\textit{string}:\qquad\quad &amp;\texttt{HERE IS A SIMPLE EXAMPLE} \dots \\
+&amp;\qquad\ \ \ \, \, \Uparrow
+\end{aligned}\]
+
+<p>在这里做定义，往后不赘述：</p>
+
+<p>$pat$的长度为 $patlen$，特别地对于从0开始的串来说，规定$patlastpos=patlen-1$为$pat$串最后一个字符的位置;</p>
+
+<p>$string$的长度$stringlen$，$stringlastpos = stringlen-1$。</p>
+
+<p>假如我们知道了$string$的第$patlen$个字符$char$（与$pat$的最后一个字符对齐）考虑我们能得到什么信息：</p>
+
+<p><strong>观察1</strong>：</p>
+
+<p>如果我们知道$char$这个字符不在$pat$中,  我们就不用考虑$pat$从$string$的第1个、第2个、。。。。。。第$patlen$个字符起出现的情况,，而可以直接将$pat$向下滑动$patlen$个字符。</p>
+
+<p><strong>观察2</strong>：</p>
+
+<p>更一般地，<strong>如果出现在$pat$最末尾（也就是最右边）的那一个$char$字符的位置是离末尾端差了$delta_1$个字符</strong>，</p>
+
+<p>那么就可以不用匹配，直接将$pat$向后滑动$delta_1$个字符：如果滑动距离少于$delta_1$，那么仅就$char$这个字符就无法被匹配，当然模式字符串$pat$也就不会被匹配。</p>
+
+<p>因此除非$char$字符可以和$pat$末尾的那个字符匹配，否则$string$要跳过$delta_1$个字符（相当于$pat$向后滑动了$delta_1$个字符）。并且我们可以得到一个计算$delta_1$的函数$delta_1(char)$：</p>
+
+\[\begin{array}{ll}
+\textbf{int}\ delta1(\textbf{char}\ char) \\
+\qquad \textbf{if}\ \text{char不在pat中 || char是pat上最后一个字符} \\
+\qquad\qquad\textbf{return}\ patlen \\
+\qquad \textbf{else} \\
+\qquad\qquad\textbf{return}\ patlastpos-i\quad\textbf{\\\\}\ \text{i为出现在pat最末尾的那一个char出现的位置，即pat[i]=char}
+\end{array}\]
+
+<p><strong>注意：显然这个表只需计算到$patlastpos-1$的位置</strong></p>
+
+<p>现在假设$char$和$pat$最后一个字符匹配到了，那我们就看看$char$前一个字符和$pat$的倒数第二个字符是否匹配，</p>
+
+<p>如果是，就继续回退直到整个模式串$pat$完成匹配（这时我们就在$string$上成功得到了一个$pat$的匹配）；</p>
+
+<p>或者，我们也可能会在匹配完$pat$的倒数第$m$个字符后，在倒数第$m+1$个字符上失配，这时我们就希望把$pat$向后滑动到下一个可能会实现匹配的位置，</p>
+
+<p>当然我们希望滑动得越远越好。</p>
+
+<p><strong>观察3(a)</strong>：</p>
+
+<p>在<strong>观察2</strong>中提到，当匹配完$pat$的倒数$m$个字符后，如果在倒数第$m+1$个字符失配，为了使得$string$中的失配字符与$pat$上对应字符对齐，</p>
+
+<p>需要把$pat$向后滑动$k$个字符，也就是说我们应该把注意力看向之后的$k+m$个字符（也就是看向$pat$滑动k之后，末段与$string$对齐的那个字符）。</p>
+
+<p>而$k=delta_1-m$，</p>
+
+<p>所以我们的注意力应该沿着$string$向后跳$delta_1-m+m = delta_1$个字符。</p>
+
+<p>然而，我们有机会跳过更多的字符，请继续看下去。</p>
+
+<p><strong>观察3(b)</strong>：</p>
+
+<p>如果我们知道$string$接下来的$m$个字符和$pat$的最后$m$个字符匹配，假设这个子串为$subpat$，</p>
+
+<p>我们还知道在$string$失配字符$char$后面是与$subpat$相匹配的子串，而假如$pat$对应失配字符前面存在$subpat$，我们可以将$pat$向下滑动一段距离，</p>
+
+<p>使得失配字符$char$在$pat$上对应的字符前面出现的$subpat$（合理重现，plausible reoccurrence，以下也简称pr）与$string$的$subpat$对齐。如果$pat$上有多个$subpat$，按照从右到左的后缀匹配顺序，取第一个（rightmost plausible reoccurrence，以下也简称rpr）。</p>
+
+<p>假设此时$pat$向下滑动的$k$个字符（也即$pat$末尾端的$subpat$与其最右边的合理重现的距离），这样我们的注意力应该沿着$string$向后滑动$k+m$个字符，这段距离我们称之为$delta_2(j)$：</p>
+
+<p>假定$rpr(j)$ 为$subpat=pat[j+1\dots patlen-1]$在$pat[j]$最右边合理重现的位置（这里只给出简单定义，在下文的算法设计章节里会有更精确的讨论），那么显然$k=j-rpr(j),\ m=patlen-1-j$。</p>
+
+<p>所以有：</p>
+
+\[\begin{array}{ll}
+\textbf{int}\ delta2(\textbf{int}\ j) \quad\textbf{\\\\}\ \text{j为失配字符在pat上对应字符的位置} \\
+
+\qquad\qquad\textbf{return}\ patlastpos-rpr(j) \\
+
+
+
+\end{array}\]
+
+<p>于是我们在失配时，可以把把$string$上的注意力往后跳过$\max(delta_1,delta_2)$个字符</p>
+
+<h2 id="实例说明">实例说明：</h2>
+
+<p>箭头指向失配字符$char$：</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\texttt{AT-THAT} \\
+\textit{string}:\ \ \ \dots\ &amp;\texttt{WHICH-FINALLY-HALTS.--AT-THAT-POINT} \dots \\
+&amp;\qquad\ \ \ \, \, \Uparrow
+\end{aligned}\]
+
+<p>$\texttt{F}$没有出现$pat$中，根据<strong>观察1</strong>，$pat$直接向下移动$patlen$个字符，也就是7​个字符:</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\qquad\quad\ \ \, \texttt{AT-THAT} \\
+\textit{string}:\ \ \ \dots\ &amp;\texttt{WHICH-FINALLY-HALTS.--AT-THAT-POINT} \dots \\
+&amp;\qquad\ \ \ \, \, \qquad\quad\ \ \ \Uparrow
+\end{aligned}\]
+
+<p>根据<strong>观察2</strong>，我们需要将$pat$向下移动4个字符使得短横线字符对齐：</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\qquad\qquad\quad\ \ \, \texttt{AT-THAT} \\
+\textit{string}:\ \ \ \dots\ &amp;\texttt{WHICH-FINALLY-HALTS.--AT-THAT-POINT} \dots \\
+&amp;\qquad\ \ \ \; \qquad\qquad\qquad \Uparrow
+\end{aligned}\]
+
+<p>现在<em>char</em>:$\texttt{T}$匹配了，把$string$上的指针左移一步继续匹配：</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\qquad\qquad\quad\ \ \, \texttt{AT-THAT} \\
+\textit{string}:\ \ \ \dots\ &amp;\texttt{WHICH-FINALLY-HALTS.--AT-THAT-POINT} \dots \\
+&amp;\qquad\ \ \ \; \qquad\qquad\quad\ \, \Uparrow
+\end{aligned}\]
+
+<p>根据<strong>观察3(a)</strong>，$\texttt{L}$失配， 因为$\texttt{L}$不在$pat$中，所以$pa$t向下移动$k=delta_1-m=7-1=6$个字符，而$string$上指针向下移动$delta_1=7$个字符：</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\qquad\qquad\qquad\qquad\ \ \,\, \texttt{AT-THAT} \\
+\textit{string}:\ \ \ \dots\ &amp;\texttt{WHICH-FINALLY-HALTS.--AT-THAT-POINT} \dots \\
+&amp;\qquad\ \ \ \; \qquad\qquad\qquad\qquad\ \ \ \, \, \Uparrow
+\end{aligned}\]
+
+<p>这时$char$又一次匹配到了$pat$的最后一个字符$\texttt{T}$，$string$上的指针向左匹配，匹配到了$\texttt{A}$，继续向左匹配，发现在字符$\texttt{-}$失配：</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\qquad\qquad\qquad\qquad\ \ \,\, \texttt{AT-THAT} \\
+\textit{string}:\ \ \ \dots\ &amp;\texttt{WHICH-FINALLY-HALTS.--AT-THAT-POINT} \dots \\
+&amp;\qquad\ \ \ \; \qquad\qquad\qquad\quad\ \ \ \,\, \Uparrow
+\end{aligned}\]
+
+<p>显然直观上看，此时根据<strong>观察3(b)</strong>， 将$pat$向左移动$k=5$个字符，使得后缀$\texttt{AT}$对齐，这种滑动可以获得$string$指针最大的滑动距离，此时$delta_2=k+patlen-1-j=5+7-1-4=7$，即$string$上指针向下滑动7​个字符。</p>
+
+<p>而从形式化逻辑看，此时，$delta_1=7-1-2=4,\ delta_2=5, \max(delta_1,delta_2)= 7$，
+这样从形式逻辑上支持了进行**观察3(b)**的跳转：</p>
+
+\[\begin{aligned}
+\textit{pat}:\qquad\qquad &amp;\qquad\qquad\qquad\qquad\qquad\quad \;\, \texttt{AT-THAT} \\
+\textit{string}:\ \ \ \dots\ &amp;\texttt{WHICH-FINALLY-HALTS.--AT-THAT-POINT} \dots \\
+&amp;\qquad\ \ \ \; \qquad\qquad\qquad\qquad\qquad\quad \ \ \; \Uparrow
+\end{aligned}\]
+
+<p>现在我们发现了$pat$上每一个字符都和$string$上对应的字符相等，我们在$string$上找到了一个$pat$的匹配。而我们只花费了14次对$string$的引用，其中7次是完成一个成功的匹配所必需的比较次数（$patlen=7$），另外7次让我们跳过了22个字符，Amazing（浮夸口气）！</p>
+
+<h2 id="算法设计">算法设计</h2>
+
+<h3 id="最初的匹配算法">最初的匹配算法</h3>
+
+<p>现在看这样一个利用$delta_1$和$delta_2$进行字符串匹配的算法：</p>
+
+\[\begin{array}{ll}
+i \gets patlastpos. \\
+j \gets patlastpos. \\
+
+\textbf{loop}\\
+\qquad \textbf{if}\ j &lt; 0 \\
+\qquad \qquad \textbf{return}\ i+1 \\
+\\
+\qquad \textbf{if}\ string[i]=pat[j] \\
+\qquad \qquad j \gets j-1 \\
+\qquad \qquad i \gets i-1 \\
+\qquad \qquad \textbf{continue} \\
+\\
+\qquad i \gets i+max(delta_1(string[i]), delta_2(j)) \\
+\\
+\qquad \textbf{if}\ i &gt; stringlastpos \\
+\qquad \qquad \textbf{return}\ false \\
+\qquad j \gets patlastpos \\
+\end{array}\]
+
+<p>如果上面的算法$\textbf{return}\ false$， 表明$pat$不在$string$中；如果返回一个数字，表示$pat$在$string$左起第一次出现的位置。</p>
+
+<p>然后让我们更精细地描述下计算$delta_2$，所依靠的$rpr(j)$函数。</p>
+
+<p>根据前文定义，$rpr(j)$表示在$pat(j)$失配时，子串$subpat=pat[j+1\dots patlastpos]$在$pat[j]$最右边合理重现的位置。</p>
+
+<p>也就是说需要找到一个最好的$k$, 使得$pat[k\dots k+patlastpos-j-1]=pat[j+1\dots patlastpos]$，另外要考虑两种特殊情况：</p>
+
+<ol>
+  <li>当$k&lt;0$时，相当于在$pat$前面补充了一段虚拟的前缀，实际上也符合$delta_2$跳转的原理</li>
+  <li>当$k&gt;0$时， 如果$pat[k-1]=pat[j]$，则这个$pat[k\dots k+patlastpos-j-1]$不能作为$subpat$的合理重现。
+原因是$pat[j]$本身是失配字符，所以$pat$向下滑动$k$个字符后，在后缀匹配过程中仍然会在$pat[k-1]$处失配。</li>
+</ol>
+
+<p>特别地，考虑到$delta_2(patlastpos)= 0$， 所以$rpr(patlastpos) = patlastpos$</p>
+
+<p>由于理解$rpr(j)$是实现BoyerMoore算法的核心，所以我们使用如下两个例子进行详细说明：</p>
+
+\[\begin{aligned}
+\textit{j}:\qquad\qquad\quad\ \ &amp;\texttt{0 1 2 3 4 5 6 7 8} \\
+\textit{pat}:\qquad\qquad\ \  &amp;\texttt{A B C X X X A B C} \\
+\textit{rpr(j)}:\qquad\quad\  \  &amp;\texttt{5 4 3 2 1 0 2 1 8} \\
+\textit{sgn}:\qquad\qquad\ \   &amp;\texttt{- - - - - - - - +}
+\end{aligned}\]
+
+<p>对于$rpr(0)$，$subpat$为$\texttt{BCXXXABC}$， 在$pat[0]$之前的最右边合理重现只能是$\texttt{[(BCXXX)ABC]XXXABC}$，也就是最右边合理重现位置为 -5， 即$rpr(j)=-5$；</p>
+
+<p>对于$rpr(1)$，$subpat$为$\texttt{CXXXABC}$，在$pat[1]$之前的最右边的合理重现是$\texttt{[(CXXX)ABC]XXXABC}$，所以$rpr(j)=-4$；</p>
+
+<p>对于$rpr(2)$，$subpat$为$\texttt{XXXABC}$，在$pat[2]$之前的最右边的合理重现是$\texttt{[(XXX)ABC]XXXABC}$，所以$rpr(j)=-3$；</p>
+
+<p>对于$rpr(3)$，$subpat$为$\texttt{XXABC}$，在$pat[3]$之前的最右边的合理重现是$\texttt{[(XX)ABC]XXXABC}$，所以$rpr(j)=-2$；</p>
+
+<p>对于$rpr(4)$，$subpat$为$\texttt{XABC}$，在$pat[4]$之前的最右边的合理重现是$\texttt{[(X)ABC]XXXABC}$，所以$rpr(j)=-1$；</p>
+
+<p>对于$rpr(5)$，$subpat$为$\texttt{ABC}$，在$pat[5]$之前的最右边的合理重现是$\texttt{[ABC]XXXABC}$，所以$rpr(j)=0$；</p>
+
+<p>对于$rpr(6)$，$subpat$为$\texttt{BC}$，又因为$string[0]=string[6]$，即$string[0]$等于失配字符$string[6]$，所以$string[0\dots 2]$ 并不是符合条件的$subpat$的合理重现，所以在最右边的合理重现是$\texttt{[(BC)]ABCXXXABC}$，所以$rpr(j)=-2$；</p>
+
+<p>对于$rpr(7)$，$subpat$为$\texttt{C}$，同理又因为$string[7]=string[1]$，所以$string[1\dots 2]$ 并不是符合条件的subpat的合理重现，在最右边的合理重现是$\texttt{[(C)]ABCXXXABC}$，所以$rpr(j)=-1$；</p>
+
+<p>对于$rpr(8)$，根据$delta_2$定义，$rpr(patlastpos)=patlastpos$，得到$rpr(8)=8$。</p>
+
+<p>现在再看一下另一个例子：</p>
+
+\[\begin{aligned}
+\textit{j}:\qquad\qquad\quad\ \ &amp;\texttt{0 1 2 3 4 5 6 7 8} \\
+\textit{pat}:\qquad\qquad\ \ &amp;\texttt{A B Y X C D E Y X} \\
+\textit{rpr(j)}:\qquad\quad\  \  &amp;\texttt{8 7 6 5 4 3 2 1 8} \\
+\textit{sgn}:\qquad\qquad\ \   &amp;\texttt{- - - - - - + - +}
+\end{aligned}\]
+
+<p>对于$rpr(0)$，$subpat$为$\texttt{BYXCDEYX}$， 在$pat[0]$之前的最右边合理重现只能是$\texttt{[(BYXCDEYX)]ABYXCDEYX}$，也就是最右边合理重现位置为 -8， 即$rpr(j)=-8$；</p>
+
+<p>对于$rpr(1)$，$subpat$为$\texttt{YXCDEYX}$， 在$pat[1]$之前的最右边合理重现只能是$\texttt{[(YXCDEYX)]ABYXCDEYX}$ ，$rpr(j)=-7$；</p>
+
+<p>对于$rpr(2)$，$subpat$为$\texttt{XCDEYX}$， 在$pat[2]$之前的最右边合理重现只能是$\texttt{[(XCDEYX)]ABYXCDEYX}$，$rpr(j)=-6$；</p>
+
+<p>对于$rpr(3)$，$subpat$为$\texttt{CDEYX}$， 在$pat[3]$之前的最右边合理重现只能是$\texttt{[(CDEYX)]ABYXCDEYX}$，$rpr(j)=-5$；</p>
+
+<p>对于$rpr(4)$，$subpat$为$\texttt{DEYX}$， 在$pat[4]$之前的最右边合理重现只能是$\texttt{[(DEYX)]ABYXCDEYX}$，$rpr(j)=-4$；</p>
+
+<p>对于$rpr(5)$，$subpat$为$\texttt{EYX}$， 在$pat[5]$之前的最右边合理重现只能是$\texttt{[(EYX)]ABYXCDEYX}$ ，$rpr(j)=-3$；</p>
+
+<p>对于$rpr(6)$，$subpat$为$\texttt{YX}$， 因为$string[2\dots 3]=string[7\dots 8]$ 并且有$string[6]\neq string[1]$，所以在$pat[6]$之前的最右边的合理重现是$\texttt{AB[YX]CDEYX}$ ，$rpr(j)=2$；</p>
+
+<p>对于$rpr(7)$，$subpat$为$\texttt{X}$， 虽然$string[3]=string[8]$ 但是因为$string[2] = string[7]$，所以在$pat[7]$之前的最右边的合理重现是$\texttt{[X]ABYXCDEYX}$ ，$rpr(j)=-1$;</p>
+
+<p>对于$rpr(8)$，根据$delta_2$定义，$rpr(patlastpos)=patlastpos$，得到$rpr(8)=8$。</p>
+
+<h3 id="对匹配算法的一个改进">对匹配算法的一个改进</h3>
+
+<p>最后，实践过程中考虑到搜索过程中估计有80%的时间用在了基于<strong>观察1</strong>的跳转上，也就是$string[i]$和$pat[patlastpos]$不匹配，然后跳越整个$patlen$进行下一次匹配的过程。</p>
+
+<p>于是，可以为此进行特别的优化：</p>
+
+<p>我们定义一个$delta0$：</p>
+
+\[\begin{array}{ll}
+\textbf{int}\ delta0(\textbf{char}\ char) \\
+\qquad \textbf{if}\ char=pat[patlastpos] \\
+\qquad\qquad \textbf{return}\ large\ \ \text{\\\\ large为一个整数，需要满足large&gt;stringlastpos+patlen} \\
+\qquad \textbf{return}\ delta1(char)
+\end{array}\]
+
+<p>用$delta0$代替$delta_1$，得到改进后的匹配算法:</p>
+
+\[\begin{array}{ll}
+i \gets patlastpos \\
+\textbf{loop} \\
+\qquad\textbf{if} \ i &gt; stringlastpos \\
+\qquad\qquad\textbf{return}\ false\\
+\\
+\qquad\textbf{while}\ i &lt; stringlen \\
+\qquad\qquad i \gets i+delta0(string(i)) \ \ \text{\\\\ 除非string[i]和pat末尾字符匹配，否则至多向下滑动patlen }\\\
+\qquad\textbf{if}\ i \leqslant\ large \qquad\qquad\qquad\qquad \text{\\\\此时表示string上没有一个字符和pat末尾字符匹配}\ \\
+\qquad\qquad\textbf{return}\ false\\
+\\
+\qquad i \gets i-large \\
+\qquad j \gets patlastpos. \\
+
+\qquad\textbf{while}\ j \geqslant\ 0 \ and \  string[i]=pat[j]\\
+\qquad \qquad j \gets j-1 \\
+\qquad \qquad i \gets i-1 \\
+
+\\
+\qquad \textbf{if}\ j &lt; 0 \\
+\qquad \qquad \textbf{return}\ i+1 \\
+\qquad i \gets i+max(delta_1(string[i]), delta_2(j)) \\
+\\
+
+\end{array}\]
+
+<p>经过改进，比起原算法，在做<strong>观察1</strong>跳转时不必每次进行$delta_2$的多余计算，使得在通常字符集下搜索字符串的性能有了明显的提升。</p>
+
+<h2 id="delta_2构建细节">$delta_2$构建细节</h2>
+
+<h3 id="历史细节">历史细节</h3>
+
+<p>说起$delta_2$的实现，发表在1977年10月的<em>Communications of the ACM</em>上的在Boyer、Moor的论文<sup id="fnref:1977BM" role="doc-noteref"><a href="#fn:1977BM" class="footnote" rel="footnote">1</a></sup>里只描述了这个静态表，并没有说明如何产生它。</p>
+
+<p>而构造$delta_2$的具体实现的讨论出现在1977年6月Knuth、Morris、Pratt在<em>SIAM Journal on Computing</em>上正式联合发表的KMP算法的[论文][1977KMP]里（这篇论文是个宝藏，除了KMP，其中还提及了若干字符串搜索的算法构想和介绍，其中就包括了本文介绍的BM算法），听力来有点儿魔幻，嗯哼？这就不得不稍微介绍一点历史细节了：</p>
+
+<ol>
+  <li>
+    <p>1969年夏天Morris为某个大型机编写文本编辑器时利用有限自动机的理论发明了等价于KMP算法的字符串匹配算法，而他的算法由于过于复杂，被不理解他算法的同事当做bug修改得一团糟，哈哈。</p>
+  </li>
+  <li>
+    <p>1970年KMP中的“带头人”Kruth在研究Cook的关于两路确定下推自动机（two-way deterministic pushdown automaton）的理论时受到启发，也独立发明了KMP算法的雏形，并把它展示给他的同事Pratt，Pratt改进了算法的数据结构。</p>
+  </li>
+  <li>
+    <p>1974年Boyer、Moor发现通过更快地跳过不可能匹配的文本能实现比KMP更快的字符串匹配，（ Gosper也独立地发现了这一点），而一个只有原始$delta_1$</p>
+
+    <p>定义的匹配算法是BM算法的最原始版本。</p>
+  </li>
+  <li>
+    <p>1975年Boyer、Moor提出了原始的$delta_2$表，而这个版本的$delta_2$表不仅不会对性能有所改善，还会在处理小字符表时拖累性能表现，而同年MIT人工智能实验室的Kuipers和我们熟悉的Knuth向他们提出了类似的关于$delta_2$的改进建议，于是Boyer、Moor在论文的下一次修改中提到了这个建议，并提出一个用二维表代替$delta_1$和$delta_2$的想法。</p>
+  </li>
+  <li>
+    <p>1976年1月Knuth证明了关于$delta_2$的改进会得到更好的性能，于是Boyer、Moor两人又一次修改了论文，得到了现在版本的$delta_2$定义。同年4月，斯坦福的Floyd又发现了Boyer、Moor两人第一版本的公式中的严重的统计错误，并给出了现在版本的公式。</p>
+  </li>
+  <li>
+    <p>Standish又为Boyer、Moor提供了现在的匹配算法的改进。</p>
+  </li>
+  <li>
+    <p>1977年6月Knuth、Morris、Pratt正式联合发表了KMP算法的论文，其中在提及比KMP表现更好的算法中提出了$delta_2$的构建方式。（其中也感谢了Boyer、 Moor对于证明线性定理（linearity theorem）提供的帮助）</p>
+  </li>
+</ol>
+
+<p>这个BM算法的发展的故事，切实地向我们展示了团结、友谊、协作，以及谦虚好学不折不挠“在平凡中实现伟大”！😂😂😂</p>
+
+<h3 id="时间复杂度为on3-的构建delta_2的朴素算法">时间复杂度为$O(n^3)$ 的构建delta_2的朴素算法</h3>
+
+<p>在介绍Knuth的$delta_2$构建算法之前，根据定义，我们会有一个原始、简单但有时可能已经够用的朴素算法（除非你需要构建长度成百上千的$pat$）：</p>
+
+<ol>
+  <li>对于<code class="language-plaintext highlighter-rouge">[0, patlen)</code>区间的每一个位置，根据<code class="language-plaintext highlighter-rouge">subpat</code>的长度确定其重现位置的区间，也就是<code class="language-plaintext highlighter-rouge">[-subpatlen..i)</code>；</li>
+  <li>可能的重现位置按照从右到左进行逐字符比较，寻找符合$delta_2$要求的最右边$subpat$的重现位置；</li>
+  <li>最后别忘了令$delta_2(lastpos)= 0$。</li>
+</ol>
+
+<pre><code class="language-Rust">use std::cmp::PartialEq;
+
+pub fn build_delta_2_table_naive(p: &amp;[impl PartialEq]) -&gt; Vec&lt;usize&gt; {
+    let patlen = p.len();
+    let lastpos = patlen - 1;
+    let mut delta_2 = vec![];
+
+    for i in 0..patlen {
+        let subpatlen = (lastpos - i) as isize;
+
+        if subpatlen == 0 {
+            delta_2.push(0);
+            break;
+        }
+
+        for j in (-subpatlen..(i + 1) as isize).rev() {
+            // subpat 匹配
+            if (j..j + subpatlen)
+            .zip(i + 1..patlen)
+            .all(|(rpr_index, subpat_index)| {
+                if rpr_index &lt; 0 {
+                    return true;
+                }
+
+                if p[rpr_index as usize] == p[subpat_index] {
+                    return true;
+                }
+
+                false
+            })
+            &amp;&amp; (j &lt;= 0 || p[(j - 1) as usize] != p[i])
+            {
+                delta_2.push((lastpos as isize - j) as usize);
+                break;
+            }
+        }
+    }
+
+    delta_2
+}
+</code></pre>
+
+<p>特别地，对Rust语言特性进行必要地解释，下不赘述：</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">usize</code>和<code class="language-plaintext highlighter-rouge">isize</code>是和内存指针同字节数的无符号整数和有符号整数，在32位机上相当于<code class="language-plaintext highlighter-rouge">u32</code>和<code class="language-plaintext highlighter-rouge">i32</code>，64位机上相当于<code class="language-plaintext highlighter-rouge">u64</code>和<code class="language-plaintext highlighter-rouge">i64</code>。</li>
+  <li>索引数组、向量、分片时使用<code class="language-plaintext highlighter-rouge">usize</code>类型的数字（因为在做内存上的随机访问并且下标不能为负值），所以如果需要处理负值要用<code class="language-plaintext highlighter-rouge">isize</code>，而进行索引时又要用<code class="language-plaintext highlighter-rouge">usize</code>，这就看到使用<code class="language-plaintext highlighter-rouge">as</code>关键字进行二者之间的显式转换。</li>
+  <li><code class="language-plaintext highlighter-rouge">impl PartialEq</code> 只是用作泛型，可以同时支持<code class="language-plaintext highlighter-rouge">Unicode</code>编码的<code class="language-plaintext highlighter-rouge">char</code>和二进制的<code class="language-plaintext highlighter-rouge">u8</code>。</li>
+</ul>
+
+<p>显见这是个时间复杂度为$O(n^3)$的暴力算法。</p>
+
+<h3 id="时间复杂度为on的构建delta_2的高效算法">时间复杂度为$O(n)$的构建$delta_2$的高效算法</h3>
+
+<p>下面我们要介绍的是时间复杂度为$O(n)$，但是需要额外$O(n)$空间复杂度的高效算法。</p>
+
+<p>需要指出的是，虽然1977年Knuth提出了这个构建方法，然而他的原始版本的构建算法存在一个缺陷，实际上对于某些$pat$产生不出符合定义的$delta_2$。</p>
+
+<p>Rytter在1980年<em>SIAM Journal on Computing</em>上发表的文章<sup id="fnref:1980Rytter" role="doc-noteref"><a href="#fn:1980Rytter" class="footnote" rel="footnote">2</a></sup>对此提出了修正，但是Rytter的这篇文章在细节上有些令人疑惑的地方，包括不限于:</p>
+
+<ul>
+  <li>示例中奇怪的$delta_2$数值（不清楚他依据的$delta_2$是否和最终版$delta_2$定义有微妙的差别，但我实在不想因为这事儿继续考古了😱）</li>
+  <li>明显的在复述Knuth算法时的笔误、算法上错误的缩进（可能是文章录入时的问题？）</li>
+  <li>奇妙的变量命名（考虑到那个时代的标签：<code class="language-plaintext highlighter-rouge">goto</code>语句、汇编语言、大型机，随性的变量命名也很合理）</li>
+</ul>
+
+<p>总之就是你绝对不想看他的那个修正算法的具体实现，不过好在他在用文字描述的时候比用伪代码清晰多了呢，现在我们用更清晰的思路和代码结构整理这么一个</p>
+
+<p>$delta_2$的构建算法：</p>
+
+<p>首先考虑到$delta_2$的定义比较复杂，我们按照$subpat$的重现位置进行分类，每一类进行单独处理，这是高效实现的关键思路。</p>
+
+<p>按照重现位置由远到近，也就是偏移量由大到小，分成如下几类：</p>
+
+<ol>
+  <li>
+    <p>整个$subpat$重现位置完全在$pat$左边的，比如 $\texttt{[(EYX)]ABYXCDEYX}$， 此时$delta_2(j) = patlastpos\times 2 - j$；</p>
+  </li>
+  <li>
+    <p>$subpat$的重现有一部分在$pat$左边，有一部分是$pat$头部，比如$\texttt{[(XX)ABC]XXXABC}$，此时$patlastpos &lt; delta_2(j) &lt; patlastpos\times 2 - j$；</p>
+
+    <p>我们把$subpat$完全在$pat$头部的的边际情况也归类在这里（当然根据实现也可以归类在下边），比如$\texttt{[ABC]XXXABC}$，此时$patlastpos = delta_2(j)$；</p>
+  </li>
+  <li>
+    <p>$subpat$的重现完全在$pat$中，比如$\texttt{AB[YX]CDEYX}$ ，此时$delta_2(j) &lt; patlastpos$。</p>
+  </li>
+</ol>
+
+<p>现在来讨论如何高效地计算这三种情况：</p>
+
+<h4 id="第一种情况">第一种情况</h4>
+
+<p>这是最简单的情况，只需一次遍历并且可以顺便将$delta_2$初始化。</p>
+
+<h4 id="第二种情况">第二种情况</h4>
+
+<p>我们观察什么时候会出现$subpat$的重现一部分在$pat$左边，一部分是$pat$的头部的情况呢？应该是$subpat$的某个后缀和$pat$的某个前缀相等，</p>
+
+<p>比如之前的例子：</p>
+
+\[\begin{aligned}
+\textit{j}:\qquad\qquad\quad\ \ &amp;\texttt{0 1 2 3 4 5 6 7 8} \\
+\textit{pat}:\qquad\qquad\ \  &amp;\texttt{A B C X X X A B C} \\
+\end{aligned}\]
+
+<p>$delta_2(3)$的重现$\texttt{[(XX)ABC]XXXABC}$，subpat$\texttt{XXABC}$ 的后缀与pat前缀中，有相等的，是$\texttt{ABC}$。</p>
+
+<p><em>说到这个拗口的前缀后缀相等，此时看过之前《前缀函数与KMP算法》的小伙伴们可能已经有所悟了，</em></p>
+
+<p><em>没错，实际上对第二种和第三种情况的计算的关键都离不开前缀函数的计算和和应用</em></p>
+
+<p>那么只要$j$ 取值使得$subpat$包含这个相等的后缀，那么就可以得到第二种情况的$subpat$的重现，对于例子，我们只需要使得$j \leqslant 5$，</p>
+
+<p>而当$j = 5$时，就是$subpat$完全在$pat$头部的边际情况。</p>
+
+<p>可以计算此时的$delta_2(j)$：</p>
+
+<p>设此时这对相等的前后缀长度为$\textit{prefixlen}$，可知$subpatlen = patlastpos - j$，那么在$pat$左边的部分长度是$subpatlen-\textit{prefixlen}$，</p>
+
+<p>而$rpr(j) = -(subpatlen-\textit{prefixlen})$，所以得到$delta_2(j) = patlastpos - rpr(j) = patlastpos \times 2 - j - \textit{prefixlen}$。</p>
+
+<p>那么问题到这儿是不是结束了呢，并不是，因为可能会有多对相等的前缀和后缀，比如：</p>
+
+\[\begin{aligned}
+\textit{j}:\qquad\qquad\quad\ \ &amp;\texttt{0 1 2 3 4 5 6 7 8 9} \\
+\textit{pat}:\qquad\qquad\ \  &amp;\texttt{A B A A B A A B A A} \\
+\end{aligned}\]
+
+<p>在$j\leq2$处有$\texttt{ABAABAA}$，$2&lt; j \leq 5$处有$\texttt{ABAA}$，在$5&lt;j\leq8$处有$\texttt{A}$</p>
+
+<p>之前提到的Knuth算法的缺陷就是只考虑了最长的那一对的情况。</p>
+
+<p>所以实际上我们要考虑所有$subpat$后缀与$pat$前缀相等的情况，其实也就是计算$pat$所有真后缀和真前缀相等的情况，然后按照长度从大到小，$j$分区间计算</p>
+
+<p>不同的$delta_2(j)$。而如何得到$pat$所有相等的真前缀和真后缀长度呢？答案正是利用前缀函数和逆向运用计算前缀函数的状态转移方程：$j^{(n)} = \pi[j^{(n-1)}-1]$。</p>
+
+<p>从$\pi[patlastpos]$开始作为最长一对的长度，然后通过逆向运行状态转移方程，得到下一个次长相等真前缀和真后缀的长度， 直到这里我们就完成了第二种情况的$delta_2$的计算。</p>
+
+<h4 id="第三种情况">第三种情况</h4>
+
+<p>$subpat$的重现不在别的地方，恰好就在$pat$中（不包括$pat$的头部）。</p>
+
+<p>也就是按照从右到左的顺序，在$pat[0\dots patlastpos-1]$中寻找$subpat$。</p>
+
+<p><em>开启脑洞：既然是个字符串搜索的问题，那么当然可以用著名的BM算法本身解决，于是我们就得到了一个BM的递归实现的第三种情况，结束条件是 $patlen \leqslant  2$</em></p>
+
+<p>而且根据$delta_2$的定义，找到的$subpat$的重现的下一个（也就是左边一个）字符和作为$pat$后缀的$subpat$的下一个字符不能一样。</p>
+
+<p>这就很好地启发了我们（起码很好地启发了Knuth）使用类似于计算前缀函数的过程计算第三种情况，只不过是左右反过来的前缀函数：</p>
+
+<ul>
+  <li>
+    <p>两个指针分别指向子串的左端点和子串最长公共前后缀的“前缀”位置，从右向左移动，在发现指向的两个字符相等时继续移动，此时相当于“前缀”变大；</p>
+  </li>
+  <li>
+    <p>当两个字符不相等时，之前相等的部分就满足了$delta_2$对重现的要求，并且回退指向“前缀”位置的指针直到构成新的字符相等或者出界。</p>
+  </li>
+</ul>
+
+<p>同前缀函数一样，需要一个辅助数组，用于回退，可以使用之前计算第二种情况所生成的前缀数组的空间。</p>
+
+<h4 id="上述实现">上述实现</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="nb">PartialEq</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="n">min</span><span class="p">;</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">build_delta_2_table_improved_minghu6</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="k">impl</span> <span class="nb">PartialEq</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">patlen</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.len</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">lastpos</span> <span class="o">=</span> <span class="n">patlen</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">delta_2</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">patlen</span><span class="p">);</span>
+
+    <span class="c1">// 第一种情况</span>
+    <span class="c1">// delta_2[j] = lastpos * 2 - j</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">patlen</span> <span class="p">{</span>
+        <span class="n">delta_2</span><span class="nf">.push</span><span class="p">(</span><span class="n">lastpos</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">i</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 第二种情况</span>
+    <span class="c1">// lastpos &lt;= delata2[j] = lastpos * 2 - j</span>
+    <span class="k">let</span> <span class="n">pi</span> <span class="o">=</span> <span class="nf">compute_pi</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>  <span class="c1">// 计算前缀函数</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="n">lastpos</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">last_i</span> <span class="o">=</span> <span class="n">lastpos</span><span class="p">;</span> <span class="c1">// 只是为了初始化</span>
+    <span class="k">while</span> <span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">start</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">end</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">lastpos</span> <span class="p">{</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">patlen</span> <span class="o">-</span> <span class="n">pi</span><span class="p">[</span><span class="n">last_i</span><span class="p">];</span>
+        <span class="p">}</span>
+
+        <span class="n">end</span> <span class="o">=</span> <span class="n">patlen</span> <span class="o">-</span> <span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="n">start</span><span class="o">..</span><span class="n">end</span> <span class="p">{</span>
+            <span class="n">delta_2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">lastpos</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+        <span class="p">}</span>
+
+        <span class="n">last_i</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">pi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 第三种情况</span>
+    <span class="c1">// delata2[j] &lt; lastpos</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">j</span> <span class="o">=</span> <span class="n">lastpos</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">t</span> <span class="o">=</span> <span class="n">patlen</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">f</span> <span class="o">=</span> <span class="n">pi</span><span class="p">;</span>
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="n">f</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="p">;</span>
+        <span class="k">while</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">patlen</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">p</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="p">{</span>
+            <span class="n">delta_2</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">delta_2</span><span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="n">lastpos</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">j</span><span class="p">);</span>  <span class="c1">// 使用min函数保证后面可能的回退不会覆盖前面的数据</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">t</span><span class="p">];</span>
+        <span class="p">}</span>
+
+        <span class="n">t</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    
+    <span class="c1">// 没有实际意义，只是为了完整定义</span>
+    <span class="n">delta_2</span><span class="p">[</span><span class="n">lastpos</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">delta_2</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="galil规则对多次匹配时最坏情况的改善">Galil规则对多次匹配时最坏情况的改善</h2>
+
+<h3 id="关于后缀匹配算法的多次匹配问题">关于后缀匹配算法的多次匹配问题</h3>
+
+<p>之前的搜索算法只涉及到在$string$中寻找第一次$pat$匹配的情况，而对与在$string$中寻找全部$pat$的匹配的情况有很多不同的算法思路，这个问题的核心关注点是：</p>
+
+<p><strong>如何利用之前匹配成功的字符的信息，将最坏情况下的时间复杂度降为线性。</strong></p>
+
+<p>在原始的成功匹配后，简单的$string$的指针向后滑动$patlen$距离后重新开始后缀匹配，这会导致最坏情况下回到$O(mn)$的时间复杂度（按照惯例，$m$为$patlen$，$n$为$stringlen$，下同）。</p>
+
+<p>比如一个极端的例子：$pat$： $\texttt{AAA}$， $string$：$\texttt{AAAAA}\dots$。</p>
+
+<p>对此Knuth提出来的一个方法是用一个“数量有限”的状态的集合来记录$patlen$长度的字符，这种算法保证$string$上每一个字符最多比较一次，但代价是这个“数量有限”的状态可能数目并不怎么“有限”，比如立刻就能想到它的上限是$2^{m}$个，但并不清楚它到底能变得多大，对于一个字符彼此不相等的$pat$，需要$\dfrac{1}{2}m^{2}+m$个状态。这个算法思路同在1977年6月的发表KMP论文<sup id="fnref:1977KMP" role="doc-noteref"><a href="#fn:1977KMP" class="footnote" rel="footnote">3</a></sup>里被介绍，也许在未来某个节点匹配代价很高但状态存储代价很低的新场景能重新得到应用，但对于现在简单的字符串匹配，这个设计并不特别合适。</p>
+
+<p>而Knuth提出的另一个方法，嗯这里就不介绍了，同在上面的Knuth论文里被介绍，缺点是除了过于复杂以外主要是构建辅助的数据结构需要的预处理时间太大，$O(qm)$</p>
+
+<p>$q$为全字符集的大小，而且$qm$前面的系数很大。</p>
+
+<p>于是在这个背景下就有了下面介绍的思路简单，不需要额外预处理开销的Galil算法<sup> <a href="https://doi.org/10.1145%2F359146.359148">[4]</a> </sup>。</p>
+
+<h3 id="galil规则">Galil规则</h3>
+
+<p>原理很简单，假定一个$pat$，它是某个子串$U$重复n次构成的字符串$UUUU\dots$的前缀，那么我们称$U$为$pat$的一个周期。</p>
+
+<p>比如，$pat:$ $\texttt{ABCABCAB}$，是$\texttt{ABC}$的重复$\texttt{ABCABCABC}$的前缀，所以$\texttt{ABC}$就是这个$pat$的周期，当然其实$\texttt{ABCABC}\dots$也是$pat$的周期，但我们只关注最短的那个。</p>
+
+<p>事实上，广义地讲，$pat$至少拥有一个长度为它自身的周期。</p>
+
+<p>我们规定这个最短的周期为$k$，$k\leq patlen$。</p>
+
+<p>在搜索过程中，假如我们的$pat$成功地完成了一次匹配，那么依照周期的特点，实际上只需将$string$向后滑动$k$个字符，比较这$k$个字符是否对应相等就可以直接判断是否存在$pat$的又一个匹配。</p>
+
+<p>而如何计算这个最短周期的长度呢，假如我们知道$pat$的相等的一对儿前缀-后缀，设它们的长度为$\textit{prefixlen}$，那么有$pat[i] = pat[i+(patlen-\textit{prefixlen})]$。</p>
+
+<p>而从数学的角度看这个公式，显然我们已经有了长度为$patlen-\textit{prefixlen}$的周期，而当我们知道$pat$最长的那一对相等的前缀-后缀，我们就得到了$pat$最短的周期。</p>
+
+<p>而这个最长相等的前后缀长度，$\pi[patlastpos]$，在我们在计算$delta_2$的时候已经计算过了，所以实际不需要额外的预处理时间和空间，就能改善后缀匹配算法最坏情况的时间复杂度为线性。</p>
+
+<h3 id="结合上述优化的bm的搜索算法最终实现">结合上述优化的BM的搜索算法最终实现</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[cfg(target_pointer_width</span> <span class="nd">=</span> <span class="s">"64"</span><span class="nd">)]</span>
+<span class="k">const</span> <span class="n">LARGE</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">10_000_000_000_000_000_000</span><span class="p">;</span>
+
+<span class="nd">#[cfg(not(target_pointer_width</span> <span class="nd">=</span> <span class="s">"64"</span><span class="nd">))]</span>
+<span class="k">const</span> <span class="n">LARGE</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">2_000_000_000</span><span class="p">;</span>
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">BMPattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">pat_bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
+    <span class="n">delta_1</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">256</span><span class="p">],</span>
+    <span class="n">delta_2</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">usize</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">BMPattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_all</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">result</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+        <span class="k">let</span> <span class="n">string_bytes</span> <span class="o">=</span> <span class="n">string</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">stringlen</span> <span class="o">=</span> <span class="n">string_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">patlen</span> <span class="o">=</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">pat_last_pos</span> <span class="o">=</span> <span class="n">patlen</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">string_index</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">pat_index</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">l0</span> <span class="o">=</span>  <span class="n">patlen</span> <span class="o">-</span> <span class="k">self</span><span class="py">.k</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">string_index</span> <span class="o">&lt;</span> <span class="n">stringlen</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="n">string_index</span> <span class="o">&lt;</span> <span class="n">stringlen</span> <span class="p">{</span>
+                <span class="n">string_index</span> <span class="o">+=</span> <span class="k">self</span><span class="nf">.delta0</span><span class="p">(</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]);</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">string_index</span> <span class="o">&lt;</span> <span class="n">LARGE</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">string_index</span> <span class="o">-=</span> <span class="n">LARGE</span><span class="p">;</span>
+            <span class="n">pat_index</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+            <span class="k">while</span> <span class="n">pat_index</span> <span class="o">&gt;</span> <span class="n">l</span> <span class="o">&amp;&amp;</span> <span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]</span> <span class="o">==</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="p">[</span><span class="n">pat_index</span><span class="p">]</span> <span class="p">{</span>
+                <span class="n">string_index</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="n">pat_index</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">pat_index</span> <span class="o">==</span> <span class="n">l</span> <span class="o">&amp;&amp;</span> <span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]</span> <span class="o">==</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="p">[</span><span class="n">pat_index</span><span class="p">]</span> <span class="p">{</span>
+                <span class="n">result</span><span class="nf">.push</span><span class="p">(</span><span class="n">string_index</span> <span class="o">-</span> <span class="n">l</span><span class="p">);</span>
+
+                <span class="n">string_index</span> <span class="o">+=</span> <span class="n">pat_last_pos</span> <span class="o">-</span> <span class="n">l</span> <span class="o">+</span> <span class="k">self</span><span class="py">.k</span><span class="p">;</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">l0</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                <span class="n">string_index</span> <span class="o">+=</span> <span class="nf">max</span><span class="p">(</span>
+                    <span class="k">self</span><span class="py">.delta_1</span><span class="p">[</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">],</span>
+                    <span class="k">self</span><span class="py">.delta_2</span><span class="p">[</span><span class="n">pat_index</span><span class="p">],</span>
+                <span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">result</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="最坏情况在实践中性能影响">最坏情况在实践中性能影响</h3>
+
+<p>从实践的角度上说，理论上的最坏情况并不容易影响性能表现，哪怕是很小的只有4的字符集的随机文本测试下这种最坏情况的影响也小到难以观察。</p>
+
+<p>也因此如果没有很好地设计，使用Galil法则会拖累一点平均的性能表现，但对于一些极端特殊的$pat$和$string$比如例子中的：$pat$： $\texttt{AAA}$， $string$：$\texttt{AAAAA}\dots$，Gulil规则的应用确实会使得性能表现提高数倍。</p>
+
+<h2 id="实践及后续">实践及后续</h2>
+
+<p>这个部分要讨论实践中的具体问题。</p>
+
+<p>尽管前面给出了一些算法的实现代码，但并没有真正讨论过完整实现可能面临的一些“小问题”。</p>
+
+<h3 id="字符类型的考虑">字符类型的考虑</h3>
+
+<p>在英语环境下，特别是上世纪70年代那个时候，人们考虑字符，默认的前提是它是ASCII码，通用字符表是容易通过一个固定大小的数组来确定的。$delta_1$的初始化只需要基于这个固定大小的数组。</p>
+
+<p>而在尝试用Rust实现上述算法的时候，第一个遇到的问题是字符的问题，用一门很新的2010+发展起来的语言来实现1970+时代的算法，是一件很有意思的事情，</p>
+
+<p>会观察到一些因时代发展而产生的一些变化，现代的编程语言，内生的<code class="language-plaintext highlighter-rouge">char</code>类型就是Unicode，首先不可能用一个全字符集大小的数组来计算$delta_1$，（其实也可以，只是完成一个UTF-8编码的字符串搜索可能需要额外1GB内存）但是可以使用哈希表来代替，同样是$O(1)$ 的随机访问成本，毕竟哈希表是现代编程语言最基础的标准件之一了（哪怕是Go都有呢）。</p>
+
+<p>但更严重的问题是Unicode使用的都是变长的字节编码方案，所以没办法直接按照字符个数计算跳转的字节数，当然，如果限定文本是简单的ASCII字符集，我们仍然可以按照1字符宽1字节来进行快速跳转，但这样的实现根本就没啥卵用！😠</p>
+
+<p>在思考的过程中，首先的一个想法是直接将字符串转为按字符索引的向量数组，但这意味着啥都不用做就先有了一个遍历字符串的时间开销，和额外的大于等于字符串字节数的额外空间开销（因为<code class="language-plaintext highlighter-rouge">char</code>类型是Unicode字面值，采用固定4字节大小保存）。</p>
+
+<p>于是我改进了思路，对于变长编码字符串，至少要完全遍历一遍，才能完成字符串匹配，那么在遍历过程中，我使用一个基于可增长的环结构实现的双头队列作为滑动窗口，保存过去$patlen$个字符，如果当前$string$的索引小于算法计算的跳转，就让循环空转直到等于算法要求的索引。实践证明，这个巧妙的设计使得在一般字符上搜索的BM算法的实现比暴力匹配算法还要慢一些。😳😳</p>
+
+<p>于是挫折使我困惑，困惑使我思考，终于一束阳光照进了石头缝里：</p>
+
+<ol>
+  <li>字符串匹配算法高效的关键在于字符索引的快速跳转</li>
+  <li>字符索引一定要建立在等宽字符的基础上，</li>
+</ol>
+
+<p>基于这两条原则思考，我就发现二进制字节本身：1字节等宽、字符全集大小是256，就是符合条件的完美字符！在这个基础上完成了一系列后缀匹配算法的高效实现。</p>
+
+<h3 id="simplified-boyer-moore-算法">Simplified Boyer-Moore 算法</h3>
+
+<p>BM算法最复杂的地方就在于$delta_2$表（有一个通俗的名字，好后缀表）的构建，而在在实践中发现，一般的字符集上的匹配性能主要依靠$delta_1$表（通俗的名字是坏字符表），于是出现了仅仅使用$delta_1$表的简化版BM算法，通常表现和完整版差距很小。</p>
+
+<h3 id="boyer-moore-horspol-算法">Boyer-Moore-Horspol 算法</h3>
+
+<p>Horspol算法同样是基于坏字符的规则，不过是在与与$pat$尾部对齐的字符上应用$delta_1$，这个效果类似于前文对匹配算法的改进，所以它的通常表现优于原始BM、和匹配算法改进后的BM差不多。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">HorspoolPattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">pat_bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
+    <span class="n">bm_bc</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">256</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">HorspoolPattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+	<span class="c1">// ...</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_all</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">result</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+        <span class="k">let</span> <span class="n">string_bytes</span> <span class="o">=</span> <span class="n">string</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">stringlen</span> <span class="o">=</span> <span class="n">string_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">pat_last_pos</span> <span class="o">=</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">string_index</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">string_index</span> <span class="o">&lt;</span> <span class="n">stringlen</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="o">&amp;</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="o">-</span><span class="n">pat_last_pos</span><span class="o">..</span><span class="n">string_index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="k">self</span><span class="py">.pat_bytes</span> <span class="p">{</span>
+                <span class="n">result</span><span class="nf">.push</span><span class="p">(</span><span class="n">string_index</span><span class="o">-</span><span class="n">pat_last_pos</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="n">string_index</span> <span class="o">+=</span> <span class="k">self</span><span class="py">.bm_bc</span><span class="p">[</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">];</span>
+        <span class="p">}</span>
+
+        <span class="n">result</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="boyer-moore-sunday-算法">Boyer-Moore-Sunday 算法</h3>
+
+<p>Sunday算法同样是利用坏字符规则，只不过相比Horspool它更进一步，直接关注$pat$尾部对齐的那个字符的下一个字符上，只不过要稍微修改一下$delta_1$表，</p>
+
+<p>使得它相当于在$patlen+1$长度的$pat$上构建的。</p>
+
+<p>Sunday算法通常用作一般情况下实现最简单而且平均表现最好之一的实用算法，通常表现比Horspool、BM都要快一点。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">SundayPattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">pat_bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
+    <span class="n">sunday_bc</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">256</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">SundayPattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">fn</span> <span class="nf">build_sunday_bc</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">256</span><span class="p">]</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">sunday_bc_table</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> <span class="mi">256</span><span class="p">];</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">p</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">sunday_bc_table</span><span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="n">i</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">sunday_bc_table</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_all</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">result</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+        <span class="k">let</span> <span class="n">string_bytes</span> <span class="o">=</span> <span class="n">string</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">pat_last_pos</span> <span class="o">=</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">stringlen</span> <span class="o">=</span> <span class="n">string_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">string_index</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">string_index</span> <span class="o">&lt;</span> <span class="n">stringlen</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="o">&amp;</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span> <span class="o">-</span> <span class="n">pat_last_pos</span><span class="o">..</span><span class="n">string_index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="k">self</span><span class="py">.pat_bytes</span> <span class="p">{</span>
+                <span class="n">result</span><span class="nf">.push</span><span class="p">(</span><span class="n">string_index</span> <span class="o">-</span> <span class="n">pat_last_pos</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">string_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">stringlen</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">string_index</span> <span class="o">+=</span> <span class="k">self</span><span class="py">.sunday_bc</span><span class="p">[</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">];</span>
+        <span class="p">}</span>
+
+        <span class="n">result</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="bmhbnfs-算法">BMHBNFS 算法</h3>
+
+<p>该算法结合了Horspool和Sunday，是CPython实现<code class="language-plaintext highlighter-rouge">stringlib</code>模块时用到的<code class="language-plaintext highlighter-rouge">find</code>的算法<sup id="fnref:B5S" role="doc-noteref"><a href="#fn:B5S" class="footnote" rel="footnote">4</a></sup>，似乎国内更有名气，不清楚为何叫这个名字，怎么就“AKA”了？</p>
+
+<p>以下简称B5S。</p>
+
+<p>B5S基本想法是：</p>
+
+<ol>
+  <li>
+    <p>按照后缀匹配的思路，首先比较$patlastpos$位置对应的字符是否相等，如果相等就比较$0\dots patlastpos-1$ 对应位置的字符是否相等，如果仍然相等，那么就发现一个匹配；</p>
+  </li>
+  <li>
+    <p>如果任何一个阶段发生不匹配，就进入跳转阶段；</p>
+  </li>
+  <li>
+    <p>在跳转阶段，首先观察$patlastpos$位置的下一个字符是否在$pat$中，如果不在，直接向右滑动$patlen+1$，这是Sunday算法的最大利用</p>
+
+    <p>如果这个字符在$pat$中，对$patlastpos$处的字符利用$delta_1$进行Horspool跳转。</p>
+  </li>
+</ol>
+
+<p>这个首先比较最后位置字符而不是整个字符串</p>
+
+<p>而这个算法根据时间节省还是空间节省为第一目标，会有差别巨大的不同实现。</p>
+
+<h4 id="时间节省版本">时间节省版本</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">B5STimePattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">pat_bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
+    <span class="n">alphabet</span><span class="p">:</span> <span class="p">[</span><span class="nb">bool</span><span class="p">;</span><span class="mi">256</span><span class="p">],</span>
+    <span class="n">bm_bc</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span><span class="mi">256</span><span class="p">],</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">usize</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">B5STimePattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">pat</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="nb">str</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="nd">assert_ne!</span><span class="p">(</span><span class="n">pat</span><span class="nf">.len</span><span class="p">(),</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">pat_bytes</span> <span class="o">=</span> <span class="n">pat</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">bm_bc</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">=</span> <span class="nn">B5STimePattern</span><span class="p">::</span><span class="nf">build</span><span class="p">(</span><span class="n">pat_bytes</span><span class="p">);</span>
+
+        <span class="n">B5STimePattern</span> <span class="p">{</span> <span class="n">pat_bytes</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">bm_bc</span><span class="p">,</span> <span class="n">k</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">build</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="p">([</span><span class="nb">bool</span><span class="p">;</span><span class="mi">256</span><span class="p">],</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span><span class="mi">256</span><span class="p">],</span> <span class="nb">usize</span><span class="p">)</span>  <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">alphabet</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span><span class="mi">256</span><span class="p">];</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">bm_bc</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="nf">.len</span><span class="p">();</span> <span class="mi">256</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">lastpos</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">lastpos</span> <span class="p">{</span>
+            <span class="n">alphabet</span><span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+            <span class="n">bm_bc</span><span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="o">=</span> <span class="n">lastpos</span> <span class="o">-</span> <span class="n">i</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">alphabet</span><span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="n">lastpos</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+
+        <span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">bm_bc</span><span class="p">,</span> <span class="nf">compute_k</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_all</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">result</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+        <span class="k">let</span> <span class="n">string_bytes</span> <span class="o">=</span> <span class="n">string</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">pat_last_pos</span> <span class="o">=</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">patlen</span> <span class="o">=</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">stringlen</span> <span class="o">=</span> <span class="n">string_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">string_index</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">offset0</span> <span class="o">=</span> <span class="k">self</span><span class="py">.k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">string_index</span> <span class="o">&lt;</span> <span class="n">stringlen</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]</span> <span class="o">==</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="p">[</span><span class="n">pat_last_pos</span><span class="p">]</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="o">&amp;</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="o">-</span><span class="n">offset</span><span class="o">..</span><span class="n">string_index</span><span class="p">]</span> <span class="o">==</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.pat_bytes</span><span class="p">[</span><span class="n">pat_last_pos</span><span class="o">-</span><span class="n">offset</span><span class="o">..</span><span class="n">pat_last_pos</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="n">result</span><span class="nf">.push</span><span class="p">(</span><span class="n">string_index</span><span class="o">-</span><span class="n">pat_last_pos</span><span class="p">);</span>
+
+                    <span class="n">offset</span> <span class="o">=</span> <span class="n">offset0</span><span class="p">;</span>
+
+                    <span class="c1">// Galil rule</span>
+                    <span class="n">string_index</span> <span class="o">+=</span> <span class="k">self</span><span class="py">.k</span><span class="p">;</span>
+                    <span class="k">continue</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">string_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">stringlen</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="o">!</span><span class="k">self</span><span class="py">.alphabet</span><span class="p">[</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="p">{</span>
+                <span class="n">string_index</span> <span class="o">+=</span> <span class="n">patlen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// sunday</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">string_index</span> <span class="o">+=</span> <span class="k">self</span><span class="py">.bm_bc</span><span class="p">[</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">];</span>  <span class="c1">// horspool</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">result</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个版本的B5S性能表现非常理想，是通常情况下，目前介绍的后缀匹配系列算法中最快的。</p>
+
+<h4 id="空间节省版本">空间节省版本</h4>
+
+<p>这也是CPython <code class="language-plaintext highlighter-rouge">stringlib</code>中实现的版本，使用了两个整数近似取代了字符表和$delta_1$的作用，极大地节省了空间：</p>
+
+<h5 id="用一个简单的bloom过滤器取代字符表alphabet">用一个简单的Bloom过滤器取代字符表（alphabet）</h5>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">BytesBloomFilter</span> <span class="p">{</span>
+    <span class="n">mask</span><span class="p">:</span> <span class="nb">u64</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span> <span class="n">BytesBloomFilter</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="n">SimpleBloomFilter</span> <span class="p">{</span>
+            <span class="n">mask</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">byte</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">u8</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span><span class="k">self</span><span class="py">.mask</span><span class="p">)</span> <span class="p">|</span><span class="o">=</span> <span class="mi">1u64</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">byte</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">contains</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="nb">char</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">u8</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="p">(</span><span class="k">self</span><span class="py">.mask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1u64</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">byte</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">)))</span> <span class="o">!=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Bloom过滤器设设计通过牺牲准确率（实际还有运行时间）来极大地节省存储空间的<code class="language-plaintext highlighter-rouge">Set</code>类型的数据结构，它的特点是会将集合中不存在的项误判为存在（False Positives，简称FP），但不会把集合中存在的项判断为不存在（False Negatives，简称FN），因此使用它可能会因为FP而没有得到最大的字符跳转，但不会因为</p>
+
+<p>FN而跳过本应匹配的字符。</p>
+
+<p>理论上分析，上述“Bloom过滤器”的实现在$pat$长度在50个Bytes时，FP 概率约为 0.5，而$pat$长度在10个Bytes时，FP概率约为0.15。</p>
+
+<p>当然这不是一个标准的Bloom过滤器，首先它实际上没有使用一个真正的哈希函数，实际上它只是一个字符映射，就是将0-255的字节映射为它的前六位构成的数，考虑到我们在做内存上的字符搜索，这样的简化就非常重要，因为即使用目前已知最快的非加密哈希算法xxHash<sup id="fnref:xxHash" role="doc-noteref"><a href="#fn:xxHash" class="footnote" rel="footnote">5</a></sup>，计算所需要的时间都要比它高一个数量级。</p>
+
+<p>另外，按照计算，当pat在30字节以下时，为了达到最佳的FP概率，需要超过一个哈希函数，但这么做意义不大，因为用装有两个<code class="language-plaintext highlighter-rouge">u128</code>数字的数组就已经可以构建字符表的全字符集。</p>
+
+<h5 id="使用delta_1patpatlastpos-代替整个delta_1">使用$delta_1(pat[patlastpos])$ 代替整个$delta_1$</h5>
+
+<p>观察$delta_1$最常使用的地方就是后缀匹配时第一个字符就不匹配是最常见的不匹配的情况，于是令<code class="language-plaintext highlighter-rouge">skip = delta1(pat[patlastpos])</code>，</p>
+
+<p>在第一阶段不匹配时，直接向下滑动<code class="language-plaintext highlighter-rouge">skip</code>个字符；但当第二阶段不配时，因为缺乏整个$delta_1$的信息，只能向下滑动一个字符。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">B5SSpacePattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">pat_bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
+    <span class="n">alphabet</span><span class="p">:</span> <span class="n">BytesBloomFilter</span><span class="p">,</span>
+    <span class="n">skip</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">B5SSpacePattern</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">pat</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="nb">str</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="nd">assert_ne!</span><span class="p">(</span><span class="n">pat</span><span class="nf">.len</span><span class="p">(),</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">pat_bytes</span> <span class="o">=</span> <span class="n">pat</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">skip</span><span class="p">)</span> <span class="o">=</span> <span class="nn">B5SSpacePattern</span><span class="p">::</span><span class="nf">build</span><span class="p">(</span><span class="n">pat_bytes</span><span class="p">);</span>
+
+        <span class="n">B5SSpacePattern</span> <span class="p">{</span> <span class="n">pat_bytes</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">skip</span><span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">build</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="n">BytesBloomFilter</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span>  <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">alphabet</span> <span class="o">=</span> <span class="nn">BytesBloomFilter</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">lastpos</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">skip</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.len</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">p</span><span class="nf">.len</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span> <span class="p">{</span>
+            <span class="n">alphabet</span><span class="nf">.insert</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+
+            <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">p</span><span class="p">[</span><span class="n">lastpos</span><span class="p">]</span> <span class="p">{</span>
+                <span class="n">skip</span> <span class="o">=</span> <span class="n">lastpos</span> <span class="o">-</span> <span class="n">i</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">alphabet</span><span class="nf">.insert</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">[</span><span class="n">lastpos</span><span class="p">]);</span>
+
+        <span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">skip</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_all</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="nb">str</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">result</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+        <span class="k">let</span> <span class="n">string_bytes</span> <span class="o">=</span> <span class="n">string</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">pat_last_pos</span> <span class="o">=</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">patlen</span> <span class="o">=</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">stringlen</span> <span class="o">=</span> <span class="n">string_bytes</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">string_index</span> <span class="o">=</span> <span class="n">pat_last_pos</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">string_index</span> <span class="o">&lt;</span> <span class="n">stringlen</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="p">]</span> <span class="o">==</span> <span class="k">self</span><span class="py">.pat_bytes</span><span class="p">[</span><span class="n">pat_last_pos</span><span class="p">]</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="o">&amp;</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="o">-</span><span class="n">pat_last_pos</span><span class="o">..</span><span class="n">string_index</span><span class="p">]</span> <span class="o">==</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.pat_bytes</span><span class="p">[</span><span class="o">..</span><span class="n">patlen</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="n">result</span><span class="nf">.push</span><span class="p">(</span><span class="n">string_index</span><span class="o">-</span><span class="n">pat_last_pos</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="k">if</span> <span class="n">string_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">stringlen</span> <span class="p">{</span>
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">if</span> <span class="o">!</span><span class="k">self</span><span class="py">.alphabet</span><span class="nf">.contains</span><span class="p">(</span><span class="o">&amp;</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="p">{</span>
+                    <span class="n">string_index</span> <span class="o">+=</span> <span class="n">patlen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// sunday</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">string_index</span> <span class="o">+=</span> <span class="k">self</span><span class="py">.skip</span><span class="p">;</span>  <span class="c1">// horspool</span>
+                <span class="p">}</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">string_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">stringlen</span> <span class="p">{</span>
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">if</span> <span class="o">!</span><span class="k">self</span><span class="py">.alphabet</span><span class="nf">.contains</span><span class="p">(</span><span class="o">&amp;</span><span class="n">string_bytes</span><span class="p">[</span><span class="n">string_index</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="p">{</span>
+                    <span class="n">string_index</span> <span class="o">+=</span> <span class="n">patlen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// sunday</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">string_index</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+        <span class="p">}</span>
+
+        <span class="n">result</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个版本的算法相对于前面的后缀匹配算法不够快，但差距并不大，仍然比KMP这种快得多，特别是考虑到它极为优秀的空间复杂度：至多两个<code class="language-plaintext highlighter-rouge">u64</code>的整数，这确实是极为实用的适合作为标准库实现的一种算法！</p>
+
+<h2 id="理论分析">理论分析</h2>
+
+<p>现在我们通过一个简单的概率模型来做一些绝不枯燥的理论上的分析，借此可以发现一些有趣而更深入的事实。</p>
+
+<h3 id="建立模型">建立模型</h3>
+
+<p>想象一下，我们滑动字符串$pat$到某个新的位置，这个位置还没有完成匹配，我们可以用发现失配所需要的代价与发现失配后$pat$能够向下滑动的字符数的比值来衡量算法的平均性能表现。</p>
+
+<p>假如这个代价是用对$string$的引用来衡量，那么我们就可以知道平均每个字符需要多少次$string$的引用，这是在理论上衡量算法表现的关键指标；</p>
+
+<p>而如果这个代价是用机器指令衡量，那我们可以知道平均每个字符需要多少条机器指令；</p>
+
+<p>当然也可以有其他的衡量方式，这并不影响什么，这里我们采用对$string$的引用进行理论分析。</p>
+
+<p>同时为我们的概率模型提出一个假设：$pat$，$string$中的每个字符是独立随机变量，它们出现的概率相等，为$p$，$p$取决于全字母表的大小。</p>
+
+<p>显然，假如全字母表的大小为$q$，则$p=\dfrac{1}{q}$，例如假设我们之前基于字节的实现，在日常一般搜索时，可以近似为$q=\dfrac{1}{256}$。</p>
+
+<p>现在可以更准确地刻画这个比率，$rate(patlen, p)$：</p>
+
+\[\frac{\sum_{m=0}^{patlen-1} cost(m) \times prob(m)}{\sum_{m=0}^{patlen-1}prob(m) \times \sum_{k=1}^{patlen}skip(m,k) \times k }\]
+
+<p>其中，$cost(m)$为前面讨论到的在匹配成功了$m$个字符后失配时的代价：</p>
+
+\[cost(m) = m+1\]
+
+<p>$prob(m)$为匹配成功$m$个字符后失配的概率（其中$1-p^{patlen}$排除掉$pat$全部匹配的情况）:</p>
+
+\[prob(m) = \frac{p^m(1-p)}{1-p^{patlen}}\]
+
+<p>$skip(m,k)$为发生失配时$pat$向下滑动$k$个字符的概率，（这里的$k$如同前文讨论的$k$一样，为$pat$实际滑动距离，不包括指针从失配位置回退到$patlastpos$位置的距离）。实际上所有字符串匹配算法的核就在于$skip(m,k)$，下面我们会通过分析$delta_1$和$delta_2$来计算BoyerMoore算法的$skip(m,k)$。</p>
+
+<h3 id="计算boyermoore算法的skipmk">计算BoyerMoore算法的\(skip(m,k)\)</h3>
+
+<h4 id="delta_1">$delta_1$</h4>
+
+<p>首先考虑$delta_1$不起作用的情况，也就是发现失配字符在$pat$上重现的位置在已经匹配完的$m$个字符中，这种情况的概率$\textit{probdelta_1_worthless}$为：</p>
+
+\[\textit{probdelta1_worthless}(m) = 1 - (1-p)^m\]
+
+<p>而对于$delta_1$起作用的情况，可以根据k的范围分为四种情况进行讨论：</p>
+
+<ol>
+  <li>
+    <p>$k = 1$：</p>
+
+    <p>1.1 失配字符对应位置的下一个字符恰好等于失配字符；</p>
+
+    <p>1.2 失配字符已经是$pat$右手起最后一个字符。</p>
+  </li>
+  <li>
+    <p>$1 &lt; k &lt; patlen-m$，$pat$在失配字符对应位置的左边还有与失配字符相等的字符，并且不满足情况1；</p>
+  </li>
+  <li>
+    <p>$k = patlen - m$，$pat$在失配字符对应位置左边找不到另一个与失配字符相等的字符，并且不满足情况1，这时$pat$有最大可能的向下滑动距离；</p>
+  </li>
+  <li>
+    <p>$k &gt; patlen - m$，显然对于$delta_1$，这是不可能存在的情况。</p>
+  </li>
+</ol>
+
+<p>于是有计算$delta_1$的概率函数：</p>
+
+\[probdelta1(m,k) =  
+\left\{ \begin{array}{lcl}
+(1-p)^m\times \left\{ \begin{array}{lcl} 1  &amp; \text{for} &amp;m+1=patlen \\ p &amp;\text{for}&amp;m+1\neq patlen  \\\end{array}\right. &amp; \text{for} &amp; k = 1 \\
+(1-p)^{m+k-1}\times p &amp; \text{for} &amp; 1 &lt; k &lt; patlen - m\\
+(1-p)^{patlen-1} &amp; \text{for} &amp; k = patlen - m\\
+0 &amp; \text{for} &amp; patlen patlen - m &lt; k \leqslant patlen
+\end{array}\right.\]
+
+<h4 id="delta_2">$delta_2$</h4>
+
+<p>对于$delta_2$概率的计算，根据定义，首先计算某个$subpat$的重现的概率，只要考虑该重现左边还有没有字符来提供额外的判断与失配字符是否相等的检查：</p>
+
+\[probpr(m,k) =  
+\left\{ \begin{array}{lcl}
+(1-p)\times p^m &amp; \text{for} &amp; 1 \leqslant k &lt; patlen - m\\
+p^{patlen-k} &amp; \text{for} &amp; patlen - m \leqslant k \leqslant patlen
+\end{array}\right.\]
+
+<p>于是$delta_2(m,k)$ 就可以通过保证$pr(m,k)$存在并且$k$更小的$delta_2$不存在，来递归计算：</p>
+
+\[probdelta2(m,k) = probpr(m,k)(1-\sum_{n=1}^{k-1}probdelta2(m, n))\]
+
+<h4 id="汇总">汇总</h4>
+
+<p>前面已经独立讨论了$delta_1$，$delta_2$的概率函数，不过还需要额外考虑一下这两个概率函数之间相互影响的情况，虽然只是一个很少数的情况：</p>
+
+<p>当$delta_2$计算的$k$为1的时候，根据$delta_2$定义我们就知道$pat[-(m+1)] = pat[-m]=pat[-(m-1)]\dots pat[-1]$，（$pat[-n]$ 表示$pat$的倒数第$n$个字符，下同）。而这种情况已经排除了$delta_1$不起作用的情况，因为当如前文讨论的，$delta_1$不起作用要求与失配字符$pat[-(m+1)]$相等的字符出现在$pat[-m]\dots pat[-1]$中， 这就产生了不可能在倒数$m+1$个字符上失配的矛盾。</p>
+
+<p>因此针对$delta_1$不起作用的情况需要一个稍微修改过的$delta_2$概率函数 ：</p>
+
+\[probdelta2'(m,k) = 
+\left\{ \begin{array}{lcl}
+0 &amp; \text{for} &amp; k = 1\\
+probpr(m,k)(1-\sum_{n=2}^{k-1}probdelta2'(m, n)) &amp; \text{for} &amp; 1 \leqslant k \leqslant patlen
+\end{array}\right.\]
+
+<p>于是通过组合$delta_1$和$delta_2$起作用的情况，我们就得到了BoyerMoore算法的$skip$概率函数：</p>
+
+\[skip(m,k) = \left\{\begin{array}{lcl}
+probdelta1(m, 1) \times probdelta2(m, 1) &amp; \text{for} &amp; k = 1\\
+\\
+\\
+\\
+\textit{prodelta1_worthless}(m)\times probdelta2'(m, 1)\\
++\ probdelta1(m, k)\times \sum_{n=1}^{k-1}probdelta2(m, n)\\
++\ probdelta2(m, k)\times \sum_{n=1}^{k-1}probdelta1(m,n)\\
++\ probdelta1(m, k)\times probdelta2(m, k)
+&amp; \text{for} &amp; 1 &lt; k \leqslant patlen
+\end{array}\right.\]
+
+<h3 id="分析比较">分析比较</h3>
+
+<p>为了结构清晰、书写简单、演示方便，我们使用Python平台的Lisp方言Hy来进行实际计算：</p>
+
+<p><code class="language-plaintext highlighter-rouge">myprob.hy</code></p>
+
+<pre><code class="language-Hy">(require [hy.contrib.sequences [defseq seq]])
+
+(import [hy.contrib.sequences [Sequence end-sequence]])
+(import [hy.models [HySymbol]])
+
+
+(defmacro simplify-probfn [patlen p probfn-list]
+    "(prob-xxx patlen p m k) -&gt; (prob-xxx-s m k)"
+    (lfor probfn probfn-list
+        [(setv simplified-probfn-symbol (HySymbol (.format "{}-s" (name probfn))))
+        `(defn ~simplified-probfn-symbol [&amp;rest args] (~probfn patlen p #*args))]))
+
+(defn map-sum [range-args func]
+    (setv [start end] range-args)
+    (-&gt; func (map (range start (inc end))) sum))
+
+(defn cost [m] (+ m 1))
+
+(defn prob-m [patlen p m]
+    (/
+        (* (** p m) (- 1 p))
+        (- 1 (** p patlen))))
+
+(defn prob-delta_1 [patlen p m k]
+    (cond [(= 1 k) (* (** (- 1 p) m)
+                      (if (= (inc m) patlen) 1 p))]
+          [(&lt; k (- patlen m)) (* p (** (- 1 p) (dec (+ k m))))]
+          [(= k (- patlen m)) (** (- 1 p) (dec patlen))]
+          [(&gt; k (- patlen m)) 0]))
+
+
+(defn prob-delta_1-worthless [p m] (- 1 (** (- 1 p) m)))
+
+
+(defn prob-pr [patlen p m k] (if (&lt; patlen (+ m k))
+                                (* (- 1 p) (** p m))
+                                (** p (- patlen k))))
+
+
+(defn prob-delta_2 [patlen p m]
+    "prob-delta_2(_, k) = prob-delta_2-seq[k]"
+    (defseq prob-delta_2-seq [n]
+        (cond [(&lt; n 1) 0]
+              [(= n 1) (prob-pr patlen p m 1)]
+              [(&gt; n 1) (* (prob-pr patlen p m n) (- 1 (sum (take n prob-delta_2-seq))))]))
+    prob-delta_2-seq)
+
+
+(defn prob-delta_2-1 [patlen p m]
+    (defseq prob-delta_2-1-seq [n]
+        (cond [(&lt; n 2) 0]
+              [(&gt;= n 2) (* (prob-pr patlen p m n) (- 1 (sum (take n prob-delta_2-1-seq))))]))
+    prob-delta_2-1-seq)
+
+
+(defn skip [patlen p m k prob-delta_2-seq prob-delta_2-1-seq]
+    (simplify-probfn patlen p [prob-delta_1])
+    (if (= k 1) (* (prob-delta_1-s m 1) (get prob-delta_2-seq 1))
+        (sum [(* (prob-delta_1-worthless p m) (get prob-delta_2-1-seq k))
+              (* (prob-delta_1-s m k) (sum (take k prob-delta_2-seq)))
+              (* (get prob-delta_2-seq k) (map-sum [1 (- k 1)]
+                                                  (fn [n] (prob-delta_1-s m n))))
+              (* (prob-delta_1-s m k) (get prob-delta_2-seq k))])))
+
+
+(defn bm-rate [patlen p]
+    (simplify-probfn patlen p [prob-m prob-delta_2 prob-delta_2-1 skip])
+    (/
+        (map-sum [0 (dec patlen)]
+            (fn [m] (* (cost m) (prob-m-s m))))
+
+        (map-sum [0 (dec patlen)]
+            (fn [m]
+                (setv prob-delta_2-seq (prob-delta_2-s m)
+                      prob-delta_2-1-seq (prob-delta_2-1-s m))
+                (* (prob-m-s m) (map-sum [1 patlen]
+                                    (fn [k] (* k (skip-s m k prob-delta_2-seq prob-delta_2-1-seq)))))))))
+</code></pre>
+
+<p>并且为了进行比较，还额外计算了简化BM算法:</p>
+
+<p><code class="language-plaintext highlighter-rouge">myprob.hy</code></p>
+
+<div class="language-hy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">defn</span><span class="w"> </span><span class="n">simplified-bm-skip</span><span class="w"> </span><span class="p">[</span><span class="n">patlen</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">k</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">simplify-probfn</span><span class="w"> </span><span class="n">patlen</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">[</span><span class="n">prob-delta_1</span><span class="p">])</span><span class="w">
+    </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb">+</span><span class="w"> </span><span class="p">(</span><span class="nf">prob-delta_1-s</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nf">prob-delta_1-worthless</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="n">m</span><span class="p">))</span><span class="w">
+        </span><span class="p">(</span><span class="nf">prob-delta_1-s</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">k</span><span class="p">)))</span><span class="w">
+
+</span><span class="p">(</span><span class="nb">defn</span><span class="w"> </span><span class="n">sbm-rate</span><span class="w"> </span><span class="p">[</span><span class="n">patlen</span><span class="w"> </span><span class="n">p</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">simplify-probfn</span><span class="w"> </span><span class="n">patlen</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">[</span><span class="n">prob-m</span><span class="w"> </span><span class="n">simplified-bm-skip</span><span class="p">])</span><span class="w">
+    </span><span class="p">(</span><span class="nb">/</span><span class="w">
+        </span><span class="p">(</span><span class="nf">map-sum</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">patlen</span><span class="p">)]</span><span class="w">
+            </span><span class="p">(</span><span class="nb">fn</span><span class="w"> </span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="p">(</span><span class="nf">cost</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nf">prob-m-s</span><span class="w"> </span><span class="n">m</span><span class="p">))))</span><span class="w">
+
+        </span><span class="p">(</span><span class="nf">map-sum</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">patlen</span><span class="p">)]</span><span class="w">
+            </span><span class="p">(</span><span class="nb">fn</span><span class="w"> </span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="p">(</span><span class="nf">prob-m-s</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nf">map-sum</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="w"> </span><span class="n">patlen</span><span class="p">]</span><span class="w">
+                                        </span><span class="p">(</span><span class="nb">fn</span><span class="w"> </span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="p">(</span><span class="nf">simplified-bm-skip-s</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">k</span><span class="p">)))))))))</span><span class="w"> 
+</span></code></pre></div></div>
+
+<p>和KMP算法：</p>
+
+<p><code class="language-plaintext highlighter-rouge">myprob,hy</code></p>
+
+<div class="language-hy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">defn</span><span class="w"> </span><span class="n">prob-pi</span><span class="w"> </span><span class="p">[</span><span class="n">patlen</span><span class="w"> </span><span class="n">p</span><span class="p">]</span><span class="w">
+    </span><span class="s">"prob-pi-s(m, l) = prob-pi-seq[m][l]"</span><span class="w">
+    </span><span class="p">(</span><span class="nf">defseq</span><span class="w"> </span><span class="n">prob-pi-seq</span><span class="w"> </span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w">
+        </span><span class="p">(</span><span class="nb">cond</span><span class="w"> </span><span class="p">[(</span><span class="nb">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">[]]</span><span class="w">
+              </span><span class="p">[(</span><span class="nb">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="w">
+              </span><span class="p">[(</span><span class="nb">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="nb">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="n">p</span><span class="p">]]</span><span class="w">
+              </span><span class="p">[(</span><span class="nb">&gt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nf">lfor</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="p">(</span><span class="nb">range</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w">
+                            </span><span class="p">(</span><span class="nb">+</span><span class="w">
+                                </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="p">(</span><span class="nf">getone</span><span class="w"> </span><span class="n">prob-pi-seq</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="no">:default</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">p</span><span class="p">))</span><span class="w">
+                                </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="p">(</span><span class="nb">get</span><span class="w"> </span><span class="n">prob-pi-seq</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">i</span><span class="p">)))))]))</span><span class="w">
+    </span><span class="n">prob-pi-seq</span><span class="p">)</span><span class="w">
+
+
+</span><span class="p">(</span><span class="nb">defn</span><span class="w"> </span><span class="n">skip</span><span class="w"> </span><span class="p">[</span><span class="n">m</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="n">prob-pi-seq</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">=</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w">
+        </span><span class="p">(</span><span class="nb">get</span><span class="w"> </span><span class="n">prob-pi-seq</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="p">(</span><span class="nb">-</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">k</span><span class="p">))))</span><span class="w">
+
+</span><span class="p">(</span><span class="nb">defn</span><span class="w"> </span><span class="n">at-least-1</span><span class="w"> </span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">n</span><span class="p">))</span><span class="w">
+
+
+</span><span class="p">(</span><span class="nb">defn</span><span class="w"> </span><span class="n">kmp-rate</span><span class="w"> </span><span class="p">[</span><span class="n">patlen</span><span class="w"> </span><span class="n">p</span><span class="p">]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">simplify-probfn</span><span class="w"> </span><span class="n">patlen</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">[</span><span class="n">prob-m</span><span class="w"> </span><span class="n">prob-pi</span><span class="p">])</span><span class="w">
+    </span><span class="p">(</span><span class="nb">setv</span><span class="w"> </span><span class="n">prob-pi-seq</span><span class="w"> </span><span class="p">(</span><span class="nf">prob-pi-s</span><span class="p">))</span><span class="w">
+    </span><span class="p">(</span><span class="nb">/</span><span class="w">
+        </span><span class="p">(</span><span class="nf">map-sum</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">patlen</span><span class="p">)]</span><span class="w">
+            </span><span class="p">(</span><span class="nb">fn</span><span class="w"> </span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="p">(</span><span class="nf">cost</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nf">prob-m-s</span><span class="w"> </span><span class="n">m</span><span class="p">))))</span><span class="w">
+
+        </span><span class="p">(</span><span class="nf">map-sum</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">patlen</span><span class="p">)]</span><span class="w">
+            </span><span class="p">(</span><span class="nb">fn</span><span class="w"> </span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="p">(</span><span class="nf">prob-m-s</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nf">map-sum</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="nf">at-least-1</span><span class="w"> </span><span class="p">(</span><span class="nb">dec</span><span class="w"> </span><span class="n">m</span><span class="p">))]</span><span class="w">
+                                        </span><span class="p">(</span><span class="nb">fn</span><span class="w"> </span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="nb">*</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="p">(</span><span class="nf">skip</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="n">prob-pi-seq</span><span class="p">)))))))))</span><span class="w">
+</span></code></pre></div></div>
+
+<p>然后我们就可以通过Python上的<code class="language-plaintext highlighter-rouge">plotnine</code>图形包看一下计算的数据（并用高斯过程回归拟合曲线）：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">hy</span>
+
+<span class="kn">from</span> <span class="nn">my_prob</span> <span class="kn">import</span> <span class="n">bm_rate</span><span class="p">,</span> <span class="n">sbm_rate</span><span class="p">,</span> <span class="n">kmp_rate</span>
+
+
+<span class="n">theme_update</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s">"SimHei"</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+    <span class="n">model_range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">'rate'</span><span class="p">:[],</span> <span class="s">'alg'</span><span class="p">:[],</span> <span class="s">'patlen'</span><span class="p">:[]}</span>
+    <span class="n">categories_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">bm_rate</span><span class="p">,</span> <span class="s">'BoyerMoore'</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">sbm_rate</span><span class="p">,</span> <span class="s">'S BoyerMoore'</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">kmp_rate</span><span class="p">,</span> <span class="s">'KMP'</span><span class="p">),</span>
+                       <span class="p">(</span><span class="k">lambda</span> <span class="n">patlen</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">patlen</span><span class="p">,</span> <span class="s">'$</span><span class="se">\\</span><span class="s">frac{1}{patlen}$'</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">alg_fun</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">categories_list</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'rate'</span><span class="p">].</span><span class="n">extend</span><span class="p">([</span><span class="n">alg_fun</span><span class="p">(</span><span class="n">patlen</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">patlen</span> <span class="ow">in</span> <span class="n">model_range</span><span class="p">])</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'alg'</span><span class="p">].</span><span class="n">extend</span><span class="p">([</span><span class="n">label</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">model_range</span><span class="p">])</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'patlen'</span><span class="p">].</span><span class="n">extend</span><span class="p">(</span><span class="n">model_range</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s">'patlen'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'rate'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'alg'</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">geom_point</span><span class="p">()</span>
+            <span class="o">+</span> <span class="n">geom_smooth</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'gpr'</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">labs</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s">'Algs'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'$patlen$'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'$</span><span class="se">\\</span><span class="s">frac{cost}{skip}$'</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">plot(1/256, '$p= \\frac{1}{256}$')</code>：</p>
+
+<p><img src="/assets/img/bm_plot256.svg" alt="BM_plot256" style="zoom: 200%;" /></p>
+
+<p>观察这个图像，令人印象深刻的首先就是抬头的一条大兰线，几乎笔直地画出了算法性能的下限，不愧是KMP算法，$O(n)$的时间复杂度，一看就很真实( ﾟ▽ﾟ)/ 。</p>
+
+<p>接着会发现BoyerMoore算法与简化版BoyerMoore算法高度重叠的这条红绿紫曲线，同时也是$\dfrac{1}{patlen}$，</p>
+
+<p>这就是在一般字符集下随机文本搜索能达到的$O(\dfrac{n}{m})$的强力算法吗？(ﾟ△ﾟ;ﾉ)ﾉ</p>
+
+<p>另外此时可以绝大多数的字符跳转依靠$delta_1$（比$delta_2$高几个数量），这也是基于$delta_1$表的BM变种算法最佳的应用场景！</p>
+
+<p>接着我们可以看一下在经典的小字符集，比如在DNA { A, C, T, G } 碱基对序列中算法的性能表现（<code class="language-plaintext highlighter-rouge">plot(1/4, '$p= \\frac{1}{4}$')</code>）：</p>
+
+<p><img src="/assets/img/bm_plot4.svg" alt="BM_plot4" style="zoom:200%;" /></p>
+
+<p>曲线出现了明显的分化，当然KMP还是一如既往地稳定( ﾟ▽ﾟ)/ ，如果此时在测试中监控一下一下$delta_1$表和$delta_2$表作用情况会发现：$delta_2$起作用的次数超过了$delta_1$，而且$delta_2$贡献的跳过字符数更是远超$delta_1$，思考下，这件事其实也很好理解。</p>
+
+<p>总结一下，通过概率模型的计算，一方面看到了在较大的字符集，比如日常搜索的过程中BoyerMoore系列算法的优越表现，其中主要依赖$delta_1$表实现字符跳转；另一方面，在较小的字符集里，$delta_1$的作用下降，而$delta_2$的作用得到了体现。如果有一定富裕空间的情况下，使用完整的空间复杂度为$O(m)$的BoyerMoore算法应该是一种适用各种情况、综合表现都很优异的算法选择。</p>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1977BM" role="doc-endnote">
+      <p>https://dl.acm.org/doi/10.1145/359842.359859 <a href="#fnref:1977BM" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:1980Rytter" role="doc-endnote">
+      <p>https://epubs.siam.org/doi/10.1137/0209037 <a href="#fnref:1980Rytter" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:1977KMP" role="doc-endnote">
+      <p>https://epubs.siam.org/doi/abs/10.1137/0206024 <a href="#fnref:1977KMP" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:B5S" role="doc-endnote">
+      <p>http://effbot.org/zone/stringlib.htm#BMHBNFS <a href="#fnref:B5S" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:xxHash" role="doc-endnote">
+      <p>https://cyan4973.github.io/xxHash/ <a href="#fnref:xxHash" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>

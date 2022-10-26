@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            JShell
+        
+    " 
+/>
+
+<meta property="og:url" content="http://localhost:4000//jshell/2017/12/21/use-jshell.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        JShell
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="http://localhost:4000/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">JShell</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            December 21, 2017
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <h2 id="requirement-jdk-9">Requirement: JDK-9</h2>
+
+<h2 id="辅助方法">辅助方法</h2>
+
+<p><code class="language-plaintext highlighter-rouge">/imports</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>查看导入的Java包
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/edit &lt;var&gt;</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;var&gt;: class-name, var, snippet-id etc.
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/edit</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>开启一个简单编辑器，输入整段代码
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/save &lt;file&gt;</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Save the commands and snippets currently active to the provided file path.
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/save -all &lt;file&gt;</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Save all commands and snippets, including overwritten, start-up, and failed commands and snippets to the provided file path.
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/save -history &lt;file&gt;</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Save all commands and snippets run to the provided file.
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/save -start &lt;file&gt;</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Save all commands and snippets that initialized the JShell session to the provided path.
+</code></pre></div></div>
+
+<p>默认是</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.io.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.math.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.net.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.nio.file.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.concurrent.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.function.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.prefs.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.regex.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.stream.*</span><span class="o">;</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/env &lt;param&gt; &lt;param-value&gt;</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>设置环境变量, such as `/env -class-path .`
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/reset</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>重置环境状态，会清空历史和list等
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">reload</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>重启 &amp; 重置环境状态，但不会清空历史和list等
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">open &lt;file&gt;</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>打开外部的expression 文件
+</code></pre></div></div>
+
+<h2 id="常用导入测试">常用导入测试</h2>
+
+<p>参考 https://docs.oracle.com/javase/9/</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.util.concurrent.ExecutorService</span><span class="o">;</span>
+</code></pre></div></div>
+
+<h2 id="运行文件">运行文件</h2>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>

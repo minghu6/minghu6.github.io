@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            Common Lisp 编写工程文件
+        
+    " 
+/>
+
+<meta property="og:url" content="http://localhost:4000//common%20lisp/2020/07/21/common-lisp-write-project.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        Common Lisp 编写工程文件
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="http://localhost:4000/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">Common Lisp 编写工程文件</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            July 21, 2020
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <h2 id="参考">参考</h2>
+
+<p>​	https://xach.livejournal.com/278047.html</p>
+
+<p>​	https://lisp-lang.org/learn/writing-libraries</p>
+
+<h2 id="流程">流程</h2>
+
+<h3 id="step-0-从安装quicklisp开始">Step-0 从安装quicklisp开始</h3>
+
+<p>https://www.quicklisp.org/beta/#installation</p>
+
+<h3 id="step-1-使用脚手架初始化项目">Step-1 使用脚手架初始化项目</h3>
+
+<pre><code class="language-commonlisp">(ql:quickload "quickproject")
+(quickproject:make-project &lt;package-path&gt;)
+</code></pre>
+
+<p>比如项目路径为: <code class="language-plaintext highlighter-rouge">"/mnt/d/Coding/CL/minghu6"</code>，默认使用目录名作为项目名，可以使用 <code class="language-plaintext highlighter-rouge">:name</code>定义一个别的名字</p>
+
+<h3 id="step-n-安装本地项目-使用前面脚手架的不需要手动添加">Step-n 安装本地项目 （使用前面脚手架的不需要手动添加）</h3>
+
+<p>有几种方案：</p>
+
+<ol>
+  <li>
+    <p>将项目软连接到 <code class="language-plaintext highlighter-rouge">~/.local/share/common-lisp/source/</code> ，这是ASDF的扫描目录之一</p>
+  </li>
+  <li>
+    <p>将项目软连接到<code class="language-plaintext highlighter-rouge">~/quicklisp/local-projects/</code>，这是QuickLisp的扫描目录（本地项目优先于Amazon上的同名云端版）</p>
+  </li>
+  <li>
+    <p>注册ASDF的扫描目录：</p>
+
+    <p>在<code class="language-plaintext highlighter-rouge">~/.config/common-lisp/source-registry.conf</code> 上添加:</p>
+
+    <pre><code class="language-commonlisp">(:source-registry
+  (:tree &lt;your-dir-path&gt;)
+  :inherit-configuration)
+</code></pre>
+
+    <p><code class="language-plaintext highlighter-rouge">&lt;your-dir-path&gt;</code>:</p>
+
+    <p>​	exp1:(<code class="language-plaintext highlighter-rouge">"/mnt/d/Coding/CL/"</code>)</p>
+
+    <p>​	exp2:<code class="language-plaintext highlighter-rouge">(:home "code")</code> <code class="language-plaintext highlighter-rouge">:home</code>指<code class="language-plaintext highlighter-rouge">$HOME</code></p>
+
+    <p>或者建立子目录级别的配置文件: <code class="language-plaintext highlighter-rouge">~/.config/common-lisp/source-registry.conf.d/projects.conf</code>，添加的内容：</p>
+
+    <pre><code class="language-commonlisp">(:tree &lt;your-dir-path&gt;)
+</code></pre>
+  </li>
+</ol>
+
+<p>​		最后运行 <code class="language-plaintext highlighter-rouge">(asdf:initialize-source-registry)</code>进行更新。</p>
+
+<h3 id="step-n-编写测试">Step-n 编写测试</h3>
+
+<p>参考https://turtleware.eu/posts/Tutorial-Working-with-FiveAM.html</p>
+
+<h3 id="step-n-发布到quicklisp项目">Step-n 发布到QuickLisp项目</h3>
+
+<p><em>找了许久，没有找到发布项目到quicklisp的方法，因为潜意识里我一直觉得会有一个类似pypi的网站，专门用来管理包</em></p>
+
+<p><em>结果万万没想到quicklisp采用的是人肉管理的方法。。。。。。</em></p>
+
+<p>参考[https://www.cliki.net/Quicklisp%20tutorial](https://www.cliki.net/Quicklisp tutorial)，到<a href="https://github.com/quicklisp/quicklisp-projects/issues">issue列表</a>里发请求！！！条件很宽泛，只需要必要的在ASDF下可运行和免费的证书 (ex: Public Domain, MIT, BSD or similar) license （反过来可见一段时间社区的活跃程度）。</p>
+
+<h2 id="faq">FAQ:</h2>
+
+<ol>
+  <li>
+    <p>编译宏的时候遇到诸如 “It’s defined earlier in the file but not available in compile-time”</p>
+
+    <p>参考https://stackoverflow.com/questions/10674650/eval-when-uses</p>
+
+    <p>有两种解决方法：</p>
+
+    <ol>
+      <li>
+        <p>把依赖函数放到另一个编译顺序在该宏之前的文件里，在.asd文件里有一个默认被脚手架添加的配置项<code class="language-plaintext highlighter-rouge">:serial t</code></p>
+
+        <p>就是设置按顺序编译项目文件，我们只需要在<code class="language-plaintext highlighter-rouge">:coponents</code>中将依赖函数的文件放在宏的上面即可</p>
+      </li>
+      <li>
+        <p>使用<code class="language-plaintext highlighter-rouge">eval-when</code>将函数编译进compile-time的环境中，详见上面stackover的帖子。</p>
+
+        <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> (eval-when (:compile-toplevel :execute :load-toplevel)
+   (defun bar (form) ...)
+ )
+</code></pre></div>        </div>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="notes">Notes:</h2>
+
+<ol>
+  <li>遇事不决restart-slime</li>
+  <li>首次加载使用<code class="language-plaintext highlighter-rouge">ql:quickload</code>，重载使用<code class="language-plaintext highlighter-rouge">asdf:load_system</code></li>
+  <li>sbcl 本地更好的repl
+    <ol>
+      <li>install rlwrap，<code class="language-plaintext highlighter-rouge">rlwrap sbcl</code></li>
+    </ol>
+  </li>
+</ol>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>

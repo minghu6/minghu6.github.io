@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            Spring Config
+        
+    " 
+/>
+
+<meta property="og:url" content="http://localhost:4000//spring/2017/12/15/spring-config-properties.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        Spring Config
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="http://localhost:4000/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">Spring Config</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            December 15, 2017
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <h1 id="spring">Spring</h1>
+
+<h2 id="basic">Basic</h2>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">spring</span><span class="pi">:</span>
+    <span class="na">application</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">应用名称</span>
+            <span class="s">exp</span><span class="err">:</span>
+                <span class="s">spring.application.name=client-dc</span>
+
+<span class="na">server</span><span class="pi">:</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="s">启动的端口</span>
+        <span class="s">exp</span><span class="err">:</span>
+            <span class="s">server.port=8123</span>
+</code></pre></div></div>
+
+<h2 id="spring-cloud">Spring Cloud</h2>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">spring</span><span class="pi">:</span>
+    <span class="na">cloud</span><span class="pi">:</span>
+        <span class="na">config</span><span class="pi">:</span>
+            <span class="na">profile</span><span class="pi">:</span>  <span class="c1"># 配置文件profile</span>
+                <span class="c1"># exp:</span>
+                <span class="c1">#     spring.cloud.config.profile=dev</span>
+                <span class="c1">#     spring.cloud.config.profile=default (默认)</span>
+                <span class="c1">#     spring.cloud.config.profile=staging</span>
+            <span class="na">label</span><span class="pi">:</span>  <span class="c1"># 配置文件label</span>
+                <span class="c1"># exp:</span>
+                <span class="c1">#     spring.cloud.config.label=master (默认)</span>
+                <span class="c1">#     spring.cloud.config.label=develop</span>
+            <span class="na">uri</span><span class="pi">:</span>  <span class="c1"># 配置文件server地址</span>
+                <span class="c1"># exp:</span>
+                <span class="c1">#     spring.cloud.config.uri=http://localhost:7001/</span>
+
+<span class="na">management</span><span class="pi">:</span>
+    <span class="na">security</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span><span class="s"> | </span><span class="no">false</span><span class="s"> (default)</span>  <span class="c1"># 开启 spring-boot-starter-actuator 详细信息以及操作端点 /pause 等</span>
+
+<span class="na">endpoints</span><span class="pi">:</span>
+  <span class="na">shutdown</span><span class="pi">:</span>
+    <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span><span class="s"> | </span><span class="no">false</span><span class="s"> (default)</span>  <span class="c1"># 开启 /shutdown 端点</span>
+    <span class="na">sensitive</span><span class="pi">:</span> <span class="no">true</span><span class="s"> (default) | </span><span class="no">false</span>  <span class="c1"># 开启 /shutdown 端点的验证保护, 与下面的security配合使用</span>
+
+
+<span class="na">security</span><span class="pi">:</span>
+    <span class="na">user</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span>  <span class="c1"># 验证用户名</span>
+            <span class="c1"># exp:</span>
+            <span class="c1">#     security.user.name=admin</span>
+        <span class="na">password</span><span class="pi">:</span>  <span class="c1"># 验证密码</span>
+            <span class="c1"># exp:</span>
+            <span class="c1">#     security.user.password=secret</span>
+        <span class="na">role</span><span class="pi">:</span>  <span class="c1"># 角色</span>
+            <span class="c1"># exp:</span>
+            <span class="c1">#     management.security.role=SUPERUSER</span>
+</code></pre></div></div>
+
+<h2 id="统一设置版本">统一设置版本:</h2>
+
+<h3 id="method-1-set-parent">method 1, set <code class="language-plaintext highlighter-rouge">&lt;parent&gt;</code></h3>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;parent&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.springframework.boot<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>spring-boot-starter-parent<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>1.4.2.RELEASE<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/parent&gt;</span>
+
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+      <span class="nt">&lt;groupId&gt;</span>org.springframework.boot<span class="nt">&lt;/groupId&gt;</span>
+      <span class="nt">&lt;artifactId&gt;</span>spring-boot-starter-data-elasticsearch<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    ...
+<span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div></div>
+
+<h3 id="method-2-set-property">method 2 set <code class="language-plaintext highlighter-rouge">&lt;property&gt;</code></h3>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;properties&gt;</span>
+    <span class="nt">&lt;springboot.version&gt;</span>1.5.3.RELEASE<span class="nt">&lt;/springboot.version&gt;</span>
+<span class="nt">&lt;/properties&gt;</span>
+
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.springframework.boot<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>spring-boot-starter-data-elasticsearch<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${springboot.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    ...
+<span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div></div>
+
+<p><strong>要注意区分springframework, springframework.boot, 以及原生的java package</strong>
+<strong>特别是springframework和springframework.boot，分别有两套不同的版本</strong>
+<strong>就比如spring-data-elasticsearch, spring-boot-starter-data-elasticsearch</strong></p>
+
+<h2 id="设置scope-转载">设置scope <a href="http://peak.iteye.com/blog/299225">转载</a></h2>
+
+<p>maven依赖关系中Scope的作用</p>
+
+<p>Dependency Scope</p>
+
+<p>在POM 4中，<dependency>中还引入了<scope>，它主要管理依赖的部署。目前<scope>可以使用5个值：</scope></scope></dependency></p>
+
+<ul>
+  <li>compile，缺省值，适用于所有阶段，会随着项目一起发布。</li>
+  <li>provided，类似compile，期望JDK、容器或使用者会提供这个依赖。如servlet.jar。</li>
+  <li>runtime，只在运行时使用，如JDBC驱动，适用运行和测试阶段。</li>
+  <li>test，只在测试时使用，用于编译和运行测试代码。不会随项目发布。</li>
+  <li>system，类似provided，需要显式提供包含依赖的jar，Maven不会在Repository中查找它。</li>
+</ul>
+
+<h2 id="elastricsearch">elastricsearch</h2>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>net.java.dev.jna<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>jna<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>4.1.0<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<h2 id="spring-boot-using-mongo">spring boot using mongo</h2>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.springframework.boot<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>spring-boot-starter-data-mongodb<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">spring-boot-starter-data-mongodb</code> 与 <code class="language-plaintext highlighter-rouge">spring-data-jpa</code> 不要同时配置，否则无法使用自动配置．</p>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>

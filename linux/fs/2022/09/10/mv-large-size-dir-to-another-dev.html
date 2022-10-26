@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            Linux上把大文件夹移动到其他存储设备上来释放空间
+        
+    " 
+/>
+
+<meta property="og:url" content="http://localhost:4000//linux/fs/2022/09/10/mv-large-size-dir-to-another-dev.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        Linux上把大文件夹移动到其他存储设备上来释放空间
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="http://localhost:4000/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">Linux上把大文件夹移动到其他存储设备上来释放空间</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+                <p class="post__meta__category__title" style="background: "></p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            September 10, 2022
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <h2 id="问题背景">问题背景</h2>
+
+<p>一个常见的问题是发现某个文件夹比如<code class="language-plaintext highlighter-rouge">/var</code>, <code class="language-plaintext highlighter-rouge">/opt</code> 过大，使得所在系统磁盘（比如一块儿容量很稀缺的高速SSD）的空间非常紧张，这时我们想把大文件夹移动到其他存储设备上来释放空间。</p>
+
+<h2 id="约定">约定</h2>
+
+<p>不妨假设根系统<code class="language-plaintext highlighter-rouge">/</code>挂载在磁盘分区<code class="language-plaintext highlighter-rouge">sda4</code>，要移动的大目录LargeDir是根文件系统下的一个子目录，目标存储设备为<code class="language-plaintext highlighter-rouge">sdb</code>。</p>
+
+<h2 id="思路1">思路1<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></h2>
+
+<p>一个体面的思路是在<code class="language-plaintext highlighter-rouge">sdb</code>上创建一个分区，假设为<code class="language-plaintext highlighter-rouge">sdb1</code>，创建LargeDir的同级根目录LargeDir2，把<code class="language-plaintext highlighter-rouge">sdb1</code>挂载到LargeDir2，把LargeDir的内容复制到LargeDir2</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>LargeDir2
+mount /dev/sdb1 LargeDir2
+rsync <span class="nt">-a</span> LargeDir/ LargeDir2
+</code></pre></div></div>
+
+<p>在文件系统表单<code class="language-plaintext highlighter-rouge">/etc/fstab</code>里添加对应项,比如
+<code class="language-plaintext highlighter-rouge">/dev/sdb1    LargeDir    ext4    defaults      2 2</code></p>
+
+<p>重启后生效，但是这个思路是后一个文件系统隐藏了前一个文件系统的子目录，<strong>如何删除原文件系统的子目录内容呢？</strong></p>
+
+<p>由于<strong>Linux允许同一文件系统有多个挂载点</strong>，所以只需要把<code class="language-plaintext highlighter-rouge">sda4</code>再次挂载到一个新的目录，然后就可以找到原LargeDir，然后删除。</p>
+
+<h2 id="思路2">思路2<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></h2>
+
+<p>重启进入单用户模式，安全移动内容，然后删除，然后重新命名回来</p>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>https://askubuntu.com/questions/39536/how-can-i-store-var-on-a-separate-partition <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>https://www.suse.com/support/kb/doc/?id=000018399 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>
