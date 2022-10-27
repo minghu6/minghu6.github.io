@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            Common Lisp 语法
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/2020/07/22/common-lisp-grammer.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        Common Lisp 语法
     
 </title>
 </head>
@@ -61,19 +61,41 @@
     </nav>
 </header>
 
-    <main class="page">
-    <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+    <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+    <div class="post__title">
+        <h1 class="post__title__text">Common Lisp 语法</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">ProgLang</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            July 22, 2020
+        </div>
+        
+    </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+    
 
+    <div class="post__content">
+        <ol>
+  <li>
+    <p>列表和点对的区别：</p>
 
-</main>
+    <p>点对是列表构成的基本单元，列表通过点对嵌套构成:</p>
+
+    <p><code class="language-plaintext highlighter-rouge">'(1 . (2 . nil))</code></p>
+
+    <p>反过来，点对<code class="language-plaintext highlighter-rouge">(1 . 2)</code>看起来像长度为2的列表，但如果它的cdr不是列表，那么它就不是列表</p>
+  </li>
+</ol>
+
+    </div>
+</article>
 
     
     <footer class="footer">
@@ -90,6 +112,10 @@
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 <script type="text/x-mathjax-config">

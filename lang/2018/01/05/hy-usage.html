@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            Hy Usage
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/2018/01/05/hy-usage.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        Hy Usage
     
 </title>
 </head>
@@ -61,19 +61,44 @@
     </nav>
 </header>
 
-    <main class="page">
-    <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+    <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+    <div class="post__title">
+        <h1 class="post__title__text">Hy Usage</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">ProgLang</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            January 05, 2018
+        </div>
+        
+    </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+    
 
+    <div class="post__content">
+        <p>package hy module:</p>
 
-</main>
+<ol>
+  <li>build a normal python package</li>
+  <li>write .hy file, and add <code class="language-plaintext highlighter-rouge">import hy</code> in toplevel or just <code class="language-plaintext highlighter-rouge">__init__.py</code> (to enable compile pyc using hy)</li>
+  <li>write package data in setup on <code class="language-plaintext highlighter-rouge">setup.py</code>
+    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">setup</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">package_data</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">'minghu6.text'</span><span class="p">:</span> <span class="p">[</span><span class="s">'*.hy'</span><span class="p">,</span> <span class="s">'__pycache__/*'</span><span class="p">],</span>
+        <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+    </div>
+</article>
 
     
     <footer class="footer">
@@ -90,6 +115,10 @@
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 <script type="text/x-mathjax-config">

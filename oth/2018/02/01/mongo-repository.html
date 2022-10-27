@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            Mongo Repository 相关
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//oth/2018/02/01/mongo-repository.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        Mongo Repository 相关
     
 </title>
 </head>
@@ -61,19 +61,52 @@
     </nav>
 </header>
 
-    <main class="page">
-    <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+    <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+    <div class="post__title">
+        <h1 class="post__title__text">Mongo Repository 相关</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">Other</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            February 01, 2018
+        </div>
+        
+    </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+    
 
+    <div class="post__content">
+        <h1 id="mongo-repository-spring">mongo repository spring</h1>
 
-</main>
+<p>findAll 批连查取只能
+自定义在接口无效</p>
+
+<p>key 字段缺失则无法过滤</p>
+
+<h2 id="model-的某个字段是某个model--vo--id的collection">Model 的某个字段是某个(Model | Vo | id)的collection</h2>
+
+<ul>
+  <li>Model 完全的附属关系，没办法独立统计信息</li>
+  <li>Vo 完全不会更改信息,除了添加　(比如权限)</li>
+  <li>id 最常见，可以更改信息的</li>
+</ul>
+
+<h2 id="批量添加一个字段">批量添加一个字段</h2>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 更新全部, 如果没有，就添加这个字段</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">stay</span><span class="p">.</span><span class="nx">updateMany</span><span class="p">({},</span> <span class="p">{</span><span class="na">$set</span><span class="p">:</span> <span class="p">{</span><span class="dl">"</span><span class="s2">roomType</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">At one wellness hotel</span><span class="dl">"</span><span class="p">}}</span>
+
+<span class="c1">// #unset 是删除字段</span>
+</code></pre></div></div>
+
+    </div>
+</article>
 
     
     <footer class="footer">
@@ -90,6 +123,10 @@
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 <script type="text/x-mathjax-config">

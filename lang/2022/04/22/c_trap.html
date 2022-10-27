@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            C/C++ 陷阱
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/2022/04/22/c_trap.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        C/C++ 陷阱
     
 </title>
 </head>
@@ -61,19 +61,40 @@
     </nav>
 </header>
 
-    <main class="page">
-    <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+    <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+    <div class="post__title">
+        <h1 class="post__title__text">C/C++ 陷阱</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">ProgLang</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            April 22, 2022
+        </div>
+        
+    </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+    
 
+    <div class="post__content">
+        <ol>
+  <li>
+    <p>变量初始化</p>
 
-</main>
+    <p>在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据</p>
+  </li>
+  <li>
+    <p>结构体初始化注意要在堆上手动分配内存，否则是栈上的会被回收， 这与Rust使用习惯又不一样</p>
+  </li>
+</ol>
+
+    </div>
+</article>
 
     
     <footer class="footer">
@@ -90,6 +111,10 @@
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 <script type="text/x-mathjax-config">

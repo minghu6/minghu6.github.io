@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2022-10-27T11:21:48+08:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">图理论基础</title><link href="http://localhost:4000/algorithm/graph/2022/10/09/graph-theory-basic.html" rel="alternate" type="text/html" title="图理论基础" /><published>2022-10-09T00:00:00+08:00</published><updated>2022-10-09T00:00:00+08:00</updated><id>http://localhost:4000/algorithm/graph/2022/10/09/graph-theory-basic</id><content type="html" xml:base="http://localhost:4000/algorithm/graph/2022/10/09/graph-theory-basic.html"><![CDATA[<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-10-27T12:30:26+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">图理论基础</title><link href="/algs/2022/10/09/graph-theory-basic.html" rel="alternate" type="text/html" title="图理论基础" /><published>2022-10-09T00:00:00+08:00</published><updated>2022-10-09T00:00:00+08:00</updated><id>/algs/2022/10/09/graph-theory-basic</id><content type="html" xml:base="/algs/2022/10/09/graph-theory-basic.html"><![CDATA[<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
 
 <ol>
   <li>
@@ -19,7 +19,7 @@ tail(起点) -&gt; head（终点）</p>
     </table>
   </li>
   <li>无根树，连通无向图</li>
-</ol>]]></content><author><name></name></author><category term="[&quot;Algorithm&quot;, &quot;Graph&quot;]" /><summary type="html"><![CDATA[假设图 G = {V, E}， V是顶点集，E是边集]]></summary></entry><entry><title type="html">Linux上把大文件夹移动到其他存储设备上来释放空间</title><link href="http://localhost:4000/linux/fs/2022/09/10/mv-large-size-dir-to-another-dev.html" rel="alternate" type="text/html" title="Linux上把大文件夹移动到其他存储设备上来释放空间" /><published>2022-09-10T00:00:00+08:00</published><updated>2022-09-10T00:00:00+08:00</updated><id>http://localhost:4000/linux/fs/2022/09/10/mv-large-size-dir-to-another-dev</id><content type="html" xml:base="http://localhost:4000/linux/fs/2022/09/10/mv-large-size-dir-to-another-dev.html"><![CDATA[<h2 id="问题背景">问题背景</h2>
+</ol>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[假设图 G = {V, E}， V是顶点集，E是边集]]></summary></entry><entry><title type="html">Linux上把大文件夹移动到其他存储设备上来释放空间</title><link href="/os/2022/09/10/mv-large-size-dir-to-another-dev.html" rel="alternate" type="text/html" title="Linux上把大文件夹移动到其他存储设备上来释放空间" /><published>2022-09-10T00:00:00+08:00</published><updated>2022-09-10T00:00:00+08:00</updated><id>/os/2022/09/10/mv-large-size-dir-to-another-dev</id><content type="html" xml:base="/os/2022/09/10/mv-large-size-dir-to-another-dev.html"><![CDATA[<h2 id="问题背景">问题背景</h2>
 
 <p>一个常见的问题是发现某个文件夹比如<code class="language-plaintext highlighter-rouge">/var</code>, <code class="language-plaintext highlighter-rouge">/opt</code> 过大，使得所在系统磁盘（比如一块儿容量很稀缺的高速SSD）的空间非常紧张，这时我们想把大文件夹移动到其他存储设备上来释放空间。</p>
 
@@ -56,7 +56,7 @@ rsync <span class="nt">-a</span> LargeDir/ LargeDir2
       <p>https://www.suse.com/support/kb/doc/?id=000018399 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;Linux&quot;, &quot;FS&quot;]" /><summary type="html"><![CDATA[问题背景]]></summary></entry><entry><title type="html">kernel crash dump</title><link href="http://localhost:4000/kernel/2022/09/01/kernel-crash-dump.html" rel="alternate" type="text/html" title="kernel crash dump" /><published>2022-09-01T00:00:00+08:00</published><updated>2022-09-01T00:00:00+08:00</updated><id>http://localhost:4000/kernel/2022/09/01/kernel-crash-dump</id><content type="html" xml:base="http://localhost:4000/kernel/2022/09/01/kernel-crash-dump.html"><![CDATA[<h2 id="ubuntu">Ubuntu</h2>
+</div>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[问题背景]]></summary></entry><entry><title type="html">kernel crash dump</title><link href="/os/2022/09/01/kernel-crash-dump.html" rel="alternate" type="text/html" title="kernel crash dump" /><published>2022-09-01T00:00:00+08:00</published><updated>2022-09-01T00:00:00+08:00</updated><id>/os/2022/09/01/kernel-crash-dump</id><content type="html" xml:base="/os/2022/09/01/kernel-crash-dump.html"><![CDATA[<h2 id="ubuntu">Ubuntu</h2>
 
 <p><a href="https://ubuntu.com/server/docs/kernel-crash-dump">install linux-crashdump</a></p>
 
@@ -67,7 +67,7 @@ rsync <span class="nt">-a</span> LargeDir/ LargeDir2
 <p><code class="language-plaintext highlighter-rouge">crash /var/crash/&lt;yyyymmmmhhmm&gt;/dump.&lt;yyyymmmmhhmm&gt;</code></p>
 
 <p>bt: backtrace
-log: kernel log</p>]]></content><author><name></name></author><category term="[&quot;Kernel&quot;]" /><summary type="html"><![CDATA[Ubuntu]]></summary></entry><entry><title type="html">Compile Linux Kernel</title><link href="http://localhost:4000/linux/kernel/2022/08/26/compile-linux-kernel.html" rel="alternate" type="text/html" title="Compile Linux Kernel" /><published>2022-08-26T00:00:00+08:00</published><updated>2022-08-26T00:00:00+08:00</updated><id>http://localhost:4000/linux/kernel/2022/08/26/compile-linux-kernel</id><content type="html" xml:base="http://localhost:4000/linux/kernel/2022/08/26/compile-linux-kernel.html"><![CDATA[<p>编译实践1：
+log: kernel log</p>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[Ubuntu]]></summary></entry><entry><title type="html">Compile Linux Kernel</title><link href="/os/2022/08/26/compile-linux-kernel.html" rel="alternate" type="text/html" title="Compile Linux Kernel" /><published>2022-08-26T00:00:00+08:00</published><updated>2022-08-26T00:00:00+08:00</updated><id>/os/2022/08/26/compile-linux-kernel</id><content type="html" xml:base="/os/2022/08/26/compile-linux-kernel.html"><![CDATA[<p>编译实践1：
 学习Linux内核模块开发，需要增加一个<code class="language-plaintext highlighter-rouge">FORCE_UNLOADING</code> feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。</p>
 
 <p><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"><strong>Linux上游源代码（git地址在其页面下方）</strong></a></p>
@@ -145,11 +145,7 @@ log: kernel log</p>]]></content><author><name></name></author><category term="[&
 
 <p>查看高级启动项的序号(Ubuntu为例)：
 <code class="language-plaintext highlighter-rouge">sudo grub-mkconfig | grep -iE "menuentry 'Ubuntu, with Linux" | awk '{print i++ " : "$1, $2, $3, $4, $5, $6, $7}'</code>
-不要忘记最后运行<code class="language-plaintext highlighter-rouge">sudo update-grup</code>来更新配置。</p>]]></content><author><name></name></author><category term="[&quot;Linux&quot;, &quot;Kernel&quot;]" /><summary type="html"><![CDATA[编译实践1： 学习Linux内核模块开发，需要增加一个FORCE_UNLOADING feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。]]></summary></entry><entry><title type="html">Packetization Layer Path MTU Discovery for Datagram Transports</title><link href="http://localhost:4000/ietf%20rfcs/2022/08/16/ietf_rfc_8899.html" rel="alternate" type="text/html" title="Packetization Layer Path MTU Discovery for Datagram Transports" /><published>2022-08-16T00:00:00+08:00</published><updated>2022-08-16T00:00:00+08:00</updated><id>http://localhost:4000/ietf%20rfcs/2022/08/16/ietf_rfc_8899</id><content type="html" xml:base="http://localhost:4000/ietf%20rfcs/2022/08/16/ietf_rfc_8899.html"><![CDATA[<h2 id="abstract">Abstract</h2>
-
-<p>补充了在UDP上实现PMTUD的指南</p>
-
-<h2 id="2-terminology">2. Terminology</h2>]]></content><author><name></name></author><category term="[&quot;IETF RFCs&quot;]" /><summary type="html"><![CDATA[Abstract]]></summary></entry><entry><title type="html">TCP Congestion Control</title><link href="http://localhost:4000/ietf%20rfcs/2022/08/07/ietf_rfc_5681_obs2581.html" rel="alternate" type="text/html" title="TCP Congestion Control" /><published>2022-08-07T00:00:00+08:00</published><updated>2022-08-07T00:00:00+08:00</updated><id>http://localhost:4000/ietf%20rfcs/2022/08/07/ietf_rfc_5681_obs2581</id><content type="html" xml:base="http://localhost:4000/ietf%20rfcs/2022/08/07/ietf_rfc_5681_obs2581.html"><![CDATA[<p>This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04</p>
+不要忘记最后运行<code class="language-plaintext highlighter-rouge">sudo update-grup</code>来更新配置。</p>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[编译实践1： 学习Linux内核模块开发，需要增加一个FORCE_UNLOADING feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。]]></summary></entry><entry><title type="html">TCP Congestion Control</title><link href="/net/2022/08/07/ietf_rfc_5681_obs2581.html" rel="alternate" type="text/html" title="TCP Congestion Control" /><published>2022-08-07T00:00:00+08:00</published><updated>2022-08-07T00:00:00+08:00</updated><id>/net/2022/08/07/ietf_rfc_5681_obs2581</id><content type="html" xml:base="/net/2022/08/07/ietf_rfc_5681_obs2581.html"><![CDATA[<p>This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04</p>
 
 <h2 id="1-introduction">1. Introduction</h2>
 
@@ -354,7 +350,7 @@ ekse:
       <p>这个ack应该是由step-3的重传引发的。除此之外，这个ack应该确认所有在丢失的分片和收到的第三个重复的分片发送的所有中间分片，如果中间没有丢失 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;IETF RFCs&quot;]" /><summary type="html"><![CDATA[This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04]]></summary></entry><entry><title type="html">A Conservative Selective Acknowledgment (SACK)-based Loss Recovery Algorithm for TCP</title><link href="http://localhost:4000/ietf%20rfcs/2022/08/07/ietf_rfc_6675_obs3517.html" rel="alternate" type="text/html" title="A Conservative Selective Acknowledgment (SACK)-based Loss Recovery Algorithm for TCP" /><published>2022-08-07T00:00:00+08:00</published><updated>2022-08-07T00:00:00+08:00</updated><id>http://localhost:4000/ietf%20rfcs/2022/08/07/ietf_rfc_6675_obs3517</id><content type="html" xml:base="http://localhost:4000/ietf%20rfcs/2022/08/07/ietf_rfc_6675_obs3517.html"><![CDATA[<p>This RFC is release 2012.08 obsoletes RFC3517 which is released on 2003.04</p>]]></content><author><name></name></author><category term="[&quot;IETF RFCs&quot;]" /><summary type="html"><![CDATA[This RFC is release 2012.08 obsoletes RFC3517 which is released on 2003.04]]></summary></entry><entry><title type="html">Path MTU Discovery</title><link href="http://localhost:4000/ietf%20rfcs/2022/08/06/ietf_rfc_1191_obs1063.html" rel="alternate" type="text/html" title="Path MTU Discovery" /><published>2022-08-06T00:00:00+08:00</published><updated>2022-08-06T00:00:00+08:00</updated><id>http://localhost:4000/ietf%20rfcs/2022/08/06/ietf_rfc_1191_obs1063</id><content type="html" xml:base="http://localhost:4000/ietf%20rfcs/2022/08/06/ietf_rfc_1191_obs1063.html"><![CDATA[<p>This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07</p>
+</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04]]></summary></entry><entry><title type="html">Path MTU Discovery</title><link href="/net/2022/08/06/ietf_rfc_1191_obs1063.html" rel="alternate" type="text/html" title="Path MTU Discovery" /><published>2022-08-06T00:00:00+08:00</published><updated>2022-08-06T00:00:00+08:00</updated><id>/net/2022/08/06/ietf_rfc_1191_obs1063</id><content type="html" xml:base="/net/2022/08/06/ietf_rfc_1191_obs1063.html"><![CDATA[<p>This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07</p>
 
 <h2 id="1-protocol-overview">1. Protocol Overview</h2>
 
@@ -684,7 +680,7 @@ ekse:
       <p>可以在路由项上设置一个标志位，当有这个标志位时，<code class="language-plaintext highlighter-rouge">DF</code> bit一定会被清除，不管上层请求是什么 <a href="#fnref:22" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;IETF RFCs&quot;]" /><summary type="html"><![CDATA[This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07]]></summary></entry><entry><title type="html">C dialect options</title><link href="http://localhost:4000/c/gcc/2022/08/01/c_dialect_options.html" rel="alternate" type="text/html" title="C dialect options" /><published>2022-08-01T00:00:00+08:00</published><updated>2022-08-01T00:00:00+08:00</updated><id>http://localhost:4000/c/gcc/2022/08/01/c_dialect_options</id><content type="html" xml:base="http://localhost:4000/c/gcc/2022/08/01/c_dialect_options.html"><![CDATA[<p>Ref: <a href="https://www.acrc.bris.ac.uk/acrc/RedHat/rhel-gcc-en-4/c-dialect-options.html">1</a>, <a href="https://stackoverflow.com/questions/17206568/what-is-the-difference-between-c-c99-ansi-c-and-gnu-c">2</a></p>
+</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07]]></summary></entry><entry><title type="html">C dialect options</title><link href="/lang/2022/08/01/c_dialect_options.html" rel="alternate" type="text/html" title="C dialect options" /><published>2022-08-01T00:00:00+08:00</published><updated>2022-08-01T00:00:00+08:00</updated><id>/lang/2022/08/01/c_dialect_options</id><content type="html" xml:base="/lang/2022/08/01/c_dialect_options.html"><![CDATA[<p>Ref: <a href="https://www.acrc.bris.ac.uk/acrc/RedHat/rhel-gcc-en-4/c-dialect-options.html">1</a>, <a href="https://stackoverflow.com/questions/17206568/what-is-the-difference-between-c-c99-ansi-c-and-gnu-c">2</a></p>
 
 <table>
   <thead>
@@ -766,7 +762,7 @@ ekse:
   <li>
     <p>on <code class="language-plaintext highlighter-rouge">no_std</code> env using <code class="language-plaintext highlighter-rouge">__builtin_xxx</code> instead</p>
   </li>
-</ol>]]></content><author><name></name></author><category term="[&quot;C&quot;, &quot;GCC&quot;]" /><summary type="html"><![CDATA[Ref: 1, 2]]></summary></entry><entry><title type="html">C/C++ 陷阱</title><link href="http://localhost:4000/c/c++/2022/04/22/c_trap.html" rel="alternate" type="text/html" title="C/C++ 陷阱" /><published>2022-04-22T00:00:00+08:00</published><updated>2022-04-22T00:00:00+08:00</updated><id>http://localhost:4000/c/c++/2022/04/22/c_trap</id><content type="html" xml:base="http://localhost:4000/c/c++/2022/04/22/c_trap.html"><![CDATA[<ol>
+</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[Ref: 1, 2]]></summary></entry><entry><title type="html">C/C++ 陷阱</title><link href="/lang/2022/04/22/c_trap.html" rel="alternate" type="text/html" title="C/C++ 陷阱" /><published>2022-04-22T00:00:00+08:00</published><updated>2022-04-22T00:00:00+08:00</updated><id>/lang/2022/04/22/c_trap</id><content type="html" xml:base="/lang/2022/04/22/c_trap.html"><![CDATA[<ol>
   <li>
     <p>变量初始化</p>
 
@@ -775,4 +771,415 @@ ekse:
   <li>
     <p>结构体初始化注意要在堆上手动分配内存，否则是栈上的会被回收， 这与Rust使用习惯又不一样</p>
   </li>
-</ol>]]></content><author><name></name></author><category term="[&quot;C&quot;, &quot;C++&quot;]" /><summary type="html"><![CDATA[变量初始化 在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据]]></summary></entry></feed>
+</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[变量初始化 在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据]]></summary></entry><entry><title type="html">Zero Cost Exception Mechanism</title><link href="/lang/2022/03/30/zero_cost_exception.html" rel="alternate" type="text/html" title="Zero Cost Exception Mechanism" /><published>2022-03-30T00:00:00+08:00</published><updated>2022-03-30T00:00:00+08:00</updated><id>/lang/2022/03/30/zero_cost_exception</id><content type="html" xml:base="/lang/2022/03/30/zero_cost_exception.html"><![CDATA[<h2 id="related-header-definition">Related Header Definition</h2>
+
+<p>依赖于 <em>unwinding library</em> 提供的至少如下的接口:</p>
+
+<pre><code class="language-txt">  _Unwind_RaiseException,
+  _Unwind_Resume,
+  _Unwind_DeleteException,
+  _Unwind_GetGR,
+  _Unwind_SetGR,
+  _Unwind_GetIP,
+  _Unwind_SetIP,
+  _Unwind_GetRegionStart,
+  _Unwind_GetLanguageSpecificData,
+  _Unwind_ForcedUnwind
+</code></pre>
+
+<h3 id="personality-routine">Personality Routine</h3>
+
+<p>语言特定的函数(以下也称为routine, 名字用<code class="language-plaintext highlighter-rouge">__personality_routine</code>指代), 用于和<strong>unwinding library</strong> 配合做语言特定的异常处理</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_Unwind_Reason_Code</span> <span class="p">(</span><span class="o">*</span><span class="n">__personality_routine</span><span class="p">)</span>
+  <span class="p">(</span><span class="kt">int</span> <span class="n">version</span><span class="p">,</span>
+    <span class="n">_Unwind_Action</span> <span class="n">actions</span><span class="p">,</span>
+    <span class="n">uint64</span> <span class="n">exceptionClass</span><span class="p">,</span>
+    <span class="k">struct</span> <span class="nc">_Unwind_Exception</span> <span class="o">*</span><span class="n">exceptionObject</span><span class="p">,</span>
+    <span class="k">struct</span> <span class="nc">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">);</span>
+</code></pre></div></div>
+
+<ul>
+  <li>返回值类型:</li>
+</ul>
+
+<p><strong>_Unwind_Reason_Code</strong>:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">enum</span> <span class="p">{</span>
+    <span class="n">_URC_NO_REASON</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">_URC_FOREIGN_EXCEPTION_CAUGHT</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">_URC_FATAL_PHASE2_ERROR</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">_URC_FATAL_PHASE1_ERROR</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">_URC_NORMAL_STOP</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">_URC_END_OF_STACK</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">_URC_HANDLER_FOUND</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="n">_URC_INSTALL_CONTEXT</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="n">_URC_CONTINUE_UNWIND</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="p">}</span> <span class="n">_Unwind_Reason_Code</span><span class="p">;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p>参数1 <code class="language-plaintext highlighter-rouge">version</code>: 个性例程假设的 unwinding runtime 的版本号, 比如 1</p>
+  </li>
+  <li>
+    <p>参数2 <code class="language-plaintext highlighter-rouge">actions</code>: Personality Routine Actions:</p>
+  </li>
+</ul>
+
+<p><strong>_Unwind_Action</strong>:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">typedef</span> <span class="kt">int</span> <span class="n">_Unwind_Action</span><span class="p">;</span>
+  <span class="k">static</span> <span class="k">const</span> <span class="n">_Unwind_Action</span> <span class="n">_UA_SEARCH_PHASE</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// 0b0001</span>
+  <span class="k">static</span> <span class="k">const</span> <span class="n">_Unwind_Action</span> <span class="n">_UA_CLEANUP_PHASE</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="c1">// 0b0010</span>
+  <span class="k">static</span> <span class="k">const</span> <span class="n">_Unwind_Action</span> <span class="n">_UA_HANDLER_FRAME</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span> <span class="c1">// 0b0100</span>
+  <span class="k">static</span> <span class="k">const</span> <span class="n">_Unwind_Action</span> <span class="n">_UA_FORCE_UNWIND</span> <span class="o">=</span> <span class="mi">8</span><span class="p">;</span>  <span class="c1">// 0b1000</span>
+</code></pre></div></div>
+
+<p>action flag可以在不违反语义情况下(比如搜索和清除阶段不能被同时设置)叠加</p>
+
+<ul>
+  <li>
+    <p>参数3 <code class="language-plaintext highlighter-rouge">exception class</code>:</p>
+
+    <p>By convention, the high 4 bytes indicate the vendor (for instance <code class="language-plaintext highlighter-rouge">HP\0\0</code>), and the low 4 bytes indicate the language. (for instance <code class="language-plaintext highlighter-rouge">C++\0</code>)</p>
+  </li>
+  <li>
+    <p>参数4 <code class="language-plaintext highlighter-rouge">exceptionObject</code>: <code class="language-plaintext highlighter-rouge">_Unwind_Exception</code>的指针类型</p>
+  </li>
+</ul>
+
+<p><strong>_Unwind_Exception</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="p">{</span>
+    <span class="n">uint64</span>    <span class="n">exception_class</span><span class="p">;</span>  <span class="c1">// 同上exception_class</span>
+    <span class="n">_Unwind_Exception_Cleanup_Fn</span> <span class="n">exception_cleanup</span><span class="p">;</span>
+    <span class="n">uint64</span>    <span class="n">private_1</span><span class="p">;</span>
+    <span class="n">uint64</span>    <span class="n">private_2</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p><strong>_Unwind_Exception_Cleanup_Fn</strong>:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="nf">void</span> <span class="p">(</span><span class="o">*</span><span class="n">_Unwind_Exception_Cleanup_Fn</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">_Unwind_Reason_Code</span> <span class="n">reason</span><span class="p">,</span>
+     <span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="o">*</span><span class="n">exc</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">exception_cleanup</code> routine一定会在异常对象被不同运行时销毁时被调用, 比如Java异常被C++捕获.</p>
+
+<p>这种情况下会返回reason code来表明异常对象被删除的原因:</p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">_URC_FOREIGN_EXCEPTION_CAUGHT</code>: 这表明不同的运行时捕获了异常, 嵌套的外部异常或者重抛外部异常会导致UB (undefined behaviour)</li>
+  <li><code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE1_ERROR</code>: 个性例程在 <em>Phase-1</em> 遇到了未被特定错误码定义的错误</li>
+  <li><code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE2_ERROR</code>: 个性例程在 <em>Phase-2</em> 遇到了错误,比如栈损坏</li>
+</ol>
+
+<ul>
+  <li>参数5 <code class="language-plaintext highlighter-rouge">context</code>: <code class="language-plaintext highlighter-rouge">_Unwind_Context</code>的指针</li>
+</ul>
+
+<p><strong>_Unwind_Context</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">_Unwind_Context</span>
+</code></pre></div></div>
+
+<p>由 <em>unwinder library</em> 定义的不透明结构.  由其创建和销毁, 在unwinding的时候传给个性例程.</p>
+
+<h2 id="the-stack-unwind-process">The Stack Unwind Process</h2>
+
+<p>(begins with the raising of an exception)</p>
+
+<p><strong>两阶段处理</strong>:</p>
+
+<p><em>Phase-1</em>:  search,  action is set <code class="language-plaintext highlighter-rouge">_UA_SEARCH_PHASE</code>.</p>
+
+<p>从当前PC和(其他)寄存器状态开始, 逐帧展开(函数不断向上退出), 直到个性例程报告成功(在某一帧找到handler) 然后进入<code class="language-plaintext highlighter-rouge">Phase-2</code></p>
+
+<p>或者失败(所有帧中找不到handler) 调用<code class="language-plaintext highlighter-rouge">terminate()</code></p>
+
+<p><em>Phase-2</em>:  cleanup, action is set <code class="language-plaintext highlighter-rouge">_UA_CLEANUP_PHASE</code>.</p>
+
+<p>框架重启,再次重复调用个性例程,找到被标志的帧, 然后把控制权转给landing pad代码 (<code class="language-plaintext highlighter-rouge">goto label xxx</code>)</p>
+
+<p>两阶段处理的提供了一些好处, 比如可以在<em>Phase-1</em> dismiss 异常, 这允许通过修复异常的情况, 从而实现可恢复性的异常的处理.</p>
+
+<p>对于一个异常只要多次抛出(by re-throwing), 就可以多次执行两阶段.</p>
+
+<p><strong>_Unwind_Action 解释</strong></p>
+
+<ol>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">_UA_SEARCH_PHASE</code>:
+成功返回 <code class="language-plaintext highlighter-rouge">_URC_HANDLER_FOUND</code>, 失败返回 <code class="language-plaintext highlighter-rouge">_URC_CONTINUE_UNWIND</code> (上文所示, 个性例程返回值是<code class="language-plaintext highlighter-rouge">_Unwind_Reason_Code</code>).</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">_UA_CLEANUP_PHASE</code>:
+个性例程可以通过调用嵌套过程来自己执行清理,然后返回<code class="language-plaintext highlighter-rouge">_URC_CONTINUE_UNWIND</code>;
+或者准备寄存器环境把控制转移给“landing pad“, 然后返回<code class="language-plaintext highlighter-rouge">_URC_INSTALL_CONTEXT</code>.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">_UA_HANDLER_FRAME</code>
+在 <em>Phase 2</em>, 表明当前帧就是要找的有被标记的handler的帧. The personality routine is not allowed to change its mind between phase 1 and phase 2, i.e. it must handle the exception in this frame in phase 2.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">_UA_FORCE_UNWIND</code>
+在 <em>Phase 2</em>, 表明, 表示异常不允许被捕获. This flag is set while unwinding the stack for <code class="language-plaintext highlighter-rouge">longjmp</code> or during thread cancellation. User-defined code in a catch clause may still be executed, but the catch clause must resume unwinding with a call to _Unwind_Resume when finished.</p>
+  </li>
+</ol>
+
+<p>转移控制权给landing pad,返回<code class="language-plaintext highlighter-rouge">_URC_INSTALL_CONTEXT</code>, 在这之前 <strong>unwind library</strong> 使用上下文管理例程和上下文记录<code class="language-plaintext highlighter-rouge">_Unwind_Context</code>来恢复寄存器环境.</p>
+
+<h3 id="上下文管理例程">上下文管理例程</h3>
+
+<p><strong>_Unwind_GetGR</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">uint64</span> <span class="nf">_Unwind_GetGR</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>函数返回给定寄存器的64bit的值 (64位的系统). 寄存器按照它的索引编号进行标识.</p>
+
+<p>对于Itanium实现:</p>
+
+<p>0-31 是固定寄存器, 32-127 是栈寄存器. During the two phases of unwinding, only GR1 has a guaranteed value, which is the Global Pointer (GP) of the frame referenced by the unwind context. If the register has its NAT bit set, the behaviour is unspecified.</p>
+
+<p><strong>_Unwind_SetGR</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">_Unwind_SetGR</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">,</span> <span class="n">uint64</span> <span class="n">new_value</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>This function sets the 64-bit value of the given register, identified by its index as for <code class="language-plaintext highlighter-rouge">_Unwind_GetGR</code>. The NAT bit of the given register is reset.</p>
+
+<p>The behaviour is guaranteed only if the function is called during phase 2 of unwinding, and applied to an unwind context representing a handler frame, for which the personality routine will return <code class="language-plaintext highlighter-rouge">_URC_INSTALL_CONTEXT</code>. In that case, only registers GR15, GR16, GR17, GR18 should be used. These scratch registers are reserved for passing arguments between the personality routine and the landing pads.</p>
+
+<p><strong>_Unwind_GetIP</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">uint64</span> <span class="nf">_Unwind_GetIP</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>This function returns the 64-bit value of the instruction pointer (IP) 也就是PC.</p>
+
+<p>During unwinding, the value is guaranteed to be the address of the bundle immediately following the call site in the function identified by the unwind context. This value may be outside of the procedure fragment for a function call that is known to not return (such as <code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>).</p>
+
+<p><strong>_Unwind_SetIP</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">_Unwind_SetIP</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">,</span> <span class="n">uint64</span> <span class="n">new_value</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>This function sets the value of the instruction pointer (IP) for the routine identified by the unwind context.</p>
+
+<p>The behaviour is guaranteed only when this function is called for an unwind context representing a handler frame, for which the personality routine will return <code class="language-plaintext highlighter-rouge">_URC_INSTALL_CONTEXT</code>. In this case, control will be transferred to the given address, which should be the address of a landing pad.</p>
+
+<p><strong>_Unwind_GetLanguageSpecificData</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">uint64</span> <span class="nf">_Unwind_GetLanguageSpecificData</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>This routine returns the address of the language-specific data area for the current stack frame.</p>
+
+<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>This routine is not stricly required: it could be accessed through <code class="language-plaintext highlighter-rouge">_Unwind_GetIP</code> using the documented format of the <code class="language-plaintext highlighter-rouge">UnwindInfoBlock</code>, but since this work has been done for finding the personality routine in the first place, it makes sense to cache the result in the context. We could also pass it as an argument to the personality routine.</em></p>
+
+<p><strong>_Unwind_GetRegionStart</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">uint64</span> <span class="nf">_Unwind_GetRegionStart</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>This routine returns the address of the beginning of the procedure or code fragment described by the current unwind descriptor block.</p>
+
+<p>This information is required to access any data stored relative to the beginning of the procedure fragment. For instance, a call site table might be stored relative to the beginning of the procedure fragment that contains the calls. During unwinding, the function returns the start of the procedure fragment containing the call site in the current stack frame.</p>
+
+<h3 id="抛出异常">抛出异常</h3>
+
+<p><strong>_Unwind_RaiseException</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_Unwind_Reason_Code</span> <span class="nf">_Unwind_RaiseException</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="o">*</span><span class="n">exception_object</span> <span class="p">);</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code> 实际并不返回, 除非发生了错误的情况 (such as no handler for the exception, bad stack format, etc.). 可能的返回值:</p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">_URC_END_OF_STACK</code>
+The unwinder encountered the end of the stack during phase 1, without finding a handler.</li>
+  <li><code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE1_ERROR</code>: The unwinder encountered an unexpected error during phase 1, e.g. stack corruption.</li>
+</ol>
+
+<p><em><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> The unwind runtime will likely have modified the stack (e.g. popped frames from it) or register context, or landing pad code may have corrupted them. As a result, the the caller of <code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code> can make no assumptions about the state of its stack or registers.</em></p>
+
+<p><strong>_Unwind_ForcedUnwind</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_Unwind_Reason_Code</span> <span class="nf">_Unwind_ForcedUnwind</span> <span class="p">(</span>
+    <span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="o">*</span><span class="n">exception_object</span><span class="p">,</span>
+    <span class="n">_Unwind_Stop_Fn</span> <span class="n">stop</span><span class="p">,</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">stop_parameter</span> <span class="p">);</span>
+</code></pre></div></div>
+
+<ul>
+  <li>参数1 <code class="language-plaintext highlighter-rouge">stop</code>: <code class="language-plaintext highlighter-rouge">_Unwind_Stop_Fn</code> 特定函数指针类型</li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="nf">_Unwind_Reason_Code</span> <span class="p">(</span><span class="o">*</span><span class="n">_Unwind_Stop_Fn</span><span class="p">)</span> <span class="p">(</span>
+    <span class="kt">int</span> <span class="n">version</span><span class="p">,</span>
+    <span class="n">_Unwind_Action</span> <span class="n">actions</span><span class="p">,</span>
+    <span class="n">uint64</span> <span class="n">exceptionClass</span><span class="p">,</span>
+    <span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="o">*</span><span class="n">exceptionObject</span><span class="p">,</span>
+    <span class="k">struct</span> <span class="n">_Unwind_Context</span> <span class="o">*</span><span class="n">context</span><span class="p">,</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">stop_parameter</span> <span class="p">);</span>
+</code></pre></div></div>
+
+<p>Forced unwinding 是 <em>Phase-2</em> 中的过程. 对每一个展开帧, 都调用<code class="language-plaintext highlighter-rouge">stop</code> 函数 and 加上一个额外的<code class="language-plaintext highlighter-rouge">stop parameter</code>.</p>
+
+<p>如果<code class="language-plaintext highlighter-rouge">stop</code> 函数标识了目标帧, 它就会把控制权转给landing pad, 而不是返回(通常是在调用了 <code class="language-plaintext highlighter-rouge">_Unwind_DeleteException</code>之后).</p>
+
+<p>反之, 没有找到目标帧时就会返回:</p>
+
+<ol>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">_URC_NO_REASON</code>:
+这不是目标帧, unwind运行时会再次调用个性例程, 使用<code class="language-plaintext highlighter-rouge">_UA_FORCE_UNWIND</code> and <code class="language-plaintext highlighter-rouge">_UA_CLEANUP_PHASE</code> 的action参数, 展开下一帧,并再次调用<code class="language-plaintext highlighter-rouge">stop</code>例程</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">_URC_END_OF_STACK</code>:
+In order to allow <code class="language-plaintext highlighter-rouge">_Unwind_ForcedUnwind</code>to perform special processing when it reaches the end of the stack, the unwind runtime will call it after the last frame is rejected, with a NULL stack pointer in the context, and the <code class="language-plaintext highlighter-rouge">stop</code> function must catch this condition (i.e. by noticing the NULL stack pointer). <strong>It may return this reason code if it cannot handle end-of-stack.</strong></p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE2_ERROR</code>: 这个<code class="language-plaintext highlighter-rouge">stop</code> 函数应该在其他致命错误的情况下返回, e.g. stack corruption.</p>
+  </li>
+</ol>
+
+<p>如果<code class="language-plaintext highlighter-rouge">stop</code>函数返回了任何<code class="language-plaintext highlighter-rouge">_URC_NO_REASON</code>意外的reason code, 从 <code class="language-plaintext highlighter-rouge">_Unwind_ForcedUnwind</code>的调用者的角度讲, 栈的状态是不确定的. 因此, unwind library 应该返回 <code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE2_ERROR</code> 给它的调用者.</p>
+
+<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>Example: <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code></em></p>
+
+<p><em>期望的<code class="language-plaintext highlighter-rouge">longjmp_unwind()</code>的实现是这样的. <code class="language-plaintext highlighter-rouge">setjmp()</code> 保存了状态后 (包括帧的指针).  <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code>将会调用<code class="language-plaintext highlighter-rouge">_Unwind_ForcedUnwind</code>,用context里记录的帧地址和当前保存的帧地址进行比较. 如果相等就调用 <code class="language-plaintext highlighter-rouge">setjmp()</code> 进行恢复, 否则返回 <code class="language-plaintext highlighter-rouge">_URC_NO_REASON</code> 或者 <code class="language-plaintext highlighter-rouge">_URC_END_OF_STACK</code>.</em></p>
+
+<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>如果未来对 两阶段的foced unwinding 有新的需求, 可以定义另外的例程和新的<code class="language-plaintext highlighter-rouge">actions</code> 参数类型来进行支持</em></p>
+
+<p><strong>_Unwind_Resume</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">_Unwind_Resume</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="o">*</span><span class="n">exception_object</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>恢复异常的传播 e.g. 在部分展开的栈中执行清理代码(clean-up code)后如果不能恢复程序的正常执行, 就会恢复该异常的传播. 具体地就是在执行清理任务的landing pad结尾调用它(<code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>).</p>
+
+<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE 1&lt;/b&gt;:" /><em><code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>不能用来实现重抛(re-throwing). 这是一个两阶段模型, 之前的unwind session会被关闭. 重抛需要使用<code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code>.</em></p>
+
+<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE 2&lt;/b&gt;:" /> This is the only routine in the unwind library which is expected to be called directly by generated code: it will be called at the end of a landing pad in a “landing-pad” model.</p>
+
+<h3 id="异常对象的管理">异常对象的管理</h3>
+
+<p><strong>_Unwind_DeleteException</strong></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">_Unwind_DeleteException</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="o">*</span><span class="n">exception_object</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>删除给定的异常对象. 当程序捕获了外部异常后仍可以恢复正常运行时, 由于并不清楚如何删除这个外部的异常对象, 这时就需要调用这个例程.</p>
+
+<p>它实际上是个方便函数, 会调用异常对象头(header)里面的<code class="language-plaintext highlighter-rouge">exception_cleanup</code>字段所带的<code class="language-plaintext highlighter-rouge">_Unwind_Exception_Cleanup_Fn</code>类型的函数指针</p>
+
+<h2 id="互操作的约定规则">互操作的约定规则</h2>
+
+<p>对于C++, 在forced unwinding的时候, 一个 catch-all 块也会执行. 比如, a longjmp may execute code in a catch(…) during stack unwinding. However, if this happens, unwinding will proceed at the end of the catch-all block, whether or not there is an explicit rethrow.</p>
+
+<h2 id="reference">Reference</h2>
+
+<ol>
+  <li><a href="https://itanium-cxx-abi.github.io/cxx-abi/abi-eh.html">https://itanium-cxx-abi.github.io/cxx-abi/abi-eh.html</a></li>
+</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[Related Header Definition]]></summary></entry><entry><title type="html">C++ ABI 笔记 1</title><link href="/oth/2022/03/27/cxx-abi-node-0.html" rel="alternate" type="text/html" title="C++ ABI 笔记 1" /><published>2022-03-27T00:00:00+08:00</published><updated>2022-03-27T00:00:00+08:00</updated><id>/oth/2022/03/27/cxx-abi-node-0</id><content type="html" xml:base="/oth/2022/03/27/cxx-abi-node-0.html"><![CDATA[<p>Ref: <a href="1">https://itanium-cxx-abi.github.io/cxx-abi/abi.html</a></p>
+
+<h2 id="member-pointer">Member Pointer</h2>
+
+<ol>
+  <li>
+    <p>数据成员指针类型的基本ABI属性是 <code class="language-plaintext highlighter-rouge">ptrdiff_t</code>, 表示数据成员到所属基类的字节偏移量.</p>
+
+    <p>空数据成员指针表示为<code class="language-plaintext highlighter-rouge">-1</code> (但是通过显式派生到基类的转换,生成偏移量为<code class="language-plaintext highlighter-rouge">-1</code>的数据成员指针)</p>
+  </li>
+  <li>
+    <p>一个非空的数据成员指针的基到派生和派生到基的转换, 可以通过分别加或减掉二者静态偏移量(C++标准保证可知这个静态偏移量)实现</p>
+  </li>
+  <li>
+    <p>建议更好的空数据指针实现: (x &lt;&lt; 1) + 1 表示非空数据</p>
+  </li>
+</ol>
+
+<h3 id="member-function-pointers">Member Function Pointers</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="p">{</span>
+  <span class="n">fnptr_t</span> <span class="n">ptr</span><span class="p">;</span>
+  <span class="kt">ptrdiff_t</span> <span class="n">adj</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">fnptr_t</code> : 1 + offset(function’s vtable entry offset in bytes)</p>
+
+    <p>null 表示空的函数指针</p>
+  </li>
+</ol>
+
+<p>调用过程:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>adj_this = `this` + `adj`
+
+if ptr != null { 从vtable中加载对应项 } else { 调用存储的函数指针 }
+</code></pre></div></div>
+
+<h2 id="virtual-table-layout">Virtual Table Layout</h2>
+
+<p>Virtual call (vcall) offsets are used to perform pointer adjustment for virtual functions that are declared in a virtual base class or its subobjects and overridden in a class derived from it.</p>
+
+<p>These entries are allocated in the virtual table for the virtual base class that is most immediately derived from the base class containing the overridden virtual function declaration.</p>
+
+<p>They are used to find the necessary adjustment from the virtual base to the derived class containing the overrider, if any.</p>
+
+<p>When a virtual function is invoked via a virtual base, but has been overridden in a derived class,</p>
+
+<p>the overriding function first adds a fixed offset to adjust the this pointer to the virtual base,</p>
+
+<p>and then adds the value contained at the vcall offset in the virtual base to its this pointer to get the address of the derived object where the function was overridden.</p>
+
+<p>These values may be positive or negative.</p>
+
+<p>Virtual Base (vbase) offsets are used to access the virtual bases of an object.</p>
+
+<p>Such an entry is added to the derived class object address (i.e. the address of its virtual table pointer) to get the address of a virtual base class subobject.</p>
+
+<p>Such an entry is required for each virtual base class. The values can be positive or negative.</p>
+
+<p>However, in classes sharing a virtual table with a primary base class,</p>
+
+<p>the vcall and vbase offsets added by the derived class all come before the vcall and vbase offsets required by the base class,</p>
+
+<p>so that the latter may be laid out as required by the base class without regard to additions from the derived class(es).</p>
+
+<p>The offset to top holds the displacement to the top of the object from the location within the object of the virtual table pointer that addresses this virtual table, as a  ptrdiff_t.</p>
+
+<p>It is always present. The offset provides a way to find the top of the object from any base subobject with a virtual table pointer. This is necessary for dynamic_cast&lt;void*&gt; in particular.</p>
+
+<p><b>NOTE</b>: In a complete object virtual table, and therefore in all of its primary base virtual tables, the value of this offset will be zero. For the secondary virtual tables of other non-virtual bases, and of many virtual bases, it will be negative. Only in some construction virtual tables will some virtual base virtual tables have positive offsets, due to a different ordering of the virtual bases in the full object than in the subobject’s standalone layout.
+The typeinfo pointer points to the typeinfo object used for RTTI. It is always present. All entries in each of the virtual tables for a given class must point to the same typeinfo object. A correct implementation of typeinfo equality is to check pointer equality, except for pointers (directly or indirectly) to incomplete types. The typeinfo pointer is a valid pointer for polymorphic classes, i.e. those with virtual functions, and is zero for non-polymorphic classes.
+The virtual table address point points here, i.e. this is the virtual table address contained in an object’s virtual pointer. This address must have the alignment required for pointers.
+Virtual function pointers are used for virtual function dispatch. Each pointer holds either the address of a virtual function of the class, or the address of a secondary entry point that performs certain adjustments before transferring control to a virtual function.
+The form of a virtual function pointer is specified by the processor-specific C++ ABI for the implementation. In the specific case of 64-bit Itanium shared library builds, a virtual function pointer entry contains a pair of components (each 64 bits): the value of the target GP value and the actual function address. That is, rather than being a normal function pointer, which points to such a two-component descriptor, a virtual function pointer entry is the descriptor.</p>
+
+<p>The order of the virtual function pointers in a virtual table is the order of declaration of the corresponding member functions in the class. If an implicitly-declared copy assignment operator, move assignment operator, or destructor is virtual, it is treated as if it were declared at the end of the class, in that order. (Implicitly-declared assignment operators may be virtual if a base class declares a virtual assignment operator taking a reference to a derived class type.)</p>
+
+<p>An entry is added for every virtual function in a class, including deleted functions, unless:</p>
+
+<p>the function is consteval or
+the function overrides a function from the primary base and that override does not require a return-type adjustment.
+An override requires a return-type adjustment if the return types are different and have potentially incompatible representations. C++ permits an override to differ in return type from the overridden function only if both types are pointer-to-class or reference-to-class types and the class type B in the overridden function is an unambiguous base class of the class type D in the override. For the purposes of vtable layout, these types are considered to have potentially incompatible representations if:</p>
+
+<p>B is a morally virtual base of D (even if D is final and the offset of B within D is known to be zero) or
+the (static) offset of B within D is non-zero.
+When a derived class and its primary base share a virtual table, the virtual function entries introduced by the derived class follow those for the primary base, so that the layout of the primary base’s embedded virtual table is the same as that of its standalone virtual table. In particular, if the derived class overrides a base class virtual function with a different (covariant) return type, the entry for the derived class comes after the primary base’s embedded virtual table in declaration order, and is the entry used for calls from the derived class without adjustment. The entry in the embedded primary virtual table points to a routine that adjusts the result pointer before returning.</p>
+
+<p>The entries for virtual destructors are actually pairs of entries. The first destructor, called the complete object destructor, performs the destruction without calling delete() on the object. The second destructor, called the deleting destructor, calls delete() after destroying the object. Both destroy any virtual bases; a separate, non-virtual function, called the base object destructor, performs destruction of the object but not its virtual base subobjects, and does not call delete().</p>
+
+<p>Following the primary virtual table of a derived class are secondary virtual tables for each of its proper base classes, except any primary base(s) with which it shares its primary virtual table. These are copies of the virtual tables for the respective base classes (copies in the sense that they have the same layout, though the fields may have different values). We call the collection consisting of a primary virtual table along with all of its secondary virtual tables a virtual table group. The order in which they occur is the same as the order in which the base class subobjects are considered for allocation in the derived object:</p>
+
+<p>First are the virtual tables of direct non-primary, non-virtual proper bases, in the order declared, including their secondary virtual tables for non-virtual bases in the order they appear in the standalone virtual table group for the base. (Thus the effect is that these virtual tables occur in inheritance graph order, excluding primary bases and virtual bases.)
+Then come the virtual base virtual tables, also in inheritance graph order, and again excluding primary bases (which share virtual tables with the classes for which they are primary).
+This ABI does not make guarantees about the layout of other virtual tables in a virtual table group relative to a virtual table pointer in an object or a VTT. It guarantees only the layout of the global symbol for that virtual table group. It does not guarantee that the virtual table pointers actually installed in an object or a VTT will point into that global symbol.</p>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[Ref: https://itanium-cxx-abi.github.io/cxx-abi/abi.html]]></summary></entry></feed>

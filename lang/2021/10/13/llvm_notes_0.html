@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            LLVM IR入门笔记
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/2021/10/13/llvm_notes_0.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        LLVM IR入门笔记
     
 </title>
 </head>
@@ -61,19 +61,49 @@
     </nav>
 </header>
 
-    <main class="page">
-    <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+    <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+    <div class="post__title">
+        <h1 class="post__title__text">LLVM IR入门笔记</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">ProgLang</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            October 13, 2021
+        </div>
+        
+    </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+    
 
+    <div class="post__content">
+        <h2 id="function">Function</h2>
 
-</main>
+<p>任何函数体 必须有一个<code class="language-plaintext highlighter-rouge">ret</code>指令显式地提供返回值, 包括return void.</p>
+
+<h2 id="basic-block">Basic Block</h2>
+
+<p>block只能是function的下层结构, 一个function value至少有一个block, 多个block按照固定顺序排列.</p>
+
+<p>也就是说block不能嵌套, 只能顺序排列.</p>
+
+<p>函数体的入口是first block, <strong>但后续的基本块必须通过条件或非条件的分支指令来手动连接</strong>, 否则通常会提示:</p>
+
+<p><code class="language-plaintext highlighter-rouge">Basic Block in function 'xxx' does not have terminator!</code></p>
+
+<p>这是因为<code class="language-plaintext highlighter-rouge">ret</code> 指令所在的最后一个块没有被连接上, 所以函数检查不到该指令, 所以判断该函数<code class="language-plaintext highlighter-rouge">xxx</code>的第一个block没有结束</p>
+
+<h2 id="参考">参考:</h2>
+
+<p>^1. https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/</p>
+
+    </div>
+</article>
 
     
     <footer class="footer">
@@ -90,6 +120,10 @@
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 <script type="text/x-mathjax-config">

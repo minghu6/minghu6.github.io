@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            LL and LR
+        
+    " 
+/>
+
+<meta property="og:url" content="//lang/2021/05/08/LL_LR.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        LL and LR
+    
+</title>
+</head>
+<body class="index">
+
+    <header class="header">
+    <section class="logo">
+        <a href="/" class="logo__link">
+            
+                <h1 style="display: none;">MINGHU6's Blog</h1>
+                <img class="logo__link__img" src="/minghu6.jpeg" />
+            
+        </a>
+    </section>
+    <button id="menuToggle">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+    <nav class="menu">
+        
+<ul class="list primary">
+
+    
+</ul>
+    </nav>
+</header>
+
+    <article class="post">
+
+    <div class="post__title">
+        <h1 class="post__title__text">LL and LR</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">ProgLang</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            May 08, 2021
+        </div>
+        
+    </div>
+
+    
+
+    <div class="post__content">
+        <h2 id="first-sets-and-follow-sets">First Sets and Follow Sets</h2>
+
+<p>To compute FIRST(X) for all grammar symbols X, apply the following rules until no more terminals or ε can be added to any FIRST set:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1.If Xis terminal, then FIRST(X) is {X}.
+2.If X →ε is a production, then add ε to FIRST(X).
+3.If X is nonterminal and X →Y1 Y2 ... Yk. 
+从求取First(Y1)开始,如果Y1的某个产生式有ε,就继续求取First(Y2)......,
+如果整个串都已经耗尽了,就把ε也加入
+</code></pre></div></div>
+
+<p>To compute FOLLOW(A) for all nonterminals A, apply the following rules until nothing can be added to any FOLLOW set:</p>
+
+<p>Follow集合是扫描每个产生式的串上的每个非终结符，迭代方式主要是First(下一个字母)和Follow(所在产生式所属的非终结符)</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Place $ in FOLLOW(S), where S is the start symbol and $ is the input right endmarker.
+2. If there is a production A ⇒αΒβ, then everything in FIRST(β), except for ε, is placed in FOLLOW(B).
+3. If there is a production A ⇒αΒ, or a production A ⇒αΒβ where FIRST(β) contains ε(i.e., β ⇒ε),then everything in FOLLOW(A) is in FOLLOW(B).如同计算First一样迭代，如果整个串都已经耗尽了,就把ε也加入Follow(B)
+</code></pre></div></div>
+
+    </div>
+</article>
+
+    
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+    
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+</body>
+</html>

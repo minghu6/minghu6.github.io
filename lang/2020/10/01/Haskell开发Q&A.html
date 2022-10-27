@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            Haskell开发准备
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/2020/10/01/Haskell%E5%BC%80%E5%8F%91Q&A.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        Haskell开发准备
     
 </title>
 </head>
@@ -61,19 +61,61 @@
     </nav>
 </header>
 
-    <main class="page">
-    <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+    <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+    <div class="post__title">
+        <h1 class="post__title__text">Haskell开发准备</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">ProgLang</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            October 01, 2020
+        </div>
+        
+    </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+    
 
+    <div class="post__content">
+        <h2 id="准备环境">准备环境：</h2>
 
-</main>
+<ol>
+  <li>
+    <p>安装系统级Haskell（或者直接跳过1-3，直接到4）</p>
+  </li>
+  <li>
+    <p>安装Cabal-install</p>
+  </li>
+  <li>
+    <p>安装Stack</p>
+  </li>
+  <li>
+    <p>安装ghc/cabal多环境：ghcup</p>
+
+    <p><code class="language-plaintext highlighter-rouge">curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh</code></p>
+
+    <p>From https://www.haskell.org/ghcup/</p>
+  </li>
+</ol>
+
+<h3 id="安装包失败">安装包失败：</h3>
+
+<p>考虑使用更低一级的LTS版本：<code class="language-plaintext highlighter-rouge">stack --resolver &lt;Ltsversion&gt; install &lt;Pkgname&gt;</code></p>
+
+<ul>
+  <li>
+    <Ltsversion>，exp: `lts-14.22`
+</Ltsversion>
+  </li>
+</ul>
+
+    </div>
+</article>
 
     
     <footer class="footer">
@@ -90,6 +132,10 @@
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 <script type="text/x-mathjax-config">

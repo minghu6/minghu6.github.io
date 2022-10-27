@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            RSYNC
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//os/2018/05/25/rsync.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        RSYNC
     
 </title>
 </head>
@@ -61,19 +61,40 @@
     </nav>
 </header>
 
-    <main class="page">
-    <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+    <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+    <div class="post__title">
+        <h1 class="post__title__text">RSYNC</h1>
+    </div>
+    <div class="post__meta"> 
+        <div class="post__meta__category">
+            
+                <p class="post__meta__category__title" style="background: var(--c-themeHueRed)">OS</p>
+            
+        </div>
+        <p class="post__meta__divider">·</p>
+        <div class="post__meta__date">
+            May 25, 2018
+        </div>
+        
+    </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+    
 
+    <div class="post__content">
+        <p>支持 ~ 在远程server上展开
+-z 压缩
+–progress 显示进度 或者 -P</p>
 
-</main>
+<p><code class="language-plaintext highlighter-rouge">rsync -avz --progress hsf-plugins-shared-portlet-1.0.0.war augumentdev@54.255.197.182:~/manual</code></p>
+
+<p>但是没有 -i 选择 ssh 私钥
+可以配置 ssh</p>
+
+<p>ssh-add ~/.ssh/1234-identity</p>
+
+    </div>
+</article>
 
     
     <footer class="footer">
@@ -90,6 +111,10 @@
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 <script type="text/x-mathjax-config">
