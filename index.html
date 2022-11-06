@@ -36,43 +36,154 @@
     
 </title>
 </head>
-<body class="index">
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
 
-    <header class="header">
-    <section class="logo">
-        <a href="/" class="logo__link">
-            
-                <h1 style="display: none;">MINGHU6's Blog</h1>
-                <img class="logo__link__img" src="/minghu6.jpeg" />
-            
-        </a>
-    </section>
-    <button id="menuToggle">
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+    <!-- index page -->
+    <span>Home</span>
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/minghu6.jpeg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <i class="fas fa-search fa-fw"></i>
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    <button id="menuToggle" class="">
         <div></div>
         <div></div>
         <div></div>
     </button>
+
     <nav class="menu">
         
+            
 <ul class="list primary">
 
     
-</ul>
-    </nav>
-</header>
+        <li class="item">
 
-    <section class="feed">
+            <div class="item-controls">
+                <a href="/category/algs.html">
+                
+                    <img src="/assets/img/icons/algs1.png"/>
+                
+                
+                    <p style="color: var(--c-themeHueOrange)">Algorithm</p>
+                
+                </a>
+
+            
+            </div>
+            
+        </li>   
+    
+        <li class="item">
+
+            <div class="item-controls">
+                <a href="/category/os.html">
+                
+                    <img src="/assets/img/icons/os1.png"/>
+                
+                
+                    <p style="color: var(--c-themeHueRed)">OS</p>
+                
+                </a>
+
+            
+            </div>
+            
+        </li>   
+    
+        <li class="item">
+
+            <div class="item-controls">
+                <a href="/category/lang.html">
+                
+                    <img src="/assets/img/icons/lang1.png"/>
+                
+                
+                    <p style="color: var(--c-themeHuePurple)">Lang</p>
+                
+                </a>
+
+            
+            </div>
+            
+        </li>   
+    
+        <li class="item">
+
+            <div class="item-controls">
+                <a href="/category/net.html">
+                
+                    <img src="/assets/img/icons/net1.png"/>
+                
+                
+                    <p style="color: var(--c-themeHueBlue)">Network</p>
+                
+                </a>
+
+            
+            </div>
+            
+        </li>   
+    
+        <li class="item">
+
+            <div class="item-controls">
+                <a href="/category/oth.html">
+                
+                    <img src="/assets/img/icons/oth1.png"/>
+                
+                
+                    <p style="color: var(--c-themeQuaternaryDark)">Other</p>
+                
+                </a>
+
+            
+            </div>
+            
+        </li>   
+    
+</ul>
+        
+    </nav>
+</div>
+
+
+    <section class="feed main">
     <section class="feed__description">
         <h1>MINGHU6's Blog</h1>
         <p>Coding somethings</p>
     </section>
-    
-    
-        <section class="snippet snippet_algs-2022-10-09-graph-theory-basic">
-            <style>
-    .snippet_algs-2022-10-09-graph-theory-basic::after {
 
-        background-image: 
+    
+        <section class="snippet snippet_algs-2022-10-27-fibheap">
+            <style>
+    .snippet_algs-2022-10-27-fibheap::after {
+
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -80,7 +191,52 @@
             
         );
     }
-    </style>
+</style>
+<a class="snippet__link" href="/algs/2022/10/27/FibHeap.html">
+    <section class="snippet__data">
+        <section class="snippet__data__metadata">
+            <section class="snippet__data__metadata__category">
+                
+                    <p class="snippet__data__metadata__category__title" style="background: var(--c-themeHueOrange)">Algorithm</p>
+                
+            </section>
+            <p class="snippet__data__metadata__date">October 27, 2022</p>
+        </section>
+        <h2 class="snippet__data__header">Fibonacci Heap</h2>
+        <p class="snippet__data__text">Fibonacci Heap12 3是一个基于链表结构的，理论时间复杂度很优的数据结构。
+
+
+  
+    
+      https://www.cs.princeton.edu/~wayne/teaching/fibonacci-heap.pdf &#8617;
+    
+    
+      http://www.cs.princeton.edu/~wayne/kleinberg-tardos/pdf/FibonacciHeaps.pdf &#8617;
+    
+    
+      https://en.wikipedia.org/wiki/Fibonacci_heap &#8617;
+    
+  
+
+</p>
+        
+    </section>
+</a>
+        </section>
+    
+        <section class="snippet snippet_algs-2022-10-09-graph-theory-basic">
+            <style>
+    .snippet_algs-2022-10-09-graph-theory-basic::after {
+
+        background-image:
+        radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
+        url(
+            
+                /
+            
+        );
+    }
+</style>
 <a class="snippet__link" href="/algs/2022/10/09/graph-theory-basic.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -96,14 +252,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_os-2022-09-10-mv-large-size-dir-to-another-dev">
             <style>
     .snippet_os-2022-09-10-mv-large-size-dir-to-another-dev::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -111,7 +267,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/os/2022/09/10/mv-large-size-dir-to-another-dev.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -127,14 +283,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_os-2022-09-01-kernel-crash-dump">
             <style>
     .snippet_os-2022-09-01-kernel-crash-dump::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -142,7 +298,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/os/2022/09/01/kernel-crash-dump.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -158,14 +314,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_os-2022-08-26-compile-linux-kernel">
             <style>
     .snippet_os-2022-08-26-compile-linux-kernel::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -173,7 +329,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/os/2022/08/26/compile-linux-kernel.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -190,14 +346,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_net-2022-08-07-ietf-rfc-5681-obs2581">
             <style>
     .snippet_net-2022-08-07-ietf-rfc-5681-obs2581::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -205,7 +361,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/net/2022/08/07/ietf_rfc_5681_obs2581.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -221,14 +377,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_net-2022-08-06-ietf-rfc-1191-obs1063">
             <style>
     .snippet_net-2022-08-06-ietf-rfc-1191-obs1063::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -236,7 +392,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/net/2022/08/06/ietf_rfc_1191_obs1063.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -252,14 +408,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2022-08-01-c-dialect-options">
             <style>
     .snippet_lang-2022-08-01-c-dialect-options::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -267,7 +423,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2022/08/01/c_dialect_options.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -283,14 +439,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2022-04-22-c-trap">
             <style>
     .snippet_lang-2022-04-22-c-trap::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -298,7 +454,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2022/04/22/c_trap.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -320,14 +476,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2022-03-30-zero-cost-exception">
             <style>
     .snippet_lang-2022-03-30-zero-cost-exception::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -335,7 +491,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2022/03/30/zero_cost_exception.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -351,14 +507,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_oth-2022-03-27-cxx-abi-node-0">
             <style>
     .snippet_oth-2022-03-27-cxx-abi-node-0::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -366,7 +522,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/oth/2022/03/27/cxx-abi-node-0.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -382,14 +538,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2021-10-13-opinions-on-py310">
             <style>
     .snippet_lang-2021-10-13-opinions-on-py310::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -397,7 +553,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2021/10/13/opinions_on_py310.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -413,14 +569,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2021-10-13-llvm-notes-0">
             <style>
     .snippet_lang-2021-10-13-llvm-notes-0::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -428,7 +584,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2021/10/13/llvm_notes_0.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -444,14 +600,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2021-05-27-linker">
             <style>
     .snippet_lang-2021-05-27-linker::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -459,7 +615,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2021/05/27/Linker.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -475,14 +631,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2021-05-08-ll-lr">
             <style>
     .snippet_lang-2021-05-08-ll-lr::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -490,7 +646,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2021/05/08/LL_LR.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -506,14 +662,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2021-04-17-template-haskell">
             <style>
     .snippet_lang-2021-04-17-template-haskell::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -521,7 +677,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2021/04/17/template-haskell.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -537,14 +693,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2021-04-15-ghcextensions">
             <style>
     .snippet_lang-2021-04-15-ghcextensions::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -552,7 +708,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2021/04/15/GHCExtensions.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -568,14 +724,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_algs-2020-12-01-sa-2016">
             <style>
     .snippet_algs-2020-12-01-sa-2016::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -583,7 +739,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/algs/2020/12/01/sa_2016.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -607,14 +763,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2020-11-01-haskell">
             <style>
     .snippet_lang-2020-11-01-haskell::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -622,7 +778,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2020/11/01/Haskell%E5%AD%A6%E4%B9%A0.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -638,14 +794,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2020-10-01-haskell-q-a">
             <style>
     .snippet_lang-2020-10-01-haskell-q-a::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -653,7 +809,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2020/10/01/Haskell%E5%BC%80%E5%8F%91Q&A.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -669,14 +825,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_algs-2020-08-01-bm">
             <style>
     .snippet_algs-2020-08-01-bm::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -684,7 +840,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/algs/2020/08/01/BM.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -700,14 +856,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2020-07-22-common-lisp-grammer">
             <style>
     .snippet_lang-2020-07-22-common-lisp-grammer::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -715,7 +871,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2020/07/22/common-lisp-grammer.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -741,14 +897,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2020-07-21-common-lisp-write-project">
             <style>
     .snippet_lang-2020-07-21-common-lisp-write-project::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -756,7 +912,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2020/07/21/common-lisp-write-project.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -772,14 +928,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_os-2018-05-25-rsync">
             <style>
     .snippet_os-2018-05-25-rsync::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -787,7 +943,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/os/2018/05/25/rsync.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -801,18 +957,20 @@
         <h2 class="snippet__data__header">RSYNC</h2>
         <p class="snippet__data__text">支持 ~ 在远程server上展开
 -z 压缩
+-a archive mode, syncs recursively and preserves symbolic links, special and device files, modification times, groups, owners, and permissions
+-v verbose
 –progress 显示进度 或者 -P
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_os-2018-03-13-pain-of-rm">
             <style>
     .snippet_os-2018-03-13-pain-of-rm::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -820,7 +978,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/os/2018/03/13/pain-of-rm.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -836,14 +994,14 @@
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2018-02-11-curl">
             <style>
     .snippet_lang-2018-02-11-curl::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -851,7 +1009,7 @@
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2018/02/11/cUrl.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -868,14 +1026,14 @@ $cURL = curl_init();
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_oth-2018-02-01-mongo-repository">
             <style>
     .snippet_oth-2018-02-01-mongo-repository::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -883,7 +1041,7 @@ $cURL = curl_init();
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/oth/2018/02/01/mongo-repository.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -899,14 +1057,14 @@ $cURL = curl_init();
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_lang-2018-01-05-hy-usage">
             <style>
     .snippet_lang-2018-01-05-hy-usage::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -914,7 +1072,7 @@ $cURL = curl_init();
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/lang/2018/01/05/hy-usage.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -930,14 +1088,14 @@ $cURL = curl_init();
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
         <section class="snippet snippet_os-2017-12-15-sudo-env">
             <style>
     .snippet_os-2017-12-15-sudo-env::after {
 
-        background-image: 
+        background-image:
         radial-gradient(ellipse closest-side, var(--c-snippetBackgroundExternal), var(--c-snippetBackgroundInternal)),
         url(
             
@@ -945,7 +1103,7 @@ $cURL = curl_init();
             
         );
     }
-    </style>
+</style>
 <a class="snippet__link" href="/os/2017/12/15/sudo-env.html">
     <section class="snippet__data">
         <section class="snippet__data__metadata">
@@ -961,12 +1119,24 @@ $cURL = curl_init();
 </p>
         
     </section>
-</a> 
+</a>
         </section>
     
 </section>
 
-    
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
     <footer class="footer">
         <section class="footer__about">
                 <p class="footer__about__copyright">© minghu6</p>
@@ -976,11 +1146,10 @@ $cURL = curl_init();
                 <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
-    
+
     <script src="/assets/js/jquery.slim.min.js"></script>
 <script src="/assets/js/lity.min.js"></script>
 <script src="/assets/js/tools.js"></script>
-
 
 
 <script type="text/x-mathjax-config">
@@ -995,6 +1164,167 @@ $cURL = curl_init();
     "HTML-CSS": { availableFonts: ["TeX"] }
   });
 </script>
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+<script src="https://kit.fontawesome.com/f1af9f22fa.js" crossorigin="anonymous"></script>
+
 
 </body>
 </html>

@@ -1,4 +1,685 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-10-27T12:30:26+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">图理论基础</title><link href="/algs/2022/10/09/graph-theory-basic.html" rel="alternate" type="text/html" title="图理论基础" /><published>2022-10-09T00:00:00+08:00</published><updated>2022-10-09T00:00:00+08:00</updated><id>/algs/2022/10/09/graph-theory-basic</id><content type="html" xml:base="/algs/2022/10/09/graph-theory-basic.html"><![CDATA[<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-11-07T00:04:41+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Fibonacci Heap</title><link href="/algs/2022/10/27/FibHeap.html" rel="alternate" type="text/html" title="Fibonacci Heap" /><published>2022-10-27T00:00:00+08:00</published><updated>2022-10-27T00:00:00+08:00</updated><id>/algs/2022/10/27/FibHeap</id><content type="html" xml:base="/algs/2022/10/27/FibHeap.html"><![CDATA[<p>Fibonacci Heap<sup id="fnref:fib" role="doc-noteref"><a href="#fn:fib" class="footnote" rel="footnote">1</a></sup><sup id="fnref:fib2" role="doc-noteref"><a href="#fn:fib2" class="footnote" rel="footnote">2</a></sup> <sup id="fnref:fib-wiki" role="doc-noteref"><a href="#fn:fib-wiki" class="footnote" rel="footnote">3</a></sup>是一个基于链表结构的，理论时间复杂度很优的数据结构。</p>
+
+<p>常用于Dijkstra最短路径等贪心算法，使用 <code class="language-plaintext highlighter-rouge">push</code> - <code class="language-plaintext highlighter-rouge">decrease-key</code>，都是 $O(1)$ 的时间复杂度。</p>
+
+<h2 id="前言">前言</h2>
+
+<p>一点儿啰嗦，可以跳过。说实话本来看图例， 看着各种相比最优的时间复杂度颇为心动但仔细看下去，发现完全是典型的基于链表结构的算法，代意词是理论很好但实际性能和最好的比要差一到两个数量级。那谁是最好的？</p>
+
+<p>其中之一就是Rust标准库里本家实现的堆–<a href="https://doc.rust-lang.org/src/alloc/collections/binary_heap.rs.html#268">BinaryHeap</a> 。这个堆不看不知道，一看我的天，整个基础结构就是一块儿连续内存，什么叫完美？！！你一看这个就知道性能比较可以不用做了，你F堆拿什么跟人家比，比都没法儿比！除非说，使用的CPU没有碗口大的高速缓存，否则你链表结构，就一个字，拉！</p>
+
+<h2 id="预备知识">预备知识</h2>
+
+<h3 id="二项式树-binomial-tree">二项式树 （Binomial Tree）</h3>
+
+<h4 id="秩阶度-rankorderdegree">秩、阶、度 （rank/order/degree）</h4>
+
+<p>$\texttt{order}$ ，通常指允许的最大孩子数量，常用于B树，二叉树的 $\texttt{order}$ 为2；</p>
+
+<p>$\texttt{degree}$ ，具体地某个节点的孩子的数量；</p>
+
+<p>$\texttt{rank}$ ，一般指排名，但这里用作 $\texttt{degree}$ 的别名；</p>
+
+<p>以下统称 $\texttt{rank}$ ，指称直接孩子的个数。</p>
+
+<h4 id="性质与定义">性质与定义</h4>
+
+<ol>
+  <li>
+    <p>二项树的节点数为 ${\large 2^{\text{rank}}}$ ；</p>
+  </li>
+  <li>
+    <p>显然单节点树的 $\texttt{rank=0}$ ，而合并两棵单节点树可以得到 $\texttt{rank=1}$ 的树，合并两棵 $\texttt{rank=1}$ 的树可以得到 $\texttt{rank=2}$ 的树，由此可归纳得到 $\texttt{rank=k, (k&gt;0)}$ 可以由两棵 $\texttt{rank=k-1}$ 的树合并得到，这就是二项式树的构造；</p>
+  </li>
+  <li>
+    <p>特别地，从实现上讲，每次同 $\texttt{rank}$ 的树合并，都是其中一棵作为另一棵的最左子树，这样构造出的二项式树的子树也是二项式树，假设 $\texttt{rank=k} $，而且从左到由的 $\texttt{rank}$ 分别为 $\texttt{k-1, k-2, …, 0} $ 。</p>
+  </li>
+</ol>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_01.svg" zoom="200%" /></div>
+
+<p>二项式堆（Binomial Heap）就是由多棵二项式树构成，每棵树都是小顶堆（Min Heap），并且每棵子树的 $\texttt{rank}$ 独特。</p>
+
+<p>每个二项式堆都可以这样构造出来，二项式堆的结点数 $\texttt{n}$ 的二进制表示的每一位对应一个 $\texttt{rank}$ 数值。</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_02.svg" zoom="200%" /></div>
+
+<p><em>而二项堆里的每棵二项树的孩子构成的森林都可以理解为完全二项堆。</em></p>
+
+<h2 id="定义">定义</h2>
+
+<p>斐波那契堆类似于二项式堆，是一个二项式树的森林，但并不严格要求 $\texttt{rank}$ 独特。</p>
+
+<p>执行 <code class="language-plaintext highlighter-rouge">push</code> 操作的时候新节点直接作为单节点的二项式树，插入到根链表中。只有在 <code class="language-plaintext highlighter-rouge">pop</code> 操作的时候递归合并同 $\texttt{rank}$ 的树，才得到严格的二项式堆。</p>
+
+<h2 id="数据结构">数据结构</h2>
+
+<p>堆的结构：一个指向森林中最小根的指针，以及其他必要元数据；</p>
+
+<p>树根的存储结构：双头循环链表；</p>
+
+<p>树的结构：经典带反向引用的 <code class="language-plaintext highlighter-rouge">child-sibling</code> 链表。</p>
+
+<p><strong>Rust<sup id="fnref:rust-impl" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">4</a></sup></strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">FibHeap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">:</span> <span class="n">CollKey</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">CollKey</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="cd">/// roots count</span>
+    <span class="n">rcnt</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">min</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="cd">/// index of nodes</span>
+    <span class="n">nodes</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="cd">/// rev index of nodes</span>
+    <span class="n">rev</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">I</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Clone)]</span>
+<span class="k">struct</span> <span class="n">Node_</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">key</span><span class="p">:</span> <span class="o">*</span><span class="k">mut</span> <span class="n">T</span><span class="p">,</span>
+    <span class="n">rank</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    
+    <span class="n">lf</span><span class="p">:</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>  <span class="c1">// rev ref</span>
+    <span class="n">rh</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">paren</span><span class="p">:</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>  <span class="c1">// rev ref</span>
+    <span class="n">child</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+
+    <span class="n">marked</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">used</span> <span class="n">when</span> <span class="n">implement</span> <span class="err">`</span><span class="n">decrease</span><span class="o">-</span><span class="n">key</span><span class="err">`</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Rc</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node_</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;&gt;&gt;</span><span class="p">);</span>
+<span class="k">struct</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">Weak</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node_</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;&gt;&gt;</span><span class="p">);</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="n">CollKey</span><span class="o">&gt;</span> <span class="nb">Drop</span> <span class="k">for</span> <span class="n">FibHeap</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">drop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="c1">// break circle dependency to enable drop</span>
+            <span class="k">let</span> <span class="n">tail</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">,</span> <span class="n">lf</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="n">tail</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+
+            <span class="k">self</span><span class="py">.nodes</span><span class="nf">.clear</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h2 id="push-操作">Push 操作</h2>
+
+<h3 id="算法">算法</h3>
+
+<p>根据定义，直接把单个节点插入到根链表中即可，必要的话更新堆指针。</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_push1.png" title="" /></div>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_push2.png" title="" /></div>
+
+<h3 id="实现">实现</h3>
+
+<p><strong>Rust<sup id="fnref:rust-impl:1" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">4</a></sup></strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">I</span><span class="p">:</span> <span class="n">CollKey</span> <span class="o">+</span> <span class="n">Hash</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">CollKey</span><span class="o">&gt;</span> <span class="n">FibHeap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">node</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.push_into_roots</span><span class="p">(</span><span class="n">node</span><span class="nf">.clone</span><span class="p">());</span>
+
+        <span class="k">if</span> <span class="nd">key!</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nd">key!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.min</span> <span class="o">=</span> <span class="n">node</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">self</span><span class="py">.len</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// insert at sib of self.min, with purge</span>
+    <span class="k">fn</span> <span class="nf">push_into_roots</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.rcnt</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="c1">// remove paren, lf and rh</span>
+        <span class="n">node</span><span class="nf">.purge_as_root</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.min</span> <span class="o">=</span> <span class="n">node</span><span class="p">;</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">,</span> <span class="n">lf</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.downgrade</span><span class="p">();</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">,</span> <span class="n">rh</span><span class="p">);</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lf</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.downgrade</span><span class="p">();</span>
+
+            <span class="nd">mattr!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span> <span class="o">=</span> <span class="n">node</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="nd">mattr!</span><span class="p">(</span><span class="nd">attr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">rh</span><span class="p">),</span> <span class="n">lf</span><span class="p">)</span> <span class="o">=</span> <span class="n">node</span><span class="nf">.downgrade</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="复杂度分析">复杂度分析</h3>
+
+<p>时间复杂度显然为 $O(1)$ 。</p>
+
+<h2 id="pop-操作">Pop 操作</h2>
+
+<h3 id="算法-1">算法</h3>
+
+<p><code class="language-plaintext highlighter-rouge">pop</code>算法分为几步：</p>
+
+<ol>
+  <li>
+    <p>把 <code class="language-plaintext highlighter-rouge">min</code> 所指向根的树的所有孩子插入到根链表中，然后遍历根列表找到下一个最小根，最后把旧根从根链表中删除；</p>
+  </li>
+  <li>
+    <p>从更新后的最小根出发，再次遍历根链表，在这个过程中构建 $\texttt{rank =&gt; root}$ 的 $\texttt{Map}$ ，当发现新的根的 $\texttt{rank}$ 已在 $\texttt{Map}$ 中存在时，递归地合并同 $\texttt{rank}$ 的树。<em>显然整个过程一遍扫描就可以完成，结果是规整成了一棵严格二项式树</em></p>
+  </li>
+</ol>
+
+<p>举例来看：</p>
+
+<p><em>图中黑色节点为标记节点，decrease-min 操作中使用，表示该树失去过孩子</em></p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop01.png" title="" /></div>
+
+<p>当前最小根指向 $\texttt{node(3)}$，它的孩子有 $\texttt{node(18), node(52), node(41)}$  ；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop02.png" title="" /></div>
+
+<p>把它的 $3$ 个孩子插入到根链表中，更新最小根为 $7$ ；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop03.png" title="" /></div>
+
+<p>从当前最小根节点开始递归地合并同 $\texttt{rank}$ 的树；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop04.png" title="" /></div>
+
+<p>扫描到 $\texttt{node(7)}$ ， $\texttt{rank = 1}$ ，插入当前 $\texttt{rank =&gt; root}$ 对儿到 $\texttt{Map}$ 中，继续向下扫描；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop05.png" title="" /></div>
+
+<p>扫描到 $\texttt{node(24)}$ ， $\texttt{rank = 2}$ ，Map中没有同 $\texttt{rank}$ 项，插入当前 $\texttt{rank =&gt; root}$ 对儿到 $\texttt{Map}$ 中，继续向下扫描；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop06.png" title="" /></div>
+
+<p>扫描到 $ \texttt{node(23)} $ ， $\texttt{rank = 0}$ ，Map中没有同 $\texttt{rank}$ 项，把 $\texttt{0 =&gt; node(23)}$ 插入到 $\texttt{Map}$ 中，继续向下扫描；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop07.png" title="" /></div>
+
+<p>扫描到 $\texttt{node(17)}$ ，$\texttt{rank = 0}$ ，Map中发现同 $\texttt{rank}$ 的 $\texttt{node(23)}$ ，把该项从 $\texttt{Map}$ 取出， 把较大的 $\texttt{node(23)}$ 插入到 $\texttt{node(17)}$ ，检查同 $\texttt{rank}$ 项 <em>显然这个同 rank 树的合并不影响后面没扫描过的根节点</em>；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop08.png" title="" /></div>
+
+<p>更新后的 $\texttt{17}$ 的 $\texttt{rank += 1}$ ，为 $1$ ，与 $\texttt{node(7)}$ 相同，继续合并，较大的 $\texttt{node(17)}$ 插入到 $\texttt{node(7)}$ ；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop09.png" title="" /></div>
+
+<p>更新后的$\texttt{node(7)}$  的 $\texttt{rank += 1} $，为 $2$ ，与 $\texttt{node(24)}$ 相同，继续合并，较大的 $\texttt{rank += 1}$ 插入到 $\texttt{node(7)}$ ；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop10.png" title="" /></div>
+
+<p>更新后的$\texttt{node(7)}$ 的 $\texttt{rank += 1} $，为 $3$ ， 没有同 $\texttt{rank}$ 项，把 $\texttt{3 =&gt; node(7)}$ 插入到 $\texttt{Map}$ 中，向下扫描；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop11.png" title="" /></div>
+
+<p>扫描到 $\texttt{node(18)}$ ，$\texttt{rank = 1}$，没有同 $\texttt{rank}$ 项，把 $\texttt{1 =&gt; node(18)}$，插入到 $\texttt{Map}$ 中，向下扫描；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop12.png" title="" /></div>
+
+<p>扫描到 $\texttt{node(52)}$ ，$\texttt{rank = 0}$，没有同 $\texttt{rank}$ 项，继续向下；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop13.png" title="" /></div>
+
+<p>扫描到 $\texttt{node(41)}$ ，$\texttt{rank = 1}$，与 $\texttt{node(18)}$ 的 $\texttt{rank}$ 相同，合并；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop14.png" title="" /></div>
+
+<p>更新后的树 $\texttt{rank = 2}$ ，没有同 $\texttt{rank}$ 项，插入 $\texttt{Map}$ ，向下扫描；</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop15.png" title="" /></div>
+
+<p>发现所有节点已被扫描完，规整结束 <em>堆的数据结构里维护一个根节点数的变量，用它来指示扫描何时结束</em> 。</p>
+
+<h3 id="实现-1">实现</h3>
+
+<p><strong>Rust<sup id="fnref:rust-impl:2" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">4</a></sup></strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">I</span><span class="p">:</span> <span class="n">CollKey</span> <span class="o">+</span> <span class="n">Hash</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">CollKey</span><span class="o">&gt;</span> <span class="n">FibHeap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">pop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">self</span><span class="py">.len</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">oldmin</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="k">self</span><span class="py">.min</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+
+            <span class="k">self</span><span class="nf">.remove_from_roots</span><span class="p">(</span><span class="n">oldmin</span><span class="nf">.clone</span><span class="p">());</span>
+            <span class="k">self</span><span class="nf">.remove_from_index</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oldmin</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="nf">Some</span><span class="p">(</span><span class="nd">unboxptr!</span><span class="p">(</span><span class="nd">justinto!</span><span class="p">(</span><span class="n">oldmin</span><span class="p">)</span><span class="py">.key</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* push children of oldmin into roots */</span>
+
+        <span class="k">for</span> <span class="n">child</span> <span class="k">in</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.children</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.push_into_roots</span><span class="p">(</span><span class="n">child</span><span class="nf">.clone</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* update min */</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">newmin</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">,</span> <span class="n">rh</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">sib</span> <span class="k">in</span> <span class="o">&amp;</span><span class="k">self</span><span class="nf">.roots</span><span class="p">()[</span><span class="mi">1</span><span class="o">..</span><span class="p">]</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="nd">key!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nd">key!</span><span class="p">(</span><span class="n">newmin</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">newmin</span> <span class="o">=</span> <span class="n">sib</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* just del old min */</span>
+        <span class="k">self</span><span class="nf">.remove_from_roots</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="nf">.clone</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">oldmin</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.replace</span><span class="p">(</span><span class="n">newmin</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.consolidate</span><span class="p">();</span>
+
+        <span class="k">self</span><span class="nf">.remove_from_index</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oldmin</span><span class="p">);</span>
+        <span class="nf">Some</span><span class="p">(</span><span class="nd">unboxptr!</span><span class="p">(</span><span class="nd">justinto!</span><span class="p">(</span><span class="n">oldmin</span><span class="p">)</span><span class="py">.key</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">consolidate</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/* merge same rank trees recusively */</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">rank</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="o">=</span> <span class="nd">hashmap!</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="k">mut</span> <span class="n">sib</span> <span class="k">in</span> <span class="k">self</span><span class="nf">.roots</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">=</span> <span class="n">rank</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="nd">attr!</span><span class="p">(</span><span class="n">sib</span><span class="p">,</span> <span class="n">rank</span><span class="p">))</span> <span class="p">{</span>
+                <span class="n">sib</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.merge_same_rank_root</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sib</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="n">rank</span><span class="nf">.insert</span><span class="p">(</span><span class="nd">attr!</span><span class="p">(</span><span class="n">sib</span><span class="p">,</span> <span class="n">rank</span><span class="p">),</span> <span class="n">sib</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+
+    <span class="k">fn</span> <span class="nf">remove_from_roots</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.rcnt</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.rcnt</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lf</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">unreachable!</span><span class="p">(</span><span class="s">"{:?} lf is none"</span><span class="p">,</span> <span class="nd">key!</span><span class="p">(</span><span class="n">node</span><span class="p">));</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">unreachable!</span><span class="p">(</span><span class="s">"{:?} rh is none"</span><span class="p">,</span> <span class="nd">key!</span><span class="p">(</span><span class="n">node</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="nd">mattr!</span><span class="p">(</span><span class="nd">attr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lf</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">(),</span> <span class="n">rh</span><span class="p">)</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">rh</span><span class="p">);</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="nd">attr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">rh</span><span class="p">),</span> <span class="n">lf</span><span class="p">)</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lf</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nd">mattr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">lf</span><span class="p">)</span> <span class="o">=</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+        <span class="nd">mattr!</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+    <span class="p">}</span>
+
+
+    <span class="cd">/// update self.rcnt</span>
+    <span class="k">fn</span> <span class="nf">merge_same_rank_root</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span>
+        <span class="k">mut</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="k">mut</span> <span class="n">y</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rank</span><span class="p">),</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">rank</span><span class="p">));</span>
+
+        <span class="c1">// let x be parent</span>
+        <span class="k">if</span> <span class="nd">key!</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nd">key!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">||</span> <span class="nd">key!</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="nd">key!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.min</span><span class="p">)</span> <span class="p">{</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">// remove y from roots</span>
+        <span class="k">self</span><span class="nf">.remove_from_roots</span><span class="p">(</span><span class="n">y</span><span class="nf">.clone</span><span class="p">());</span>
+
+        <span class="c1">// link y to x child</span>
+        <span class="nd">mattr!</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">child</span><span class="p">);</span>
+        <span class="k">if</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">child</span><span class="p">),</span> <span class="n">lf</span><span class="p">)</span> <span class="o">=</span> <span class="n">y</span><span class="nf">.downgrade</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="c1">// link y to x</span>
+        <span class="nd">mattr!</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">paren</span><span class="p">)</span> <span class="o">=</span> <span class="n">x</span><span class="nf">.downgrade</span><span class="p">();</span>
+        <span class="nd">mattr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span> <span class="o">=</span> <span class="n">y</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="nd">mattr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// same rank</span>
+
+        <span class="n">x</span>
+    <span class="p">}</span>
+
+
+    <span class="k">fn</span> <span class="nf">roots</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">sibs</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">sib</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="k">self</span><span class="py">.rcnt</span> <span class="p">{</span>
+            <span class="n">sib</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">sib</span><span class="p">,</span><span class="n">rh</span><span class="p">);</span>
+            <span class="n">sibs</span><span class="nf">.push</span><span class="p">(</span><span class="n">sib</span><span class="nf">.clone</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="n">sibs</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="复杂度分析-1">复杂度分析</h3>
+
+<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$ \texttt{H} $为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
+
+<p>而由于每次规整后的，不存在相同 $\texttt{rank}$ 的树，所以标记 $\texttt{H’}$ 为 $\texttt{rank}$ 最大的树，有 $\texttt{trees} \leqslant \texttt{rank(H’) + 1}$ 。</p>
+
+<p>对于不涉及 <code class="language-plaintext highlighter-rouge">decrease-key</code> 操作的F堆来说，每棵树都是严格二项式树，而根据二项式树的性质，标记 $\texttt{H’}$ 的节点数为 $n’$ ， $n’ \lt n$，有 $\texttt{rank(H’) = } {\log_2 n’ \lt log_2 n}$ 。</p>
+
+<p>所以摊销时间复杂度为 $O(\text{log n})$ 。</p>
+
+<p>而对于 <code class="language-plaintext highlighter-rouge">decrease-key</code> 操作后的不严格二项式树，由于每棵孩子最多丢失一个孩子，应该仍然保持 $\texttt{rank(H’)}$ ~ ${O(\text{log n})}$ 的性质，后面的性质理论分析部分对此进行了证明，所以摊销时间复杂度仍为 ${O(\text{log n})}$ 。</p>
+
+<h2 id="decreasekey-操作">DecreaseKey 操作</h2>
+
+<h3 id="算法-2">算法</h3>
+
+<p>实现 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，需要一个额外的编号对节点的索引目录，</p>
+
+<p><em>同时为了在pop操作时维护这一结构并不破坏时间复杂度，还需要一个反向的节点对编号的目录，进行 O(1) 时间的反查</em></p>
+
+<p>假设需要更新 $\texttt{key}$ 的节点为 $x$ ，首先检查情况堆的性质是否被破坏：</p>
+
+<p>对于 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，堆的性质被破坏的情况就是，节点 $x$ 的 $\texttt{key}$ 比父节点小，<em>对于increase-key，就要检查节点x的子节点的key是否有比其小的</em> 。</p>
+
+<p>如果堆的性质被破坏：</p>
+
+<ol>
+  <li>
+    <p>把 $x$ 节点从父节点的孩子中删除，然后推到堆的根的链表上，取消 $x$ 节点的标记（<em>已被规整</em>） ，然后标记父节点（<em>表明它失去过一个孩子</em>节点），姑且把这个操作称为 <em>cut-meld-unmark</em>；</p>
+  </li>
+  <li>
+    <p>向上递归地执行<em>cut-meld-unmark</em>，直到一个未被标记或者是根节点的父节点，然后标记它。</p>
+  </li>
+</ol>
+
+<p>最后检查最小根是否需要被更新。</p>
+
+<p><em>decrease-key</em> 流程：</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk1.png" title="" /></div>
+
+<p><em>cut-meld-unmark</em> 流程：</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk2.png" title="" /></div>
+
+<p>图例是一个 <code class="language-plaintext highlighter-rouge">decrease-key</code> 的非平凡情况</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_01.png" title="" /></div>
+
+<p>对节点 $x$ 的 $\texttt{key}$ 从 $35$ 降到 $5$</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_03.png" title="" /></div>
+
+<p>发现堆性质被破坏，先对 $x$ 执行 <em>cut-meld-unmark</em></p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_04.png" title="" /></div>
+
+<p>向上递归，发现 $p$ 被标记，意味着 $p$ 之前已经失去过一个孩子，加上这次，已经失去了两个孩子，</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_05.png" title="" /></div>
+
+<p>对 $p$ 执行 <em>cut-meld-unmark</em> ，</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_06.png" title="" /></div>
+
+<p>递归地检查 $p$ 的父节点 $p’$ ， $p’$ 也被标记</p>
+
+<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_07.png" title="" /></div>
+
+<p>对 $p’$ 执行 <em>cut-meld-unmark</em> ，到了根节点，cut-meld-unmark 整个过程停止，检查最小根，发现 $\texttt{x = 5 &lt; 7}$ ，于是把最小根更新到 $x$ 。</p>
+
+<h3 id="实现-2">实现</h3>
+
+<p><strong>Rust<sup id="fnref:rust-impl:3" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">4</a></sup></strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">I</span><span class="p">:</span> <span class="n">CollKey</span> <span class="o">+</span> <span class="n">Hash</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">CollKey</span><span class="o">&gt;</span> <span class="n">FibHeap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">decrease_key_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">unmeld_ent</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">paren</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="n">p</span><span class="nf">.is_none</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">key!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nd">key!</span><span class="p">(</span><span class="n">p</span><span class="nf">.upgrade</span><span class="p">())</span> <span class="p">{</span>
+            <span class="c1">// 假装x节点本身也是一个符合条件的父节点</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">marked</span><span class="p">)</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+            <span class="n">unmeld_ent</span> <span class="o">=</span> <span class="n">x</span><span class="nf">.downgrade</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">unmeld_ent</span> <span class="o">=</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">self</span><span class="nf">.unmeld_to_roots</span><span class="p">(</span><span class="n">unmeld_ent</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="nd">key!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nd">key!</span><span class="p">(</span><span class="k">self</span><span class="py">.min</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">paren</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">());</span>
+            <span class="k">self</span><span class="py">.min</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+
+    <span class="k">fn</span> <span class="nf">unmeld_to_roots</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">ent</span><span class="p">:</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">ent</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">x</span> <span class="o">=</span> <span class="n">ent</span><span class="nf">.upgrade</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">paren</span><span class="p">);</span>
+
+        <span class="k">while</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">marked</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">p</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">p</span><span class="nf">.upgrade</span><span class="p">()</span><span class="nf">.cut_child</span><span class="p">(</span><span class="n">x</span><span class="nf">.clone</span><span class="p">());</span>
+            <span class="k">self</span><span class="nf">.push_into_roots</span><span class="p">(</span><span class="n">x</span><span class="nf">.clone</span><span class="p">());</span>
+            <span class="nd">mattr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">marked</span><span class="p">)</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">paren</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">paren</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">// 定义上不标记根，但这应该是无所谓的，标记对于可能的pop导致的树规整后的树情况更精确</span>
+        <span class="nd">mattr!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">marked</span><span class="p">)</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="复杂度分析-2">复杂度分析</h3>
+
+<p>由于每次操作最多增加一个标记节点，那么平均每次取消的标记节点也是 $1$ ，也就是摊销复杂度是 $O(1)$ 。</p>
+
+<h2 id="其他操作">其他操作</h2>
+
+<h3 id="union-操作-optional">Union 操作 （Optional）</h3>
+
+<p>直接连接两个根链表，如果不需要维护索引目录，那操作就是 $O(1)$ 。</p>
+
+<h3 id="remove-操作-specific">Remove 操作 （Specific）</h3>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">decrease-key</code> 到 $-\infty$</li>
+  <li><code class="language-plaintext highlighter-rouge">pop</code></li>
+</ol>
+
+<p>复杂度显然为 $O(\text{log n})$ 。</p>
+
+<h2 id="性质的理论分析">性质的理论分析</h2>
+
+<p>在对斐波那契堆的性质进行分析之前，先要引入几个相关的概念。</p>
+
+<h3 id="黄金比率-golden-ratio">黄金比率 （Golden Ratio）</h3>
+
+<p>对于两个数 $a$ ，$b$    $a&gt;b&gt;0$ ，有</p>
+
+\[\large\frac{a+b}{a} = \frac{a}{b} = \varphi\]
+
+<p>则称这两个数处于黄金比率，而这个黄金比率 $\varphi$ 可以通过定义</p>
+
+<p>$ 1 + \frac{b}{a} = \frac{a}{b} = \varphi\ $</p>
+
+<p>$1 + \frac{1}{\large \varphi} = \varphi $</p>
+
+<p>得到它的二次方程 $\varphi + 1 = \varphi^2$</p>
+
+<p>解出两个根，正根 $\varphi = {\large \frac{1+\sqrt{5}}{2}} \approx 1.618$ ，以及负根 $\psi = {\large \frac{1-\sqrt{5}}{2}} \approx -0.618$</p>
+
+<h3 id="斐波那契数-fibonacci-number">斐波那契数 （Fibonacci Number）</h3>
+
+\[F_n =
+\left\{\begin{array}{l}
+\ 0&amp; &amp;(n = 0) \\
+\ 1&amp; &amp;(n = 1) \\ 
+\ F_{n-2} + F_{n-1}&amp; &amp;(n \ge 2) \\
+\end{array}\right.\]
+
+<table>
+  <thead>
+    <tr>
+      <th>$i$</th>
+      <th>$0$</th>
+      <th>$1$</th>
+      <th>$2$</th>
+      <th>$3$</th>
+      <th>$4$</th>
+      <th>$5$</th>
+      <th>$6$</th>
+      <th>$7$</th>
+      <th>$…$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>$F_i$</td>
+      <td>$0$</td>
+      <td>$1$</td>
+      <td>$1$</td>
+      <td>$2$</td>
+      <td>$3$</td>
+      <td>$5$</td>
+      <td>$8$</td>
+      <td>$13$</td>
+      <td>$…$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>它的封闭表达式</p>
+
+\[F_n = \frac{\varphi^n-\psi^n}{\varphi-\psi} = \frac{\varphi^n-\psi^n}{\sqrt 5}\]
+
+<p>显然它的增长速度也是指数级的。</p>
+
+<h4 id="性质1">性质1</h4>
+
+<p>基础：</p>
+
+\[\begin{array}{l}
+&amp;F_2 = 1 = 1 + \sum_{i=0}^{0} F_i\\
+&amp;F_3 = 2 = 1 + \sum_{i=0}^{1} F_i
+\end{array}\]
+
+<p>归纳推理：</p>
+
+\[\begin{array}{l} 
+F_{n+2} &amp;=\ F_n + F_{n+1}\\
+&amp;=\ F_n + 1 + \sum_{i=0}^{n-1} F_i\\
+&amp;=\ 1 + \sum_{i=0}^{n} F_i
+\end{array}\]
+
+<p>得到 $ F_{n+2} = 1 + \sum_{i=0}^{n} F_i $</p>
+
+<h4 id="性质2">性质2</h4>
+
+<p>基础：</p>
+
+\[\begin{array}{l}
+&amp;F_2 =\ 1 \geqslant 1 = \varphi^0\\
+&amp;F_3 =\ 2 \geqslant \varphi = \varphi^1
+\end{array}\]
+
+<p>归纳推理：</p>
+
+\[\begin{array}{l}
+F_{n+2} &amp;=\ F_{n+1} + F_{n}\\
+&amp;\geqslant \ \varphi^{n-1} + \varphi^{n-2}\\
+&amp;=\ \varphi^{n-2}(1 + \varphi)\\
+&amp;=\ \varphi^{n-2}\varphi^2\\
+&amp;=\ \varphi^n
+\end{array}\]
+
+<p>得到 $ F_{n+2} \geqslant \varphi^n $</p>
+
+<h3 id="斐波那契堆的性质">斐波那契堆的性质</h3>
+
+<h4 id="性质1-1">性质1</h4>
+
+<p>对一个 $\texttt{rank}$ 为 $n$ 的节点 $x$ ，按照插入顺序，编号它的孩子 $y_1, y_2, …, y_n$ 。</p>
+
+<p>那么根据二项式树的性质，有 $\texttt{rank(} y_i \texttt{)}= i-1$ 。</p>
+
+<p>考虑到 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致 $y_i$ 最多失去一个孩子</p>
+
+<p>于是有</p>
+
+\[\texttt{rank}({\large y_i}) \geqslant
+\ \left \{\begin{array}{l}
+\ 0 &amp;(i=1)\\
+\ i - 2  &amp;(i \geqslant 2)\\
+\end{array}\right.\]
+
+<h4 id="性质2-1">性质2</h4>
+
+<p>假设 $\texttt{size(k)}$ ，为 $\texttt{rank}$ 为 $k$ 的节点的可能的最小结点数</p>
+
+<p>基础：</p>
+
+\[\begin{array}{l}
+&amp;\texttt{size}(0) =\ 1 = F_2 \geqslant F_2 \\
+&amp;\texttt{size}(1) =\ 2 = F_3 \geqslant F_3 \\
+\end{array}\]
+
+<p>归纳推理：</p>
+
+\[\begin{array}{l}
+size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
+&amp;= 1 + \texttt{size(rank(}y_1\texttt{))} + \sum_{i=2}^{k} \texttt{size(rank(}y_i\texttt{))}\\
+&amp;\geqslant 1 + \texttt{size(0)} + \sum_{i=2}^{k} \texttt{size(rank(i-2))}\\
+&amp;\geqslant 1 + 1 + \sum_{i=2}^{k} \texttt{size(} F_i \texttt{)}\\
+&amp;= 1 + \sum_{i=0}^{k} \texttt{size(} F_i\texttt{)}\\
+&amp;= F_{k+2}\\
+&amp;\geqslant \varphi^{k}
+\end{array}\]
+
+<p>于是有</p>
+
+\[\texttt{size(k)} \geqslant F_{k+2} \geqslant \varphi^{k}\ \ \ (k \geqslant 0)\]
+
+<p>根据这个性质，两边取 $log$ ，得到  $ log_{\varphi}^{size(k)} \geqslant k = rank $ 。</p>
+
+<p>回顾前面 <code class="language-plaintext highlighter-rouge">pop</code> 的时间复杂度分析，$\texttt{rank}$ ~ $O(log_{\varphi}^{\texttt{size(k)}})$ ~ $O(log\ n)$，也就是说我们在理论上证明了 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致的不严格二项式树，仍然不影响它的 $O(\text{log n})$ 的时间复杂度。</p>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:fib" role="doc-endnote">
+      <p>https://www.cs.princeton.edu/~wayne/teaching/fibonacci-heap.pdf <a href="#fnref:fib" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:fib2" role="doc-endnote">
+      <p>http://www.cs.princeton.edu/~wayne/kleinberg-tardos/pdf/FibonacciHeaps.pdf <a href="#fnref:fib2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:fib-wiki" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Fibonacci_heap <a href="#fnref:fib-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:rust-impl" role="doc-endnote">
+      <p>https://github.com/minghu6/rust-minghu6/blob/snapshot-1/src/collections/heap/fib.rs <a href="#fnref:rust-impl" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:rust-impl:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a> <a href="#fnref:rust-impl:2" class="reversefootnote" role="doc-backlink">&#8617;<sup>3</sup></a> <a href="#fnref:rust-impl:3" class="reversefootnote" role="doc-backlink">&#8617;<sup>4</sup></a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[Fibonacci Heap12 3是一个基于链表结构的，理论时间复杂度很优的数据结构。 https://www.cs.princeton.edu/~wayne/teaching/fibonacci-heap.pdf &#8617; http://www.cs.princeton.edu/~wayne/kleinberg-tardos/pdf/FibonacciHeaps.pdf &#8617; https://en.wikipedia.org/wiki/Fibonacci_heap &#8617;]]></summary></entry><entry><title type="html">图理论基础</title><link href="/algs/2022/10/09/graph-theory-basic.html" rel="alternate" type="text/html" title="图理论基础" /><published>2022-10-09T00:00:00+08:00</published><updated>2022-10-09T00:00:00+08:00</updated><id>/algs/2022/10/09/graph-theory-basic</id><content type="html" xml:base="/algs/2022/10/09/graph-theory-basic.html"><![CDATA[<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
 
 <ol>
   <li>
@@ -12,8 +693,8 @@ tail(起点) -&gt; head（终点）</p>
     <table>
       <tbody>
         <tr>
-          <td>|V</td>
-          <td>，点的个数，图的阶（order）</td>
+          <td>V</td>
+          <td>: 点的个数，图的阶（order）</td>
         </tr>
       </tbody>
     </table>
@@ -127,11 +808,14 @@ log: kernel log</p>]]></content><author><name></name></author><category term="[&
     <p>如果make过程中因为什么原因中途停掉了，可以再次启动，但是第一次会报错: <code class="language-plaintext highlighter-rouge">"dpkg-source: unrepresentable changes to source"</code>, 只要把相关报错文件删除掉重新运行即可。</p>
   </li>
   <li>
-    <p>&gt;= 20.04, 可能需要的额外依赖包:</p>
+    <blockquote>
 
-    <p>dwarves # tmp_vmlinux.btf: pahole (pahole) is not available</p>
+      <p>= 20.04, 可能需要的额外依赖包:</p>
+    </blockquote>
   </li>
 </ol>
+
+<p>dwarves # tmp_vmlinux.btf: pahole (pahole) is not available</p>
 
 <h2 id="select-kernel">Select Kernel</h2>
 
@@ -746,7 +1430,7 @@ ekse:
       <td>-ffreestanding</td>
     </tr>
     <tr>
-      <td>-fno-builtin, -fno-builtin-&lt;xxx&gt;</td>
+      <td>-fno-builtin, -fno-builtin-<xxx></xxx></td>
       <td> </td>
     </tr>
   </tbody>
@@ -757,7 +1441,7 @@ ekse:
     <p>fno-builtin: Don’t recognize built-in functions that do not begin with <code class="language-plaintext highlighter-rouge">__builtin_</code> as prefix, <code class="language-plaintext highlighter-rouge">__built_in_xxx</code> always existed.</p>
   </li>
   <li>
-    <p>fno-builtin-&lt;xxx&gt; such as <code class="language-plaintext highlighter-rouge">-fno-builtin-printf</code>.</p>
+    <p>fno-builtin-<xxx> such as `-fno-builtin-printf`.</xxx></p>
   </li>
   <li>
     <p>on <code class="language-plaintext highlighter-rouge">no_std</code> env using <code class="language-plaintext highlighter-rouge">__builtin_xxx</code> instead</p>
@@ -978,7 +1662,8 @@ ekse:
 
 <p>This routine returns the address of the language-specific data area for the current stack frame.</p>
 
-<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>This routine is not stricly required: it could be accessed through <code class="language-plaintext highlighter-rouge">_Unwind_GetIP</code> using the documented format of the <code class="language-plaintext highlighter-rouge">UnwindInfoBlock</code>, but since this work has been done for finding the personality routine in the first place, it makes sense to cache the result in the context. We could also pass it as an argument to the personality routine.</em></p>
+<div class="sx-center"><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" title="" /></div>
+<p><b>NOTE</b>: <em>This routine is not stricly required: it could be accessed through <code class="language-plaintext highlighter-rouge">_Unwind_GetIP</code> using the documented format of the <code class="language-plaintext highlighter-rouge">UnwindInfoBlock</code>, but since this work has been done for finding the personality routine in the first place, it makes sense to cache the result in the context. We could also pass it as an argument to the personality routine.</em></p>
 
 <p><strong>_Unwind_GetRegionStart</strong></p>
 
@@ -1004,7 +1689,7 @@ The unwinder encountered the end of the stack during phase 1, without finding a 
   <li><code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE1_ERROR</code>: The unwinder encountered an unexpected error during phase 1, e.g. stack corruption.</li>
 </ol>
 
-<p><em><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> The unwind runtime will likely have modified the stack (e.g. popped frames from it) or register context, or landing pad code may have corrupted them. As a result, the the caller of <code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code> can make no assumptions about the state of its stack or registers.</em></p>
+<p><em>&lt;div class="sx-center"&gt;<img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" title="" />&lt;/div&gt;<b>NOTE</b>: The unwind runtime will likely have modified the stack (e.g. popped frames from it) or register context, or landing pad code may have corrupted them. As a result, the the caller of <code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code> can make no assumptions about the state of its stack or registers.</em></p>
 
 <p><strong>_Unwind_ForcedUnwind</strong></p>
 
@@ -1049,11 +1734,13 @@ In order to allow <code class="language-plaintext highlighter-rouge">_Unwind_For
 
 <p>如果<code class="language-plaintext highlighter-rouge">stop</code>函数返回了任何<code class="language-plaintext highlighter-rouge">_URC_NO_REASON</code>意外的reason code, 从 <code class="language-plaintext highlighter-rouge">_Unwind_ForcedUnwind</code>的调用者的角度讲, 栈的状态是不确定的. 因此, unwind library 应该返回 <code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE2_ERROR</code> 给它的调用者.</p>
 
-<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>Example: <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code></em></p>
+<div class="sx-center"><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" title="" /></div>
+<p><b>NOTE</b>: <em>Example: <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code></em></p>
 
 <p><em>期望的<code class="language-plaintext highlighter-rouge">longjmp_unwind()</code>的实现是这样的. <code class="language-plaintext highlighter-rouge">setjmp()</code> 保存了状态后 (包括帧的指针).  <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code>将会调用<code class="language-plaintext highlighter-rouge">_Unwind_ForcedUnwind</code>,用context里记录的帧地址和当前保存的帧地址进行比较. 如果相等就调用 <code class="language-plaintext highlighter-rouge">setjmp()</code> 进行恢复, 否则返回 <code class="language-plaintext highlighter-rouge">_URC_NO_REASON</code> 或者 <code class="language-plaintext highlighter-rouge">_URC_END_OF_STACK</code>.</em></p>
 
-<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>如果未来对 两阶段的foced unwinding 有新的需求, 可以定义另外的例程和新的<code class="language-plaintext highlighter-rouge">actions</code> 参数类型来进行支持</em></p>
+<div class="sx-center"><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" title="" /></div>
+<p><b>NOTE</b>: <em>如果未来对 两阶段的foced unwinding 有新的需求, 可以定义另外的例程和新的<code class="language-plaintext highlighter-rouge">actions</code> 参数类型来进行支持</em></p>
 
 <p><strong>_Unwind_Resume</strong></p>
 
@@ -1062,9 +1749,11 @@ In order to allow <code class="language-plaintext highlighter-rouge">_Unwind_For
 
 <p>恢复异常的传播 e.g. 在部分展开的栈中执行清理代码(clean-up code)后如果不能恢复程序的正常执行, 就会恢复该异常的传播. 具体地就是在执行清理任务的landing pad结尾调用它(<code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>).</p>
 
-<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE 1&lt;/b&gt;:" /><em><code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>不能用来实现重抛(re-throwing). 这是一个两阶段模型, 之前的unwind session会被关闭. 重抛需要使用<code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code>.</em></p>
+<div class="sx-center"><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" title="" /></div>
+<p><b>NOTE 1</b>:<em><code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>不能用来实现重抛(re-throwing). 这是一个两阶段模型, 之前的unwind session会被关闭. 重抛需要使用<code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code>.</em></p>
 
-<p><img src="/assets/img/warning.gif" alt="&lt;b&gt;NOTE 2&lt;/b&gt;:" /> This is the only routine in the unwind library which is expected to be called directly by generated code: it will be called at the end of a landing pad in a “landing-pad” model.</p>
+<div class="sx-center"><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" title="" /></div>
+<p><b>NOTE 2</b>: This is the only routine in the unwind library which is expected to be called directly by generated code: it will be called at the end of a landing pad in a “landing-pad” model.</p>
 
 <h3 id="异常对象的管理">异常对象的管理</h3>
 
@@ -1085,101 +1774,4 @@ In order to allow <code class="language-plaintext highlighter-rouge">_Unwind_For
 
 <ol>
   <li><a href="https://itanium-cxx-abi.github.io/cxx-abi/abi-eh.html">https://itanium-cxx-abi.github.io/cxx-abi/abi-eh.html</a></li>
-</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[Related Header Definition]]></summary></entry><entry><title type="html">C++ ABI 笔记 1</title><link href="/oth/2022/03/27/cxx-abi-node-0.html" rel="alternate" type="text/html" title="C++ ABI 笔记 1" /><published>2022-03-27T00:00:00+08:00</published><updated>2022-03-27T00:00:00+08:00</updated><id>/oth/2022/03/27/cxx-abi-node-0</id><content type="html" xml:base="/oth/2022/03/27/cxx-abi-node-0.html"><![CDATA[<p>Ref: <a href="1">https://itanium-cxx-abi.github.io/cxx-abi/abi.html</a></p>
-
-<h2 id="member-pointer">Member Pointer</h2>
-
-<ol>
-  <li>
-    <p>数据成员指针类型的基本ABI属性是 <code class="language-plaintext highlighter-rouge">ptrdiff_t</code>, 表示数据成员到所属基类的字节偏移量.</p>
-
-    <p>空数据成员指针表示为<code class="language-plaintext highlighter-rouge">-1</code> (但是通过显式派生到基类的转换,生成偏移量为<code class="language-plaintext highlighter-rouge">-1</code>的数据成员指针)</p>
-  </li>
-  <li>
-    <p>一个非空的数据成员指针的基到派生和派生到基的转换, 可以通过分别加或减掉二者静态偏移量(C++标准保证可知这个静态偏移量)实现</p>
-  </li>
-  <li>
-    <p>建议更好的空数据指针实现: (x &lt;&lt; 1) + 1 表示非空数据</p>
-  </li>
-</ol>
-
-<h3 id="member-function-pointers">Member Function Pointers</h3>
-
-<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="p">{</span>
-  <span class="n">fnptr_t</span> <span class="n">ptr</span><span class="p">;</span>
-  <span class="kt">ptrdiff_t</span> <span class="n">adj</span><span class="p">;</span>
-<span class="p">};</span>
-</code></pre></div></div>
-
-<ol>
-  <li>
-    <p><code class="language-plaintext highlighter-rouge">fnptr_t</code> : 1 + offset(function’s vtable entry offset in bytes)</p>
-
-    <p>null 表示空的函数指针</p>
-  </li>
-</ol>
-
-<p>调用过程:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>adj_this = `this` + `adj`
-
-if ptr != null { 从vtable中加载对应项 } else { 调用存储的函数指针 }
-</code></pre></div></div>
-
-<h2 id="virtual-table-layout">Virtual Table Layout</h2>
-
-<p>Virtual call (vcall) offsets are used to perform pointer adjustment for virtual functions that are declared in a virtual base class or its subobjects and overridden in a class derived from it.</p>
-
-<p>These entries are allocated in the virtual table for the virtual base class that is most immediately derived from the base class containing the overridden virtual function declaration.</p>
-
-<p>They are used to find the necessary adjustment from the virtual base to the derived class containing the overrider, if any.</p>
-
-<p>When a virtual function is invoked via a virtual base, but has been overridden in a derived class,</p>
-
-<p>the overriding function first adds a fixed offset to adjust the this pointer to the virtual base,</p>
-
-<p>and then adds the value contained at the vcall offset in the virtual base to its this pointer to get the address of the derived object where the function was overridden.</p>
-
-<p>These values may be positive or negative.</p>
-
-<p>Virtual Base (vbase) offsets are used to access the virtual bases of an object.</p>
-
-<p>Such an entry is added to the derived class object address (i.e. the address of its virtual table pointer) to get the address of a virtual base class subobject.</p>
-
-<p>Such an entry is required for each virtual base class. The values can be positive or negative.</p>
-
-<p>However, in classes sharing a virtual table with a primary base class,</p>
-
-<p>the vcall and vbase offsets added by the derived class all come before the vcall and vbase offsets required by the base class,</p>
-
-<p>so that the latter may be laid out as required by the base class without regard to additions from the derived class(es).</p>
-
-<p>The offset to top holds the displacement to the top of the object from the location within the object of the virtual table pointer that addresses this virtual table, as a  ptrdiff_t.</p>
-
-<p>It is always present. The offset provides a way to find the top of the object from any base subobject with a virtual table pointer. This is necessary for dynamic_cast&lt;void*&gt; in particular.</p>
-
-<p><b>NOTE</b>: In a complete object virtual table, and therefore in all of its primary base virtual tables, the value of this offset will be zero. For the secondary virtual tables of other non-virtual bases, and of many virtual bases, it will be negative. Only in some construction virtual tables will some virtual base virtual tables have positive offsets, due to a different ordering of the virtual bases in the full object than in the subobject’s standalone layout.
-The typeinfo pointer points to the typeinfo object used for RTTI. It is always present. All entries in each of the virtual tables for a given class must point to the same typeinfo object. A correct implementation of typeinfo equality is to check pointer equality, except for pointers (directly or indirectly) to incomplete types. The typeinfo pointer is a valid pointer for polymorphic classes, i.e. those with virtual functions, and is zero for non-polymorphic classes.
-The virtual table address point points here, i.e. this is the virtual table address contained in an object’s virtual pointer. This address must have the alignment required for pointers.
-Virtual function pointers are used for virtual function dispatch. Each pointer holds either the address of a virtual function of the class, or the address of a secondary entry point that performs certain adjustments before transferring control to a virtual function.
-The form of a virtual function pointer is specified by the processor-specific C++ ABI for the implementation. In the specific case of 64-bit Itanium shared library builds, a virtual function pointer entry contains a pair of components (each 64 bits): the value of the target GP value and the actual function address. That is, rather than being a normal function pointer, which points to such a two-component descriptor, a virtual function pointer entry is the descriptor.</p>
-
-<p>The order of the virtual function pointers in a virtual table is the order of declaration of the corresponding member functions in the class. If an implicitly-declared copy assignment operator, move assignment operator, or destructor is virtual, it is treated as if it were declared at the end of the class, in that order. (Implicitly-declared assignment operators may be virtual if a base class declares a virtual assignment operator taking a reference to a derived class type.)</p>
-
-<p>An entry is added for every virtual function in a class, including deleted functions, unless:</p>
-
-<p>the function is consteval or
-the function overrides a function from the primary base and that override does not require a return-type adjustment.
-An override requires a return-type adjustment if the return types are different and have potentially incompatible representations. C++ permits an override to differ in return type from the overridden function only if both types are pointer-to-class or reference-to-class types and the class type B in the overridden function is an unambiguous base class of the class type D in the override. For the purposes of vtable layout, these types are considered to have potentially incompatible representations if:</p>
-
-<p>B is a morally virtual base of D (even if D is final and the offset of B within D is known to be zero) or
-the (static) offset of B within D is non-zero.
-When a derived class and its primary base share a virtual table, the virtual function entries introduced by the derived class follow those for the primary base, so that the layout of the primary base’s embedded virtual table is the same as that of its standalone virtual table. In particular, if the derived class overrides a base class virtual function with a different (covariant) return type, the entry for the derived class comes after the primary base’s embedded virtual table in declaration order, and is the entry used for calls from the derived class without adjustment. The entry in the embedded primary virtual table points to a routine that adjusts the result pointer before returning.</p>
-
-<p>The entries for virtual destructors are actually pairs of entries. The first destructor, called the complete object destructor, performs the destruction without calling delete() on the object. The second destructor, called the deleting destructor, calls delete() after destroying the object. Both destroy any virtual bases; a separate, non-virtual function, called the base object destructor, performs destruction of the object but not its virtual base subobjects, and does not call delete().</p>
-
-<p>Following the primary virtual table of a derived class are secondary virtual tables for each of its proper base classes, except any primary base(s) with which it shares its primary virtual table. These are copies of the virtual tables for the respective base classes (copies in the sense that they have the same layout, though the fields may have different values). We call the collection consisting of a primary virtual table along with all of its secondary virtual tables a virtual table group. The order in which they occur is the same as the order in which the base class subobjects are considered for allocation in the derived object:</p>
-
-<p>First are the virtual tables of direct non-primary, non-virtual proper bases, in the order declared, including their secondary virtual tables for non-virtual bases in the order they appear in the standalone virtual table group for the base. (Thus the effect is that these virtual tables occur in inheritance graph order, excluding primary bases and virtual bases.)
-Then come the virtual base virtual tables, also in inheritance graph order, and again excluding primary bases (which share virtual tables with the classes for which they are primary).
-This ABI does not make guarantees about the layout of other virtual tables in a virtual table group relative to a virtual table pointer in an object or a VTT. It guarantees only the layout of the global symbol for that virtual table group. It does not guarantee that the virtual table pointers actually installed in an object or a VTT will point into that global symbol.</p>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[Ref: https://itanium-cxx-abi.github.io/cxx-abi/abi.html]]></summary></entry></feed>
+</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[Related Header Definition]]></summary></entry></feed>
