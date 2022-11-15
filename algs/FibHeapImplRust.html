@@ -1,4 +1,133 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-11-15T23:44:46+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Fibonacci Heap Implementation (Rust)</title><link href="/algs/FibHeapImplRust.html" rel="alternate" type="text/html" title="Fibonacci Heap Implementation (Rust)" /><published>2022-11-13T00:00:00+08:00</published><updated>2022-11-13T00:00:00+08:00</updated><id>/algs/FibHeapImplRust</id><content type="html" xml:base="/algs/FibHeapImplRust.html"><![CDATA[<p>算法理论部分，在上一篇论文 <strong><a href="/algs/FibHeap.html">Fibonacci Heap</a></strong> 已经讲完了，下面是干活的部分<sup id="fnref:rust-impl" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">1</a></sup>：</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            Fibonacci Heap Implementation (Rust)
+        
+    " 
+/>
+
+<meta property="og:url" content="//algs/FibHeapImplRust.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        Fibonacci Heap Implementation (Rust)
+    
+</title>
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        Home
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/minghu6.jpeg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <i class="fas fa-search fa-fw"></i>
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    <button id="menuToggle" class="">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">Fibonacci Heap Implementation (Rust)</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      November 13, 2022
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p>算法理论部分，在上一篇论文 <strong><a href="/algs/FibHeap.html">Fibonacci Heap</a></strong> 已经讲完了，下面是干活的部分<sup id="fnref:rust-impl" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">1</a></sup>：</p>
 
 <h2 id="语言特定">语言特定</h2>
 
@@ -1014,1196 +1143,262 @@
       <p>https://github.com/minghu6/rust-minghu6/blob/snapshot-1/src/collections/heap/fib.rs <a href="#fnref:rust-impl" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[算法理论部分，在上一篇论文 Fibonacci Heap 已经讲完了，下面是干活的部分1： https://github.com/minghu6/rust-minghu6/blob/snapshot-1/src/collections/heap/fib.rs &#8617;]]></summary></entry><entry><title type="html">Fibonacci Heap</title><link href="/algs/FibHeap.html" rel="alternate" type="text/html" title="Fibonacci Heap" /><published>2022-10-27T00:00:00+08:00</published><updated>2022-10-27T00:00:00+08:00</updated><id>/algs/FibHeap</id><content type="html" xml:base="/algs/FibHeap.html"><![CDATA[<p>Fibonacci Heap<sup id="fnref:fib" role="doc-noteref"><a href="#fn:fib" class="footnote" rel="footnote">1</a></sup><sup id="fnref:fib2" role="doc-noteref"><a href="#fn:fib2" class="footnote" rel="footnote">2</a></sup> <sup id="fnref:fib-wiki" role="doc-noteref"><a href="#fn:fib-wiki" class="footnote" rel="footnote">3</a></sup>是一个基于链表结构的，理论时间复杂度很优的数据结构。</p>
-
-<p>常用于Dijkstra最短路径、Prim最小生成树等贪心算法，使用 <code class="language-plaintext highlighter-rouge">push</code> - <code class="language-plaintext highlighter-rouge">decrease-key</code>，都是 $O(1)$ 的时间复杂度。</p>
-
-<h2 id="前言">前言</h2>
-
-<p>一点儿啰嗦，可以跳过。说实话本来看图例， 看着各种相比最优的时间复杂度颇为心动但仔细看下去，发现完全是典型的基于链表结构的算法，代意词是理论很好但实际性能和最好的比要差一到两个数量级。那谁是最好的？</p>
-
-<p>其中之一就是Rust标准库里本家实现的堆–<a href="https://doc.rust-lang.org/src/alloc/collections/binary_heap.rs.html#268">BinaryHeap</a> 。这个堆不看不知道，一看我的天，整个基础结构就是一块儿连续内存，什么叫完美？！！你一看这个就知道性能比较可以不用做了，你F堆拿什么跟人家比，比都没法儿比！除非说，使用的CPU没有碗口大的高速缓存，否则你链表结构，就一个字，拉！</p>
-
-<h2 id="预备知识">预备知识</h2>
-
-<h3 id="二项式树-binomial-tree">二项式树 （Binomial Tree）</h3>
-
-<h4 id="秩阶度-rankorderdegree">秩、阶、度 （rank/order/degree）</h4>
-
-<p>$\texttt{order}$ ，通常指允许的最大孩子数量，常用于B树，二叉树的 $\texttt{order}$ 为 $2$ ；</p>
-
-<p>$\texttt{degree}$ ，具体地某个节点的孩子的数量；</p>
-
-<p>$\texttt{rank}$ ，一般指排名，但这里用作 $\texttt{degree}$ 的别名；</p>
-
-<p>以下统称 $\texttt{rank}$ ，指称直接孩子的个数。</p>
-
-<h4 id="性质与定义">性质与定义</h4>
-
-<ol>
-  <li>
-    <p>二项树的节点数为 ${\large 2^{\text{rank}}}$ ；</p>
-  </li>
-  <li>
-    <p>显然单节点树的 $\texttt{rank=0}$ ，而合并两棵单节点树可以得到 $\texttt{rank=1}$ 的树，合并两棵 $\texttt{rank=1}$ 的树可以得到 $\texttt{rank=2}$ 的树，由此可归纳得到 $\texttt{rank=k, (k&gt;0)}$ 可以由两棵 $\texttt{rank=k-1}$ 的树合并得到，这就是二项式树的构造；</p>
-  </li>
-  <li>
-    <p>特别地，从实现上讲，每次同 $\texttt{rank}$ 的树合并，都是其中一棵作为另一棵的最左子树，这样构造出的二项式树的子树也是二项式树，假设 $\texttt{rank=k} $，而且从左到由的 $\texttt{rank}$ 分别为 $\texttt{k-1, k-2, …, 0} $ 。</p>
-  </li>
-</ol>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_01.svg" zoom="200%" /></div>
-
-<p>二项式堆（Binomial Heap）就是由多棵二项式树构成，每棵树都是小顶堆（Min Heap），并且每棵子树的 $\texttt{rank}$ 独特。</p>
-
-<p>每个二项式堆都可以这样构造出来，二项式堆的结点数 $\texttt{n}$ 的二进制表示的每一位对应一个 $\texttt{rank}$ 数值。</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_02.svg" zoom="200%" /></div>
-
-<p><em>而二项堆里的每棵二项树的孩子构成的森林都可以理解为完全二项堆。</em></p>
-
-<h2 id="定义">定义</h2>
-
-<p>斐波那契堆类似于二项式堆，是一个二项式树的森林，但并不严格要求 $\texttt{rank}$ 独特。</p>
-
-<p>执行 <code class="language-plaintext highlighter-rouge">push</code> 操作的时候新节点直接作为单节点的二项式树，插入到根链表中。只有在 <code class="language-plaintext highlighter-rouge">pop</code> 操作的时候递归合并同 $\texttt{rank}$ 的树，才得到严格的二项式堆。</p>
-
-<h2 id="数据结构">数据结构</h2>
-
-<p>堆的结构：一个指向森林中最小根的指针，以及其他必要元数据；</p>
-
-<p>树根的存储结构：双头循环链表；</p>
-
-<p>树的结构：经典带反向引用的 <code class="language-plaintext highlighter-rouge">child-sibling</code> 链表。</p>
-
-<h2 id="push-操作">Push 操作</h2>
-
-<h3 id="算法">算法</h3>
-
-<p>根据定义，直接把单个节点插入到根链表中即可，必要的话更新堆指针。</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_push1.png" title="" /></div>
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_push2.png" title="" /></div>
-
-<h3 id="复杂度分析">复杂度分析</h3>
-
-<p>时间复杂度显然为 $O(1)$ 。</p>
-
-<h2 id="pop-操作">Pop 操作</h2>
-
-<h3 id="算法-1">算法</h3>
-
-<p><code class="language-plaintext highlighter-rouge">pop</code>算法分为几步：</p>
-
-<ol>
-  <li>
-    <p>把 <code class="language-plaintext highlighter-rouge">min</code> 所指向根的树的所有孩子插入到根链表中，然后遍历根列表找到下一个最小根，最后把旧根从根链表中删除；</p>
-  </li>
-  <li>
-    <p>从更新后的最小根出发，再次遍历根链表，在这个过程中构建 $\texttt{rank =&gt; root}$ 的 $\texttt{Map}$ ，当发现新的根的 $\texttt{rank}$ 已在 $\texttt{Map}$ 中存在时，递归地合并同 $\texttt{rank}$ 的树。<em>显然整个过程一遍扫描就可以完成，结果是规整成了一棵严格二项式树</em></p>
-  </li>
-</ol>
-
-<p>举例来看：</p>
-
-<p><em>图中黑色节点为标记节点，decrease-min 操作中使用，表示该树失去过孩子</em></p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop01.png" title="" /></div>
-
-<p>当前最小根指向 $\texttt{node(3)}$，它的孩子有 $\texttt{node(18), node(52), node(41)}$  ；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop02.png" title="" /></div>
-
-<p>把它的 $3$ 个孩子插入到根链表中，更新最小根为 $7$ ；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop03.png" title="" /></div>
-
-<p>从当前最小根节点开始递归地合并同 $\texttt{rank}$ 的树；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop04.png" title="" /></div>
-
-<p>扫描到 $\texttt{node(7)}$ ， $\texttt{rank = 1}$ ，插入当前 $\texttt{rank =&gt; root}$ 对儿到 $\texttt{Map}$ 中，继续向下扫描；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop05.png" title="" /></div>
-
-<p>扫描到 $\texttt{node(24)}$ ， $\texttt{rank = 2}$ ，Map中没有同 $\texttt{rank}$ 项，插入当前 $\texttt{rank =&gt; root}$ 对儿到 $\texttt{Map}$ 中，继续向下扫描；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop06.png" title="" /></div>
-
-<p>扫描到 $ \texttt{node(23)} $ ， $\texttt{rank = 0}$ ，Map中没有同 $\texttt{rank}$ 项，把 $\texttt{0 =&gt; node(23)}$ 插入到 $\texttt{Map}$ 中，继续向下扫描；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop07.png" title="" /></div>
-
-<p>扫描到 $\texttt{node(17)}$ ，$\texttt{rank = 0}$ ，Map中发现同 $\texttt{rank}$ 的 $\texttt{node(23)}$ ，把该项从 $\texttt{Map}$ 取出， 把较大的 $\texttt{node(23)}$ 插入到 $\texttt{node(17)}$ ，检查同 $\texttt{rank}$ 项 <em>显然这个同 rank 树的合并不影响后面没扫描过的根节点</em>；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop08.png" title="" /></div>
-
-<p>更新后的 $\texttt{17}$ 的 $\texttt{rank += 1}$ ，为 $1$ ，与 $\texttt{node(7)}$ 相同，继续合并，较大的 $\texttt{node(17)}$ 插入到 $\texttt{node(7)}$ ；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop09.png" title="" /></div>
-
-<p>更新后的 $\texttt{node(7)}$ 的 $\texttt{rank += 1} $，为 $2$ ，与 $\texttt{node(24)}$ 相同，继续合并，较大的 $\texttt{rank += 1}$ 插入到 $\texttt{node(7)}$ ；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop10.png" title="" /></div>
-
-<p>更新后的 $\texttt{node(7)}$ 的 $\texttt{rank += 1} $，为 $3$ ， 没有同 $\texttt{rank}$ 项，把 $\texttt{3 =&gt; node(7)}$ 插入到 $\texttt{Map}$ 中，向下扫描；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop11.png" title="" /></div>
-
-<p>扫描到 $\texttt{node(18)}$ ，$\texttt{rank = 1}$，没有同 $\texttt{rank}$ 项，把 $\texttt{1 =&gt; node(18)}$，插入到 $\texttt{Map}$ 中，向下扫描；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop12.png" title="" /></div>
-
-<p>扫描到 $\texttt{node(52)}$ ，$\texttt{rank = 0}$，没有同 $\texttt{rank}$ 项，继续向下；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop13.png" title="" /></div>
-
-<p>扫描到 $\texttt{node(41)}$ ，$\texttt{rank = 1}$，与 $\texttt{node(18)}$ 的 $\texttt{rank}$ 相同，合并；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop14.png" title="" /></div>
-
-<p>更新后的树 $\texttt{rank = 2}$ ，没有同 $\texttt{rank}$ 项，插入 $\texttt{Map}$ ，向下扫描；</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop15.png" title="" /></div>
-
-<p>发现所有节点已被扫描完，规整结束 <em>堆的数据结构里维护一个根节点数的变量，用它来指示扫描何时结束</em> 。</p>
-
-<h3 id="复杂度分析-1">复杂度分析</h3>
-
-<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$ \texttt{H} $为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
-
-<p>而由于每次规整后的，不存在相同 $\texttt{rank}$ 的树，所以标记 $\texttt{H’}$ 为 $\texttt{rank}$ 最大的树，有 $\texttt{trees} \leqslant \texttt{rank(H’) + 1}$ 。</p>
-
-<p>对于不涉及 <code class="language-plaintext highlighter-rouge">decrease-key</code> 操作的F堆来说，每棵树都是严格二项式树，而根据二项式树的性质，标记 $\texttt{H’}$ 的节点数为 $n’$ ， $n’ \lt n$，有 $\texttt{rank(H’) = } {\log_2 n’ \lt log_2 n}$ 。</p>
-
-<p>所以摊销时间复杂度为 $O(\text{log n})$ 。</p>
-
-<p>而对于 <code class="language-plaintext highlighter-rouge">decrease-key</code> 操作后的不严格二项式树，由于每棵孩子最多丢失一个孩子，应该仍然保持 $\texttt{rank(H’)}$ ~ ${O(\text{log n})}$ 的性质，后面的性质理论分析部分对此进行了证明，所以摊销时间复杂度仍为 ${O(\text{log n})}$ 。</p>
-
-<h2 id="decreasekey-操作">DecreaseKey 操作</h2>
-
-<h3 id="算法-2">算法</h3>
-
-<p>实现 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，需要一个额外的编号对节点的索引目录，</p>
-
-<p><em>同时为了在pop操作时维护这一结构并不破坏时间复杂度，还需要一个反向的节点对编号的目录，进行 O(1) 时间的反查</em></p>
-
-<p>假设需要更新 $\texttt{key}$ 的节点为 $x$ ，首先检查情况堆的性质是否被破坏：</p>
-
-<p>对于 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，堆的性质被破坏的情况就是，节点 $x$ 的 $\texttt{key}$ 比父节点小，<em>对于increase-key，就要检查节点x的子节点的key是否有比其小的</em> 。</p>
-
-<p>如果堆的性质被破坏：</p>
-
-<ol>
-  <li>
-    <p>把 $x$ 节点从父节点的孩子中删除，然后推到堆的根的链表上，取消 $x$ 节点的标记（<em>已被规整</em>） ，然后标记父节点（<em>表明它失去过一个孩子</em>节点），姑且把这个操作称为 <em>cut-meld-unmark</em>；</p>
-  </li>
-  <li>
-    <p>向上递归地执行 <em>cut-meld-unmark</em> ，直到一个未被标记或者是根节点的父节点，然后标记它。</p>
-  </li>
-</ol>
-
-<p>最后检查最小根是否需要被更新。</p>
-
-<p><em>decrease-key</em> 流程：</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk1.png" title="" /></div>
-
-<p><em>cut-meld-unmark</em> 流程：</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk2.png" title="" /></div>
-
-<p>图例是一个 <code class="language-plaintext highlighter-rouge">decrease-key</code> 的非平凡情况</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_01.png" title="" /></div>
-
-<p>对节点 $x$ 的 $\texttt{key}$ 从 $35$ 降到 $5$</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_03.png" title="" /></div>
-
-<p>发现堆性质被破坏，先对 $x$ 执行 <em>cut-meld-unmark</em></p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_04.png" title="" /></div>
-
-<p>向上递归，发现 $p$ 被标记，意味着 $p$ 之前已经失去过一个孩子，加上这次，已经失去了两个孩子，</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_05.png" title="" /></div>
-
-<p>对 $p$ 执行 <em>cut-meld-unmark</em> ，</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_06.png" title="" /></div>
-
-<p>递归地检查 $p$ 的父节点 $p’$ ， $p’$ 也被标记</p>
-
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_dk_2b_07.png" title="" /></div>
-
-<p>对 $p’$ 执行 <em>cut-meld-unmark</em> ，到了根节点，cut-meld-unmark 整个过程停止，检查最小根，发现 $\texttt{x = 5 &lt; 7}$ ，于是把最小根更新到 $x$ 。</p>
-
-<h3 id="复杂度分析-2">复杂度分析</h3>
-
-<p>由于每次操作最多增加一个标记节点，那么平均每次取消的标记节点也是 $1$ ，也就是摊销复杂度是 $O(1)$ 。</p>
-
-<h2 id="其他操作">其他操作</h2>
-
-<h3 id="union-操作-optional">Union 操作 （Optional）</h3>
-
-<p>直接连接两个根链表，不考虑维护索引目录的情况下，那操作就是 $O(1)$ 。</p>
-
-<p>如果需要维护索引目录，索引目录的合并也应该是 $O(1)$ 的时间复杂度。</p>
-
-<h3 id="remove-操作-specific">Remove 操作 （Specific）</h3>
-
-<ol>
-  <li><code class="language-plaintext highlighter-rouge">decrease-key</code> 到 $-\infty$</li>
-  <li><code class="language-plaintext highlighter-rouge">pop</code></li>
-</ol>
-
-<p>复杂度显然为 $O(\text{log n})$ 。</p>
-
-<h2 id="性质的理论分析">性质的理论分析</h2>
-
-<p>在对斐波那契堆的性质进行分析之前，先要引入几个相关的概念。</p>
-
-<h3 id="黄金比率-golden-ratio">黄金比率 （Golden Ratio）</h3>
-
-<p>对于两个数 $a$ ，$b$    $a&gt;b&gt;0$ ，有</p>
-
-\[\large\frac{a+b}{a} = \frac{a}{b} = \varphi\]
-
-<p>则称这两个数处于黄金比率，而这个黄金比率 $\varphi$ 可以通过定义</p>
-
-<p>$ 1 + \frac{b}{a} = \frac{a}{b} = \varphi\ $</p>
-
-<p>$1 + \frac{1}{\large \varphi} = \varphi $</p>
-
-<p>得到它的二次方程 $\varphi + 1 = \varphi^2$</p>
-
-<p>解出两个根，正根 $\varphi = {\large \frac{1+\sqrt{5}}{2}} \approx 1.618$ ，以及负根 $\psi = {\large \frac{1-\sqrt{5}}{2}} \approx -0.618$</p>
-
-<h3 id="斐波那契数-fibonacci-number">斐波那契数 （Fibonacci Number）</h3>
-
-\[F_n =
-\left\{\begin{array}{l}
-\ 0&amp; &amp;(n = 0) \\
-\ 1&amp; &amp;(n = 1) \\ 
-\ F_{n-2} + F_{n-1}&amp; &amp;(n \ge 2) \\
-\end{array}\right.\]
-
-<table>
-  <thead>
-    <tr>
-      <th>$i$</th>
-      <th>$0$</th>
-      <th>$1$</th>
-      <th>$2$</th>
-      <th>$3$</th>
-      <th>$4$</th>
-      <th>$5$</th>
-      <th>$6$</th>
-      <th>$7$</th>
-      <th>$…$</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>$F_i$</td>
-      <td>$0$</td>
-      <td>$1$</td>
-      <td>$1$</td>
-      <td>$2$</td>
-      <td>$3$</td>
-      <td>$5$</td>
-      <td>$8$</td>
-      <td>$13$</td>
-      <td>$…$</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>它的封闭表达式</p>
-
-\[F_n = \frac{\varphi^n-\psi^n}{\varphi-\psi} = \frac{\varphi^n-\psi^n}{\sqrt 5}\]
-
-<p>显然它的增长速度也是指数级的。</p>
-
-<h4 id="性质1">性质1</h4>
-
-<p>基础：</p>
-
-\[\begin{array}{l}
-&amp;F_2 = 1 = 1 + \sum_{i=0}^{0} F_i\\
-&amp;F_3 = 2 = 1 + \sum_{i=0}^{1} F_i
-\end{array}\]
-
-<p>归纳推理：</p>
-
-\[\begin{array}{l} 
-F_{n+2} &amp;=\ F_n + F_{n+1}\\
-&amp;=\ F_n + 1 + \sum_{i=0}^{n-1} F_i\\
-&amp;=\ 1 + \sum_{i=0}^{n} F_i
-\end{array}\]
-
-<p>得到 $ F_{n+2} = 1 + \sum_{i=0}^{n} F_i $</p>
-
-<h4 id="性质2">性质2</h4>
-
-<p>基础：</p>
-
-\[\begin{array}{l}
-&amp;F_2 =\ 1 \geqslant 1 = \varphi^0\\
-&amp;F_3 =\ 2 \geqslant \varphi = \varphi^1
-\end{array}\]
-
-<p>归纳推理：</p>
-
-\[\begin{array}{l}
-F_{n+2} &amp;=\ F_{n+1} + F_{n}\\
-&amp;\geqslant \ \varphi^{n-1} + \varphi^{n-2}\\
-&amp;=\ \varphi^{n-2}(1 + \varphi)\\
-&amp;=\ \varphi^{n-2}\varphi^2\\
-&amp;=\ \varphi^n
-\end{array}\]
-
-<p>得到 $ F_{n+2} \geqslant \varphi^n $</p>
-
-<h3 id="斐波那契堆的性质">斐波那契堆的性质</h3>
-
-<h4 id="性质1-1">性质1</h4>
-
-<p>对一个 $\texttt{rank}$ 为 $n$ 的节点 $x$ ，按照插入顺序，编号它的孩子 $y_1, y_2, …, y_n$ 。</p>
-
-<p>那么根据二项式树的性质，有 $\texttt{rank(} y_i \texttt{)}= i-1$ 。</p>
-
-<p>考虑到 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致 $y_i$ 最多失去一个孩子</p>
-
-<p>于是有</p>
-
-\[\texttt{rank}({\large y_i}) \geqslant
-\ \left \{\begin{array}{l}
-\ 0 &amp;(i=1)\\
-\ i - 2  &amp;(i \geqslant 2)\\
-\end{array}\right.\]
-
-<h4 id="性质2-1">性质2</h4>
-
-<p>假设 $\texttt{size(k)}$ ，为 $\texttt{rank}$ 为 $k$ 的节点的可能的最小结点数</p>
-
-<p>基础：</p>
-
-\[\begin{array}{l}
-&amp;\texttt{size}(0) =\ 1 = F_2 \geqslant F_2 \\
-&amp;\texttt{size}(1) =\ 2 = F_3 \geqslant F_3 \\
-\end{array}\]
-
-<p>归纳推理：</p>
-
-\[\begin{array}{l}
-size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
-&amp;= 1 + \texttt{size(rank(}y_1\texttt{))} + \sum_{i=2}^{k} \texttt{size(rank(}y_i\texttt{))}\\
-&amp;\geqslant 1 + \texttt{size(0)} + \sum_{i=2}^{k} \texttt{size(rank(i-2))}\\
-&amp;\geqslant 1 + 1 + \sum_{i=2}^{k} \texttt{size(} F_i \texttt{)}\\
-&amp;= 1 + \sum_{i=0}^{k} \texttt{size(} F_i\texttt{)}\\
-&amp;= F_{k+2}\\
-&amp;\geqslant \varphi^{k}
-\end{array}\]
-
-<p>于是有</p>
-
-\[\texttt{size(k)} \geqslant F_{k+2} \geqslant \varphi^{k}\ \ \ (k \geqslant 0)\]
-
-<p>根据这个性质，两边取 $log$ ，得到  $ log_{\varphi}^{size(k)} \geqslant k = rank $ 。</p>
-
-<p>回顾前面 <code class="language-plaintext highlighter-rouge">pop</code> 的时间复杂度分析，$\texttt{rank}$ ~ $O(log_{\varphi}^{\texttt{size(k)}})$ ~ $O(log\ n)$，也就是说我们在理论上证明了 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致的不严格二项式树，仍然不影响它的 $O(\text{log n})$ 的时间复杂度。</p>
-
-<h2 id="后续斐波那契堆的具体实现rust">后续：<strong><a href="/algs/FibHeapImplRust.html">斐波那契堆的具体实现（Rust）</a></strong></h2>
-
-<h2 id="引用">引用</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:fib" role="doc-endnote">
-      <p>https://www.cs.princeton.edu/~wayne/teaching/fibonacci-heap.pdf <a href="#fnref:fib" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:fib2" role="doc-endnote">
-      <p>http://www.cs.princeton.edu/~wayne/kleinberg-tardos/pdf/FibonacciHeaps.pdf <a href="#fnref:fib2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:fib-wiki" role="doc-endnote">
-      <p>https://en.wikipedia.org/wiki/Fibonacci_heap <a href="#fnref:fib-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[Fibonacci Heap12 3是一个基于链表结构的，理论时间复杂度很优的数据结构。 https://www.cs.princeton.edu/~wayne/teaching/fibonacci-heap.pdf &#8617; http://www.cs.princeton.edu/~wayne/kleinberg-tardos/pdf/FibonacciHeaps.pdf &#8617; https://en.wikipedia.org/wiki/Fibonacci_heap &#8617;]]></summary></entry><entry><title type="html">图理论基础</title><link href="/algs/graph-theory-basic.html" rel="alternate" type="text/html" title="图理论基础" /><published>2022-10-09T00:00:00+08:00</published><updated>2022-10-09T00:00:00+08:00</updated><id>/algs/graph-theory-basic</id><content type="html" xml:base="/algs/graph-theory-basic.html"><![CDATA[<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
-
-<ol>
-  <li>
-    <p>边，无向边（edge）</p>
-  </li>
-  <li>
-    <p>有向边（arc）
-tail(起点) -&gt; head（终点）</p>
-  </li>
-  <li>
-    <table>
-      <tbody>
-        <tr>
-          <td>|V</td>
-          <td>: 点的个数，图的阶（order）</td>
-        </tr>
-      </tbody>
-    </table>
-  </li>
-  <li>无根树，连通无向图</li>
-</ol>
-
-<p>参考<a href="/lang/c_trap.html">这里</a></p>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[假设图 G = {V, E}， V是顶点集，E是边集]]></summary></entry><entry><title type="html">Linux上把大文件夹移动到其他存储设备上来释放空间</title><link href="/os/mv-large-size-dir-to-another-dev.html" rel="alternate" type="text/html" title="Linux上把大文件夹移动到其他存储设备上来释放空间" /><published>2022-09-10T00:00:00+08:00</published><updated>2022-09-10T00:00:00+08:00</updated><id>/os/mv-large-size-dir-to-another-dev</id><content type="html" xml:base="/os/mv-large-size-dir-to-another-dev.html"><![CDATA[<h2 id="问题背景">问题背景</h2>
-
-<p>一个常见的问题是发现某个文件夹比如<code class="language-plaintext highlighter-rouge">/var</code>, <code class="language-plaintext highlighter-rouge">/opt</code> 过大，使得所在系统磁盘（比如一块儿容量很稀缺的高速SSD）的空间非常紧张，这时我们想把大文件夹移动到其他存储设备上来释放空间。</p>
-
-<h2 id="约定">约定</h2>
-
-<p>不妨假设根系统<code class="language-plaintext highlighter-rouge">/</code>挂载在磁盘分区<code class="language-plaintext highlighter-rouge">sda4</code>，要移动的大目录LargeDir是根文件系统下的一个子目录，目标存储设备为<code class="language-plaintext highlighter-rouge">sdb</code>。</p>
-
-<h2 id="思路1">思路1<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></h2>
-
-<p>一个体面的思路是在<code class="language-plaintext highlighter-rouge">sdb</code>上创建一个分区，假设为<code class="language-plaintext highlighter-rouge">sdb1</code>，创建LargeDir的同级根目录LargeDir2，把<code class="language-plaintext highlighter-rouge">sdb1</code>挂载到LargeDir2，把LargeDir的内容复制到LargeDir2</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>LargeDir2
-mount /dev/sdb1 LargeDir2
-rsync <span class="nt">-a</span> LargeDir/ LargeDir2
-</code></pre></div></div>
-
-<p>在文件系统表单<code class="language-plaintext highlighter-rouge">/etc/fstab</code>里添加对应项,比如
-<code class="language-plaintext highlighter-rouge">/dev/sdb1    LargeDir    ext4    defaults      2 2</code></p>
-
-<p>重启后生效，但是这个思路是后一个文件系统隐藏了前一个文件系统的子目录，<strong>如何删除原文件系统的子目录内容呢？</strong></p>
-
-<p>由于<strong>Linux允许同一文件系统有多个挂载点</strong>，所以只需要把<code class="language-plaintext highlighter-rouge">sda4</code>再次挂载到一个新的目录，然后就可以找到原LargeDir，然后删除。</p>
-
-<h2 id="思路2">思路2<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></h2>
-
-<p>重启进入单用户模式，安全移动内容，然后删除，然后重新命名回来</p>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>https://askubuntu.com/questions/39536/how-can-i-store-var-on-a-separate-partition <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>https://www.suse.com/support/kb/doc/?id=000018399 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[问题背景]]></summary></entry><entry><title type="html">kernel crash dump</title><link href="/os/kernel-crash-dump.html" rel="alternate" type="text/html" title="kernel crash dump" /><published>2022-09-01T00:00:00+08:00</published><updated>2022-09-01T00:00:00+08:00</updated><id>/os/kernel-crash-dump</id><content type="html" xml:base="/os/kernel-crash-dump.html"><![CDATA[<h2 id="ubuntu">Ubuntu</h2>
-
-<p><a href="https://ubuntu.com/server/docs/kernel-crash-dump">install linux-crashdump</a></p>
-
-<h2 id="dump-output">Dump Output</h2>
-
-<p><code class="language-plaintext highlighter-rouge">alias crash="crash /usr/lib/debug/boot/vmlinux-$(uname -r)"</code></p>
-
-<p><code class="language-plaintext highlighter-rouge">crash /var/crash/&lt;yyyymmmmhhmm&gt;/dump.&lt;yyyymmmmhhmm&gt;</code></p>
-
-<p>bt: backtrace
-log: kernel log</p>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[Ubuntu]]></summary></entry><entry><title type="html">Compile Linux Kernel</title><link href="/os/compile-linux-kernel.html" rel="alternate" type="text/html" title="Compile Linux Kernel" /><published>2022-08-26T00:00:00+08:00</published><updated>2022-08-26T00:00:00+08:00</updated><id>/os/compile-linux-kernel</id><content type="html" xml:base="/os/compile-linux-kernel.html"><![CDATA[<p>编译实践1：
-学习Linux内核模块开发，需要增加一个<code class="language-plaintext highlighter-rouge">FORCE_UNLOADING</code> feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。</p>
-
-<p><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"><strong>Linux上游源代码（git地址在其页面下方）</strong></a></p>
-
-<p><strong>默认环境</strong>
-当前目录： kernel源目录</p>
-
-<h2 id="ubuntu">Ubuntu</h2>
-
-<p>注意源文件的下载，不要在系统目录比如<code class="language-plaintext highlighter-rouge">/usr/src</code>下进行，而要在用户空间内进行，而<code class="language-plaintext highlighter-rouge">apt source</code>，<code class="language-plaintext highlighter-rouge">apt-get source</code>, 不需要也不能使用<code class="language-plaintext highlighter-rouge">sudo</code>, 会错误得造成源文件的用户组变为root。对于&gt;= 20.04,没有官方更新的wiki讲如何使用debian/rules，直接从linux上游源代码处获取。</p>
-
-<p>= 18.04</p>
-
-<p>参考<a href="https://askubuntu.com/questions/1085411/unable-to-follow-kernel-buildyourownkernel">这篇文章</a></p>
-
-<p>= 19.04</p>
-
-<p>参考<a href="https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel">官方wiki</a></p>
-
-<p>= 20.04 (or maybe upper than it)</p>
-
-<p>参考<a href="https://discourse.ubuntu.com/t/how-to-compile-kernel-in-ubuntu-20-04/20268/10">这篇文章</a></p>
-
-<ol>
-  <li>
-    <p>下载源代码</p>
-  </li>
-  <li>
-    <p>安装依赖<code class="language-plaintext highlighter-rouge">sudo apt install asciidoc autoconf bc binutils-dev bison build-essential crash dkms fakeroot flex gawk gcc kernel-wedge kexec-tools libelf-dev libiberty-dev libncurses5-dev libncurses-dev libssl-dev libudev-dev makedumpfile openssl pciutils-dev</code></p>
-
-    <p>(<code class="language-plaintext highlighter-rouge">pciutils-dev</code> is replaced by <code class="language-plaintext highlighter-rouge">libpci-dev</code> in the later version)</p>
-  </li>
-  <li>
-    <p>配置参考下面tips</p>
-  </li>
-  <li>
-    <p><code class="language-plaintext highlighter-rouge">make -jn deb-pkg</code></p>
-  </li>
-  <li>
-    <p><code class="language-plaintext highlighter-rouge">cd .. &amp;&amp; sudo apt ./linux-*.deb</code></p>
-  </li>
-  <li>
-    <p><code class="language-plaintext highlighter-rouge">sudo update-grub</code></p>
-  </li>
-</ol>
-
-<p><strong>Tips:</strong></p>
-
-<ol>
-  <li>
-    <p>Linux 68%的代码是驱动相关代码，当然大部分的编译时间也是在编译驱动上，而这一部分也是容易出问题，往往花了几个小时编译发现，后来发现在这里出了错误，这就很难受，需要提前仔细配置。个人经验是不使用 <code class="language-plaintext highlighter-rouge">/boot/config-`uname -r` </code> 作为初始配置，而是使用<code class="language-plaintext highlighter-rouge">make localmodconfig</code> 创建初始配置:<code class="language-plaintext highlighter-rouge">.config</code>文件，使用默认的配置，确保驱动的编译不出问题。然后使用<code class="language-plaintext highlighter-rouge">make menuconfig</code>(shell text) or <code class="language-plaintext highlighter-rouge">make xconfig</code>(qt5 gui) 配置内核其他部分。</p>
-  </li>
-  <li>
-    <p>make 使用<code class="language-plaintext highlighter-rouge">-j</code>启用多核编译很重要，如果宿主机器在编译的同时需要运行其他任务，建议少用一个核心，避免机器down掉(然后比如当前用户直接被强制logout)。</p>
-  </li>
-  <li>
-    <p>如果make过程中因为什么原因中途停掉了，可以再次启动，但是第一次会报错: <code class="language-plaintext highlighter-rouge">"dpkg-source: unrepresentable changes to source"</code>, 只要把相关报错文件删除掉重新运行即可。</p>
-  </li>
-  <li>
-    <p>&gt;= 20.04, 可能需要的额外依赖包:</p>
-
-    <p>dwarves # tmp_vmlinux.btf: pahole (pahole) is not available</p>
-  </li>
-</ol>
-
-<h2 id="select-kernel">Select Kernel</h2>
-
-<p>重启的时候按住<code class="language-plaintext highlighter-rouge">shift</code>进入grup界面，选择需要的版本内核启动。
-修改默认启动内核，参考<a href="https://support.huaweicloud.com/intl/en-us/trouble-ecs/ecs_trouble_0327.html">华为云的这篇文章</a>和<a href="https://askubuntu.com/questions/82140/how-can-i-boot-with-an-older-kernel-version/1393019#1393019">askubuntu的这个回答</a>
-修改配置文件<code class="language-plaintext highlighter-rouge">/etc/default/grub</code>的 <code class="language-plaintext highlighter-rouge">GRUB_DEFAULT</code> 的值为启动项的序号：</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0，正常启动
-1&gt;y， 高级启动项，y start from 0
-</code></pre></div></div>
-
-<p>查看高级启动项的序号(Ubuntu为例)：
-<code class="language-plaintext highlighter-rouge">sudo grub-mkconfig | grep -iE "menuentry 'Ubuntu, with Linux" | awk '{print i++ " : "$1, $2, $3, $4, $5, $6, $7}'</code>
-不要忘记最后运行<code class="language-plaintext highlighter-rouge">sudo update-grup</code>来更新配置。</p>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[编译实践1： 学习Linux内核模块开发，需要增加一个FORCE_UNLOADING feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。]]></summary></entry><entry><title type="html">TCP Congestion Control</title><link href="/net/ietf_rfc_5681_obs2581.html" rel="alternate" type="text/html" title="TCP Congestion Control" /><published>2022-08-07T00:00:00+08:00</published><updated>2022-08-07T00:00:00+08:00</updated><id>/net/ietf_rfc_5681_obs2581</id><content type="html" xml:base="/net/ietf_rfc_5681_obs2581.html"><![CDATA[<p>This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04</p>
-
-<h2 id="1-introduction">1. Introduction</h2>
-
-<p>介绍TCP四种交织在一起的拥塞控制算法：</p>
-
-<ol>
-  <li>慢启动（slow start）</li>
-  <li>拥塞避免（congestion avoidance）</li>
-  <li>快速重传（fast retransmit）</li>
-  <li>快速恢复（fast recovery）</li>
-</ol>
-
-<p>TCP链接需要做什么，在一个长时间停当后，以及确定和澄清一些TCP ACK生成的问题</p>
-
-<h2 id="2-definition">2. Definition</h2>
-
-<p>发送方最大分片大小（Sender Maximum Segment Size, SMSS）<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
-
-<p>接收方最大分片大小（Receiver Maximum Segment Size, RMSS）<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
-
-<p>最大段（Full Sized Segment）</p>
-
-<p>接收方窗口（Receiver Window, rwnd）</p>
-
-<p>拥塞窗口（Congestion Window, cwnd）<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></p>
-
-<p>初始窗口（Initial Window, IW）<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
-
-<p>丢失窗口（Lost Window, LW）<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></p>
-
-<p>重启窗口（Restart Window, RW）<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup></p>
-
-<p>飞行尺寸（FlightSize）<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup></p>
-
-<p>重复确认（Duplicate Acknowledgement）:</p>
-
-<p>一个确认被认为是重复的如果：</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a. ack的接收者有未完成的（outstanding）数据
-
-b. 到来的ack没有携带数据
-
-c. SYN 和 FIN的标志都没有被设置
-
-d. ack number等于链接最大的ack number
-
-e. 到来的ack广告的窗口大小等于上一次ack广告的窗口大小
-
-f: 使用SACKs（Selective Acknownledgements）的TCP会利用SACK信息判断ack是否重复
-</code></pre></div></div>
-
-<h2 id="3-congestion-control-algorithm">3. Congestion Control Algorithm</h2>
-
-<p>本文提到的拥塞控制算法使用丢失或者ECN标记作为拥塞发生的信号</p>
-
-<h3 id="31-slow-start-and-congestion-avoidance">3.1 Slow Start and Congestion Avoidance</h3>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if SMSS &gt; 2190 (bytes):
-  IW &lt;= 2*SMSS and IM &lt;= 2*SS(Segment Size)
-else if 1095 &lt; SMSS &lt;= 2190:
-  IW &lt;= 3*SMSS and IW &lt;= 3*SS
-ekse:
-  IW &lt;= 4*SMSS and IW&lt;= 4*SS
-</code></pre></div></div>
-
-<p>建立TCP链接的两个ACK不能用来增加cwnd的大小。等等IW设置详见<a href="https://datatracker.ietf.org/doc/html/rfc3390">RFC3390</a>。</p>
-
-<p>ssthresh的初始值可以任意高<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>
-慢启动算法启动标准：<code class="language-plaintext highlighter-rouge">cwnd &lt; ssthresh</code>
-拥塞避免算法标准：<code class="language-plaintext highlighter-rouge">cwnd &gt; ssthresh</code>
-二选一都可以：<code class="language-plaintext highlighter-rouge">cwnd = ssthresh</code></p>
-
-<p>在慢启动的时候，每次ACK，cwnd的增加不超过SMSS bytes，当cwnd超过<code class="language-plaintext highlighter-rouge">ssthresh</code>或者拥塞重新被检测到的时候，退出慢启动。
-传统TCP实现每次正好增加SMSS，但是我们推荐使用： <code class="language-plaintext highlighter-rouge">cwnd += min(N, SMSS)</code>,N是被新的ACK新确认的未确认数据的大小。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">9</a></sup></p>
-
-<p>在拥塞避免的时候，每过一个往返时间<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">10</a></sup>，cwnd可以增加一个full-sized segment<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">11</a></sup>大小；
-应该（SHOULD）每一个来回的时间，增加<code class="language-plaintext highlighter-rouge">min(N, SMSS)</code>
-但是不管怎样，每次cwnd不能增加超过SMSS。</p>
-
-<p>或者每当收到一个不重复的ACK数据报，就增加一个<code class="language-plaintext highlighter-rouge">SMSS * SMSS / cwnd</code>大小<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">12</a></sup>；
-还有的方法是增加新的被ACK确认的数据大小，直到cwnd增加到SMSS。<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">13</a></sup></p>
-
-<p>同样地，当检测到拥塞发生的时候，算法终止。</p>
-
-<p>ssthresh不应该超过<code class="language-plaintext highlighter-rouge">max(FlightSize/2, 2*SMSS)</code></p>
-
-<p>并且，一旦超时，cwnd必须被设为不超过LW，也就是1 full-sized segment。因此在重传被丢弃的包分片后，发送方使用慢启动来增加窗口的大小，从1 full-sized segment到新的ssthresh，在这时拥塞避免算法开始接管。</p>
-
-<h3 id="32-fast-retransmitfast-recovery">3.2 Fast Retransmit/Fast Recovery</h3>
-
-<p>当乱序的分片到达的时候，TCP接收端应该发送duplicate ack，通知发送方接收到的分片乱序以及应该收到的序列号。</p>
-
-<p>从发送端的视角，当收到重复ack的时候，可能是几个网络原因：</p>
-
-<ol>
-  <li>分片丢失</li>
-  <li>网络把数据分片重新排序</li>
-  <li>ack或网络分片的复制（replication）</li>
-</ol>
-
-<p>In addition, a TCP receiver SHOULD send an immediate ACK when the incoming segment fills in (all or part) of a gap in the sequence space.</p>
-
-<p>TCP发送方基于到来的重复ack，使用快速重传算法来探测和修复丢包。
-快速重传算法使用3个重复ack作为直接启动的信号而不需要等重传计时器过时。
-在快速是重传算法发送了可能丢失的分片后，快速恢复算法接管新数据的传输，直到一个非重复ack的到来。
-不执行慢启动的理由是重复ack的收到不仅表明分片丢失，也表明分片很可能已经离开了网络（在缓冲区中）</p>
-
-<p>快速重传和快速恢复算法一起实现如下：</p>
-
-<ol>
-  <li>
-    <p>在发送方收到第一个和第二个重复ack时，应该发送一个之前未发送数据的分片<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">14</a></sup></p>
-  </li>
-  <li>
-    <p>当收到第三个重复的ack时，一个TCP必须把ssthresh设置为不超过<code class="language-plaintext highlighter-rouge">max(FlightSize/2, 2*SMSS)</code></p>
-  </li>
-  <li>
-    <p>开始在SND.UNA<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">15</a></sup>丢失的分片必须被重传，并且cwnd设置为<code class="language-plaintext highlighter-rouge">ssthresh + 3*SMSS</code>。<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">16</a></sup></p>
-  </li>
-  <li>
-    <p>对于每一个额外的重复ACK（在第三个之后）cwnd必须增加SMSS。<sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">17</a></sup></p>
-  </li>
-  <li>
-    <p>当之前未发送的数据可用，并且cwnd新值和接收方窗口允许时，TCP应该发送<code class="language-plaintext highlighter-rouge">1*SMSS</code>bytes数据。</p>
-  </li>
-  <li>
-    <p>当下一个ack到达并确认之前未确认的数据时，TCP必须将cwnd设置为ssthresh（set by step-2）<sup id="fnref:18" role="doc-noteref"><a href="#fn:18" class="footnote" rel="footnote">18</a></sup><sup id="fnref:19" role="doc-noteref"><a href="#fn:19" class="footnote" rel="footnote">19</a></sup></p>
-  </li>
-</ol>
-
-<p>众所周知，这个算法通常无法有效地从单个数据包飞行中的多次丢失中恢复。</p>
-
-<h2 id="4-additional-considerations">4. Additional Considerations</h2>
-
-<h3 id="41-restarting-idle-connections">4.1. Restarting Idle Connections</h3>
-
-<h3 id="42-generating-acknowledgments">4.2. Generating Acknowledgments</h3>
-
-<h3 id="43-loss-recovery-mechanisms">4.3. Loss Recovery Mechanisms</h3>
-
-<h2 id="5--security-considerations">5.  Security Considerations</h2>
-
-<p>这个per是什么鬼，还有这么用的，啥意思？并且TCP发送方不能改变cwnd来反映这两个分片。记住，使用SACK的发送方不能发送新数据除非到来的重复ack包含新的SACK信息</p>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>最大分片的负载大小，不包括TCP/IP headers。这个数值基于MTU、PMTUD、RMSS或者其他因素。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>由TCP MSS option决定，如果没有设置，则为536 bytes（TCP安全最大值） <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>限制TCP发送数据的状态变量，TCP发送数据的大小受cwnd和rwnd的双重限制 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>发送方的三次握手后的拥塞窗口 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>在重传计时器发现包的丢失时的拥塞窗口的大小 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:6" role="doc-endnote">
-      <p>在一个慢启动算法里，在一段停当（idle）的时间后，启动重传时的拥塞窗口大小 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:7" role="doc-endnote">
-      <p>已发送，但尚未被ack确认的数据数量，也就是“飞行中“的数据包 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:8" role="doc-endnote">
-      <p>Slow Start Threshold <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:13" role="doc-endnote">
-      <p>这么做是为了增加鲁棒性针对一些行为不端的接收方方通过同一分片的多次的ACK响应（ACK Division），每个ack仅是数据的一部分，每个ACK都会使得发送方窗口增加SMSS，结果使得发送方使用过大的发送窗口 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:12" role="doc-endnote">
-      <p>round-trip time, RTT <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:9" role="doc-endnote">
-      <p>包含当前允许发送的最大数据的分片，比如包含SMSS bytes的数据 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:10" role="doc-endnote">
-      <p>当cwnd非常大的时候，比如比<code class="language-plaintext highlighter-rouge">SMSS*SMSS</code> 还要大的时候，应该算为至少1 byte；同时更旧实现会增加一个额外常数，但这是错误的会导致性能损失 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:11" role="doc-endnote">
-      <p>缺点是需要维护一个额外的状态变量 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:14" role="doc-endnote">
-      <p>On the first and second duplicate ACKs received at a sender, a TCP SHOULD send a segment of previously unsent data per [RFC3042] provided that the receiver’s advertised window allows, the total FlightSize would remain less than or equal to cwnd plus 2*SMSS, and that new data is available for transmission <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:15" role="doc-endnote">
-      <p>Sender Unknowledge <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:16" role="doc-endnote">
-      <p>这人为地夸大了cwnd已经离开网络被接收方缓存3个分片 <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:17" role="doc-endnote">
-      <p>这人为地夸大了cwnd为了反映离开网络的额外分片。为了防止这一机制被接收方滥用，可以限制cwnd扩大的次数为未接收分片的数量。Note: When an advanced loss recovery mechanism (such as outlined in section 4.3) is not in use, this increase in FlightSize can cause equation (4) to slightly inflate cwnd and ssthresh, as some of the segments between SND.UNA and SND.NXT are assumed to have left the network but are still reflected in FlightSize. <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:18" role="doc-endnote">
-      <p>这被叫做窗口紧缩（deflating） <a href="#fnref:18" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:19" role="doc-endnote">
-      <p>这个ack应该是由step-3的重传引发的。除此之外，这个ack应该确认所有在丢失的分片和收到的第三个重复的分片发送的所有中间分片，如果中间没有丢失 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04]]></summary></entry><entry><title type="html">Path MTU Discovery</title><link href="/net/ietf_rfc_1191_obs1063.html" rel="alternate" type="text/html" title="Path MTU Discovery" /><published>2022-08-06T00:00:00+08:00</published><updated>2022-08-06T00:00:00+08:00</updated><id>/net/ietf_rfc_1191_obs1063</id><content type="html" xml:base="/net/ietf_rfc_1191_obs1063.html"><![CDATA[<p>This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07</p>
-
-<h2 id="1-protocol-overview">1. Protocol Overview</h2>
-
-<p>通过设置IP header 的 <code class="language-plaintext highlighter-rouge">DF</code> bit 来动态发现一个路径的PMTU<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>:
-以第一跳<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的MTU为初始值(已知的)，如果收到ICMP code 3-4<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup><sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
-
-<p>由于网络拓扑会随时间改变，PMTU的减少，仍然可以通过DTB meessage得知，只要DF bit 被设置，而PMTU的增加，可以通过主机上的定期任务<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>来检测。</p>
-
-<h2 id="2-host主机specification">2. Host（主机）specification</h2>
-
-<p>当Host探索PMTU的减少时，速度必须尽可能地快，而探索PMTU的增加时，探索的时间间隔不能频繁（infrequent）<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>。</p>
-
-<p>更具体地，当探索PMTU的增加时，增加失败的间隔不少于5min，增加成功的间隔不小于1min，建议的间隔分别是是10min和2min。</p>
-
-<p>Host必须向下兼容不包含next-hop MTU的旧风格的DTB message<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup>。</p>
-
-<p>Host估值的PMTU应该不低于68 octets<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup></p>
-
-<h3 id="3-tcp-mss-option">3. TCP MSS<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup> Option</h3>
-
-<p>除非被允许，Host进行PMTUD时发送IP包的长度不应该超过 536 + 40 = 576 octets。</p>
-
-<p>而很多TCP实现总是设置MSS选项并且将值设为536，如果目的连接是非本地的。这种行为是对的，因为互联网上到处都是不遵守规则，发送超过576 octets<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">10</a></sup>的的host。</p>
-
-<p>一个host可能根据MTU设置MMS，这不应该对PMTUD造成问题，并且可以劝阻同层发送巨大的数据报</p>
-
-<h2 id="4-router路由器-specification">4. Router（路由器） specification</h2>
-
-<p>DTB message(ICMP code 3-4) format, 提供额外的origin header，next-hop MTU 不赘叙</p>
-
-<h2 id="5-处理旧风格的message">5. 处理旧风格的message</h2>
-
-<p>即如果message本身没有提供PMTU的信息。</p>
-
-<p>最简单的方式是取当前估计的PMTU与576之间的最小值，并且取消<code class="language-plaintext highlighter-rouge">DF</code>bit。</p>
-
-<p>更复杂的方式需要“搜索”准确的PMTU估计值。有几个可能方法，它们根据一个之前的估计值产生一个新的估计值。</p>
-
-<p>比如乘以一个常数比如0.75，但这样收敛又慢，产生的估计值又低于实际的值。所以不推荐。</p>
-
-<p>再比如进行二分搜索，它收敛快一点，但从FDDI<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup> MTU落到Ethernet<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">12</a></sup> MTU仍然需要4-5步，而有一个非常的劣势是识别数据报到达另一端的时间是一个复杂实现。因此也不推荐。</p>
-
-<p>有一个看起来效果似乎很好方法是比起盲搜，搜索一组可能出现的值，因为设计者们倾向于用类似的方式选择MTUs,使用其中的最小值<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">13</a></sup>。使用下表的搜索，</p>
-
-<p>Table Common MTUs in the Internet:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Plateau</th>
-      <th>MTU</th>
-      <th>Comments</th>
-      <th>Reference</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>65535</td>
-      <td>65535</td>
-      <td>Official maximum MTU</td>
-      <td>RFC 791</td>
-    </tr>
-    <tr>
-      <td>32004</td>
-      <td>65535</td>
-      <td>Hyperchannel</td>
-      <td>RFC 1044</td>
-    </tr>
-    <tr>
-      <td>17914</td>
-      <td>17914</td>
-      <td>16Mb IBM Token Ring</td>
-      <td> </td>
-    </tr>
-    <tr>
-      <td>8166</td>
-      <td>8166</td>
-      <td>IEEE 802.4</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>4464</td>
-      <td>IEEE 802.5 (4Mb max)</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td>4352</td>
-      <td>4352</td>
-      <td>FDDI (Revised)</td>
-      <td>RFC 1188</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>2048</td>
-      <td>Wideband Network</td>
-      <td>RFC 907</td>
-    </tr>
-    <tr>
-      <td>2002</td>
-      <td>2002</td>
-      <td>IEEE 802.5 (4Mb recommended)</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1536</td>
-      <td>Exp. Ethernet Nets</td>
-      <td>RFC 895</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1500</td>
-      <td>Ethernet Networks</td>
-      <td>RFC 894</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1500</td>
-      <td>Point-to-Point (default)</td>
-      <td>RFC 1134</td>
-    </tr>
-    <tr>
-      <td>1492</td>
-      <td>1492</td>
-      <td>IEEE 802.3</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1006</td>
-      <td>SLIP</td>
-      <td>RFC 1055</td>
-    </tr>
-    <tr>
-      <td>1006</td>
-      <td>1006</td>
-      <td>ARPANET</td>
-      <td>BBN 1822</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>576</td>
-      <td>X.25 Networks</td>
-      <td>RFC 877</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>544</td>
-      <td>DEC IP Portal</td>
-      <td> </td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>512</td>
-      <td>NETBIOS</td>
-      <td>RFC 1088</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>508</td>
-      <td>IEEE 802/Source-Rt Bridge</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td>508</td>
-      <td>508</td>
-      <td>ARCNET</td>
-      <td>RFC 1051</td>
-    </tr>
-    <tr>
-      <td>296</td>
-      <td>296</td>
-      <td>Point-to-Point (low delay)</td>
-      <td>RFC 1144</td>
-    </tr>
-    <tr>
-      <td>68</td>
-      <td>68</td>
-      <td>Official minimum MTU</td>
-      <td>RFC 791</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>使用这个表的收敛性最坏情况也比二分搜索相当，因为plateau几乎是2的幂，而如果值不在表中，被低估的值也不会超过2倍。</p>
-
-<p>所有ICMP code 3 都包含源IP header，可以直接使用其中的Total Length字段的值作为输入，生成下一个估计值<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">14</a></sup>。</p>
-
-<p>该表仅是建议参考，应该保持更新，添加一些2的幂加40（IP header + TCP header）的项，作为过渡，也可以包含稍微比2的幂稍小一些的项。但不管怎样，plateau的数量不应该太多，而实现者应该给无源代码客户提供一种方便的更新表值的工具<sup id="fnref:23" role="doc-noteref"><a href="#fn:23" class="footnote" rel="footnote">15</a></sup></p>
-
-<h2 id="6-host-implementation">6. Host implementation</h2>
-
-<p>提供一组关于PMTUD在主机软件上实现的建议。</p>
-
-<h3 id="61-layering分层">6.1 Layering（分层）</h3>
-
-<p>IP层应该存储PMTU信息，并且ICMP层应该处理DTB message。而分包层<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">16</a></sup>应该能反映PMTU的变化，通过改变发送数据报的大小，并且必须能指定<code class="language-plaintext highlighter-rouge">DF</code> bit。我们不希望IP层简单地为每个包设定<code class="language-plaintext highlighter-rouge">DF</code> bit，因为分包层可能无法改变它的数据报的大小<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">17</a></sup></p>
-
-<h3 id="62-storing-pmtu-information">6.2 Storing PMTU Information</h3>
-
-<p>存储信息的明显位置是将其作为一个字段，存储在路由表项中。一个主机不会为每一个目标地址有一个路由信息，但应该能为每个活跃目标地址缓存路由<sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">18</a></sup>。</p>
-
-<p>使用同一路径的所有的分包层都应该被通知，如果该路径PMTU减少了。这种通知应该区别于普通的包的丢失。</p>
-
-<h3 id="63-purging-stale-pmtu-information">6.3 Purging stale PMTU information</h3>
-
-<p>由于没有机制能实现发现当前的使用的PMTU因为它太小而过时了，所以需要一个实现能够老化缓存的值，以便有机会发现的新的更大的PMTU<sup id="fnref:18" role="doc-noteref"><a href="#fn:18" class="footnote" rel="footnote">19</a></sup>。而上层协议绝对不能因为PMTU的增加而重发，因为这没有包的丢失。</p>
-
-<p>一个实现PMTU老化的方法是给路由表项添加时间戳字段，这个字段初始化为一个保留值，表明这个PMTU没有改变。当PMTU减少时，时间戳更新为当前时间。计时器驱动的程序扫描整个路由表，当一个表项的时间戳不是保留值时，如果超时了，则：</p>
-
-<ol>
-  <li>将估计的PMTU设置为关联的第一跳的MTU</li>
-  <li>使用这个路由的分包层被通知PMTU的增加</li>
-</ol>
-
-<p>PMTU估计值可能从路由表消失,如果路由表项被移除掉<sup id="fnref:19" role="doc-noteref"><a href="#fn:19" class="footnote" rel="footnote">20</a></sup>，一个解决方法是当ICMP 重定向消息导致路有变化或者当路由被删除的时候通知分包层</p>
-
-<h3 id="64-tcp-layer-actions">6.4 TCP layer actions</h3>
-
-<p>TCP数据报的大小受PMTU和MSS的双重制约。</p>
-
-<p>当DTB message到达的时候，特定连接的特定于DTB message的数据报立刻重传，当然需要使用新的PMTU。</p>
-
-<p>现代TCP实现包含拥塞控制和慢启动算法，DTB message不应该影响拥塞窗口，但是应该触发慢启动机制<sup id="fnref:20" role="doc-noteref"><a href="#fn:20" class="footnote" rel="footnote">21</a></sup>。</p>
-
-<p>TCP的性能可能会下降，如果发送方的最大窗口大小<sup id="fnref:21" role="doc-noteref"><a href="#fn:21" class="footnote" rel="footnote">22</a></sup>不是精确的分片（segment）大小的几倍。如果使用了PMTUD，分片的大小发生改变，就会出现这种情况。因此应该根据新PMTU的大小调整最大窗口大小，来适应新的分片的大小，使保持一个整数倍的关系。</p>
-
-<p>PMTUD不应该影响MSS选项的数值。</p>
-
-<h3 id="65-issues-for-other-transport-protocols">6.5. Issues for other transport protocols</h3>
-
-<p>像原始NFS协议这种如果有难处，还是分片传输吧。</p>
-
-<h3 id="66-management-interface">6.6. Management interface</h3>
-
-<p>一个PMTUD的实现应该为系统工具程序提供：</p>
-
-<ol>
-  <li>指定不在给定路由上做PMTUD<sup id="fnref:22" role="doc-noteref"><a href="#fn:22" class="footnote" rel="footnote">23</a></sup></li>
-  <li>改变给定路由的PMTU</li>
-  <li>改变PMTU老化的时间间隔</li>
-</ol>
-
-<h2 id="7-likely-values-for-path-mtus">7. Likely values for Path MTUs</h2>
-
-<p>合并到第五章</p>
-
-<h2 id="8-security-considerations">8. Security considerations</h2>
-
-<p>通过发送恶意DTB message可以实现两种DOS攻击：</p>
-
-<ol>
-  <li>提供过于小的PMTU，使得连接变慢</li>
-  <li>提供过于大的PMTU，这可能会造成暂时的阻塞，因为受害者的包会被路由器丢弃，在一个往返的时间里，主机会发现错误，但频繁的重复攻击会导致大量的数据报被丢弃。而一个主机<strong>永远不能</strong>根据DTB message提供的PMTU来提高估计值的上限，因为这会使得面对这种攻击变得很脆弱。</li>
-</ol>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>Path MTU <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>First Hop <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>Fragmentation required, and DF flag set, carrying next-hop MTU and IP header and first 8 bytes of original datagram’s data <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>也就是PTB(Packet Too Big) message，或者DTB(Datagram Too Big) message <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>发送更高的PMTU假设的数据包，看是否能通过，大多数情况下PMTU不会改变，因此不应该太频繁地启用。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:6" role="doc-endnote">
-      <p>因为需要发送比当前估计的PMTU更大的数据报，并且PMTU不太可能增加 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:7" role="doc-endnote">
-      <p>可以通过检测next-hop MTU字段是否为0，来识别旧风格的DTB，根据ICMP的规定，未使用的字段必须为0 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:8" role="doc-endnote">
-      <p>1 octect = 1 byte in CPU = 8 bit <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:9" role="doc-endnote">
-      <p>Max Segment Size, IP datagram size minus IP header and TCP header (40 bytes, totally) <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:10" role="doc-endnote">
-      <p>576 is safe max IP datagram size for TCP, or 536 for MSS <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:11" role="doc-endnote">
-      <p>Fiber Distributed Data Interface, 光纤网，用于校园网、广域网 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:12" role="doc-endnote">
-      <p>比起FDDI，高带宽效率低，但延迟也低 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:13" role="doc-endnote">
-      <p>as “plateau” <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:14" role="doc-endnote">
-      <p>基于4.2BSD实现的路由器会发送错误的Total length，它额外加上了origin header length，而且以octets而不是4xoctets的形式表现 <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:23" role="doc-endnote">
-      <p>BSD 派生的Unix内核提供<code class="language-plaintext highlighter-rouge">ioctl</code>来做这件事 <a href="#fnref:23" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:15" role="doc-endnote">
-      <p>在IP结构里，发送多大的数据报是由IP上层的协议决定的，我们称这样的协议为分包层（Packetization Layer） <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:16" role="doc-endnote">
-      <p>比如一个内核外的UDP应用, 比如最原始版本的NFS协议，一个跨网络管理文件的系统，这种情况下应该允许分片（fragmentation） <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:17" role="doc-endnote">
-      <p>这个需求已经被处理ICMP重定向消息的需要强制满足了 <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:18" role="doc-endnote">
-      <p>这个时间从上一次PMTU不减开始，以10min为标准 <a href="#fnref:18" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:19" role="doc-endnote">
-      <p>这可能发生在ICMP重定向消息或者特定的路由守护进程几分钟后删除了旧的路由信息，还可能是在一个多网卡（multi-homed host）的主机上拓扑的变化可能导致不同网卡的使用 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:20" role="doc-endnote">
-      <p>也就是只重传第一个分段，直到收到ACK <a href="#fnref:20" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:21" role="doc-endnote">
-      <p>最大窗口区别于拥塞窗口，拥塞窗口的大小总是分片大小的几倍，而最大窗口（<em>send space</em>）在很多系统（比如从4.2BSD衍生出来的）通常是1024 octets的几倍，是固定的 <a href="#fnref:21" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:22" role="doc-endnote">
-      <p>可以在路由项上设置一个标志位，当有这个标志位时，<code class="language-plaintext highlighter-rouge">DF</code> bit一定会被清除，不管上层请求是什么 <a href="#fnref:22" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07]]></summary></entry><entry><title type="html">C dialect options</title><link href="/lang/c_dialect_options.html" rel="alternate" type="text/html" title="C dialect options" /><published>2022-08-01T00:00:00+08:00</published><updated>2022-08-01T00:00:00+08:00</updated><id>/lang/c_dialect_options</id><content type="html" xml:base="/lang/c_dialect_options.html"><![CDATA[<p>Ref: <a href="https://www.acrc.bris.ac.uk/acrc/RedHat/rhel-gcc-en-4/c-dialect-options.html">1</a>, <a href="https://stackoverflow.com/questions/17206568/what-is-the-difference-between-c-c99-ansi-c-and-gnu-c">2</a></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>ISO C90</th>
-      <th>ISO C99</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>-ansi, -std=c89, iso9899:1990, (ISO C90)</td>
-      <td>-std=c99, iso9899:1999</td>
-    </tr>
-    <tr>
-      <td>-std=iso9899:199409 (ISO C90 as modified in amendment 1)</td>
-      <td>-std=gnu99 (iso c99 + gnu extensions, gcc default)</td>
-    </tr>
-    <tr>
-      <td>-std=gnu89 (iso c90 + gnu extensions + some c99 features)</td>
-      <td> </td>
-    </tr>
-  </tbody>
-</table>
-
-<table>
-  <thead>
-    <tr>
-      <th>ISO C11</th>
-      <th>ISO C18</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>-std=c11</td>
-      <td>-std=c17, -std=c18</td>
-    </tr>
-  </tbody>
-</table>
-
-<ol>
-  <li>iso9899 (C Lang Spec Number of ISO)</li>
-  <li><code class="language-plaintext highlighter-rouge">-ansi</code> for C++ mode means that remove conflics gnu extensions with ISO C++</li>
-  <li>The word <code class="language-plaintext highlighter-rouge">ansi</code> means American Nation Standard Institute, c89 means ansi 89 (the first standard version), however c99 is iso 1999.The history is <code class="language-plaintext highlighter-rouge">ansi89 -&gt; iso90(same with ansi89) -&gt; iso99</code>, in other words, iso take the ownership of the C Lang standard from ansi.</li>
-  <li>c18 is created on 2017 and released on 2018, so it’s called c17 or c18. It contains no new features, just corrections</li>
-</ol>
-
-<h2 id="runtime-environments">Runtime Environments</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>std</th>
-      <th>no_std</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>-fhosted (takes place in a hosted env)</td>
-      <td>-fno-hosted</td>
-    </tr>
-    <tr>
-      <td>-fno-freestanding</td>
-      <td>-ffreestanding</td>
-    </tr>
-    <tr>
-      <td>-fno-builtin, -fno-builtin-&lt;xxx&gt;</td>
-      <td> </td>
-    </tr>
-  </tbody>
-</table>
-
-<ol>
-  <li>
-    <p>fno-builtin: Don’t recognize built-in functions that do not begin with <code class="language-plaintext highlighter-rouge">__builtin_</code> as prefix, <code class="language-plaintext highlighter-rouge">__built_in_xxx</code> always existed.</p>
-  </li>
-  <li>
-    <p>fno-builtin-&lt;xxx&gt; such as <code class="language-plaintext highlighter-rouge">-fno-builtin-printf</code>.</p>
-  </li>
-  <li>
-    <p>on <code class="language-plaintext highlighter-rouge">no_std</code> env using <code class="language-plaintext highlighter-rouge">__builtin_xxx</code> instead</p>
-  </li>
-</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[Ref: 1, 2]]></summary></entry><entry><title type="html">C/C++ 陷阱</title><link href="/lang/c_trap.html" rel="alternate" type="text/html" title="C/C++ 陷阱" /><published>2022-04-22T00:00:00+08:00</published><updated>2022-04-22T00:00:00+08:00</updated><id>/lang/c_trap</id><content type="html" xml:base="/lang/c_trap.html"><![CDATA[<ol>
-  <li>
-    <p>变量初始化</p>
-
-    <p>在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据</p>
-  </li>
-  <li>
-    <p>结构体初始化注意要在堆上手动分配内存，否则是栈上的会被回收， 这与Rust使用习惯又不一样</p>
-  </li>
-</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[变量初始化 在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据]]></summary></entry></feed>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+<script src="https://kit.fontawesome.com/f1af9f22fa.js" crossorigin="anonymous"></script>
+
+
+</body>
+</html>

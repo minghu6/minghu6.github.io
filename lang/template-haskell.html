@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            从Template Haskell（Haskell宏）来认识Haskell语法结构
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/template-haskell.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        从Template Haskell（Haskell宏）来认识Haskell语法结构
     
 </title>
 </head>
@@ -54,6 +54,10 @@
         Home
       </a>
     </span>
+    
+
+    
+
     
 
     
@@ -91,113 +95,92 @@
 
     <nav class="menu">
         
-            
-<ul class="list primary">
-
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/algs.html">
-                
-                    <img src="/assets/img/icons/algs1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueOrange)">Algorithm</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/os.html">
-                
-                    <img src="/assets/img/icons/os1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueRed)">OS</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/lang.html">
-                
-                    <img src="/assets/img/icons/lang1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHuePurple)">Lang</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/net.html">
-                
-                    <img src="/assets/img/icons/net1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueBlue)">Network</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/oth.html">
-                
-                    <img src="/assets/img/icons/oth1.png"/>
-                
-                
-                    <p style="color: var(--c-themeQuaternaryDark)">Other</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-</ul>
-        
     </nav>
 </div>
 
 
     <div class="page main">
     <main class="page__main" id="core-wrapper">
-        <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+        <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+  <div class="post__title">
+    <h1 class="post__title__text">从Template Haskell（Haskell宏）来认识Haskell语法结构</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            ProgLang
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      April 17, 2021
+    </div>
+    
+  </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+  
 
+  <div class="post__content_container">
+    <div class="post__content"><p>默认工作版本 <code class="language-plaintext highlighter-rouge">ghc 8.10.4</code></p>
+
+<p>从模板Haskell上看，主要有如下几种构造器：</p>
+
+<p>Q Quotation</p>
+
+<p>xxE属于 Exp，是xxExpression</p>
+
+<p>xxP属于Pattern，是xxPatttern</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">genId</span> <span class="o">::</span> <span class="kt">Q</span> <span class="kt">Exp</span>
+<span class="n">genId</span> <span class="o">=</span> <span class="kr">do</span>
+  <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">newName</span> <span class="s">"x"</span>
+  <span class="n">lamE</span> <span class="p">[</span><span class="n">varP</span> <span class="n">x</span><span class="p">]</span> <span class="p">(</span><span class="n">varE</span> <span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>等价于</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">genId</span> <span class="o">=</span> <span class="p">[</span><span class="o">|</span> <span class="nf">\</span><span class="n">x</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">|</span><span class="p">]</span>  <span class="c1">-- 也就是 genId = [| id |]</span>
+</code></pre></div></div>
+
+<p>通常宏的返回值都是<code class="language-plaintext highlighter-rouge">Q Exp</code>意思是Quotation Expression</p>
+
+<p>[|…|]</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>其实是[e</td>
+      <td>…|]的简写</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>还有分别代表types、pattern，declaration的<code class="language-plaintext highlighter-rouge">[t|...|], [p|...|], [e|...|]</code></p>
+
+<p>实际上是</p>
+
+<p><code class="language-plaintext highlighter-rouge">$([| e |]) = e</code></p>
+
+<p>quote <code class="language-plaintext highlighter-rouge">'</code></p>
+
+<p>back-quote <code>\`</code></p>
+
+<p>quasi-quote <code class="language-plaintext highlighter-rouge">~@</code></p>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
 
     </main>
 

@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            C/C++ 陷阱
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/c_trap.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        C/C++ 陷阱
     
 </title>
 </head>
@@ -54,6 +54,10 @@
         Home
       </a>
     </span>
+    
+
+    
+
     
 
     
@@ -91,113 +95,57 @@
 
     <nav class="menu">
         
-            
-<ul class="list primary">
-
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/algs.html">
-                
-                    <img src="/assets/img/icons/algs1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueOrange)">Algorithm</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/os.html">
-                
-                    <img src="/assets/img/icons/os1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueRed)">OS</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/lang.html">
-                
-                    <img src="/assets/img/icons/lang1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHuePurple)">Lang</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/net.html">
-                
-                    <img src="/assets/img/icons/net1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueBlue)">Network</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/oth.html">
-                
-                    <img src="/assets/img/icons/oth1.png"/>
-                
-                
-                    <p style="color: var(--c-themeQuaternaryDark)">Other</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-</ul>
-        
     </nav>
 </div>
 
 
     <div class="page main">
     <main class="page__main" id="core-wrapper">
-        <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+        <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+  <div class="post__title">
+    <h1 class="post__title__text">C/C++ 陷阱</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            ProgLang
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      April 22, 2022
+    </div>
+    
+  </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+  
 
+  <div class="post__content_container">
+    <div class="post__content"><ol>
+  <li>
+    <p>变量初始化</p>
+
+    <p>在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据</p>
+  </li>
+  <li>
+    <p>结构体初始化注意要在堆上手动分配内存，否则是栈上的会被回收， 这与Rust使用习惯又不一样</p>
+  </li>
+</ol>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
 
     </main>
 

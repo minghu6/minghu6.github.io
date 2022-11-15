@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            C dialect options
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/c_dialect_options.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        C dialect options
     
 </title>
 </head>
@@ -54,6 +54,10 @@
         Home
       </a>
     </span>
+    
+
+    
+
     
 
     
@@ -91,113 +95,130 @@
 
     <nav class="menu">
         
-            
-<ul class="list primary">
-
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/algs.html">
-                
-                    <img src="/assets/img/icons/algs1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueOrange)">Algorithm</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/os.html">
-                
-                    <img src="/assets/img/icons/os1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueRed)">OS</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/lang.html">
-                
-                    <img src="/assets/img/icons/lang1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHuePurple)">Lang</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/net.html">
-                
-                    <img src="/assets/img/icons/net1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueBlue)">Network</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/oth.html">
-                
-                    <img src="/assets/img/icons/oth1.png"/>
-                
-                
-                    <p style="color: var(--c-themeQuaternaryDark)">Other</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-</ul>
-        
     </nav>
 </div>
 
 
     <div class="page main">
     <main class="page__main" id="core-wrapper">
-        <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+        <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+  <div class="post__title">
+    <h1 class="post__title__text">C dialect options</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            ProgLang
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      August 01, 2022
+    </div>
+    
+  </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+  
 
+  <div class="post__content_container">
+    <div class="post__content"><p>Ref: <a href="https://www.acrc.bris.ac.uk/acrc/RedHat/rhel-gcc-en-4/c-dialect-options.html">1</a>, <a href="https://stackoverflow.com/questions/17206568/what-is-the-difference-between-c-c99-ansi-c-and-gnu-c">2</a></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ISO C90</th>
+      <th>ISO C99</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>-ansi, -std=c89, iso9899:1990, (ISO C90)</td>
+      <td>-std=c99, iso9899:1999</td>
+    </tr>
+    <tr>
+      <td>-std=iso9899:199409 (ISO C90 as modified in amendment 1)</td>
+      <td>-std=gnu99 (iso c99 + gnu extensions, gcc default)</td>
+    </tr>
+    <tr>
+      <td>-std=gnu89 (iso c90 + gnu extensions + some c99 features)</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th>ISO C11</th>
+      <th>ISO C18</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>-std=c11</td>
+      <td>-std=c17, -std=c18</td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>iso9899 (C Lang Spec Number of ISO)</li>
+  <li><code class="language-plaintext highlighter-rouge">-ansi</code> for C++ mode means that remove conflics gnu extensions with ISO C++</li>
+  <li>The word <code class="language-plaintext highlighter-rouge">ansi</code> means American Nation Standard Institute, c89 means ansi 89 (the first standard version), however c99 is iso 1999.The history is <code class="language-plaintext highlighter-rouge">ansi89 -&gt; iso90(same with ansi89) -&gt; iso99</code>, in other words, iso take the ownership of the C Lang standard from ansi.</li>
+  <li>c18 is created on 2017 and released on 2018, so it’s called c17 or c18. It contains no new features, just corrections</li>
+</ol>
+
+<h2 id="runtime-environments">Runtime Environments</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>std</th>
+      <th>no_std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>-fhosted (takes place in a hosted env)</td>
+      <td>-fno-hosted</td>
+    </tr>
+    <tr>
+      <td>-fno-freestanding</td>
+      <td>-ffreestanding</td>
+    </tr>
+    <tr>
+      <td>-fno-builtin, -fno-builtin-&lt;xxx&gt;</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>
+    <p>fno-builtin: Don’t recognize built-in functions that do not begin with <code class="language-plaintext highlighter-rouge">__builtin_</code> as prefix, <code class="language-plaintext highlighter-rouge">__built_in_xxx</code> always existed.</p>
+  </li>
+  <li>
+    <p>fno-builtin-&lt;xxx&gt; such as <code class="language-plaintext highlighter-rouge">-fno-builtin-printf</code>.</p>
+  </li>
+  <li>
+    <p>on <code class="language-plaintext highlighter-rouge">no_std</code> env using <code class="language-plaintext highlighter-rouge">__builtin_xxx</code> instead</p>
+  </li>
+</ol>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
 
     </main>
 

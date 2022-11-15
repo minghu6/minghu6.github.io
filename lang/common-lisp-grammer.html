@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            Common Lisp 语法
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/common-lisp-grammer.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        Common Lisp 语法
     
 </title>
 </head>
@@ -54,6 +54,10 @@
         Home
       </a>
     </span>
+    
+
+    
+
     
 
     
@@ -91,113 +95,58 @@
 
     <nav class="menu">
         
-            
-<ul class="list primary">
-
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/algs.html">
-                
-                    <img src="/assets/img/icons/algs1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueOrange)">Algorithm</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/os.html">
-                
-                    <img src="/assets/img/icons/os1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueRed)">OS</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/lang.html">
-                
-                    <img src="/assets/img/icons/lang1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHuePurple)">Lang</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/net.html">
-                
-                    <img src="/assets/img/icons/net1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueBlue)">Network</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/oth.html">
-                
-                    <img src="/assets/img/icons/oth1.png"/>
-                
-                
-                    <p style="color: var(--c-themeQuaternaryDark)">Other</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-</ul>
-        
     </nav>
 </div>
 
 
     <div class="page main">
     <main class="page__main" id="core-wrapper">
-        <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+        <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+  <div class="post__title">
+    <h1 class="post__title__text">Common Lisp 语法</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            ProgLang
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      July 22, 2020
+    </div>
+    
+  </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+  
 
+  <div class="post__content_container">
+    <div class="post__content"><ol>
+  <li>
+    <p>列表和点对的区别：</p>
+
+    <p>点对是列表构成的基本单元，列表通过点对嵌套构成:</p>
+
+    <p><code class="language-plaintext highlighter-rouge">'(1 . (2 . nil))</code></p>
+
+    <p>反过来，点对<code class="language-plaintext highlighter-rouge">(1 . 2)</code>看起来像长度为2的列表，但如果它的cdr不是列表，那么它就不是列表</p>
+  </li>
+</ol>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
 
     </main>
 

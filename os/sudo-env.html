@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            Sudo env
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//os/sudo-env.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        Sudo env
     
 </title>
 </head>
@@ -54,6 +54,10 @@
         Home
       </a>
     </span>
+    
+
+    
+
     
 
     
@@ -91,113 +95,57 @@
 
     <nav class="menu">
         
-            
-<ul class="list primary">
-
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/algs.html">
-                
-                    <img src="/assets/img/icons/algs1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueOrange)">Algorithm</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/os.html">
-                
-                    <img src="/assets/img/icons/os1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueRed)">OS</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/lang.html">
-                
-                    <img src="/assets/img/icons/lang1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHuePurple)">Lang</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/net.html">
-                
-                    <img src="/assets/img/icons/net1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueBlue)">Network</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/oth.html">
-                
-                    <img src="/assets/img/icons/oth1.png"/>
-                
-                
-                    <p style="color: var(--c-themeQuaternaryDark)">Other</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-</ul>
-        
     </nav>
 </div>
 
 
     <div class="page main">
     <main class="page__main" id="core-wrapper">
-        <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+        <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+  <div class="post__title">
+    <h1 class="post__title__text">Sudo env</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/os.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueRed)">
+            OS
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      December 15, 2017
+    </div>
+    
+  </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+  
 
+  <div class="post__content_container">
+    <div class="post__content"><p>继承环境变量</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>visudo 
+Defaults <span class="nv">env_keep</span><span class="o">=</span><span class="s2">"http_proxy https_proxy ftp_proxy no_proxy DISPLAY XAUTHORITY"</span>
+</code></pre></div></div>
+
+<p>使用当前用户的PATH</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Defaults env_reset改成Defaults !env_reset取消掉对PATH变量的重置，然后在.bashrc中最后添加alias sudo='sudo env PATH=$PATH'，这样sudo执行命令时所搜寻的路径就是系统的PATH变量中的路径，如想添加其他变量也是类似。
+</code></pre></div></div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
 
     </main>
 

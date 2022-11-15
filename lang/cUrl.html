@@ -15,12 +15,12 @@
     property="og:title"
     content="
         
-            About
+            cUrl
         
     " 
 />
 
-<meta property="og:url" content="//about/" />
+<meta property="og:url" content="//lang/cUrl.html" />
 
     <meta property="og:type" content="article" />
 
@@ -32,7 +32,7 @@
 
 <title>
     
-        About
+        cUrl
     
 </title>
 </head>
@@ -54,6 +54,10 @@
         Home
       </a>
     </span>
+    
+
+    
+
     
 
     
@@ -91,113 +95,116 @@
 
     <nav class="menu">
         
-            
-<ul class="list primary">
-
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/algs.html">
-                
-                    <img src="/assets/img/icons/algs1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueOrange)">Algorithm</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/os.html">
-                
-                    <img src="/assets/img/icons/os1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueRed)">OS</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/lang.html">
-                
-                    <img src="/assets/img/icons/lang1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHuePurple)">Lang</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/net.html">
-                
-                    <img src="/assets/img/icons/net1.png"/>
-                
-                
-                    <p style="color: var(--c-themeHueBlue)">Network</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-        <li class="item">
-
-            <div class="item-controls">
-                <a href="/category/oth.html">
-                
-                    <img src="/assets/img/icons/oth1.png"/>
-                
-                
-                    <p style="color: var(--c-themeQuaternaryDark)">Other</p>
-                
-                </a>
-
-            
-            </div>
-            
-        </li>   
-    
-</ul>
-        
     </nav>
 </div>
 
 
     <div class="page main">
     <main class="page__main" id="core-wrapper">
-        <p>This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at <a href="https://jekyllrb.com/">jekyllrb.com</a></p>
+        <article class="post">
 
-<p>You can find the source code for Minima at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/minima">minima</a></p>
+  <div class="post__title">
+    <h1 class="post__title__text">cUrl</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            ProgLang
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      February 11, 2018
+    </div>
+    
+  </div>
 
-<p>You can find the source code for Jekyll at GitHub:
-<a href="https://github.com/jekyll">jekyll</a> /
-<a href="https://github.com/jekyll/jekyll">jekyll</a></p>
+  
 
+  <div class="post__content_container">
+    <div class="post__content"><div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$cURL</span> <span class="o">=</span> <span class="nb">curl_init</span><span class="p">();</span>
+
+<span class="c1">// set url</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$cURL</span><span class="p">,</span> <span class="no">CURLOPT_URL</span><span class="p">,</span> <span class="nv">$url</span><span class="p">);</span>
+
+<span class="c1">// set method default is GET</span>
+<span class="c1">// curl_setopt($cURL, CURLOPT_CUSTOMREQUEST, "POST");</span>
+
+<span class="c1">// set header</span>
+<span class="nv">$deviceId</span> <span class="o">=</span> <span class="s1">'1234567890'</span><span class="p">;</span>  <span class="c1">// custom header field</span>
+<span class="nv">$appVersion</span> <span class="o">=</span> <span class="s1">'1.0.0'</span><span class="p">;</span>  <span class="c1">// custom header field</span>
+
+<span class="nv">$header</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+    <span class="s1">'Content-Type: application/json'</span><span class="p">,</span>
+    <span class="c1">// 'Content-Length: ' . strlen($data_string)  // optional</span>
+    <span class="s1">'Accept: application/json'</span><span class="p">,</span>
+    <span class="s1">'version: '</span><span class="mf">.</span><span class="nv">$appVersion</span><span class="p">,</span>
+    <span class="s1">'deviceId: '</span><span class="mf">.</span><span class="nv">$deviceId</span>
+<span class="p">)</span>
+
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$cURL</span><span class="p">,</span> <span class="no">CURLOPT_HTTPHEADER</span><span class="p">,</span> <span class="nv">$header</span><span class="p">);</span>
+
+<span class="c1">// set json post data</span>
+<span class="nv">$data</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s2">"email"</span> <span class="o">=&gt;</span> <span class="s2">"user@acc.com"</span><span class="p">,</span> <span class="s2">"password"</span> <span class="o">=&gt;</span> <span class="s2">"123456"</span><span class="p">);</span>
+<span class="nv">$data_string</span> <span class="o">=</span> <span class="nb">json_encode</span><span class="p">(</span><span class="nv">$data</span><span class="p">);</span>
+
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$cURL</span><span class="p">,</span> <span class="no">CURLOPT_POSTFIELDS</span><span class="p">,</span> <span class="nv">$data_string</span><span class="p">);</span>
+
+<span class="nv">$result</span> <span class="o">=</span> <span class="nb">curl_exec</span><span class="p">(</span><span class="nv">$$cURL</span><span class="p">);</span>
+
+<span class="c1">// curl result:</span>
+<span class="p">{</span>
+  <span class="s2">"status"</span><span class="o">:</span> <span class="mi">200</span><span class="p">,</span>
+  <span class="s2">"message"</span><span class="o">:</span> <span class="s2">"success"</span><span class="p">,</span>
+  <span class="s2">"result"</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">"id"</span><span class="o">:</span> <span class="s2">"5a6032ae755b9e0585dc8f21"</span><span class="p">,</span>
+      <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"Zone A"</span><span class="p">,</span>
+      <span class="s2">"address"</span><span class="o">:</span> <span class="s2">"Lake Side"</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">"id"</span><span class="o">:</span> <span class="s2">"5a6032e0755b9e0585dc8f22"</span><span class="p">,</span>
+      <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"Zone B"</span><span class="p">,</span>
+      <span class="s2">"address"</span><span class="o">:</span> <span class="s2">"Forest Side"</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">"id"</span><span class="o">:</span> <span class="s2">"5a6067db755b9e547bfa52c4"</span><span class="p">,</span>
+      <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"Zone C"</span><span class="p">,</span>
+      <span class="s2">"address"</span><span class="o">:</span> <span class="s2">"Forest Side"</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1">// parse json result</span>
+<span class="nv">$json</span> <span class="o">=</span> <span class="nb">json_decode</span><span class="p">(</span><span class="nv">$result</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+
+<span class="c1">// '{"Cancelled":false,"MessageID":"402f481b-c420-481f-b129-7b2d8ce7cf0a","Queued":false,"SMSError":2,"SMSIncomingMessages":null,"Sent":false,"SentDateTime":"\/Date(-62135578800000-0500)\/"}'</span>
+
+<span class="c1">// Array</span>
+<span class="c1">// (</span>
+<span class="c1">//     [Cancelled] =&gt; </span>
+<span class="c1">//     [MessageID] =&gt; 402f481b-c420-481f-b129-7b2d8ce7cf0a</span>
+<span class="c1">//     [Queued] =&gt; </span>
+<span class="c1">//     [SMSError] =&gt; 2</span>
+<span class="c1">//     [SMSIncomingMessages] =&gt; </span>
+<span class="c1">//     [Sent] =&gt; </span>
+<span class="c1">//     [SentDateTime] =&gt; /Date(-62135578800000-0500)/</span>
+<span class="c1">// )</span>
+</code></pre></div></div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
 
     </main>
 
