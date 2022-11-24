@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            速通最小生成树（MST）
+        
+    " 
+/>
+
+<meta property="og:url" content="//algs/GraphMST.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        速通最小生成树（MST）
+    
+</title>
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        Home
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/minghu6.jpeg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <i class="fas fa-search fa-fw"></i>
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">速通最小生成树（MST）</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      November 18, 2022
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="前言">前言</h2>
+
+<p>介绍三种基本的最小生成树算法：</p>
+
+<p>它们都是贪心算法</p>
+
+<ol>
+  <li>基于最小边的 Kruskal 算法</li>
+  <li>基于最小距离的点（到生成树）的 Prim 算法</li>
+  <li>基于连通分量最小出边的 Boruvka 算法</li>
+</ol>
+
+<p>对于它们进行简单的比较</p>
+
+<p>实现基于<a href="/algs/GraphTheoryBasic.html">图论基础</a>里面提到的数据结构</p>
+
+<h2 id="性质">性质</h2>
+
+<p>介绍一下最小生成树相关的性质<sup id="fnref:mst-wiki" role="doc-noteref"><a href="#fn:mst-wiki" class="footnote" rel="footnote">1</a></sup>，可能让我们对算法的理解能拨其冗繁、摁其要务，看得更清楚一点。</p>
+
+<h3 id="割的性质">割的性质</h3>
+
+<p>对于连通图 $G = (V, E)$ ，如果 $U$ 为它的非平凡子图（不是空集和它自身），则存在 $U$ 的所有出边（一头在 $U$ ,一头不在 $U$ ）中权值最小的边 $e$ 一定属于某棵 $G$ 上的最小生成树。</p>
+
+<p>记 $T$ 为 $G$ 上的一棵最小生成树，</p>
+
+<ol>
+  <li>
+    <p>如果 $e$  在 $T$ 上， 性质1成立；</p>
+  </li>
+  <li>
+    <p>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），并且一定存在C中e以外的一条U的出边 $f$ ，由于e是最小出边，那么f一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 是最小生成树。也就是e属于一棵生成树，性质1仍然成立。</p>
+  </li>
+</ol>
+
+<p>证毕。</p>
+
+<p>进一步地，如果这条最小出边 $e$ 是唯一最小的，它一定属于所有最小生成树。</p>
+
+<h4 id="推论1">推论1</h4>
+
+<p>对于连通图 $G = (V, E)$ ， $U$ 是 $E$ 的子图，如果 $U$ 属于某棵 $G$ 上的最小生成树，那么在加入一条最小出边后，仍然属于某棵最小生成树。</p>
+
+<p>设 $U$ 属于最小生成树 $T$ ，根据性质1，加入最小出边 $e$ 后，$U$ 要么仍然属于 $T$ ，要么属于 $T-f+e$ ，都仍然属于某棵最小生成树。</p>
+
+<h4 id="推论2">推论2</h4>
+
+<p>进一步推论，开始的时候 $G$ 中每个点构成的子图一定属于最小生成树，那么根据归纳推理，不断地加最小出边，当图中每个点都被加入后，得到一棵生成树，也就是最小生成树。这也是 Prim 算法的证明。</p>
+
+<h3 id="环的性质">环的性质</h3>
+
+<p>图上的环状路径 $C$ ，如果其中一条边比其它所有边都大，那么它肯定不在任何一棵最小生成树上。</p>
+
+<p>和上面割的性质的证明是是类似的，反证如果在某棵最小生成树，则其他 $C$ 上的边可以替换产生一棵更小权重的最小生成树。</p>
+
+<h3 id="唯一性">唯一性</h3>
+
+<p>如果 $G$ 上每条边的权重都是唯一的，那么最小生成树也是唯一的。</p>
+
+<p>证明也是反证，假设有两棵不同的最小生成树，二者的对称差集（symmetric difference set）里权重最小的那一条所在的环上的其他边，至少有一条边不属于这棵最小生成树，而属于另一棵最小生成树，由于边权重唯一，那条边必然大于这个最小的差边，因而可以构成去大边加小边的更小的最小生成树，矛盾，证毕。</p>
+
+<h2 id="kruskal-算法">Kruskal 算法</h2>
+
+<p>大概读作 /’krʌs,gol/</p>
+
+<h3 id="描述">描述</h3>
+
+<p>最简单的，基于最小边的贪心算法</p>
+
+<ol>
+  <li>假设开始的时候每个点都是只包括自己的连通分量；</li>
+  <li>边按照权重排序，从最小边开始，若边上的两点不在同一连通分量里，就把它加入生成树，然后把两个点所在的连通分量连通为一个分量，最后就得到最小生成树；</li>
+</ol>
+
+<h3 id="实现">实现</h3>
+
+<ol>
+  <li>对边用堆或者提前排序维护从小到大的边的检查顺序；</li>
+  <li>用并查集维护连通分量</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_kruskal</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cm">/* init sorted edge set */</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">sorted_edges</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">sorted_edges</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="n">sorted_edges</span><span class="nf">.sort_unstable_by_key</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="na">.2</span><span class="p">);</span>
+
+    <span class="cm">/* init disjoint set */</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ds</span> <span class="o">=</span> <span class="nn">UnionFind</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">MergeBy</span><span class="p">::</span><span class="n">SZ</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">ds</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_w</span><span class="p">)</span> <span class="k">in</span> <span class="n">sorted_edges</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ds</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">ds</span><span class="nf">.cunion</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+            <span class="n">res</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="证明">证明</h3>
+
+<p>Kruskal 算法的证明并不像它看起来那么简单。</p>
+
+<p>假设 $G$ 是加权连通图， $Y$ 是算法应用在 $G$ 上产生的子图</p>
+
+<p><strong>是生成树</strong></p>
+
+<ol>
+  <li>$Y$ 不存在环， 这是由算法加边时的检查所保证的；</li>
+  <li>$Y$ 是连通的，因为所有边都被检查了一遍，只要两个点不在同一分量里就加入</li>
+</ol>
+
+<p><strong>且是最小生成树</strong></p>
+
+<p>首先提出一个<strong>假设</strong> $P$：</p>
+
+<p>​	设 $F$（Forest）是算法在任意阶段生成的边集，则总有 $G$ 上的最小生成树包含 $F$ ，并且它（这棵生成树）里面的边之前阶段没有被算法拒绝过</p>
+
+<p>用归纳法证明 $P$ 成立：</p>
+
+<ol>
+  <li>
+    <p>在开始的时候，$F=\varnothing $ ，显然 $G$ 上任何最小生成树都包含 $F$ ，算法一开始也没有拒绝过任何边， $P$ 成立；</p>
+  </li>
+  <li>
+    <p>假设 $P$ 在算法的某个非最终阶段成立，将这时包含 $F$ 的最小生成树记为 $T$ ，下一个要加入的边记为 $e$ ：</p>
+
+    <ol>
+      <li>如果 $e$  在 $T$ 上， $P$ 成立；</li>
+      <li>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），而由于 $e$ 通过了算法检查，所以 $e$ 加入后，构不成 $F$ 上的环形结构，也就是说环形路径 $C$ 一定存在至少一条边不属于 $F$ 。不妨标记这样的一条边为 $f$ ，$f \neq e$。根据 $P$ 的定义， $T$ 上没有边之前被 $F$ 拒绝过， $f$ 如果不属于 $F$ ，则一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 因此是最小生成树，而 $T-f+e$ 包含 $F+e$ ， $P$ 仍然成立。
+因此我们证明了若 $P$ 在 $F$ 上成立，就有 $P$ 在 $F+e$ 上成立的递推关系。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>归纳证毕，假设 $P$ 成立。</p>
+
+<p>因此当 $F$ 是生成树的时候，一定有最小生成树包含它，也就是 $F$ 是最小生成树。</p>
+
+<p>而之前我们已经证明了 $F$ 最终所生成的子图 $Y$ 是生成树， 于是有算法产生了一棵最小生成树，证毕。</p>
+
+<h3 id="时间复杂度">时间复杂度</h3>
+
+<p>假设 $n=|V|$，$m=|E|$</p>
+
+<p>复杂度等于边排序 $O(m \text{log} m)$ + 并查集操作 $O(m \text{log} n)$ ，等于 $O(m (\text{log} m+\text{log} n))$ 。</p>
+
+<h2 id="prime-算法">Prime 算法</h2>
+
+<p>类似 Dijkstra 算法，从距既有生成树最短距离的点开始加</p>
+
+<h3 id="描述-1">描述</h3>
+
+<ol>
+  <li>选取图中任意一点开始，作为生成树的根节点，把其余点到生成树的最短距离初始化为 $+\infty$ ，根节点的生成树最短距离初始化为 $0$ ，初始化每个点到生成树的最短边的对应点为 <code class="language-plaintext highlighter-rouge">None</code>，记为 $\texttt{pair}$ ，把所有点加入剩余点集 $R$；</li>
+  <li>每次从 R 中取出到生成树距离最小的点记为 $u$ ，把边 $(u, \texttt{pair}(u))$ 加入边集 $E$ 中。检查它的邻居中不在生成树上的点 $v$ ，如果边的权重 $w_{\large uv}$ ，与生成树最短距离 $\texttt{dis}(v)$ ，有  $w_{\large uv} &lt; \texttt{dis}(v) $  ，更新 $\texttt{dis}(v)$ 为  $w_{\large uv}$ ，也更新 $\texttt{pair}(u)$  为 $u$ ；</li>
+  <li>当$R = \varnothing$ 时，退出，得到的E即为一棵最小生成树</li>
+</ol>
+
+<h3 id="实现-1">实现</h3>
+
+<p>关键显然在于维护生成树距离的堆的选择，这涉及两个堆操作，<code class="language-plaintext highlighter-rouge">pop</code> 和 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，经典地是使用Fib堆（在<a href="/algs/FibHeap.html">斐波那契堆（Fibonacci Heap） </a> 一文中介绍过），这样有理论更好的 <code class="language-plaintext highlighter-rouge">decrease-key</code> 性能，但实际上，我们知道在有缓存的 CPU 架构下二叉堆实际表现好得多，如果把调整二叉堆的实现，把基数从 $2$ 提高，到比如 $32$ ，那么理论上可以认为 <code class="language-plaintext highlighter-rouge">pop</code> 和 <code class="language-plaintext highlighter-rouge">decrease-key</code> 都有线性表现，这是理论与实践上都最优的优化。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_prim</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="cm">/* choose an arbitray node as root */</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">viter</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">root</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_root</span><span class="p">)</span> <span class="o">=</span> <span class="n">viter</span><span class="nf">.next</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">_root</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* setup rest collection */</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">rest</span><span class="p">:</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="cm">/* init dis heap &amp;&amp; dis edge map */</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis</span> <span class="o">=</span> <span class="nn">FibHeap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis_edge</span> <span class="o">=</span> <span class="nn">HashMap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="n">dis</span><span class="nf">.push</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nf">Some</span><span class="p">(</span><span class="n">root</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">viter</span> <span class="p">{</span>
+        <span class="n">rest</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="n">dis</span><span class="nf">.push</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nn">isize</span><span class="p">::</span><span class="n">MAX</span><span class="p">);</span>
+        <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">None</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="o">!</span><span class="n">rest</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// u is current vertex</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">_uw</span><span class="p">)</span> <span class="o">=</span> <span class="n">dis</span><span class="nf">.pop_item</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="c1">// "decrease-key" (It's increase-key actually for min-heap)</span>
+        <span class="n">rest</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">u_pair</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">dis_edge</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">u_pair</span> <span class="o">!=</span> <span class="n">u</span> <span class="p">{</span>
+            <span class="n">res</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">u_pair</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="c1">// calc adj</span>
+
+        <span class="k">let</span> <span class="n">adjs</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">);</span>
+
+        <span class="cm">/* update dis heap */</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">adjs</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.filter</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">rest</span><span class="nf">.contains</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">w_uv</span><span class="p">:</span> <span class="nb">isize</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+
+            <span class="k">if</span> <span class="n">w_uv</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nd">get!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">dis</span><span class="nf">.decrease_key</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">w_uv</span><span class="p">);</span>
+                <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nf">Some</span><span class="p">(</span><span class="n">u</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="证明-1">证明</h3>
+
+<p><a href="#推论2">割的性质推论2</a></p>
+
+<h3 id="时间复杂度-1">时间复杂度</h3>
+
+<p>经典使用斐波那契堆： $O(\text{log}n) + O(m) = O(\text{log}n + m)$</p>
+
+<p>使用大基数的 $k$ 叉堆： $O(1) + O(m) = O(m)$</p>
+
+<h2 id="boruvka-算法">Boruvka 算法</h2>
+
+<p>Borůvka (捷克语) ，大概读作 /,bros’gɑʊl/</p>
+
+<h3 id="描述-2">描述</h3>
+
+<p>对每个连通分量加最小出边，直到没有出边为止。</p>
+
+<p>这本质上和 Kruskal 算法是一样的，实际上 Kruskal 算法对所有边排序是有点儿浪费比较次数了。</p>
+
+<ol>
+  <li>开始的时候，图中每个点都是一个连通分量，对所有边遍历，选取其中两头不在同一个连通分量的，用它更新两个连通分量在这一轮迭代里的最小出边；</li>
+  <li>一轮结束后，把新选取的最小出边加入结果集，并连接两个分量，当没有新选任何最小出边的时候结束，否则进行下一轮遍历</li>
+</ol>
+
+<p><strong>注意：</strong></p>
+
+<ol>
+  <li>显然作为一个优化，加入结果集的边就不需要再遍历了</li>
+  <li>具体的算法实现中，注意不要让权重相等的边导致结果中出现环</li>
+</ol>
+
+<h3 id="实现-2">实现</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_boruvka</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="c1">// using lexicograph order</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dsu</span> <span class="o">=</span> <span class="nn">UnionFind</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">MergeBy</span><span class="p">::</span><span class="n">SZ</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">dsu</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// components cheapest edges: (weight, usize)</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cand_edges</span><span class="p">:</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span><span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">comp_min_edges</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span> <span class="o">=</span>
+            <span class="nn">HashMap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">cand_edges</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">pu</span> <span class="o">=</span> <span class="n">dsu</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">dsu</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">pu</span> <span class="o">==</span> <span class="n">pv</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">pu_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span>
+                <span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pu</span><span class="p">)</span>
+                <span class="nf">.cloned</span><span class="p">()</span>
+                <span class="nf">.unwrap_or</span><span class="p">(</span><span class="nb">None</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">pu_min_edge</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">pu_min_edge</span> <span class="p">{</span>
+                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pu</span><span class="p">,</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)));</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">pv_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span>
+                <span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pv</span><span class="p">)</span>
+                <span class="nf">.cloned</span><span class="p">()</span>
+                <span class="nf">.unwrap_or</span><span class="p">(</span><span class="nb">None</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">pv_min_edge</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">pv_min_edge</span> <span class="p">{</span>
+                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">continue_flag</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span> <span class="k">in</span> <span class="n">comp_min_edges</span><span class="nf">.into_iter</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">opt</span> <span class="p">{</span>
+                <span class="n">res</span><span class="nf">.insert</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+                <span class="n">dsu</span><span class="nf">.cunion</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+                <span class="n">cand_edges</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">));</span>
+
+                <span class="n">continue_flag</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="n">continue_flag</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.collect</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="利用属性的简单证明">利用属性的简单证明</h3>
+
+<p>开始时 $G$ 中每个点都是一个连通分量，每次选取最小出边，连接两个分量。首先这两个分量分别属于某棵最小生成树，其中任一个分量加上出边仍然是最小生成树的一部分，<strong>显然</strong> （也许并没有显然）应当是这两个连通分量合起来仍然属于某棵最小生成树。</p>
+
+<h3 id="完整证明">完整证明</h3>
+
+<p>完整证明过于复杂，另行查阅资料，不介绍。</p>
+
+<h3 id="时间复杂度-2">时间复杂度</h3>
+
+<p>由于每次迭代后连通分量至少减半（每个新分量都没再连通过），所以最外层迭代次数是O(logn)，每次边的遍历是 $O(m)$  ，并查询是 $O(\text{log}n)$ ，所以时间复杂度为 $O(m\text{log}n\text{log}n)$ 。</p>
+
+<h2 id="时间复杂度简单比较">时间复杂度简单比较</h2>
+
+<p>时间复杂度涉及 $n$ 和 $m$ ，按照图的稀疏度分两个维度讨论（对于连通图，$m\geqslant n-1$ ）</p>
+
+<p><br /></p>
+
+<p>对于稀疏图，$m=n$ :</p>
+
+<p>Kruskal:  $O(m(\text{log}m+\text{log}n)) = O(n\text{log}n)$</p>
+
+<p>Prime:  $O(\text{log}n+m) = O(n+\text{log}n) = O(n)$</p>
+
+<p>Boruvka: $O(m\text{log}n\text{log}n) = O(n\text{log}n\text{log}n)$</p>
+
+<p>复杂度从优到劣， Prim &gt; Kruskal &gt; Boruvka</p>
+
+<p><br /></p>
+
+<p>对于稠密图，$m=n^2$</p>
+
+<p>Kruskal: $O(m(\text{log}m+\text{log}n)) = O(n^2\text{log}n\text{log}n)$</p>
+
+<p>Prime:  $O(\text{log}n+m) = O(n^2 + \text{log}n)$</p>
+
+<p>Boruvka: $O(m\text{log}n\text{log}n) = O(n^2\text{log}n\text{log}n)$</p>
+
+<p>复杂度从优到劣， Prim &gt; Kruskal = Boruvka</p>
+
+<p><br /></p>
+
+<p>好像仅从复杂度上，经典实现里 Prim都是各方最优。</p>
+
+<p>从优化实现上，Prim 的优化和 Boruvka 算法的拓展都可以到 $O(m)$ 。</p>
+
+<h2 id="后续">后续</h2>
+
+<p>关于 Prim 进一步可以看看 <a href="/algs/DaryHeap.html">d-ary 堆的实现</a>；而基于 Boruvka 的线性算法<sup id="fnref:lt-mst" role="doc-noteref"><a href="#fn:lt-mst" class="footnote" rel="footnote">2</a></sup> 复杂的部分在于一个去重（zhong）边的最小生成树的验证算法（原始提出和 Targan 最近共同祖先同一篇论文里），没有具体实现的介绍，只有原始的算法的论文，大体看了以下，应该可以弄明白，但是要花不少时间，有点儿鸡肋，就这样吧。</p>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:mst-wiki" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Minimum_spanning_tree <a href="#fnref:mst-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:lt-mst" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Expected_linear_time_MST_algorithm <a href="#fnref:lt-mst" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+<script src="https://kit.fontawesome.com/f1af9f22fa.js" crossorigin="anonymous"></script>
+
+
+</body>
+</html>

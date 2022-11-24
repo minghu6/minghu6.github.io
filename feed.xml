@@ -1,4 +1,855 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-11-15T23:44:46+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Fibonacci Heap Implementation (Rust)</title><link href="/algs/FibHeapImplRust.html" rel="alternate" type="text/html" title="Fibonacci Heap Implementation (Rust)" /><published>2022-11-13T00:00:00+08:00</published><updated>2022-11-13T00:00:00+08:00</updated><id>/algs/FibHeapImplRust</id><content type="html" xml:base="/algs/FibHeapImplRust.html"><![CDATA[<p>算法理论部分，在上一篇论文 <strong><a href="/algs/FibHeap.html">Fibonacci Heap</a></strong> 已经讲完了，下面是干活的部分<sup id="fnref:rust-impl" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">1</a></sup>：</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-11-24T18:25:09+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">N叉堆实现（Rust）</title><link href="/algs/DaryHeap.html" rel="alternate" type="text/html" title="N叉堆实现（Rust）" /><published>2022-11-23T00:00:00+08:00</published><updated>2022-11-23T00:00:00+08:00</updated><id>/algs/DaryHeap</id><content type="html" xml:base="/algs/DaryHeap.html"><![CDATA[<p>一个有建立在连续内存上的 $2$ 的 $n$ 次幂倍分叉完全树的最小堆（以下简称 d-ary 堆），理论和实践都最快的，用于图上经典贪心算法，作为<a href="/algs/FibHeap.html">斐波那契堆</a>的上位替代。</p>
+
+<p>下图 $q=2^1$</p>
+
+<div class="sx-center"><img src="/../assets/img/daryheap/layout.svg" title="" /></div>
+
+<h2 id="数据结构">数据结构</h2>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Min Heap, I is unique, T is weight</span>
+<span class="nd">#[derive(Clone)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">DaryHeap</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">E</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">raw</span><span class="p">:</span> <span class="n">Array</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>注解：</strong></p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">Array</code> 是自己实现的简单堆上数组，因为需要初始化，所以包裹了 <code class="language-plaintext highlighter-rouge">Option</code></li>
+  <li>直接使用“索引-权重“二元组来作为节点的结构</li>
+</ol>
+
+<h2 id="基础操作">基础操作</h2>
+
+<p>值得稍微想一想的就是树上父、子位置与索引的换算关系。以下假设我们的叉堆的基是 $2^E$ 。</p>
+
+<h3 id="索引">索引</h3>
+
+<p>基本的索引与位置的换算关系靠得是等比数列前 $n$ 项和：</p>
+
+<p>$a_1$ 为首项， $q$ 为比值</p>
+
+\[S_n = \left\{\begin{array}{l} 
+ &amp; na_1 &amp;(q=1)\\
+ &amp;{\large \frac{a_1(1-q^n)}{1-q}} &amp;(q \neq 1)\\
+\end{array}\right.\]
+
+<p>对于我们的 d-ary 堆，$a_1 = 1$， $q=2^E$ ，于是有：</p>
+
+\[S_n = \frac{2^{En} - 1}{2^E - 1}\]
+
+<p>定义一系列宏来做索引转换的工作</p>
+
+<h4 id="定义基">定义基</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 2^E</span>
+<span class="nd">macro_rules!</span> <span class="n">base</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span> 
+        <span class="p">{</span>
+            <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">E</span>
+        <span class="p">}</span> 
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// (2^E)^n</span>
+<span class="nd">macro_rules!</span> <span class="n">basen</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$n:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> 
+        <span class="p">{</span>
+            <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">E</span> <span class="o">*</span> <span class="p">(</span><span class="nv">$n</span><span class="p">)</span>
+        <span class="p">}</span> 
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="从编号转换到行列位置">从编号转换到行列位置</h4>
+
+<p>编号和行列位置都从 $1$ 开始，逆转 $S_n$ 公式：</p>
+
+\[2^{En} = S_n(2^E - 1) + 1\]
+
+<p>得出 $n$</p>
+
+\[n = \frac{\log_{2}({S_n(2^E - 1) + 1})}{E}\]
+
+<p>设当前编号为 $N$，行号为 $\text{ln}$ ，列号为 $\text{col}$，则</p>
+
+\[\begin{array}{l}
+\text{ln} &amp;= \lfloor \frac{\log_{2}({N(2^E - 1) + 1})}{E} \rfloor \\
+\text{col} &amp;= N - S_{\text{ln}-1}
+\end{array}\]
+
+<p>当然这里要采用<strong>整数上的数学函数</strong>进行运算</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">pos</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$x:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+
+            <span class="c1">// = q^n</span>
+            <span class="k">let</span> <span class="n">var</span> <span class="o">=</span> <span class="p">(</span><span class="nd">base!</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">ln</span> <span class="o">=</span> <span class="n">var</span><span class="nf">.ilog2</span><span class="p">()</span> <span class="k">as</span> <span class="nb">usize</span> <span class="o">/</span> <span class="n">E</span><span class="p">;</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">col</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">col</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="n">ln</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="nd">basen!</span><span class="p">(</span><span class="n">ln</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="cd">/// total number for lv complete d-ary</span>
+<span class="nd">macro_rules!</span> <span class="n">total</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$ln:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">ln</span> <span class="o">=</span> <span class="nv">$ln</span><span class="p">;</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">ln</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">E</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+            <span class="c1">// 1 * 1-q^n / (1-q)</span>
+            <span class="p">(</span><span class="nd">basen!</span><span class="p">(</span><span class="n">ln</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nd">base!</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$ln:expr</span><span class="p">,</span> <span class="nv">$col:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">ln</span> <span class="o">=</span> <span class="nv">$ln</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">col</span> <span class="o">=</span> <span class="nv">$col</span><span class="p">;</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">ln</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">ln</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="n">col</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">col</span>
+            <span class="p">}</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="当前位置到父母或孩子的位置">当前位置到父母或孩子的位置</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">paren_pos</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$pos:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$pos</span><span class="p">;</span>
+
+            <span class="p">(</span><span class="n">ln</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nd">base!</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="cd">/// first child pos</span>
+<span class="nd">macro_rules!</span> <span class="n">child_pos</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$pos:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$pos</span><span class="p">;</span>
+
+            <span class="p">(</span><span class="n">ln</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nd">base!</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="数组下标到父母或孩子下标">数组下标到父母或孩子下标</h4>
+
+<p>最后我们就有了直接的实际数据结构里的索引到它父母或孩子的索引的最终算法</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">paren</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$idx:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nd">paren_pos!</span><span class="p">(</span><span class="nd">pos!</span><span class="p">(</span><span class="nv">$idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+
+            <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">child</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$idx:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nd">child_pos!</span><span class="p">(</span><span class="nd">pos!</span><span class="p">(</span><span class="nv">$idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+
+            <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="交换">交换</h3>
+
+<p>交换是 d-ary 堆算法实现依赖的主要操作。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl DaryHeap ...     </span>
+
+<span class="k">fn</span> <span class="nf">swap</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx1</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">idx2</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">k1</span><span class="p">,</span> <span class="n">_v1</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">k2</span><span class="p">,</span> <span class="n">_v2</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">k1</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">idx2</span><span class="p">);</span>
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">k2</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">idx1</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">tmp1</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span><span class="nf">.take</span><span class="p">();</span>
+    <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span><span class="nf">.take</span><span class="p">();</span>
+    <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cd">/// return insert_idx</span>
+<span class="k">fn</span> <span class="nf">sift_up</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="n">idx</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="n">cur</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">paren</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="o">&lt;</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">paren</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.swap</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">paren</span><span class="p">);</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="n">paren</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">cur</span>
+<span class="p">}</span>
+
+<span class="cd">/// return insert_idx</span>
+<span class="k">fn</span> <span class="nf">sift_down</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="n">idx</span><span class="p">;</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.min_child</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">&lt;</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.swap</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">child</span><span class="p">);</span>
+                <span class="n">cur</span> <span class="o">=</span> <span class="n">child</span><span class="p">;</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">break</span> <span class="n">cur</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">min_child</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">start</span> <span class="o">=</span> <span class="nd">child!</span><span class="p">(</span><span class="n">idx</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">end</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="k">self</span><span class="py">.len</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="nd">base!</span><span class="p">());</span>
+
+    <span class="p">(</span><span class="n">start</span><span class="o">..</span><span class="n">end</span><span class="p">)</span><span class="nf">.min_by_key</span><span class="p">(|</span><span class="o">&amp;</span><span class="n">x</span><span class="p">|</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<ol>
+  <li>当插入新节点的时候，把新节点放到尾部，然后和父节点比较，如果堆的性质发生违背，就交换两个节点，递归地进行直到到达根节点；</li>
+  <li>当更新已有节点的时候，如果新值比旧值大，就向下交换，如果比旧值小，就向上交换，相等就什么都不做；</li>
+  <li>删除根节点的时候，把它和序列上最后一个节点交换，然后把最后一个节点向下交换</li>
+</ol>
+
+<h2 id="核心算法实现">核心算法实现</h2>
+
+<h3 id="insert">Insert</h3>
+
+<p>扩容的时候和一般内存上的连续结构一样，申请新的更大内存（不必要每次扩张都有下一层完全树的内存大小，算法实现也不依赖于此），然后把旧的全部复制到新内存位置，最后释放旧内存。<em>注意，这种做法看起来比不用复制旧内存的链表结构要浪费很多，但实际上不仅摊销代价很小，通常直接代价也很小，绝大多数情况在时间效率上远优于链表结构！</em></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl DaryHeap ...  </span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">self</span><span class="py">.index</span><span class="nf">.contains_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">Some</span><span class="p">(</span><span class="k">self</span><span class="nf">.update</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.cap</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.recap</span><span class="p">(</span><span class="n">E</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">&gt;=</span> <span class="k">self</span><span class="nf">.cap</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.recap</span><span class="p">(</span><span class="k">self</span><span class="nf">.cap</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">ent</span> <span class="o">=</span> <span class="k">self</span><span class="py">.len</span><span class="p">;</span>
+
+        <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">ent</span><span class="p">]</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">((</span><span class="n">i</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">v</span><span class="p">));</span>
+        <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ent</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.sift_up</span><span class="p">(</span><span class="n">ent</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="py">.len</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="nb">None</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">recap</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">new_cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="py">.raw</span><span class="nf">.resize</span><span class="p">(</span><span class="n">new_cap</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="decreasekey">DecreaseKey</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl DaryHeap ...</span>
+
+<span class="nd">#[inline]</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decrease_key</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+    <span class="k">self</span><span class="nf">.update</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">update</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+    <span class="nd">debug_assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.index</span><span class="nf">.contains_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">),</span> <span class="s">"No {i:?}"</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="k">self</span><span class="py">.index</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">oldv</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.replace</span><span class="p">((</span><span class="n">i</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">v</span><span class="p">))</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">newidx</span> <span class="o">=</span> <span class="k">match</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="nf">.cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oldv</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Less</span> <span class="k">=&gt;</span> <span class="k">self</span><span class="nf">.sift_up</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span>
+        <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="n">idx</span><span class="p">,</span>
+        <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="k">self</span><span class="nf">.sift_down</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span>
+    <span class="p">};</span>
+
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">newidx</span><span class="p">);</span>
+
+    <span class="n">oldv</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="pop">Pop</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">pop_item</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nf">Some</span><span class="p">(</span><span class="k">self</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.swap</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.remove</span><span class="p">(</span><span class="k">self</span><span class="py">.len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.sift_down</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+        <span class="nf">Some</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cd">/// remain None, update self.len</span>
+<span class="k">fn</span> <span class="nf">remove</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">);</span>
+    <span class="k">self</span><span class="py">.len</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="时间复杂度分析">时间复杂度分析</h2>
+
+<p>d-ary 堆本质上当然仍是二叉堆，但当基数较大的时候，实际上原来 $\text{log} n$ 的操作就降低为常量。</p>
+
+<p><code class="language-plaintext highlighter-rouge">insert</code>: $O(1)$</p>
+
+<p><code class="language-plaintext highlighter-rouge">decrease-key</code>: $O(1)$</p>
+
+<p><code class="language-plaintext highlighter-rouge">delete-min</code> (<code class="language-plaintext highlighter-rouge">pop</code>): $O(1) $</p>
+
+<p>在 <code class="language-plaintext highlighter-rouge">pop</code> 的时候理论上还优于之前介绍过的斐波那契堆，实际上由于这是建立在连续内存上的数据，比起基于链表的结构不知道好到哪里去了！</p>
+
+<p>**通常 d-ary 堆的基数是 32，也就是 E=5 **，这是个经验结论，在此之前，随着基数增大，时间效率呈现有意义地增加，而在此之后，时间效率几乎不增乃至减少。Clojure 自己的持久化 <code class="language-plaintext highlighter-rouge">Vector</code> 的实现里 Trie 的基数就是 $32$ 。</p>
+
+<h2 id="引用">引用</h2>
+
+<p>完整代码： https://github.com/minghu6/rust-minghu6/blob/master/src/collections/heap/dary.rs</p>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[一个有建立在连续内存上的 $2$ 的 $n$ 次幂倍分叉完全树的最小堆（以下简称 d-ary 堆），理论和实践都最快的，用于图上经典贪心算法，作为斐波那契堆的上位替代。]]></summary></entry><entry><title type="html">速通最小生成树（MST）</title><link href="/algs/GraphMST.html" rel="alternate" type="text/html" title="速通最小生成树（MST）" /><published>2022-11-18T00:00:00+08:00</published><updated>2022-11-18T00:00:00+08:00</updated><id>/algs/GraphMST</id><content type="html" xml:base="/algs/GraphMST.html"><![CDATA[<h2 id="前言">前言</h2>
+
+<p>介绍三种基本的最小生成树算法：</p>
+
+<p>它们都是贪心算法</p>
+
+<ol>
+  <li>基于最小边的 Kruskal 算法</li>
+  <li>基于最小距离的点（到生成树）的 Prim 算法</li>
+  <li>基于连通分量最小出边的 Boruvka 算法</li>
+</ol>
+
+<p>对于它们进行简单的比较</p>
+
+<p>实现基于<a href="/algs/GraphTheoryBasic.html">图论基础</a>里面提到的数据结构</p>
+
+<h2 id="性质">性质</h2>
+
+<p>介绍一下最小生成树相关的性质<sup id="fnref:mst-wiki" role="doc-noteref"><a href="#fn:mst-wiki" class="footnote" rel="footnote">1</a></sup>，可能让我们对算法的理解能拨其冗繁、摁其要务，看得更清楚一点。</p>
+
+<h3 id="割的性质">割的性质</h3>
+
+<p>对于连通图 $G = (V, E)$ ，如果 $U$ 为它的非平凡子图（不是空集和它自身），则存在 $U$ 的所有出边（一头在 $U$ ,一头不在 $U$ ）中权值最小的边 $e$ 一定属于某棵 $G$ 上的最小生成树。</p>
+
+<p>记 $T$ 为 $G$ 上的一棵最小生成树，</p>
+
+<ol>
+  <li>
+    <p>如果 $e$  在 $T$ 上， 性质1成立；</p>
+  </li>
+  <li>
+    <p>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），并且一定存在C中e以外的一条U的出边 $f$ ，由于e是最小出边，那么f一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 是最小生成树。也就是e属于一棵生成树，性质1仍然成立。</p>
+  </li>
+</ol>
+
+<p>证毕。</p>
+
+<p>进一步地，如果这条最小出边 $e$ 是唯一最小的，它一定属于所有最小生成树。</p>
+
+<h4 id="推论1">推论1</h4>
+
+<p>对于连通图 $G = (V, E)$ ， $U$ 是 $E$ 的子图，如果 $U$ 属于某棵 $G$ 上的最小生成树，那么在加入一条最小出边后，仍然属于某棵最小生成树。</p>
+
+<p>设 $U$ 属于最小生成树 $T$ ，根据性质1，加入最小出边 $e$ 后，$U$ 要么仍然属于 $T$ ，要么属于 $T-f+e$ ，都仍然属于某棵最小生成树。</p>
+
+<h4 id="推论2">推论2</h4>
+
+<p>进一步推论，开始的时候 $G$ 中每个点构成的子图一定属于最小生成树，那么根据归纳推理，不断地加最小出边，当图中每个点都被加入后，得到一棵生成树，也就是最小生成树。这也是 Prim 算法的证明。</p>
+
+<h3 id="环的性质">环的性质</h3>
+
+<p>图上的环状路径 $C$ ，如果其中一条边比其它所有边都大，那么它肯定不在任何一棵最小生成树上。</p>
+
+<p>和上面割的性质的证明是是类似的，反证如果在某棵最小生成树，则其他 $C$ 上的边可以替换产生一棵更小权重的最小生成树。</p>
+
+<h3 id="唯一性">唯一性</h3>
+
+<p>如果 $G$ 上每条边的权重都是唯一的，那么最小生成树也是唯一的。</p>
+
+<p>证明也是反证，假设有两棵不同的最小生成树，二者的对称差集（symmetric difference set）里权重最小的那一条所在的环上的其他边，至少有一条边不属于这棵最小生成树，而属于另一棵最小生成树，由于边权重唯一，那条边必然大于这个最小的差边，因而可以构成去大边加小边的更小的最小生成树，矛盾，证毕。</p>
+
+<h2 id="kruskal-算法">Kruskal 算法</h2>
+
+<p>大概读作 /’krʌs,gol/</p>
+
+<h3 id="描述">描述</h3>
+
+<p>最简单的，基于最小边的贪心算法</p>
+
+<ol>
+  <li>假设开始的时候每个点都是只包括自己的连通分量；</li>
+  <li>边按照权重排序，从最小边开始，若边上的两点不在同一连通分量里，就把它加入生成树，然后把两个点所在的连通分量连通为一个分量，最后就得到最小生成树；</li>
+</ol>
+
+<h3 id="实现">实现</h3>
+
+<ol>
+  <li>对边用堆或者提前排序维护从小到大的边的检查顺序；</li>
+  <li>用并查集维护连通分量</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_kruskal</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cm">/* init sorted edge set */</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">sorted_edges</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">sorted_edges</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="n">sorted_edges</span><span class="nf">.sort_unstable_by_key</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="na">.2</span><span class="p">);</span>
+
+    <span class="cm">/* init disjoint set */</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ds</span> <span class="o">=</span> <span class="nn">UnionFind</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">MergeBy</span><span class="p">::</span><span class="n">SZ</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">ds</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_w</span><span class="p">)</span> <span class="k">in</span> <span class="n">sorted_edges</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">ds</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ds</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">ds</span><span class="nf">.cunion</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+            <span class="n">res</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="证明">证明</h3>
+
+<p>Kruskal 算法的证明并不像它看起来那么简单。</p>
+
+<p>假设 $G$ 是加权连通图， $Y$ 是算法应用在 $G$ 上产生的子图</p>
+
+<p><strong>是生成树</strong></p>
+
+<ol>
+  <li>$Y$ 不存在环， 这是由算法加边时的检查所保证的；</li>
+  <li>$Y$ 是连通的，因为所有边都被检查了一遍，只要两个点不在同一分量里就加入</li>
+</ol>
+
+<p><strong>且是最小生成树</strong></p>
+
+<p>首先提出一个<strong>假设</strong> $P$：</p>
+
+<p>​	设 $F$（Forest）是算法在任意阶段生成的边集，则总有 $G$ 上的最小生成树包含 $F$ ，并且它（这棵生成树）里面的边之前阶段没有被算法拒绝过</p>
+
+<p>用归纳法证明 $P$ 成立：</p>
+
+<ol>
+  <li>
+    <p>在开始的时候，$F=\varnothing $ ，显然 $G$ 上任何最小生成树都包含 $F$ ，算法一开始也没有拒绝过任何边， $P$ 成立；</p>
+  </li>
+  <li>
+    <p>假设 $P$ 在算法的某个非最终阶段成立，将这时包含 $F$ 的最小生成树记为 $T$ ，下一个要加入的边记为 $e$ ：</p>
+
+    <ol>
+      <li>如果 $e$  在 $T$ 上， $P$ 成立；</li>
+      <li>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），而由于 $e$ 通过了算法检查，所以 $e$ 加入后，构不成 $F$ 上的环形结构，也就是说环形路径 $C$ 一定存在至少一条边不属于 $F$ 。不妨标记这样的一条边为 $f$ ，$f \neq e$。根据 $P$ 的定义， $T$ 上没有边之前被 $F$ 拒绝过， $f$ 如果不属于 $F$ ，则一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 因此是最小生成树，而 $T-f+e$ 包含 $F+e$ ， $P$ 仍然成立。
+因此我们证明了若 $P$ 在 $F$ 上成立，就有 $P$ 在 $F+e$ 上成立的递推关系。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>归纳证毕，假设 $P$ 成立。</p>
+
+<p>因此当 $F$ 是生成树的时候，一定有最小生成树包含它，也就是 $F$ 是最小生成树。</p>
+
+<p>而之前我们已经证明了 $F$ 最终所生成的子图 $Y$ 是生成树， 于是有算法产生了一棵最小生成树，证毕。</p>
+
+<h3 id="时间复杂度">时间复杂度</h3>
+
+<p>假设 $n=|V|$，$m=|E|$</p>
+
+<p>复杂度等于边排序 $O(m \text{log} m)$ + 并查集操作 $O(m \text{log} n)$ ，等于 $O(m (\text{log} m+\text{log} n))$ 。</p>
+
+<h2 id="prime-算法">Prime 算法</h2>
+
+<p>类似 Dijkstra 算法，从距既有生成树最短距离的点开始加</p>
+
+<h3 id="描述-1">描述</h3>
+
+<ol>
+  <li>选取图中任意一点开始，作为生成树的根节点，把其余点到生成树的最短距离初始化为 $+\infty$ ，根节点的生成树最短距离初始化为 $0$ ，初始化每个点到生成树的最短边的对应点为 <code class="language-plaintext highlighter-rouge">None</code>，记为 $\texttt{pair}$ ，把所有点加入剩余点集 $R$；</li>
+  <li>每次从 R 中取出到生成树距离最小的点记为 $u$ ，把边 $(u, \texttt{pair}(u))$ 加入边集 $E$ 中。检查它的邻居中不在生成树上的点 $v$ ，如果边的权重 $w_{\large uv}$ ，与生成树最短距离 $\texttt{dis}(v)$ ，有  $w_{\large uv} &lt; \texttt{dis}(v) $  ，更新 $\texttt{dis}(v)$ 为  $w_{\large uv}$ ，也更新 $\texttt{pair}(u)$  为 $u$ ；</li>
+  <li>当$R = \varnothing$ 时，退出，得到的E即为一棵最小生成树</li>
+</ol>
+
+<h3 id="实现-1">实现</h3>
+
+<p>关键显然在于维护生成树距离的堆的选择，这涉及两个堆操作，<code class="language-plaintext highlighter-rouge">pop</code> 和 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，经典地是使用Fib堆（在<a href="/algs/FibHeap.html">斐波那契堆（Fibonacci Heap） </a> 一文中介绍过），这样有理论更好的 <code class="language-plaintext highlighter-rouge">decrease-key</code> 性能，但实际上，我们知道在有缓存的 CPU 架构下二叉堆实际表现好得多，如果把调整二叉堆的实现，把基数从 $2$ 提高，到比如 $32$ ，那么理论上可以认为 <code class="language-plaintext highlighter-rouge">pop</code> 和 <code class="language-plaintext highlighter-rouge">decrease-key</code> 都有线性表现，这是理论与实践上都最优的优化。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_prim</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="cm">/* choose an arbitray node as root */</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">viter</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">root</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_root</span><span class="p">)</span> <span class="o">=</span> <span class="n">viter</span><span class="nf">.next</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">_root</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* setup rest collection */</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">rest</span><span class="p">:</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="cm">/* init dis heap &amp;&amp; dis edge map */</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis</span> <span class="o">=</span> <span class="nn">FibHeap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis_edge</span> <span class="o">=</span> <span class="nn">HashMap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="n">dis</span><span class="nf">.push</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nf">Some</span><span class="p">(</span><span class="n">root</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">viter</span> <span class="p">{</span>
+        <span class="n">rest</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="n">dis</span><span class="nf">.push</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nn">isize</span><span class="p">::</span><span class="n">MAX</span><span class="p">);</span>
+        <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">None</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="o">!</span><span class="n">rest</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// u is current vertex</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">_uw</span><span class="p">)</span> <span class="o">=</span> <span class="n">dis</span><span class="nf">.pop_item</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="c1">// "decrease-key" (It's increase-key actually for min-heap)</span>
+        <span class="n">rest</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">u_pair</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">dis_edge</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">u_pair</span> <span class="o">!=</span> <span class="n">u</span> <span class="p">{</span>
+            <span class="n">res</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">u_pair</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="c1">// calc adj</span>
+
+        <span class="k">let</span> <span class="n">adjs</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">);</span>
+
+        <span class="cm">/* update dis heap */</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">adjs</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.filter</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">rest</span><span class="nf">.contains</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">w_uv</span><span class="p">:</span> <span class="nb">isize</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+
+            <span class="k">if</span> <span class="n">w_uv</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nd">get!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">dis</span><span class="nf">.decrease_key</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">w_uv</span><span class="p">);</span>
+                <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nf">Some</span><span class="p">(</span><span class="n">u</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="证明-1">证明</h3>
+
+<p><a href="#推论2">割的性质推论2</a></p>
+
+<h3 id="时间复杂度-1">时间复杂度</h3>
+
+<p>经典使用斐波那契堆： $O(\text{log}n) + O(m) = O(\text{log}n + m)$</p>
+
+<p>使用大基数的 $k$ 叉堆： $O(1) + O(m) = O(m)$</p>
+
+<h2 id="boruvka-算法">Boruvka 算法</h2>
+
+<p>Borůvka (捷克语) ，大概读作 /,bros’gɑʊl/</p>
+
+<h3 id="描述-2">描述</h3>
+
+<p>对每个连通分量加最小出边，直到没有出边为止。</p>
+
+<p>这本质上和 Kruskal 算法是一样的，实际上 Kruskal 算法对所有边排序是有点儿浪费比较次数了。</p>
+
+<ol>
+  <li>开始的时候，图中每个点都是一个连通分量，对所有边遍历，选取其中两头不在同一个连通分量的，用它更新两个连通分量在这一轮迭代里的最小出边；</li>
+  <li>一轮结束后，把新选取的最小出边加入结果集，并连接两个分量，当没有新选任何最小出边的时候结束，否则进行下一轮遍历</li>
+</ol>
+
+<p><strong>注意：</strong></p>
+
+<ol>
+  <li>显然作为一个优化，加入结果集的边就不需要再遍历了</li>
+  <li>具体的算法实现中，注意不要让权重相等的边导致结果中出现环</li>
+</ol>
+
+<h3 id="实现-2">实现</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_boruvka</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="c1">// using lexicograph order</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dsu</span> <span class="o">=</span> <span class="nn">UnionFind</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">MergeBy</span><span class="p">::</span><span class="n">SZ</span><span class="p">));</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">dsu</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// components cheapest edges: (weight, usize)</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cand_edges</span><span class="p">:</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span><span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">comp_min_edges</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span> <span class="o">=</span>
+            <span class="nn">HashMap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">cand_edges</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">pu</span> <span class="o">=</span> <span class="n">dsu</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">dsu</span><span class="nf">.cfind</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">pu</span> <span class="o">==</span> <span class="n">pv</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">pu_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span>
+                <span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pu</span><span class="p">)</span>
+                <span class="nf">.cloned</span><span class="p">()</span>
+                <span class="nf">.unwrap_or</span><span class="p">(</span><span class="nb">None</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">pu_min_edge</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">pu_min_edge</span> <span class="p">{</span>
+                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pu</span><span class="p">,</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)));</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">pv_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span>
+                <span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pv</span><span class="p">)</span>
+                <span class="nf">.cloned</span><span class="p">()</span>
+                <span class="nf">.unwrap_or</span><span class="p">(</span><span class="nb">None</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">pv_min_edge</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">pv_min_edge</span> <span class="p">{</span>
+                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">continue_flag</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span> <span class="k">in</span> <span class="n">comp_min_edges</span><span class="nf">.into_iter</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">opt</span> <span class="p">{</span>
+                <span class="n">res</span><span class="nf">.insert</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+                <span class="n">dsu</span><span class="nf">.cunion</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+                <span class="n">cand_edges</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">));</span>
+
+                <span class="n">continue_flag</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="n">continue_flag</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">res</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.collect</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="利用属性的简单证明">利用属性的简单证明</h3>
+
+<p>开始时 $G$ 中每个点都是一个连通分量，每次选取最小出边，连接两个分量。首先这两个分量分别属于某棵最小生成树，其中任一个分量加上出边仍然是最小生成树的一部分，<strong>显然</strong> （也许并没有显然）应当是这两个连通分量合起来仍然属于某棵最小生成树。</p>
+
+<h3 id="完整证明">完整证明</h3>
+
+<p>完整证明过于复杂，另行查阅资料，不介绍。</p>
+
+<h3 id="时间复杂度-2">时间复杂度</h3>
+
+<p>由于每次迭代后连通分量至少减半（每个新分量都没再连通过），所以最外层迭代次数是O(logn)，每次边的遍历是 $O(m)$  ，并查询是 $O(\text{log}n)$ ，所以时间复杂度为 $O(m\text{log}n\text{log}n)$ 。</p>
+
+<h2 id="时间复杂度简单比较">时间复杂度简单比较</h2>
+
+<p>时间复杂度涉及 $n$ 和 $m$ ，按照图的稀疏度分两个维度讨论（对于连通图，$m\geqslant n-1$ ）</p>
+
+<p><br /></p>
+
+<p>对于稀疏图，$m=n$ :</p>
+
+<p>Kruskal:  $O(m(\text{log}m+\text{log}n)) = O(n\text{log}n)$</p>
+
+<p>Prime:  $O(\text{log}n+m) = O(n+\text{log}n) = O(n)$</p>
+
+<p>Boruvka: $O(m\text{log}n\text{log}n) = O(n\text{log}n\text{log}n)$</p>
+
+<p>复杂度从优到劣， Prim &gt; Kruskal &gt; Boruvka</p>
+
+<p><br /></p>
+
+<p>对于稠密图，$m=n^2$</p>
+
+<p>Kruskal: $O(m(\text{log}m+\text{log}n)) = O(n^2\text{log}n\text{log}n)$</p>
+
+<p>Prime:  $O(\text{log}n+m) = O(n^2 + \text{log}n)$</p>
+
+<p>Boruvka: $O(m\text{log}n\text{log}n) = O(n^2\text{log}n\text{log}n)$</p>
+
+<p>复杂度从优到劣， Prim &gt; Kruskal = Boruvka</p>
+
+<p><br /></p>
+
+<p>好像仅从复杂度上，经典实现里 Prim都是各方最优。</p>
+
+<p>从优化实现上，Prim 的优化和 Boruvka 算法的拓展都可以到 $O(m)$ 。</p>
+
+<h2 id="后续">后续</h2>
+
+<p>关于 Prim 进一步可以看看 <a href="/algs/DaryHeap.html">d-ary 堆的实现</a>；而基于 Boruvka 的线性算法<sup id="fnref:lt-mst" role="doc-noteref"><a href="#fn:lt-mst" class="footnote" rel="footnote">2</a></sup> 复杂的部分在于一个去重（zhong）边的最小生成树的验证算法（原始提出和 Targan 最近共同祖先同一篇论文里），没有具体实现的介绍，只有原始的算法的论文，大体看了以下，应该可以弄明白，但是要花不少时间，有点儿鸡肋，就这样吧。</p>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:mst-wiki" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Minimum_spanning_tree <a href="#fnref:mst-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:lt-mst" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Expected_linear_time_MST_algorithm <a href="#fnref:lt-mst" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">指数提升（倍增，Binary Lifting）</title><link href="/algs/BinaryLifting.html" rel="alternate" type="text/html" title="指数提升（倍增，Binary Lifting）" /><published>2022-11-16T00:00:00+08:00</published><updated>2022-11-16T00:00:00+08:00</updated><id>/algs/BinaryLifting</id><content type="html" xml:base="/algs/BinaryLifting.html"><![CDATA[<h2 id="前言">前言</h2>
+
+<p>我一定要狠狠地“婊扬“一下“倍增“这个翻译，这个翻译从字面上看是要翻倍、增加，可是翻倍已经包含增加的内涵（一般概念上的对象都是自然数的），结果实际上一般人看到这个词就只能理解到翻倍的意涵，为什么要翻倍？这么做的好处在哪儿？ 这到底是什么东西？我每次看到这个词总是一头雾水，看了几次算法介绍也不能抓到关键点，而使用倍增这个翻译的介绍的大多数作者也没能抓住关键点，可能他们也被倍增这个鬼翻译迷惑住，只能硬讲流程，却点不出关键点。</p>
+
+<p>我是直到看到“倍增”对应的英文词 Binary Lifting ，才恍然大悟，明白它的想法到底是什么，什么叫“好“翻译增加学习曲线的陡峭度？！它显然是可类比 Binary Search 二分搜索，用指数级别增长取代线性增长概念，从而把线性时间复杂度降低为对数级时间复杂度。这又要讲这个鬼翻译，大哥你提升和增长哪个更形象？你不觉得增长过于抽象了吗？何况你又把增长缩写为“增“，很可能人一看到“增“首先联想到的是增加而不是增长，那增加就比增长更抽象了，最后更绝地是，翻译者觉得“倍增”就是把翻倍和增长结合在一起的意思，这完全没有语文素养，没意识到白话文双元词语义分主辅的使用习惯，比如“强力”，主要是“强”，“力”是对“强”的辅助修饰，而倍增一词，就是一个“倍“，增通常是辅助，是被忽略的！</p>
+
+<p>这样我们分析了“倍增”如何犯了一系列模糊重点，翻译失准的问题，翻译三重标准–信达雅，翻译者可能觉得自己这种翻译简直“既达而雅”了，实际在第一步“信“的标准上就失败了（很多那些让人摸不着头脑的翻译比那些佶屈聱牙的直白翻译还不如）（这种翻译，令人血压升高的程度堪比那个 YGO DL 里面那个有同步协调不用，非要同“吊“ 还不加儿化音的鬼翻译）（按照这种翻译，二分搜索就可以翻成“半搜“了，让人看了也一头雾水）。</p>
+
+<p>所以我自己使用了一个更到位，让人一眼就看清楚这个算法是做什么的<strong>直白</strong>翻译：<strong>指数提升</strong> ，这个翻译首先从全局上讲清楚了，就是指数级增长，然后是“提升“就比“增“具体地多，清楚得多。</p>
+
+<h2 id="算法思想">算法思想</h2>
+
+<p>指数提升在前言里已经提过了，就是用指数级增长取代线性增长，这里我们具体地描述一下场景：</p>
+
+<p>假设有在同一直线上的两点 $A$ , $B$ ，在不知道 $|AB |$（$A$ 到 $B$ 的距离）的情况下，从 $A$ 跳到 $B$ ，每次跳幅是单位距离的整数倍。</p>
+
+<p>我们有如下几个逐渐改进的方案：</p>
+
+<h3 id="步行">步行</h3>
+
+<p>一个单位一个单位的跳，每次检查是否到了 $B$ 点，这肯定可以，但这是最慢的方法。</p>
+
+<h3 id="传统家用汽车">传统家用汽车</h3>
+
+<p>一跳跳固定跳 $n$ 个单位，最后距离如果不足一跳就下车步行（改为一个单位一个单位跳）</p>
+
+<p>比步行强多了，但控制太差，要么速度不够快，要么步行距离长。</p>
+
+<h3 id="传统超跑">传统超跑</h3>
+
+<p>前面两种方法本质都是 $O(n)$ 的时间复杂度，于是我们想，可以加快这一过程，用指数增长（或减少）的步幅来跳。</p>
+
+<p>假设幂底是 $m$ ，用档位代指指数，那么 $n$ 档就是 $m^n$ 。</p>
+
+<ol>
+  <li>
+    <p>这样我们从 $0$ 档起步，每跳一步，就加速一档： $1$ 档, $2$ 档, ……, $n$ 档，直到第 $n+1$ 步会超过 $B$ ；</p>
+  </li>
+  <li>
+    <p>之后从 $n$ 档开始逐一降档，直到下一步不超过 $B$ ，然后尝试保持档位跳第 $n+2$ 步，仍然超过就继续降档，重复步骤2，直到降到 $0$ 档，然后下车步行，直到到达 $B$ 点</p>
+  </li>
+</ol>
+
+<p>有了指数级变速器，这比传统家用汽车性能强多了，但显然一档一档地提速显得加速度不够理想。</p>
+
+<h3 id="电动超跑">电动超跑</h3>
+
+<p>假如我们知道 $|AB |$  最大不超过 $x$ ，那么我们可以起步挂在 $\lfloor \log_{m}x \rfloor$ 档，一步到位，之后直接进入步骤2。</p>
+
+<p>在最后的电动超跑的方案下，挂在每档的次数， 对应相应位上的数字，这样从高到低，构成了 $|AB |$ 的 $m$ 进制表示。设挂在每档的次数为 $k$ , 则显然有  $0\leqslant k &lt; m$ 。</p>
+
+<p>通常我们会设定 $m=2$ ，这有实现上的便利：</p>
+
+<ol>
+  <li>当 $m=2$ 时，$k \in [0, 1]$，这意味着不存在重复的档位，挂了 $n$ 档后，下一步直接从 $n-1$ 档开始检查，当挂完 $0$ 档之后，一定到达了目的地；</li>
+  <li>可以直接通过右移（right shift）来做 $2$ 为底的对数运算</li>
+</ol>
+
+<p>所以我们还可以把“指数提升“叫做<strong>幂（指）2提升</strong>或<strong>二进制提升</strong>，无论它们哪一个名字都比<em>倍增</em> 要好得多。</p>
+
+<h2 id="应用模板">应用模板</h2>
+
+<h3 id="快速开对数-2为底">快速开对数 （2为底）</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="nf">quick_log2</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="n">x</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">n</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="开跳">开跳</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="nf">quick_log2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="nf">.rev</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// skip 2^i</span>
+<span class="p">}</span>
+</code></pre></div></div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">斐波那契堆的实作 (for Rust)</title><link href="/algs/FibHeapImplRust.html" rel="alternate" type="text/html" title="斐波那契堆的实作 (for Rust)" /><published>2022-11-13T00:00:00+08:00</published><updated>2022-11-13T00:00:00+08:00</updated><id>/algs/FibHeapImplRust</id><content type="html" xml:base="/algs/FibHeapImplRust.html"><![CDATA[<p>算法理论部分，在上一篇论文 <strong><a href="/algs/FibHeap.html">Fibonacci Heap</a></strong> 已经讲完了，下面是干活的部分<sup id="fnref:rust-impl" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">1</a></sup>：</p>
 
 <h2 id="语言特定">语言特定</h2>
 
@@ -1014,7 +1865,7 @@
       <p>https://github.com/minghu6/rust-minghu6/blob/snapshot-1/src/collections/heap/fib.rs <a href="#fnref:rust-impl" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[算法理论部分，在上一篇论文 Fibonacci Heap 已经讲完了，下面是干活的部分1： https://github.com/minghu6/rust-minghu6/blob/snapshot-1/src/collections/heap/fib.rs &#8617;]]></summary></entry><entry><title type="html">Fibonacci Heap</title><link href="/algs/FibHeap.html" rel="alternate" type="text/html" title="Fibonacci Heap" /><published>2022-10-27T00:00:00+08:00</published><updated>2022-10-27T00:00:00+08:00</updated><id>/algs/FibHeap</id><content type="html" xml:base="/algs/FibHeap.html"><![CDATA[<p>Fibonacci Heap<sup id="fnref:fib" role="doc-noteref"><a href="#fn:fib" class="footnote" rel="footnote">1</a></sup><sup id="fnref:fib2" role="doc-noteref"><a href="#fn:fib2" class="footnote" rel="footnote">2</a></sup> <sup id="fnref:fib-wiki" role="doc-noteref"><a href="#fn:fib-wiki" class="footnote" rel="footnote">3</a></sup>是一个基于链表结构的，理论时间复杂度很优的数据结构。</p>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[算法理论部分，在上一篇论文 Fibonacci Heap 已经讲完了，下面是干活的部分1： https://github.com/minghu6/rust-minghu6/blob/snapshot-1/src/collections/heap/fib.rs &#8617;]]></summary></entry><entry><title type="html">斐波那契堆（Fibonacci Heap）</title><link href="/algs/FibHeap.html" rel="alternate" type="text/html" title="斐波那契堆（Fibonacci Heap）" /><published>2022-10-27T00:00:00+08:00</published><updated>2022-10-27T00:00:00+08:00</updated><id>/algs/FibHeap</id><content type="html" xml:base="/algs/FibHeap.html"><![CDATA[<p>Fibonacci Heap<sup id="fnref:fib" role="doc-noteref"><a href="#fn:fib" class="footnote" rel="footnote">1</a></sup><sup id="fnref:fib2" role="doc-noteref"><a href="#fn:fib2" class="footnote" rel="footnote">2</a></sup> <sup id="fnref:fib-wiki" role="doc-noteref"><a href="#fn:fib-wiki" class="footnote" rel="footnote">3</a></sup>是一个基于链表结构的，理论时间复杂度很优的数据结构。</p>
 
 <p>常用于Dijkstra最短路径、Prim最小生成树等贪心算法，使用 <code class="language-plaintext highlighter-rouge">push</code> - <code class="language-plaintext highlighter-rouge">decrease-key</code>，都是 $O(1)$ 的时间复杂度。</p>
 
@@ -1431,7 +2282,9 @@ size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
       <p>https://en.wikipedia.org/wiki/Fibonacci_heap <a href="#fnref:fib-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[Fibonacci Heap12 3是一个基于链表结构的，理论时间复杂度很优的数据结构。 https://www.cs.princeton.edu/~wayne/teaching/fibonacci-heap.pdf &#8617; http://www.cs.princeton.edu/~wayne/kleinberg-tardos/pdf/FibonacciHeaps.pdf &#8617; https://en.wikipedia.org/wiki/Fibonacci_heap &#8617;]]></summary></entry><entry><title type="html">图理论基础</title><link href="/algs/graph-theory-basic.html" rel="alternate" type="text/html" title="图理论基础" /><published>2022-10-09T00:00:00+08:00</published><updated>2022-10-09T00:00:00+08:00</updated><id>/algs/graph-theory-basic</id><content type="html" xml:base="/algs/graph-theory-basic.html"><![CDATA[<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[Fibonacci Heap12 3是一个基于链表结构的，理论时间复杂度很优的数据结构。 https://www.cs.princeton.edu/~wayne/teaching/fibonacci-heap.pdf &#8617; http://www.cs.princeton.edu/~wayne/kleinberg-tardos/pdf/FibonacciHeaps.pdf &#8617; https://en.wikipedia.org/wiki/Fibonacci_heap &#8617;]]></summary></entry><entry><title type="html">图理论基础</title><link href="/algs/GraphTheoryBasic.html" rel="alternate" type="text/html" title="图理论基础" /><published>2022-10-09T00:00:00+08:00</published><updated>2022-10-09T00:00:00+08:00</updated><id>/algs/GraphTheoryBasic</id><content type="html" xml:base="/algs/GraphTheoryBasic.html"><![CDATA[<h2 id="概念">概念</h2>
+
+<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
 
 <ol>
   <li>
@@ -1442,19 +2295,83 @@ size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
 tail(起点) -&gt; head（终点）</p>
   </li>
   <li>
-    <table>
-      <tbody>
-        <tr>
-          <td>|V</td>
-          <td>: 点的个数，图的阶（order）</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>|V|: 点的个数，图的阶（order）</p>
   </li>
-  <li>无根树，连通无向图</li>
+  <li>
+    <p>无根树，连通无向图</p>
+  </li>
+  <li>
+    <p><strong>简单图 (simple graph)</strong>：若一个图中没有自环和重边，它被称为简单图。具有至少两个顶点的简单无向图中一定存在度相同的结点。因为最多n-1个不同的度，而有n个点，这叫做抽屉原理或者鸽巢原理。</p>
+
+    <p>反过来，如果一张图中有自环或重边，则称它为 <strong>多重图 (multigraph)</strong>。</p>
+  </li>
 </ol>
 
-<p>参考<a href="/lang/c_trap.html">这里</a></p>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[假设图 G = {V, E}， V是顶点集，E是边集]]></summary></entry><entry><title type="html">Linux上把大文件夹移动到其他存储设备上来释放空间</title><link href="/os/mv-large-size-dir-to-another-dev.html" rel="alternate" type="text/html" title="Linux上把大文件夹移动到其他存储设备上来释放空间" /><published>2022-09-10T00:00:00+08:00</published><updated>2022-09-10T00:00:00+08:00</updated><id>/os/mv-large-size-dir-to-another-dev</id><content type="html" xml:base="/os/mv-large-size-dir-to-another-dev.html"><![CDATA[<h2 id="问题背景">问题背景</h2>
+<p>参考<a href="/lang/c_trap.html">这里</a></p>
+
+<h2 id="实现">实现</h2>
+
+<p>本篇实现是诸多相关算法基础数据结构：</p>
+
+<p>额外依赖<a href="https://gist.github.com/minghu6/e8b6236c745489be489317088e70e24f">EasyColl gist</a></p>
+
+<script src="https://gist.github.com/minghu6/e8b6236c745489be489317088e70e24f.js"></script>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Adjacent link formed simple (directed) connected graph</span>
+<span class="nd">#[derive(Default)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">Graph</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="n">e</span><span class="p">:</span> <span class="n">MV</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="k">pub</span> <span class="n">w</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span> <span class="n">Graph</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// The length of the shortest path between the most distanced nodes.</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">diameter</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">isize</span> <span class="p">{</span>
+        <span class="nf">diameter_dp</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// O(|E|)</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">vertexs</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">vertexs</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_w</span><span class="p">)</span> <span class="k">in</span> <span class="k">self</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">vertexs</span><span class="nf">.insert</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>
+            <span class="n">vertexs</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">vertexs</span><span class="nf">.into_iter</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">edges</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="nv">'a</span> <span class="k">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">edges</span> <span class="o">=</span> <span class="k">self</span><span class="py">.e</span><span class="na">.0</span><span class="nf">.iter</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">subedges</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+        <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_fn</span><span class="p">(</span><span class="k">move</span> <span class="p">||</span> <span class="k">loop</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">subedges</span><span class="nf">.pop</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))));</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">from</span><span class="p">,</span> <span class="n">tos</span><span class="p">))</span> <span class="o">=</span> <span class="n">edges</span><span class="nf">.next</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="n">subedges</span> <span class="o">=</span> <span class="n">tos</span>
+                        <span class="nf">.into_iter</span><span class="p">()</span>
+                        <span class="nf">.cloned</span><span class="p">()</span>
+                        <span class="nf">.map</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="p">(</span><span class="o">*</span><span class="n">from</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                        <span class="nf">.rev</span><span class="p">()</span>
+                        <span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">();</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[概念]]></summary></entry><entry><title type="html">Linux上把大文件夹移动到其他存储设备上来释放空间</title><link href="/os/mv-large-size-dir-to-another-dev.html" rel="alternate" type="text/html" title="Linux上把大文件夹移动到其他存储设备上来释放空间" /><published>2022-09-10T00:00:00+08:00</published><updated>2022-09-10T00:00:00+08:00</updated><id>/os/mv-large-size-dir-to-another-dev</id><content type="html" xml:base="/os/mv-large-size-dir-to-another-dev.html"><![CDATA[<h2 id="问题背景">问题背景</h2>
 
 <p>一个常见的问题是发现某个文件夹比如<code class="language-plaintext highlighter-rouge">/var</code>, <code class="language-plaintext highlighter-rouge">/opt</code> 过大，使得所在系统磁盘（比如一块儿容量很稀缺的高速SSD）的空间非常紧张，这时我们想把大文件夹移动到其他存储设备上来释放空间。</p>
 
@@ -1785,425 +2702,4 @@ ekse:
       <p>这个ack应该是由step-3的重传引发的。除此之外，这个ack应该确认所有在丢失的分片和收到的第三个重复的分片发送的所有中间分片，如果中间没有丢失 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04]]></summary></entry><entry><title type="html">Path MTU Discovery</title><link href="/net/ietf_rfc_1191_obs1063.html" rel="alternate" type="text/html" title="Path MTU Discovery" /><published>2022-08-06T00:00:00+08:00</published><updated>2022-08-06T00:00:00+08:00</updated><id>/net/ietf_rfc_1191_obs1063</id><content type="html" xml:base="/net/ietf_rfc_1191_obs1063.html"><![CDATA[<p>This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07</p>
-
-<h2 id="1-protocol-overview">1. Protocol Overview</h2>
-
-<p>通过设置IP header 的 <code class="language-plaintext highlighter-rouge">DF</code> bit 来动态发现一个路径的PMTU<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>:
-以第一跳<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的MTU为初始值(已知的)，如果收到ICMP code 3-4<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup><sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
-
-<p>由于网络拓扑会随时间改变，PMTU的减少，仍然可以通过DTB meessage得知，只要DF bit 被设置，而PMTU的增加，可以通过主机上的定期任务<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>来检测。</p>
-
-<h2 id="2-host主机specification">2. Host（主机）specification</h2>
-
-<p>当Host探索PMTU的减少时，速度必须尽可能地快，而探索PMTU的增加时，探索的时间间隔不能频繁（infrequent）<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>。</p>
-
-<p>更具体地，当探索PMTU的增加时，增加失败的间隔不少于5min，增加成功的间隔不小于1min，建议的间隔分别是是10min和2min。</p>
-
-<p>Host必须向下兼容不包含next-hop MTU的旧风格的DTB message<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup>。</p>
-
-<p>Host估值的PMTU应该不低于68 octets<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup></p>
-
-<h3 id="3-tcp-mss-option">3. TCP MSS<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup> Option</h3>
-
-<p>除非被允许，Host进行PMTUD时发送IP包的长度不应该超过 536 + 40 = 576 octets。</p>
-
-<p>而很多TCP实现总是设置MSS选项并且将值设为536，如果目的连接是非本地的。这种行为是对的，因为互联网上到处都是不遵守规则，发送超过576 octets<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">10</a></sup>的的host。</p>
-
-<p>一个host可能根据MTU设置MMS，这不应该对PMTUD造成问题，并且可以劝阻同层发送巨大的数据报</p>
-
-<h2 id="4-router路由器-specification">4. Router（路由器） specification</h2>
-
-<p>DTB message(ICMP code 3-4) format, 提供额外的origin header，next-hop MTU 不赘叙</p>
-
-<h2 id="5-处理旧风格的message">5. 处理旧风格的message</h2>
-
-<p>即如果message本身没有提供PMTU的信息。</p>
-
-<p>最简单的方式是取当前估计的PMTU与576之间的最小值，并且取消<code class="language-plaintext highlighter-rouge">DF</code>bit。</p>
-
-<p>更复杂的方式需要“搜索”准确的PMTU估计值。有几个可能方法，它们根据一个之前的估计值产生一个新的估计值。</p>
-
-<p>比如乘以一个常数比如0.75，但这样收敛又慢，产生的估计值又低于实际的值。所以不推荐。</p>
-
-<p>再比如进行二分搜索，它收敛快一点，但从FDDI<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup> MTU落到Ethernet<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">12</a></sup> MTU仍然需要4-5步，而有一个非常的劣势是识别数据报到达另一端的时间是一个复杂实现。因此也不推荐。</p>
-
-<p>有一个看起来效果似乎很好方法是比起盲搜，搜索一组可能出现的值，因为设计者们倾向于用类似的方式选择MTUs,使用其中的最小值<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">13</a></sup>。使用下表的搜索，</p>
-
-<p>Table Common MTUs in the Internet:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Plateau</th>
-      <th>MTU</th>
-      <th>Comments</th>
-      <th>Reference</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>65535</td>
-      <td>65535</td>
-      <td>Official maximum MTU</td>
-      <td>RFC 791</td>
-    </tr>
-    <tr>
-      <td>32004</td>
-      <td>65535</td>
-      <td>Hyperchannel</td>
-      <td>RFC 1044</td>
-    </tr>
-    <tr>
-      <td>17914</td>
-      <td>17914</td>
-      <td>16Mb IBM Token Ring</td>
-      <td> </td>
-    </tr>
-    <tr>
-      <td>8166</td>
-      <td>8166</td>
-      <td>IEEE 802.4</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>4464</td>
-      <td>IEEE 802.5 (4Mb max)</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td>4352</td>
-      <td>4352</td>
-      <td>FDDI (Revised)</td>
-      <td>RFC 1188</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>2048</td>
-      <td>Wideband Network</td>
-      <td>RFC 907</td>
-    </tr>
-    <tr>
-      <td>2002</td>
-      <td>2002</td>
-      <td>IEEE 802.5 (4Mb recommended)</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1536</td>
-      <td>Exp. Ethernet Nets</td>
-      <td>RFC 895</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1500</td>
-      <td>Ethernet Networks</td>
-      <td>RFC 894</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1500</td>
-      <td>Point-to-Point (default)</td>
-      <td>RFC 1134</td>
-    </tr>
-    <tr>
-      <td>1492</td>
-      <td>1492</td>
-      <td>IEEE 802.3</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>1006</td>
-      <td>SLIP</td>
-      <td>RFC 1055</td>
-    </tr>
-    <tr>
-      <td>1006</td>
-      <td>1006</td>
-      <td>ARPANET</td>
-      <td>BBN 1822</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>576</td>
-      <td>X.25 Networks</td>
-      <td>RFC 877</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>544</td>
-      <td>DEC IP Portal</td>
-      <td> </td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>512</td>
-      <td>NETBIOS</td>
-      <td>RFC 1088</td>
-    </tr>
-    <tr>
-      <td> </td>
-      <td>508</td>
-      <td>IEEE 802/Source-Rt Bridge</td>
-      <td>RFC 1042</td>
-    </tr>
-    <tr>
-      <td>508</td>
-      <td>508</td>
-      <td>ARCNET</td>
-      <td>RFC 1051</td>
-    </tr>
-    <tr>
-      <td>296</td>
-      <td>296</td>
-      <td>Point-to-Point (low delay)</td>
-      <td>RFC 1144</td>
-    </tr>
-    <tr>
-      <td>68</td>
-      <td>68</td>
-      <td>Official minimum MTU</td>
-      <td>RFC 791</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>使用这个表的收敛性最坏情况也比二分搜索相当，因为plateau几乎是2的幂，而如果值不在表中，被低估的值也不会超过2倍。</p>
-
-<p>所有ICMP code 3 都包含源IP header，可以直接使用其中的Total Length字段的值作为输入，生成下一个估计值<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">14</a></sup>。</p>
-
-<p>该表仅是建议参考，应该保持更新，添加一些2的幂加40（IP header + TCP header）的项，作为过渡，也可以包含稍微比2的幂稍小一些的项。但不管怎样，plateau的数量不应该太多，而实现者应该给无源代码客户提供一种方便的更新表值的工具<sup id="fnref:23" role="doc-noteref"><a href="#fn:23" class="footnote" rel="footnote">15</a></sup></p>
-
-<h2 id="6-host-implementation">6. Host implementation</h2>
-
-<p>提供一组关于PMTUD在主机软件上实现的建议。</p>
-
-<h3 id="61-layering分层">6.1 Layering（分层）</h3>
-
-<p>IP层应该存储PMTU信息，并且ICMP层应该处理DTB message。而分包层<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">16</a></sup>应该能反映PMTU的变化，通过改变发送数据报的大小，并且必须能指定<code class="language-plaintext highlighter-rouge">DF</code> bit。我们不希望IP层简单地为每个包设定<code class="language-plaintext highlighter-rouge">DF</code> bit，因为分包层可能无法改变它的数据报的大小<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">17</a></sup></p>
-
-<h3 id="62-storing-pmtu-information">6.2 Storing PMTU Information</h3>
-
-<p>存储信息的明显位置是将其作为一个字段，存储在路由表项中。一个主机不会为每一个目标地址有一个路由信息，但应该能为每个活跃目标地址缓存路由<sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">18</a></sup>。</p>
-
-<p>使用同一路径的所有的分包层都应该被通知，如果该路径PMTU减少了。这种通知应该区别于普通的包的丢失。</p>
-
-<h3 id="63-purging-stale-pmtu-information">6.3 Purging stale PMTU information</h3>
-
-<p>由于没有机制能实现发现当前的使用的PMTU因为它太小而过时了，所以需要一个实现能够老化缓存的值，以便有机会发现的新的更大的PMTU<sup id="fnref:18" role="doc-noteref"><a href="#fn:18" class="footnote" rel="footnote">19</a></sup>。而上层协议绝对不能因为PMTU的增加而重发，因为这没有包的丢失。</p>
-
-<p>一个实现PMTU老化的方法是给路由表项添加时间戳字段，这个字段初始化为一个保留值，表明这个PMTU没有改变。当PMTU减少时，时间戳更新为当前时间。计时器驱动的程序扫描整个路由表，当一个表项的时间戳不是保留值时，如果超时了，则：</p>
-
-<ol>
-  <li>将估计的PMTU设置为关联的第一跳的MTU</li>
-  <li>使用这个路由的分包层被通知PMTU的增加</li>
-</ol>
-
-<p>PMTU估计值可能从路由表消失,如果路由表项被移除掉<sup id="fnref:19" role="doc-noteref"><a href="#fn:19" class="footnote" rel="footnote">20</a></sup>，一个解决方法是当ICMP 重定向消息导致路有变化或者当路由被删除的时候通知分包层</p>
-
-<h3 id="64-tcp-layer-actions">6.4 TCP layer actions</h3>
-
-<p>TCP数据报的大小受PMTU和MSS的双重制约。</p>
-
-<p>当DTB message到达的时候，特定连接的特定于DTB message的数据报立刻重传，当然需要使用新的PMTU。</p>
-
-<p>现代TCP实现包含拥塞控制和慢启动算法，DTB message不应该影响拥塞窗口，但是应该触发慢启动机制<sup id="fnref:20" role="doc-noteref"><a href="#fn:20" class="footnote" rel="footnote">21</a></sup>。</p>
-
-<p>TCP的性能可能会下降，如果发送方的最大窗口大小<sup id="fnref:21" role="doc-noteref"><a href="#fn:21" class="footnote" rel="footnote">22</a></sup>不是精确的分片（segment）大小的几倍。如果使用了PMTUD，分片的大小发生改变，就会出现这种情况。因此应该根据新PMTU的大小调整最大窗口大小，来适应新的分片的大小，使保持一个整数倍的关系。</p>
-
-<p>PMTUD不应该影响MSS选项的数值。</p>
-
-<h3 id="65-issues-for-other-transport-protocols">6.5. Issues for other transport protocols</h3>
-
-<p>像原始NFS协议这种如果有难处，还是分片传输吧。</p>
-
-<h3 id="66-management-interface">6.6. Management interface</h3>
-
-<p>一个PMTUD的实现应该为系统工具程序提供：</p>
-
-<ol>
-  <li>指定不在给定路由上做PMTUD<sup id="fnref:22" role="doc-noteref"><a href="#fn:22" class="footnote" rel="footnote">23</a></sup></li>
-  <li>改变给定路由的PMTU</li>
-  <li>改变PMTU老化的时间间隔</li>
-</ol>
-
-<h2 id="7-likely-values-for-path-mtus">7. Likely values for Path MTUs</h2>
-
-<p>合并到第五章</p>
-
-<h2 id="8-security-considerations">8. Security considerations</h2>
-
-<p>通过发送恶意DTB message可以实现两种DOS攻击：</p>
-
-<ol>
-  <li>提供过于小的PMTU，使得连接变慢</li>
-  <li>提供过于大的PMTU，这可能会造成暂时的阻塞，因为受害者的包会被路由器丢弃，在一个往返的时间里，主机会发现错误，但频繁的重复攻击会导致大量的数据报被丢弃。而一个主机<strong>永远不能</strong>根据DTB message提供的PMTU来提高估计值的上限，因为这会使得面对这种攻击变得很脆弱。</li>
-</ol>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>Path MTU <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>First Hop <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>Fragmentation required, and DF flag set, carrying next-hop MTU and IP header and first 8 bytes of original datagram’s data <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>也就是PTB(Packet Too Big) message，或者DTB(Datagram Too Big) message <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>发送更高的PMTU假设的数据包，看是否能通过，大多数情况下PMTU不会改变，因此不应该太频繁地启用。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:6" role="doc-endnote">
-      <p>因为需要发送比当前估计的PMTU更大的数据报，并且PMTU不太可能增加 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:7" role="doc-endnote">
-      <p>可以通过检测next-hop MTU字段是否为0，来识别旧风格的DTB，根据ICMP的规定，未使用的字段必须为0 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:8" role="doc-endnote">
-      <p>1 octect = 1 byte in CPU = 8 bit <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:9" role="doc-endnote">
-      <p>Max Segment Size, IP datagram size minus IP header and TCP header (40 bytes, totally) <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:10" role="doc-endnote">
-      <p>576 is safe max IP datagram size for TCP, or 536 for MSS <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:11" role="doc-endnote">
-      <p>Fiber Distributed Data Interface, 光纤网，用于校园网、广域网 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:12" role="doc-endnote">
-      <p>比起FDDI，高带宽效率低，但延迟也低 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:13" role="doc-endnote">
-      <p>as “plateau” <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:14" role="doc-endnote">
-      <p>基于4.2BSD实现的路由器会发送错误的Total length，它额外加上了origin header length，而且以octets而不是4xoctets的形式表现 <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:23" role="doc-endnote">
-      <p>BSD 派生的Unix内核提供<code class="language-plaintext highlighter-rouge">ioctl</code>来做这件事 <a href="#fnref:23" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:15" role="doc-endnote">
-      <p>在IP结构里，发送多大的数据报是由IP上层的协议决定的，我们称这样的协议为分包层（Packetization Layer） <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:16" role="doc-endnote">
-      <p>比如一个内核外的UDP应用, 比如最原始版本的NFS协议，一个跨网络管理文件的系统，这种情况下应该允许分片（fragmentation） <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:17" role="doc-endnote">
-      <p>这个需求已经被处理ICMP重定向消息的需要强制满足了 <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:18" role="doc-endnote">
-      <p>这个时间从上一次PMTU不减开始，以10min为标准 <a href="#fnref:18" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:19" role="doc-endnote">
-      <p>这可能发生在ICMP重定向消息或者特定的路由守护进程几分钟后删除了旧的路由信息，还可能是在一个多网卡（multi-homed host）的主机上拓扑的变化可能导致不同网卡的使用 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:20" role="doc-endnote">
-      <p>也就是只重传第一个分段，直到收到ACK <a href="#fnref:20" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:21" role="doc-endnote">
-      <p>最大窗口区别于拥塞窗口，拥塞窗口的大小总是分片大小的几倍，而最大窗口（<em>send space</em>）在很多系统（比如从4.2BSD衍生出来的）通常是1024 octets的几倍，是固定的 <a href="#fnref:21" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:22" role="doc-endnote">
-      <p>可以在路由项上设置一个标志位，当有这个标志位时，<code class="language-plaintext highlighter-rouge">DF</code> bit一定会被清除，不管上层请求是什么 <a href="#fnref:22" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 1990.11 obsoletes RFC1063 which is released on 1988.07]]></summary></entry><entry><title type="html">C dialect options</title><link href="/lang/c_dialect_options.html" rel="alternate" type="text/html" title="C dialect options" /><published>2022-08-01T00:00:00+08:00</published><updated>2022-08-01T00:00:00+08:00</updated><id>/lang/c_dialect_options</id><content type="html" xml:base="/lang/c_dialect_options.html"><![CDATA[<p>Ref: <a href="https://www.acrc.bris.ac.uk/acrc/RedHat/rhel-gcc-en-4/c-dialect-options.html">1</a>, <a href="https://stackoverflow.com/questions/17206568/what-is-the-difference-between-c-c99-ansi-c-and-gnu-c">2</a></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>ISO C90</th>
-      <th>ISO C99</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>-ansi, -std=c89, iso9899:1990, (ISO C90)</td>
-      <td>-std=c99, iso9899:1999</td>
-    </tr>
-    <tr>
-      <td>-std=iso9899:199409 (ISO C90 as modified in amendment 1)</td>
-      <td>-std=gnu99 (iso c99 + gnu extensions, gcc default)</td>
-    </tr>
-    <tr>
-      <td>-std=gnu89 (iso c90 + gnu extensions + some c99 features)</td>
-      <td> </td>
-    </tr>
-  </tbody>
-</table>
-
-<table>
-  <thead>
-    <tr>
-      <th>ISO C11</th>
-      <th>ISO C18</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>-std=c11</td>
-      <td>-std=c17, -std=c18</td>
-    </tr>
-  </tbody>
-</table>
-
-<ol>
-  <li>iso9899 (C Lang Spec Number of ISO)</li>
-  <li><code class="language-plaintext highlighter-rouge">-ansi</code> for C++ mode means that remove conflics gnu extensions with ISO C++</li>
-  <li>The word <code class="language-plaintext highlighter-rouge">ansi</code> means American Nation Standard Institute, c89 means ansi 89 (the first standard version), however c99 is iso 1999.The history is <code class="language-plaintext highlighter-rouge">ansi89 -&gt; iso90(same with ansi89) -&gt; iso99</code>, in other words, iso take the ownership of the C Lang standard from ansi.</li>
-  <li>c18 is created on 2017 and released on 2018, so it’s called c17 or c18. It contains no new features, just corrections</li>
-</ol>
-
-<h2 id="runtime-environments">Runtime Environments</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>std</th>
-      <th>no_std</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>-fhosted (takes place in a hosted env)</td>
-      <td>-fno-hosted</td>
-    </tr>
-    <tr>
-      <td>-fno-freestanding</td>
-      <td>-ffreestanding</td>
-    </tr>
-    <tr>
-      <td>-fno-builtin, -fno-builtin-&lt;xxx&gt;</td>
-      <td> </td>
-    </tr>
-  </tbody>
-</table>
-
-<ol>
-  <li>
-    <p>fno-builtin: Don’t recognize built-in functions that do not begin with <code class="language-plaintext highlighter-rouge">__builtin_</code> as prefix, <code class="language-plaintext highlighter-rouge">__built_in_xxx</code> always existed.</p>
-  </li>
-  <li>
-    <p>fno-builtin-&lt;xxx&gt; such as <code class="language-plaintext highlighter-rouge">-fno-builtin-printf</code>.</p>
-  </li>
-  <li>
-    <p>on <code class="language-plaintext highlighter-rouge">no_std</code> env using <code class="language-plaintext highlighter-rouge">__builtin_xxx</code> instead</p>
-  </li>
-</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[Ref: 1, 2]]></summary></entry><entry><title type="html">C/C++ 陷阱</title><link href="/lang/c_trap.html" rel="alternate" type="text/html" title="C/C++ 陷阱" /><published>2022-04-22T00:00:00+08:00</published><updated>2022-04-22T00:00:00+08:00</updated><id>/lang/c_trap</id><content type="html" xml:base="/lang/c_trap.html"><![CDATA[<ol>
-  <li>
-    <p>变量初始化</p>
-
-    <p>在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据</p>
-  </li>
-  <li>
-    <p>结构体初始化注意要在堆上手动分配内存，否则是栈上的会被回收， 这与Rust使用习惯又不一样</p>
-  </li>
-</ol>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[变量初始化 在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04]]></summary></entry></feed>

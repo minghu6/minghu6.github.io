@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta 
+    property="og:title"
+    content="
+        
+            N叉堆实现（Rust）
+        
+    " 
+/>
+
+<meta property="og:url" content="//algs/DaryHeap.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        N叉堆实现（Rust）
+    
+</title>
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        Home
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/minghu6.jpeg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <i class="fas fa-search fa-fw"></i>
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">N叉堆实现（Rust）</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      November 23, 2022
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p>一个有建立在连续内存上的 $2$ 的 $n$ 次幂倍分叉完全树的最小堆（以下简称 d-ary 堆），理论和实践都最快的，用于图上经典贪心算法，作为<a href="/algs/FibHeap.html">斐波那契堆</a>的上位替代。</p>
+
+<p>下图 $q=2^1$</p>
+
+<div class="sx-center"><img src="/../assets/img/daryheap/layout.svg" title="" /></div>
+
+<h2 id="数据结构">数据结构</h2>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Min Heap, I is unique, T is weight</span>
+<span class="nd">#[derive(Clone)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">DaryHeap</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">E</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">raw</span><span class="p">:</span> <span class="n">Array</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>注解：</strong></p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">Array</code> 是自己实现的简单堆上数组，因为需要初始化，所以包裹了 <code class="language-plaintext highlighter-rouge">Option</code></li>
+  <li>直接使用“索引-权重“二元组来作为节点的结构</li>
+</ol>
+
+<h2 id="基础操作">基础操作</h2>
+
+<p>值得稍微想一想的就是树上父、子位置与索引的换算关系。以下假设我们的叉堆的基是 $2^E$ 。</p>
+
+<h3 id="索引">索引</h3>
+
+<p>基本的索引与位置的换算关系靠得是等比数列前 $n$ 项和：</p>
+
+<p>$a_1$ 为首项， $q$ 为比值</p>
+
+\[S_n = \left\{\begin{array}{l} 
+ &amp; na_1 &amp;(q=1)\\
+ &amp;{\large \frac{a_1(1-q^n)}{1-q}} &amp;(q \neq 1)\\
+\end{array}\right.\]
+
+<p>对于我们的 d-ary 堆，$a_1 = 1$， $q=2^E$ ，于是有：</p>
+
+\[S_n = \frac{2^{En} - 1}{2^E - 1}\]
+
+<p>定义一系列宏来做索引转换的工作</p>
+
+<h4 id="定义基">定义基</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 2^E</span>
+<span class="nd">macro_rules!</span> <span class="n">base</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span> 
+        <span class="p">{</span>
+            <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">E</span>
+        <span class="p">}</span> 
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// (2^E)^n</span>
+<span class="nd">macro_rules!</span> <span class="n">basen</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$n:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> 
+        <span class="p">{</span>
+            <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">E</span> <span class="o">*</span> <span class="p">(</span><span class="nv">$n</span><span class="p">)</span>
+        <span class="p">}</span> 
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="从编号转换到行列位置">从编号转换到行列位置</h4>
+
+<p>编号和行列位置都从 $1$ 开始，逆转 $S_n$ 公式：</p>
+
+\[2^{En} = S_n(2^E - 1) + 1\]
+
+<p>得出 $n$</p>
+
+\[n = \frac{\log_{2}({S_n(2^E - 1) + 1})}{E}\]
+
+<p>设当前编号为 $N$，行号为 $\text{ln}$ ，列号为 $\text{col}$，则</p>
+
+\[\begin{array}{l}
+\text{ln} &amp;= \lfloor \frac{\log_{2}({N(2^E - 1) + 1})}{E} \rfloor \\
+\text{col} &amp;= N - S_{\text{ln}-1}
+\end{array}\]
+
+<p>当然这里要采用<strong>整数上的数学函数</strong>进行运算</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">pos</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$x:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+
+            <span class="c1">// = q^n</span>
+            <span class="k">let</span> <span class="n">var</span> <span class="o">=</span> <span class="p">(</span><span class="nd">base!</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">ln</span> <span class="o">=</span> <span class="n">var</span><span class="nf">.ilog2</span><span class="p">()</span> <span class="k">as</span> <span class="nb">usize</span> <span class="o">/</span> <span class="n">E</span><span class="p">;</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">col</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">col</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="n">ln</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="nd">basen!</span><span class="p">(</span><span class="n">ln</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="cd">/// total number for lv complete d-ary</span>
+<span class="nd">macro_rules!</span> <span class="n">total</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$ln:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">ln</span> <span class="o">=</span> <span class="nv">$ln</span><span class="p">;</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">ln</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">E</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+            <span class="c1">// 1 * 1-q^n / (1-q)</span>
+            <span class="p">(</span><span class="nd">basen!</span><span class="p">(</span><span class="n">ln</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nd">base!</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$ln:expr</span><span class="p">,</span> <span class="nv">$col:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">ln</span> <span class="o">=</span> <span class="nv">$ln</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">col</span> <span class="o">=</span> <span class="nv">$col</span><span class="p">;</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">ln</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">ln</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="n">col</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">col</span>
+            <span class="p">}</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="当前位置到父母或孩子的位置">当前位置到父母或孩子的位置</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">paren_pos</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$pos:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$pos</span><span class="p">;</span>
+
+            <span class="p">(</span><span class="n">ln</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nd">base!</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="cd">/// first child pos</span>
+<span class="nd">macro_rules!</span> <span class="n">child_pos</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$pos:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$pos</span><span class="p">;</span>
+
+            <span class="p">(</span><span class="n">ln</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nd">base!</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="数组下标到父母或孩子下标">数组下标到父母或孩子下标</h4>
+
+<p>最后我们就有了直接的实际数据结构里的索引到它父母或孩子的索引的最终算法</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">paren</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$idx:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nd">paren_pos!</span><span class="p">(</span><span class="nd">pos!</span><span class="p">(</span><span class="nv">$idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+
+            <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">child</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$idx:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="nd">child_pos!</span><span class="p">(</span><span class="nd">pos!</span><span class="p">(</span><span class="nv">$idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+
+            <span class="nd">total!</span><span class="p">(</span><span class="n">ln</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    	<span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="交换">交换</h3>
+
+<p>交换是 d-ary 堆算法实现依赖的主要操作。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl DaryHeap ...     </span>
+
+<span class="k">fn</span> <span class="nf">swap</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx1</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">idx2</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">k1</span><span class="p">,</span> <span class="n">_v1</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">k2</span><span class="p">,</span> <span class="n">_v2</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">k1</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">idx2</span><span class="p">);</span>
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">k2</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">idx1</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">tmp1</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span><span class="nf">.take</span><span class="p">();</span>
+    <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span><span class="nf">.take</span><span class="p">();</span>
+    <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cd">/// return insert_idx</span>
+<span class="k">fn</span> <span class="nf">sift_up</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="n">idx</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="n">cur</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">paren</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="o">&lt;</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">paren</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.swap</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">paren</span><span class="p">);</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="n">paren</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">cur</span>
+<span class="p">}</span>
+
+<span class="cd">/// return insert_idx</span>
+<span class="k">fn</span> <span class="nf">sift_down</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="n">idx</span><span class="p">;</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.min_child</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">&lt;</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.swap</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">child</span><span class="p">);</span>
+                <span class="n">cur</span> <span class="o">=</span> <span class="n">child</span><span class="p">;</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">break</span> <span class="n">cur</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">min_child</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">start</span> <span class="o">=</span> <span class="nd">child!</span><span class="p">(</span><span class="n">idx</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">end</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="k">self</span><span class="py">.len</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="nd">base!</span><span class="p">());</span>
+
+    <span class="p">(</span><span class="n">start</span><span class="o">..</span><span class="n">end</span><span class="p">)</span><span class="nf">.min_by_key</span><span class="p">(|</span><span class="o">&amp;</span><span class="n">x</span><span class="p">|</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<ol>
+  <li>当插入新节点的时候，把新节点放到尾部，然后和父节点比较，如果堆的性质发生违背，就交换两个节点，递归地进行直到到达根节点；</li>
+  <li>当更新已有节点的时候，如果新值比旧值大，就向下交换，如果比旧值小，就向上交换，相等就什么都不做；</li>
+  <li>删除根节点的时候，把它和序列上最后一个节点交换，然后把最后一个节点向下交换</li>
+</ol>
+
+<h2 id="核心算法实现">核心算法实现</h2>
+
+<h3 id="insert">Insert</h3>
+
+<p>扩容的时候和一般内存上的连续结构一样，申请新的更大内存（不必要每次扩张都有下一层完全树的内存大小，算法实现也不依赖于此），然后把旧的全部复制到新内存位置，最后释放旧内存。<em>注意，这种做法看起来比不用复制旧内存的链表结构要浪费很多，但实际上不仅摊销代价很小，通常直接代价也很小，绝大多数情况在时间效率上远优于链表结构！</em></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl DaryHeap ...  </span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">self</span><span class="py">.index</span><span class="nf">.contains_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">Some</span><span class="p">(</span><span class="k">self</span><span class="nf">.update</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.cap</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.recap</span><span class="p">(</span><span class="n">E</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">&gt;=</span> <span class="k">self</span><span class="nf">.cap</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.recap</span><span class="p">(</span><span class="k">self</span><span class="nf">.cap</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">ent</span> <span class="o">=</span> <span class="k">self</span><span class="py">.len</span><span class="p">;</span>
+
+        <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">ent</span><span class="p">]</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">((</span><span class="n">i</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">v</span><span class="p">));</span>
+        <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ent</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.sift_up</span><span class="p">(</span><span class="n">ent</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="py">.len</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="nb">None</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">recap</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">new_cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="py">.raw</span><span class="nf">.resize</span><span class="p">(</span><span class="n">new_cap</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="decreasekey">DecreaseKey</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl DaryHeap ...</span>
+
+<span class="nd">#[inline]</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decrease_key</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+    <span class="k">self</span><span class="nf">.update</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">update</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+    <span class="nd">debug_assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.index</span><span class="nf">.contains_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">),</span> <span class="s">"No {i:?}"</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="k">self</span><span class="py">.index</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">oldv</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.replace</span><span class="p">((</span><span class="n">i</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">v</span><span class="p">))</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">newidx</span> <span class="o">=</span> <span class="k">match</span> <span class="k">self</span><span class="nf">.w</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="nf">.cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oldv</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Less</span> <span class="k">=&gt;</span> <span class="k">self</span><span class="nf">.sift_up</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span>
+        <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="n">idx</span><span class="p">,</span>
+        <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="k">self</span><span class="nf">.sift_down</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span>
+    <span class="p">};</span>
+
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">newidx</span><span class="p">);</span>
+
+    <span class="n">oldv</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="pop">Pop</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">pop_item</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="k">self</span><span class="py">.len</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nf">Some</span><span class="p">(</span><span class="k">self</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.swap</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.remove</span><span class="p">(</span><span class="k">self</span><span class="py">.len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.sift_down</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+        <span class="nf">Some</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cd">/// remain None, update self.len</span>
+<span class="k">fn</span> <span class="nf">remove</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.raw</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.take</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+    <span class="k">self</span><span class="py">.index</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">i</span><span class="p">);</span>
+    <span class="k">self</span><span class="py">.len</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="时间复杂度分析">时间复杂度分析</h2>
+
+<p>d-ary 堆本质上当然仍是二叉堆，但当基数较大的时候，实际上原来 $\text{log} n$ 的操作就降低为常量。</p>
+
+<p><code class="language-plaintext highlighter-rouge">insert</code>: $O(1)$</p>
+
+<p><code class="language-plaintext highlighter-rouge">decrease-key</code>: $O(1)$</p>
+
+<p><code class="language-plaintext highlighter-rouge">delete-min</code> (<code class="language-plaintext highlighter-rouge">pop</code>): $O(1) $</p>
+
+<p>在 <code class="language-plaintext highlighter-rouge">pop</code> 的时候理论上还优于之前介绍过的斐波那契堆，实际上由于这是建立在连续内存上的数据，比起基于链表的结构不知道好到哪里去了！</p>
+
+<p>**通常 d-ary 堆的基数是 32，也就是 E=5 **，这是个经验结论，在此之前，随着基数增大，时间效率呈现有意义地增加，而在此之后，时间效率几乎不增乃至减少。Clojure 自己的持久化 <code class="language-plaintext highlighter-rouge">Vector</code> 的实现里 Trie 的基数就是 $32$ 。</p>
+
+<h2 id="引用">引用</h2>
+
+<p>完整代码： https://github.com/minghu6/rust-minghu6/blob/master/src/collections/heap/dary.rs</p>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+<script src="https://kit.fontawesome.com/f1af9f22fa.js" crossorigin="anonymous"></script>
+
+
+</body>
+</html>
