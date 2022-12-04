@@ -1,4 +1,759 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-11-24T18:25:09+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">N叉堆实现（Rust）</title><link href="/algs/DaryHeap.html" rel="alternate" type="text/html" title="N叉堆实现（Rust）" /><published>2022-11-23T00:00:00+08:00</published><updated>2022-11-23T00:00:00+08:00</updated><id>/algs/DaryHeap</id><content type="html" xml:base="/algs/DaryHeap.html"><![CDATA[<p>一个有建立在连续内存上的 $2$ 的 $n$ 次幂倍分叉完全树的最小堆（以下简称 d-ary 堆），理论和实践都最快的，用于图上经典贪心算法，作为<a href="/algs/FibHeap.html">斐波那契堆</a>的上位替代。</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-12-04T22:12:43+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">短道水上漂（SP）</title><link href="/algs/GraphSP.html" rel="alternate" type="text/html" title="短道水上漂（SP）" /><published>2022-12-01T00:00:00+08:00</published><updated>2022-12-01T00:00:00+08:00</updated><id>/algs/GraphSP</id><content type="html" xml:base="/algs/GraphSP.html"><![CDATA[<p>像水面上打漂儿出的石头，只是“一击就弹出“地了解关于最短路径（Shortest Path，以下简称SP）问题。</p>
+
+<h2 id="前言">前言</h2>
+
+<p>值得强调在前面得是，一般比如从构造实现上，会假定最基础的情况无向图，但最短路径是以<strong>有向图（强连通）</strong>为基础。所有下列介绍的算法的都假定一个有向图，而在无向图上，部分结论会有所不同。</p>
+
+<p>遵循依赖关系，将依次介绍：</p>
+
+<ol>
+  <li>Floyd 算法 （全源）</li>
+  <li>Bellman-Ford 算法 （单源）</li>
+  <li>Bellman-Ford 算法的著名改进： SPFA 算法 （单源）</li>
+  <li>Dijkstra 算法 （单源）</li>
+  <li>Johnson 算法 （全源）</li>
+</ol>
+
+<h2 id="floyd-算法">Floyd 算法</h2>
+
+<p>/flɔid/</p>
+
+<h3 id="算法思想">算法思想</h3>
+
+<p>这个算法当初是作为一个动态编程的范例提出，全源地计算图上最短路径问题。</p>
+
+<p>假如对图上所有点编号 $1…n$ ，那么图上任何一条最短路径最多经过 $n$ 个点。一开始，我们只知道直接相连的两点之间的路径权重，但可以通过检查是否有 $w[x][1] + w[1][y] &lt; w[x][y]$ 得到最多经过点 $1$ 的两点间的最小路径。在此基础上如果在检查一遍经过点 $2$ 的两点间最短路径，就可以得到最多经过 $\lbrace 1,2 \rbrace$ 的两点间最短路径，以此类推，当检查过 $n$ 轮，就得到了最多经过 $\lbrace 1,2, …, n \rbrace$ 的最短距离，也就是整个图上的最短距离。</p>
+
+<h3 id="伪代码">伪代码</h3>
+
+<p>对于图 $G=(V, E)$</p>
+
+\[\begin{array}{ll}
+\texttt{let}\ w[x][y]\ \text{as shortest path's weight sum from}\ x\ \text{to}\ y\\ 
+\texttt{let}\ w_{xy}\ \text{as edge weight from}\ x\ \text{to}\ y\\
+\\
+\texttt{for}\ x \gets \{1,2,..,n\}\\
+\qquad\texttt{for}\ y \gets \{1,2,...,n\}\\
+\qquad\qquad \texttt{if}\ x=y\\
+\qquad\qquad\qquad w[x][y] \gets 0\\
+\qquad\qquad\ \texttt{elif}\ (x, y)\notin |E|  \\
+\qquad\qquad\qquad w[x][y] \gets \infty \\
+\qquad\qquad\ \texttt{else}\\
+\qquad\qquad\qquad w[x][y] \gets w_{xy}
+\\
+\texttt{for}\ k \gets \{1,2,..,n\}\\
+\qquad\texttt{for}\ x \gets \{1,2,...,n\}\\
+\qquad\qquad\texttt{for}\ y \gets \{1,2,...,n\}\\
+\qquad\qquad\qquad w[x][y] = \texttt{min}(w[x][k],\ w[k][y])
+\end{array}\]
+
+<h3 id="路径构造">路径构造</h3>
+
+<p>如果单独地为每一对儿点存储独立路径，那么空间复杂度是 $O(n^3)$ ，有时候这可能不太妙，可以使用 $\text{next}$ 数组，存储一条路径的第一步的端点，用 $O(n)$ 的时间复杂度换取 $O(n^2)$ 的空间复杂度。</p>
+
+<p>对于一条路径 $x_1 \rightarrow x_2 \rightarrow x_3\ …\rightarrow x_n$：</p>
+
+\[\begin{array}{ll}
+\text{next}[x_1][x_n] &amp;= x_2\\
+\text{next}[x_2][x_n] &amp;= x_3\\
+\text{next}[x_{n-1}][x_n] &amp;= x_n
+\end{array}\]
+
+<p>每次更新权重的时候，更新 $\text{next}$ 数组：</p>
+
+\[\text{next}[x][y] = \text{next}[x][k]\]
+
+<p>查询 $x \rightarrow y$ 最小路径时，展开 $\text{next}$ 数组（输出一个 $(x)..y$ 的路径，下同）：</p>
+
+\[\begin{array}{l}
+\texttt{let}\ \text{sequential set P as path output}.\\
+\\
+p\ \gets x\\
+P \gets \varnothing\\
+\\
+\texttt{loop if}\ \ p \neq y\\
+\qquad p \gets \text{next}[p][y]\\
+\qquad P \gets p \\
+\end{array}\]
+
+<h3 id="负环问题">负环问题</h3>
+
+<p><strong>负环是指一条环状路径，其权重和为负值。</strong>显然负环的存在会使最短路径问题根本上不可解，因为任何一条路径都可以通过负环使得其权重和无限地减低下去。</p>
+
+<p>对于有向图而言，显然 Floyd 可以处理不存在负环的负边的情况。<strong>但对于无向图，负边实质上是不可能的</strong>。因为无向图必须转为有向图来应用算法，而无向图的每条负边都意味着有向图的一个两条边构成的负环。</p>
+
+<p>所以我们下面讨论的<strong>有向图负边权情况下探测负环的问题</strong> 。</p>
+
+<p>方法是检查对角线上元素，也就是 $w[i][i], i \in |V|$ ，是否小于 $0$ ，如果是，意味着存在 $i\rightarrow i$ 的负环。</p>
+
+<h4 id="负环路径构造">负环路径构造</h4>
+
+\[\begin{array}{l}
+\texttt{let}\ \text{sequential set C as cycle output}\\
+\texttt{let}\ \text{c as the known cycle vertex}\\
+\\
+C \gets \lbrace c \rbrace \\
+p \gets \text{next}[c][c] \\
+\\
+\texttt{loop if}\ p \neq c\\
+\qquad C \gets p\\
+\qquad c \gets \text{next}[p][c]
+\end{array}\]
+
+<h3 id="实现">实现</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">SPFloyd</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span>
+    <span class="cd">/// shortest path weight</span>
+    <span class="n">spw</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="c1">//// shortest path paths</span>
+    <span class="n">next</span><span class="p">:</span> <span class="n">M2</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">SPFloyd</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">spw</span><span class="p">,</span> <span class="n">next</span><span class="p">)</span> <span class="o">=</span> <span class="nf">sp_floyd</span><span class="p">(</span><span class="n">g</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="nf">Ok</span><span class="p">(</span><span class="k">Self</span> <span class="p">{</span> <span class="n">g</span><span class="p">,</span> <span class="n">spw</span><span class="p">,</span> <span class="n">next</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// (total_weight, (src), .. , k1, k2, .. dst)</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">query</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span>
+            <span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)),</span>
+            <span class="nf">next_to_path</span><span class="p">((</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.next</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">sp_floyd</span><span class="p">(</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="n">M1</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M2</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">),</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">vertexs</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span><span class="nf">.collect</span><span class="p">();</span>
+    <span class="n">vertexs</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">vertexs</span><span class="nf">.len</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">spw</span> <span class="o">=</span> <span class="nn">M1</span><span class="p">::</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">next</span> <span class="o">=</span> <span class="nn">M2</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="cm">/* init sp */</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">x</span><span class="p">];</span>
+            <span class="k">let</span> <span class="n">y</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">y</span><span class="p">];</span>
+
+            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">=</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">g</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span> <span class="p">{</span>
+                <span class="nd">set!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">w</span><span class="p">);</span>
+                <span class="nd">set!</span><span class="p">(</span><span class="n">next</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">y</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span> <span class="p">{</span>
+                <span class="nd">set!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">x</span><span class="p">];</span>
+                <span class="k">let</span> <span class="n">y</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">y</span><span class="p">];</span>
+                <span class="k">let</span> <span class="n">k</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">k</span><span class="p">];</span>
+
+                <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">w_xk</span><span class="p">)</span> <span class="o">=</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
+                   <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">w_ky</span><span class="p">)</span> <span class="o">=</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+                <span class="p">{</span>
+                    <span class="k">if</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> 
+                       <span class="n">w_xk</span> <span class="o">+</span> <span class="n">w_ky</span> <span class="o">&lt;</span> <span class="nd">get!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span> 
+                    <span class="p">{</span>
+                        <span class="nd">set!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">w_xk</span> <span class="o">+</span> <span class="n">w_ky</span><span class="p">);</span>
+                        <span class="nd">set!</span><span class="p">(</span><span class="n">next</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nd">get!</span><span class="p">(</span><span class="n">next</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">)));</span>
+
+                        <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span> <span class="o">&amp;&amp;</span> <span class="n">w_xk</span> <span class="o">+</span> <span class="n">w_ky</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+                            <span class="k">let</span> <span class="k">mut</span> <span class="n">cycle</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">x</span><span class="p">];</span>
+                            <span class="k">let</span> <span class="k">mut</span> <span class="n">c</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">next</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+
+                            <span class="k">while</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">y</span> <span class="p">{</span>
+                                <span class="n">cycle</span><span class="nf">.push</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+                                <span class="n">c</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">next</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+                            <span class="p">}</span>
+
+                            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="n">cycle</span><span class="p">);</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">((</span><span class="n">spw</span><span class="p">,</span> <span class="n">next</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="时间复杂度">时间复杂度</h3>
+
+<p>显然时间复杂度为 $O(n^3)$</p>
+
+<h2 id="bellman-ford-算法">Bellman-Ford 算法</h2>
+
+<p>/ˈbelmən/-/fɔrd/</p>
+
+<h3 id="算法思想-1">算法思想</h3>
+
+<p>对比前面的 Floyd 算法考虑最短路径经过的点，Bellman-Ford 则考虑最短路径经过的边。</p>
+
+<p>考虑对于 $n$ 个点的图，每一条最短路径最多包含 $n-1$ 条边（否则必然存在负环），从一条边的情况开始，遍历每条边，检查每个点到源点的最短距离是否可以被这条边更新，最后得到了最多包含一条边的最短路径；第二轮迭代，解决了最多包含两条边的情况；直到第 $n-1$ 轮，所有最短路径都必然已经得到。如果此时检查还有可以被边更新的最短路径，就必然存在负环。</p>
+
+<h3 id="伪代码-1">伪代码</h3>
+
+<p>对于图 $G=(V, E)$ ，源点 $s$ ：</p>
+
+\[\begin{array}{l}
+\texttt{let}\ \text{dis}[x]\ \text{as shortest path's distance from}\ s\ \text{to}\ x \\
+\texttt{let}\ w_{xy}\ \text{as edge weight from}\ x\ \text{to}\ y\\
+\\
+\texttt{for}\ x \gets |V|\\
+\qquad \texttt{if}\ x = s\\
+\qquad\qquad \text{dis}[x] \gets 0\\
+\qquad \texttt{elif}\ (s,x) \in |E|\\
+\qquad\qquad \text{dis}[x]=w_{sx} \\
+\qquad \texttt{else}\\
+\qquad\qquad \text{dis}[x] = \infty\\
+\\
+\texttt{iterate}\ \text{|V|-1 times} \\
+\qquad\texttt{for}\ (x, y) \gets |E|\\
+\qquad\qquad \text{dis}[y] = \texttt{min}(\text{dis}[y],\ \text{dis}[x] + w_{xy})
+\end{array}\]
+
+<h3 id="路径构造-1">路径构造</h3>
+
+<p>由于是加边的构造过程，路径构造采用了反向的 $\text{pre}$ 数组。</p>
+
+<p>对于一条路径 $(s) \rightarrow x_1 \rightarrow x_2 \rightarrow x_3\ …\rightarrow x_n$：</p>
+
+\[\begin{array}{ll}
+\text{pre}[x_n] &amp;= x_{n-1}\\
+\text{pre}[x_{n-1}] &amp;= x_{n-2}\\
+\text{pre}[x_{2}] &amp;= x_1
+\end{array}\]
+
+<p>每次更新权重的时候，更新 $pre$ 数组：</p>
+
+\[\text{pre}[y] = \text{pre}[x]\]
+
+<p>查询 $x \rightarrow y$ 最小路径时，展开 pre 数组：</p>
+
+\[\begin{array}{l}
+\texttt{let}\ \text{sequential set P as path output.}\\
+\\
+P \gets \varnothing \\
+p \gets y \\
+\\
+\texttt{loop if}\ p \neq x\\
+\qquad P \gets p\\
+\qquad p \gets \text{pre}[p]\\
+\\
+\texttt{reverse}\ P\\
+\end{array}\]
+
+<h3 id="负环探测">负环探测</h3>
+
+<p>负环问题<a href="#负环问题">前面</a>已经讲过，这里只讲负环探测。</p>
+
+<p>当 $n-1$ 轮迭代后如果仍然有可以被更新的点，那么必然存在负环，而该点要么在负环上，要么在负环的下游。</p>
+
+<p>这样以该点开始，用 $\text{pre}$ 数组向后找 $n$ 次，可以确保点一定在负环上，然后就可以构造负环路径。</p>
+
+\[\begin{array}{l}
+\texttt{let}\ \text{sequential set C as cycle output.}\\
+\\
+\texttt{for}\ (x, y, w_{xy}) \gets |E|\\
+\qquad\texttt{if}\ \text{dis}[y] \lt \text{dis}[x] + w_{xy}\\
+\qquad\qquad c \gets y  \\
+\qquad\qquad \texttt{iterate}\ |V| \ \text{times}\\
+\qquad\qquad\qquad c \gets \text{pre}[c]\\
+\\
+\qquad\qquad C \gets \lbrace c \rbrace \\
+\qquad\qquad p \gets \text{pre}[c] \\
+\\
+\qquad\qquad\texttt{loop if}\ p \neq c\\
+\qquad\qquad\qquad C \gets p\\
+\qquad\qquad\qquad p \gets \text{pre}[p]\\
+\\
+\qquad\qquad \texttt{reverse}\ C\\
+\qquad\qquad\text{exit with}\ C
+\end{array}\]
+
+<h3 id="实现-1">实现</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">SPBellmanFord</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span>
+    <span class="cd">/// shortest path weight</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">spw</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="c1">//// shortest path paths</span>
+    <span class="n">pre</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">SPBellmanFord</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">spw</span><span class="p">,</span> <span class="n">pre</span><span class="p">)</span> <span class="o">=</span> <span class="nf">sp_bellman_ford</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="nf">Ok</span><span class="p">(</span><span class="k">Self</span> <span class="p">{</span> <span class="n">g</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">spw</span><span class="p">,</span> <span class="n">pre</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">query</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span><span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.spw</span> <span class="k">=&gt;</span> <span class="n">dst</span><span class="p">),</span> <span class="nd">pre_to_path!</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.pre</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">sp_bellman_ford</span><span class="p">(</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">,</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">),</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pre</span> <span class="o">=</span> <span class="nn">M1</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis</span> <span class="o">=</span> <span class="nn">M1</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span><span class="nf">.count</span><span class="p">();</span>
+
+    <span class="nd">set!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">src</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">dis_u</span><span class="p">)</span> <span class="o">=</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="n">dis_u</span> <span class="o">+</span> <span class="n">w</span> <span class="o">&lt;</span> <span class="nd">get!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nd">set!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">dis_u</span> <span class="o">+</span> <span class="n">w</span><span class="p">);</span>
+                    <span class="nd">set!</span><span class="p">(</span><span class="n">pre</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">dis_u</span><span class="p">)</span> <span class="o">=</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="n">dis_u</span> <span class="o">+</span> <span class="n">w</span> <span class="o">&lt;</span> <span class="nd">get!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// negative cycle found!</span>
+                <span class="k">let</span> <span class="k">mut</span> <span class="n">c</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+
+                <span class="c1">// 确保在环上</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">n</span> <span class="p">{</span>
+                    <span class="n">c</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">pre</span> <span class="k">=&gt;</span> <span class="n">c</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">install_cycle</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pre</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">((</span><span class="n">dis</span><span class="p">,</span> <span class="n">pre</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="时间复杂度-1">时间复杂度</h3>
+
+<p>作为单源点算法，时间复杂度 $O(nm)$ ，如果求全源最短路径，就执行 $n$ 次该算法，那么就变成 $O(n^2m)$ 。</p>
+
+<p>这个时间复杂度显然不太妙，事实上原始的 Bellman-Ford 算法是本文介绍的这几个算法里最慢的，下面我们会介绍它的一个广为人知的变体即所谓的 “SPFA“ 算法。这个改进算法虽然没有改变最坏时间复杂度，但在实际运行中对于随机图的表现相当好。</p>
+
+<h2 id="so-called-spfa-算法">so-called ‘SPFA’ 算法</h2>
+
+<p>这个 Bellman-Ford 的改进算法在 OI 界可谓大名鼎鼎，对于随机图的实际运行很快，而且实现方便。它是中国的研究员提出的，被认为本质上是 Tarjan 的图上广度优先遍历的一般化版本<sup id="fnref:wiki-spfa" role="doc-noteref"><a href="#fn:wiki-spfa" class="footnote" rel="footnote">1</a></sup> ，虽然从算法思想上的没有什么直接的关系。</p>
+
+<h3 id="算法思想-2">算法思想</h3>
+
+<p>’‘SPFA’ 的改进在于观察到每一轮用于“松弛“操作的边都是上一轮更新过的点连接的边。这很好理解，回到算式 $ \text{dis}[y] = \texttt{min}(\text{dis}[y],\ \text{dis}[x] + w_{xy})$ ，如果上一轮 $\text{dis}[x]$ 没有变，那么这一轮 $\text{dis}[y]$ 也就不会变。</p>
+
+<p>这样的话，</p>
+
+<ol>
+  <li>从源点开始，把它加入等待的集合 $R$ ；</li>
+  <li>每次从 $R$ 中取出一个点，遍历更新过的点连接的边，把其中更新的点加入 $R$ 中；</li>
+  <li>当 $R$ 为空时，算法终止</li>
+</ol>
+
+<h3 id="伪代码-2">伪代码</h3>
+
+<p>对于图 $G=(V, E)$ ，源点 $s$ ：</p>
+
+\[\begin{array}{l}
+R \gets \lbrace s \rbrace\\
+\\
+\texttt{loop if}\ R\ \neq \varnothing \\
+\qquad\ x \gets R\\
+\qquad\texttt{for}\ (x, y, w_{wy})\ \texttt{in}\ \lbrace e\ |\ e[0]=x,\ e \in |E| \rbrace \\
+\qquad\qquad\text{dis}[y] = \texttt{min}(\text{dis}[y],\ \text{dis}[x] + w_{xy})\\
+\qquad\qquad R \gets y
+\end{array}\]
+
+<p>路径构造同原始 Bellman-Ford 算法相同</p>
+
+<h3 id="负环探测-1">负环探测</h3>
+
+<p>负环探测由于没有全部边的迭代，因此有一点区别</p>
+
+<p>有两种方法：</p>
+
+<ol>
+  <li>在于使用一个集合维护每个点经过的边数，显然最多不超过 $n-1$ 条，否则一定存在负环；</li>
+  <li>每迭代完 $n$ 个点，就检查一下pre数组，是否展开后超过 $n-1$ 条路径</li>
+</ol>
+
+<p>第二种方法虽然最坏时间复杂度和第一种相同，但<sup id="fnref:spfa-early-termination" role="doc-noteref"><a href="#fn:spfa-early-termination" class="footnote" rel="footnote">2</a></sup>在稀疏图和随机图情况下，可以天差地别般更快地检测到负环 。</p>
+
+<p>另外对于第一种方法，使用 FILO 的栈结构显然有助于更快地找到负环。</p>
+
+<h3 id="实现-2">实现</h3>
+
+<p>特别地对于无向图，‘SPFA’ 可以有意义地求解负权边图，因为可以单独跳过两端点构成的负环，这样就避免无向图的每条负边都构成有向图的一个两端点负环的情况。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">SPFA</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span>
+    <span class="cd">/// shortest path weight</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">spw</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="c1">//// shortest path paths</span>
+    <span class="n">pre</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">SPFA</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">spw</span><span class="p">,</span> <span class="n">pre</span><span class="p">)</span> <span class="o">=</span> <span class="nf">sp_fa_early_termination</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="nf">Ok</span><span class="p">(</span><span class="k">Self</span> <span class="p">{</span> <span class="n">g</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">spw</span><span class="p">,</span> <span class="n">pre</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">query</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span><span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.spw</span> <span class="k">=&gt;</span> <span class="n">dst</span><span class="p">),</span> <span class="nd">pre_to_path!</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.pre</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">sp_fa_early_termination</span><span class="p">(</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">,</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">),</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pre</span> <span class="o">=</span> <span class="nn">M1</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis</span> <span class="o">=</span> <span class="nn">M1</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span><span class="nf">.count</span><span class="p">();</span>
+
+    <span class="nd">set!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">src</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">vis</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">stack</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">src</span><span class="p">];</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">=</span> <span class="n">stack</span><span class="nf">.pop</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">vis</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">u</span> <span class="k">=&gt;</span> <span class="nd">vec!</span><span class="p">[])</span> <span class="p">{</span>
+            <span class="c1">// 无向图不存在这条路径</span>
+            <span class="k">if</span> <span class="o">!</span><span class="n">g</span><span class="py">.dir</span> <span class="o">&amp;&amp;</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">pre</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span> <span class="o">==</span> <span class="nf">Some</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">dis_u</span><span class="p">)</span> <span class="o">=</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="nd">getopt!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span>
+                   <span class="n">dis_u</span> <span class="o">+</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">&lt;</span> <span class="nd">get!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span>
+                <span class="p">{</span>
+                    <span class="nd">set!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">dis_u</span> <span class="o">+</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)));</span>
+                    <span class="nd">set!</span><span class="p">(</span><span class="n">pre</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">);</span>
+
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">n</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">cycle</span><span class="p">)</span> <span class="o">=</span> <span class="nf">detect_negative_cycle</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pre</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="n">cycle</span><span class="p">);</span>
+                        <span class="p">}</span>
+
+                        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                    <span class="p">}</span>
+
+                    <span class="k">if</span> <span class="o">!</span><span class="n">vis</span><span class="nf">.contains</span><span class="p">(</span><span class="o">&amp;</span><span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+                        <span class="n">vis</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">((</span><span class="n">dis</span><span class="p">,</span> <span class="n">pre</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="时间复杂度与继续改进">时间复杂度与继续改进</h3>
+
+<p>最坏时间复杂度不变，仍是 $O(nm)$ ，但实际运行是很好的（相对于其他能处理负边权的算法）。另外对于特定情况的一些进一步的优化，主要是关于如何根据有关条件把点加到对头还是队尾，这里就不展开了。</p>
+
+<p>但接下来介绍的是有限制条件的更最快的算法：Dijkstra 算法 。</p>
+
+<h2 id="dijkstra-算法">Dijkstra 算法</h2>
+
+<p>/ˈdaɪkstrəz/</p>
+
+<h3 id="算法思想-3">算法思想</h3>
+
+<p>说是 Dijkstra 和妻子逛商场的时候花20分钟想出来的寻找到几个不同商场的最短路的方法<sup id="fnref:wiki-dijkstra" role="doc-noteref"><a href="#fn:wiki-dijkstra" class="footnote" rel="footnote">3</a></sup> ，是一种自然想到的利用非负权边的缩放性质进行快速查找的方法。</p>
+
+<p>回顾前面的两个算法：</p>
+
+<p>Floyd 算法（全源）是 $\text{dis}[u][v] = \text{min}(\text{dis}[u][v],\ \text{dis}[u][k]+\text{dis}[k][v])$</p>
+
+<p>Bellman-Ford 算法（单源）是  $\text{dis}[v] = \text{min}(\text{dis}[v],\ \text{dis}[u]+w_{uv})$</p>
+
+<p>它们都是基于直接的全路径的比较，适用于包括负权边在内的各种情况，而 Dijkstra 算法则利用了非负权边的缩放性质，在非负权图上可以算得更快。</p>
+
+<p>它考虑对于图 $G$ （有向强连通），设源点为 $s$ ， $d$ 为图上任一点，$d’$ 为 $s$ 到 $d$ 最短路径上 $d$ 的前驱点（即 $s\rightarrow…\rightarrow d’\rightarrow d$）， $\text{dis}$ 图上某点为到源点 $s$ 的最短距离，由于非负权边的性质， $dis[d’] \leqslant dis[d]$ 。</p>
+
+<p>假如对 $\text{dis}$ 按照不减的顺序求出，每求出一个就更新该点的所有出边连接的点的 $\text{dis}$ ，那么下一个得到的最小 $\text{dis}$ 也仍然是所属点的最短距离。</p>
+
+<p>这是一个归纳法的思考方向，让我们用规整的形式来更好地说明：</p>
+
+<ol>
+  <li>
+    <p>初始地情况，$\text{dis}[s]=0$ ，它是最小的 $\text{dis}$，也不妨认为它是 $s\rightarrow s$ 的最短距离；</p>
+  </li>
+  <li>
+    <p>当 $d$ 是剩下点中 $\text{dis}$ 最小的点时，由于它的最短路径（强连通图保证至少有一条 $s$ 到 $d$ 的路径）上的前驱点 $d’$ 满足 $\text{dis}[d’] \leqslant \text{dis}[d]$ ：</p>
+
+    <p>2.1 如果 $\text{dis}[d’] \lt \text{dis}[d]$， $d’$  之前已经被计算出最短路径，而 $d$ 已经被 $d’$  的出边更新为最短路径</p>
+
+    <p>2.2 特别地当 $w_{d’d}=0$ ，也就是 $\text{dis}[d’]=\text{dis}[d]$ ，$d’$ 可以忽略，直接找它的前驱 $d’’$ , 直到 $d^{(n)}=s$ ，总之都是之前已经被求出的</p>
+
+    <p>所以当之前的 $\text{dis}$ 都是最短路径时， $d$ 也是最短路径</p>
+  </li>
+</ol>
+
+<p>归纳证毕。</p>
+
+<h3 id="伪代码-3">伪代码</h3>
+
+<p>对于图 $G=(V, E)$ ，源点 $s$ ：</p>
+
+\[\begin{array}{l}
+\texttt{let}\ \text{dis}[x]\ \text{as shortest path's distance from}\ s\ \text{to}\ x \\
+\texttt{let}\ w_{xy}\ \text{as edge weight from}\ x\ \text{to}\ y\\
+\\
+\texttt{for}\ x \gets |V|\\
+\qquad \texttt{if}\ x = s\\
+\qquad\qquad \text{dis}[x] \gets 0\\
+\qquad \texttt{elif}\ (s,x) \in |E|\\
+\qquad\qquad \text{dis}[x]=w_{sx} \\
+\qquad \texttt{else}\\
+\qquad\qquad \text{dis}[x] = \infty\\
+\\
+T \gets |V|\\
+\\
+\texttt{loop if}\ T \neq \varnothing\\
+\qquad u \gets \text{min}(T) \text{ by dis}[u] \\
+\\
+\qquad\texttt{for}\ (x, y)\ \texttt{in}\ \lbrace e\ |\ e[0]=u,\ \ e[1] \in T,\ e \in |E| \rbrace \\
+\qquad\qquad \text{dis}[y] = \texttt{min}(\text{dis}[y],\ \text{dis}[x] + w_{xy})
+\end{array}\]
+
+<p>路径构造由于是对边的“松弛“，所以仍然采用 $\text{pre}$ 数组构造。</p>
+
+<h3 id="实现-3">实现</h3>
+
+<p>用上前面实现的 <a href="/algs/DaryHeap.html">d-ary 堆</a> 来优化算法</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">SPDijkstra</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">spw</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">pre</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">SPDijkstra</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">spw</span><span class="p">,</span> <span class="n">pre</span><span class="p">)</span> <span class="o">=</span> <span class="nf">sp_dijkstra</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">src</span><span class="p">);</span>
+
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">g</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">spw</span><span class="p">,</span> <span class="n">pre</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">query</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span><span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.spw</span> <span class="k">=&gt;</span> <span class="n">dst</span><span class="p">),</span> <span class="nd">pre_to_path!</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.pre</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">sp_dijkstra</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pre</span> <span class="o">=</span> <span class="nn">M1</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis_m1</span> <span class="o">=</span> <span class="nn">M1</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis</span> <span class="o">=</span> <span class="nn">DaryHeap5</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">rest</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">infi</span> <span class="o">=</span> <span class="nn">isize</span><span class="p">::</span><span class="n">MAX</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">rest</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">src</span> <span class="p">{</span>
+            <span class="n">dis</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">dis</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">infi</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">dis_u</span><span class="p">))</span> <span class="o">=</span> <span class="n">dis</span><span class="nf">.pop_item</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">rest</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="p">);</span>
+        <span class="nd">set!</span><span class="p">(</span><span class="n">dis_m1</span> <span class="k">=&gt;</span> <span class="n">u</span> <span class="k">=&gt;</span> <span class="n">dis_u</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">rest</span><span class="nf">.contains</span><span class="p">(</span><span class="o">&amp;</span><span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">w</span> <span class="o">=</span> <span class="n">dis_u</span> <span class="o">+</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+                <span class="k">if</span> <span class="n">w</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nd">get!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">dis</span><span class="nf">.decrease_key</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">);</span>
+                    <span class="nd">set!</span><span class="p">(</span><span class="n">pre</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span><span class="n">dis_m1</span><span class="p">,</span> <span class="n">pre</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="时间复杂度与综合利用">时间复杂度与综合利用</h3>
+
+<p>作为单源点算法，使用我们实现里的 $O(1)$  时间复杂度的 32-ary 堆优化的情况下：</p>
+
+<ol>
+  <li>初始化 $\text{dis}$ 数组，$O(n)$</li>
+  <li>$\text{dis}$ 排序 + 边松弛，$O(n) + O(m)$</li>
+</ol>
+
+<p>Dijkstra 算法的时间复杂度可以优化为 $O(m)$ （非常优秀，直接去掉了一个 $n$） 。</p>
+
+<p>如果计算全源最短路径，就是 $O(nm)$ 。</p>
+
+<p>不过 Dijkstra 毕竟受限于非负权边的图，如何利用它的高效，改善含负权边的图的全源最短路径 $O(n^3)$ 的计算效率？ 这就是接下来的Johnson 算法做的事情。</p>
+
+<h2 id="johnson-算法">Johnson 算法</h2>
+
+<h3 id="算法思想-4">算法思想</h3>
+
+<p>基本想法是通过重新调整边的权重，使得每条边的权重不小于 $0$ ，并且保持每对儿点的最短路径不会因此受到影响。</p>
+
+<p>我们采取这样一种方法，对于图 $G=(V, E)$ ，用“势能”标记 $G$ 中的每个点：</p>
+
+<ol>
+  <li>建立基准线，增加一个特殊的点 $q$ ，使得 $q$ 到 $G$ 中每一个点都有一条边，权重为一个固定值 $c$ （具体值无所谓，只是用来建立基准）</li>
+  <li>运行一次以 $q$ 为源点的 Bellman-Ford 算法（当然我们要用我们最爱的 ‘SPFA’ 算法），以每个点到 $q$ 的最小距离 $h$ 为它的势能，原 $G$ 上每条边 $(u, v)$ 的权重都加上 $u\rightarrow v$ 两点的势能差，也就是 $h(u) - h(v)$</li>
+</ol>
+
+<p>这样同时满足了两个要求：</p>
+
+<ol>
+  <li>对于G上任意两点x、y，G上每条从x到y的路径，不管中间经过了多少个点，它们的最终权重和都增加了一个固定值，也就是 h(x) -h(y)，也就是这种调整不会影响任意点对的最短路径的判定；</li>
+  <li>并且由于最短路径的性质 $h[v] \leqslant h[u]  + w_{uv}$ 也就是 $w_{uv} + h[u] - h[v] \geqslant 0$</li>
+</ol>
+
+<p>这样直接在重新平衡权重的图上做 $n$ 次Dijkstra 算法，就得到了全源的最短路径。当然查询最短路径的权重和时，要把加上的权重减去，也就是 $-(h[u]-h[v])$</p>
+
+<h3 id="实现-4">实现</h3>
+
+<p>路径构造是 $\text{pre}$ 数组，负环探测是利用 Bellman-Ford 算法</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">SPJohnson</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">,</span>
+    <span class="n">h</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">spw</span><span class="p">:</span> <span class="n">M2</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="c1">//// shortest path paths</span>
+    <span class="n">sppre</span><span class="p">:</span> <span class="n">M2</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">SPJohnson</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="p">(</span><span class="n">Graph</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">spw</span><span class="p">,</span> <span class="n">sppre</span><span class="p">)</span> <span class="o">=</span> <span class="nf">sp_johnson</span><span class="p">(</span><span class="n">g</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="nf">Ok</span><span class="p">(</span><span class="k">Self</span> <span class="p">{</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">spw</span><span class="p">,</span> <span class="n">sppre</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// (total_weight, (src), .. , k1, k2, .. dst)</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">query</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span>
+            <span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.spw</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span> <span class="o">-</span> <span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.h</span> <span class="k">=&gt;</span> <span class="n">src</span><span class="p">)</span>
+                <span class="o">+</span> <span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.h</span> <span class="k">=&gt;</span> <span class="n">dst</span><span class="p">),</span>
+            <span class="nd">pre_to_path!</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="k">self</span><span class="py">.sppre</span><span class="na">.0</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">src</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">()),</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">sp_johnson</span><span class="p">(</span>
+    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span>
+    <span class="p">(</span>
+        <span class="n">M1</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">M2</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">M2</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="p">(</span><span class="n">Graph</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">),</span>
+<span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cm">/* Create a new map with special node q*/</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">g2</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.clone</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">vertexs</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">g2</span><span class="nf">.vertexs</span><span class="p">()</span><span class="nf">.collect</span><span class="p">();</span>
+    <span class="n">vertexs</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">q</span> <span class="o">=</span> <span class="o">*</span><span class="n">vertexs</span><span class="nf">.last</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">vertexs</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">set!</span><span class="p">(</span><span class="n">g2</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="nd">apush!</span><span class="p">(</span><span class="n">g2</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">q</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="n">g</span><span class="py">.dir</span> <span class="p">{</span>
+            <span class="nd">set!</span><span class="p">(</span><span class="n">g2</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">);</span>
+            <span class="nd">apush!</span><span class="p">(</span><span class="n">g2</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">q</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* Using SPFA dst calc h((q, v)) */</span>
+    <span class="k">let</span> <span class="n">h</span> <span class="o">=</span> <span class="k">match</span> <span class="nf">sp_fa</span><span class="p">(</span><span class="o">&amp;</span><span class="n">g2</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">Ok</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">_</span><span class="p">))</span> <span class="k">=&gt;</span> <span class="n">h</span><span class="p">,</span>
+        <span class="nf">Err</span><span class="p">(</span><span class="n">cycle</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="k">return</span> <span class="nf">Err</span><span class="p">((</span><span class="n">g2</span><span class="p">,</span> <span class="n">cycle</span><span class="p">)),</span>
+    <span class="p">};</span>
+
+    <span class="cm">/* Reweight */</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">set!</span><span class="p">(</span><span class="n">g2</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">w</span> <span class="o">+</span> <span class="nd">get!</span><span class="p">(</span><span class="n">h</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span> <span class="o">-</span> <span class="nd">get!</span><span class="p">(</span><span class="n">h</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* Calc spw and spp usign Dijkstra */</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">spw</span> <span class="o">=</span> <span class="nn">M2</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">sppre</span> <span class="o">=</span> <span class="nn">M2</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">vertexs</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">sspw</span><span class="p">,</span> <span class="n">sspp</span><span class="p">)</span> <span class="o">=</span> <span class="nf">sp_dijkstra</span><span class="p">(</span><span class="o">&amp;</span><span class="n">g2</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+
+        <span class="nd">set!</span><span class="p">(</span><span class="n">spw</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">sspw</span><span class="p">);</span>
+        <span class="nd">set!</span><span class="p">(</span><span class="n">sppre</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">sspp</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">spw</span><span class="p">,</span> <span class="n">sppre</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="时间复杂度-2">时间复杂度</h3>
+
+<p>$O(nm) + O(nm) = O(nm)$ ，这样在负权图上也实现了最坏时间复杂度为 $O(nm)$ 的最短路径算法！</p>
+
+<h2 id="尾声">尾声</h2>
+
+<p>用力地掷出 SP 问题这一块飞石，最终在时间的河流上打出了一串儿的涟漪，虽然感觉花的时间长，但实际比想象花的时间还要长一点。特别是和 <a href="/algs/GraphMST.html">无向图上最小生成树问题</a> ，还有树上问题等比较，图上的算法思想还是有很多相通之处，有一些人名也串来串去，比如 Tarjan，有点儿图界 Knuth 的意思。</p>
+
+<p>凡事总是勃勃兴起，忽而结束。</p>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:wiki-spfa" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Shortest_Path_Faster_Algorithm <a href="#fnref:wiki-spfa" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:spfa-early-termination" role="doc-endnote">
+      <p>https://konaeakira.github.io/posts/using-the-shortest-path-faster-algorithm-to-find-negative-cycles.html <a href="#fnref:spfa-early-termination" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:wiki-dijkstra" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Dijkstra’s_algorithm <a href="#fnref:wiki-dijkstra" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[像水面上打漂儿出的石头，只是“一击就弹出“地了解关于最短路径（Shortest Path，以下简称SP）问题。]]></summary></entry><entry><title type="html">N叉堆实现（Rust）</title><link href="/algs/DaryHeap.html" rel="alternate" type="text/html" title="N叉堆实现（Rust）" /><published>2022-11-23T00:00:00+08:00</published><updated>2022-11-23T00:00:00+08:00</updated><id>/algs/DaryHeap</id><content type="html" xml:base="/algs/DaryHeap.html"><![CDATA[<p>一个有建立在连续内存上的 $2$ 的 $n$ 次幂倍分叉完全树的最小堆（以下简称 d-ary 堆），理论和实践都最快的，用于图上经典贪心算法，作为<a href="/algs/FibHeap.html">斐波那契堆</a>的上位替代。</p>
 
 <p>下图 $q=2^1$</p>
 
@@ -363,7 +1118,7 @@
 
 <p>在 <code class="language-plaintext highlighter-rouge">pop</code> 的时候理论上还优于之前介绍过的斐波那契堆，实际上由于这是建立在连续内存上的数据，比起基于链表的结构不知道好到哪里去了！</p>
 
-<p>**通常 d-ary 堆的基数是 32，也就是 E=5 **，这是个经验结论，在此之前，随着基数增大，时间效率呈现有意义地增加，而在此之后，时间效率几乎不增乃至减少。Clojure 自己的持久化 <code class="language-plaintext highlighter-rouge">Vector</code> 的实现里 Trie 的基数就是 $32$ 。</p>
+<p><strong>通常 d-ary 堆的基数是 32，也就是 E=5</strong>，这是个经验结论，在此之前，随着基数增大，时间效率呈现有意义地增加，而在此之后，时间效率几乎不增乃至减少。Clojure 自己的持久化 <code class="language-plaintext highlighter-rouge">Vector</code> 的实现里 Trie 的基数就是 $32$ 。</p>
 
 <h2 id="引用">引用</h2>
 
@@ -1981,7 +2736,7 @@
 
 <div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop06.png" title="" /></div>
 
-<p>扫描到 $ \texttt{node(23)} $ ， $\texttt{rank = 0}$ ，Map中没有同 $\texttt{rank}$ 项，把 $\texttt{0 =&gt; node(23)}$ 插入到 $\texttt{Map}$ 中，继续向下扫描；</p>
+<p>扫描到 $\texttt{node(23)}$ ， $\texttt{rank = 0}$ ，Map中没有同 $\texttt{rank}$ 项，把 $\texttt{0 =&gt; node(23)}$ 插入到 $\texttt{Map}$ 中，继续向下扫描；</p>
 
 <div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop07.png" title="" /></div>
 
@@ -2021,7 +2776,7 @@
 
 <h3 id="复杂度分析-1">复杂度分析</h3>
 
-<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$ \texttt{H} $为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
+<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$\texttt{H}$为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
 
 <p>而由于每次规整后的，不存在相同 $\texttt{rank}$ 的树，所以标记 $\texttt{H’}$ 为 $\texttt{rank}$ 最大的树，有 $\texttt{trees} \leqslant \texttt{rank(H’) + 1}$ 。</p>
 
@@ -2123,7 +2878,7 @@
 
 <p>则称这两个数处于黄金比率，而这个黄金比率 $\varphi$ 可以通过定义</p>
 
-<p>$ 1 + \frac{b}{a} = \frac{a}{b} = \varphi\ $</p>
+<p>$1 + \frac{b}{a} = \frac{a}{b} = \varphi\$</p>
 
 <p>$1 + \frac{1}{\large \varphi} = \varphi $</p>
 
@@ -2194,7 +2949,7 @@ F_{n+2} &amp;=\ F_n + F_{n+1}\\
 &amp;=\ 1 + \sum_{i=0}^{n} F_i
 \end{array}\]
 
-<p>得到 $ F_{n+2} = 1 + \sum_{i=0}^{n} F_i $</p>
+<p>得到 $F_{n+2} = 1 + \sum_{i=0}^{n} F_i$</p>
 
 <h4 id="性质2">性质2</h4>
 
@@ -2215,7 +2970,7 @@ F_{n+2} &amp;=\ F_{n+1} + F_{n}\\
 &amp;=\ \varphi^n
 \end{array}\]
 
-<p>得到 $ F_{n+2} \geqslant \varphi^n $</p>
+<p>得到 $F_{n+2} \geqslant \varphi^n$</p>
 
 <h3 id="斐波那契堆的性质">斐波那契堆的性质</h3>
 
@@ -2262,11 +3017,11 @@ size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
 
 \[\texttt{size(k)} \geqslant F_{k+2} \geqslant \varphi^{k}\ \ \ (k \geqslant 0)\]
 
-<p>根据这个性质，两边取 $log$ ，得到  $ log_{\varphi}^{size(k)} \geqslant k = rank $ 。</p>
+<p>根据这个性质，两边取 $log$ ，得到  $log_{\varphi}^{size(k)} \geqslant k = rank$ 。</p>
 
 <p>回顾前面 <code class="language-plaintext highlighter-rouge">pop</code> 的时间复杂度分析，$\texttt{rank}$ ~ $O(log_{\varphi}^{\texttt{size(k)}})$ ~ $O(log\ n)$，也就是说我们在理论上证明了 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致的不严格二项式树，仍然不影响它的 $O(\text{log n})$ 的时间复杂度。</p>
 
-<h2 id="后续斐波那契堆的具体实现rust">后续：<strong><a href="/algs/FibHeapImplRust.html">斐波那契堆的具体实现（Rust）</a></strong></h2>
+<h2 id="后续具体实现rust">后续：<strong><a href="/algs/FibHeapImplRust.html">具体实现（Rust）</a></strong></h2>
 
 <h2 id="引用">引用</h2>
 
@@ -2295,7 +3050,14 @@ size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
 tail(起点) -&gt; head（终点）</p>
   </li>
   <li>
-    <p>|V|: 点的个数，图的阶（order）</p>
+    <table>
+      <tbody>
+        <tr>
+          <td>V</td>
+          <td>: 点的个数，图的阶（order）</td>
+        </tr>
+      </tbody>
+    </table>
   </li>
   <li>
     <p>无根树，连通无向图</p>
@@ -2479,11 +3241,14 @@ log: kernel log</p>]]></content><author><name></name></author><category term="[&
     <p>如果make过程中因为什么原因中途停掉了，可以再次启动，但是第一次会报错: <code class="language-plaintext highlighter-rouge">"dpkg-source: unrepresentable changes to source"</code>, 只要把相关报错文件删除掉重新运行即可。</p>
   </li>
   <li>
-    <p>&gt;= 20.04, 可能需要的额外依赖包:</p>
+    <blockquote>
 
-    <p>dwarves # tmp_vmlinux.btf: pahole (pahole) is not available</p>
+      <p>= 20.04, 可能需要的额外依赖包:</p>
+    </blockquote>
   </li>
 </ol>
+
+<p>dwarves # tmp_vmlinux.btf: pahole (pahole) is not available</p>
 
 <h2 id="select-kernel">Select Kernel</h2>
 
@@ -2497,209 +3262,4 @@ log: kernel log</p>]]></content><author><name></name></author><category term="[&
 
 <p>查看高级启动项的序号(Ubuntu为例)：
 <code class="language-plaintext highlighter-rouge">sudo grub-mkconfig | grep -iE "menuentry 'Ubuntu, with Linux" | awk '{print i++ " : "$1, $2, $3, $4, $5, $6, $7}'</code>
-不要忘记最后运行<code class="language-plaintext highlighter-rouge">sudo update-grup</code>来更新配置。</p>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[编译实践1： 学习Linux内核模块开发，需要增加一个FORCE_UNLOADING feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。]]></summary></entry><entry><title type="html">TCP Congestion Control</title><link href="/net/ietf_rfc_5681_obs2581.html" rel="alternate" type="text/html" title="TCP Congestion Control" /><published>2022-08-07T00:00:00+08:00</published><updated>2022-08-07T00:00:00+08:00</updated><id>/net/ietf_rfc_5681_obs2581</id><content type="html" xml:base="/net/ietf_rfc_5681_obs2581.html"><![CDATA[<p>This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04</p>
-
-<h2 id="1-introduction">1. Introduction</h2>
-
-<p>介绍TCP四种交织在一起的拥塞控制算法：</p>
-
-<ol>
-  <li>慢启动（slow start）</li>
-  <li>拥塞避免（congestion avoidance）</li>
-  <li>快速重传（fast retransmit）</li>
-  <li>快速恢复（fast recovery）</li>
-</ol>
-
-<p>TCP链接需要做什么，在一个长时间停当后，以及确定和澄清一些TCP ACK生成的问题</p>
-
-<h2 id="2-definition">2. Definition</h2>
-
-<p>发送方最大分片大小（Sender Maximum Segment Size, SMSS）<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
-
-<p>接收方最大分片大小（Receiver Maximum Segment Size, RMSS）<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
-
-<p>最大段（Full Sized Segment）</p>
-
-<p>接收方窗口（Receiver Window, rwnd）</p>
-
-<p>拥塞窗口（Congestion Window, cwnd）<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></p>
-
-<p>初始窗口（Initial Window, IW）<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
-
-<p>丢失窗口（Lost Window, LW）<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></p>
-
-<p>重启窗口（Restart Window, RW）<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup></p>
-
-<p>飞行尺寸（FlightSize）<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup></p>
-
-<p>重复确认（Duplicate Acknowledgement）:</p>
-
-<p>一个确认被认为是重复的如果：</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a. ack的接收者有未完成的（outstanding）数据
-
-b. 到来的ack没有携带数据
-
-c. SYN 和 FIN的标志都没有被设置
-
-d. ack number等于链接最大的ack number
-
-e. 到来的ack广告的窗口大小等于上一次ack广告的窗口大小
-
-f: 使用SACKs（Selective Acknownledgements）的TCP会利用SACK信息判断ack是否重复
-</code></pre></div></div>
-
-<h2 id="3-congestion-control-algorithm">3. Congestion Control Algorithm</h2>
-
-<p>本文提到的拥塞控制算法使用丢失或者ECN标记作为拥塞发生的信号</p>
-
-<h3 id="31-slow-start-and-congestion-avoidance">3.1 Slow Start and Congestion Avoidance</h3>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if SMSS &gt; 2190 (bytes):
-  IW &lt;= 2*SMSS and IM &lt;= 2*SS(Segment Size)
-else if 1095 &lt; SMSS &lt;= 2190:
-  IW &lt;= 3*SMSS and IW &lt;= 3*SS
-ekse:
-  IW &lt;= 4*SMSS and IW&lt;= 4*SS
-</code></pre></div></div>
-
-<p>建立TCP链接的两个ACK不能用来增加cwnd的大小。等等IW设置详见<a href="https://datatracker.ietf.org/doc/html/rfc3390">RFC3390</a>。</p>
-
-<p>ssthresh的初始值可以任意高<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>
-慢启动算法启动标准：<code class="language-plaintext highlighter-rouge">cwnd &lt; ssthresh</code>
-拥塞避免算法标准：<code class="language-plaintext highlighter-rouge">cwnd &gt; ssthresh</code>
-二选一都可以：<code class="language-plaintext highlighter-rouge">cwnd = ssthresh</code></p>
-
-<p>在慢启动的时候，每次ACK，cwnd的增加不超过SMSS bytes，当cwnd超过<code class="language-plaintext highlighter-rouge">ssthresh</code>或者拥塞重新被检测到的时候，退出慢启动。
-传统TCP实现每次正好增加SMSS，但是我们推荐使用： <code class="language-plaintext highlighter-rouge">cwnd += min(N, SMSS)</code>,N是被新的ACK新确认的未确认数据的大小。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">9</a></sup></p>
-
-<p>在拥塞避免的时候，每过一个往返时间<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">10</a></sup>，cwnd可以增加一个full-sized segment<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">11</a></sup>大小；
-应该（SHOULD）每一个来回的时间，增加<code class="language-plaintext highlighter-rouge">min(N, SMSS)</code>
-但是不管怎样，每次cwnd不能增加超过SMSS。</p>
-
-<p>或者每当收到一个不重复的ACK数据报，就增加一个<code class="language-plaintext highlighter-rouge">SMSS * SMSS / cwnd</code>大小<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">12</a></sup>；
-还有的方法是增加新的被ACK确认的数据大小，直到cwnd增加到SMSS。<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">13</a></sup></p>
-
-<p>同样地，当检测到拥塞发生的时候，算法终止。</p>
-
-<p>ssthresh不应该超过<code class="language-plaintext highlighter-rouge">max(FlightSize/2, 2*SMSS)</code></p>
-
-<p>并且，一旦超时，cwnd必须被设为不超过LW，也就是1 full-sized segment。因此在重传被丢弃的包分片后，发送方使用慢启动来增加窗口的大小，从1 full-sized segment到新的ssthresh，在这时拥塞避免算法开始接管。</p>
-
-<h3 id="32-fast-retransmitfast-recovery">3.2 Fast Retransmit/Fast Recovery</h3>
-
-<p>当乱序的分片到达的时候，TCP接收端应该发送duplicate ack，通知发送方接收到的分片乱序以及应该收到的序列号。</p>
-
-<p>从发送端的视角，当收到重复ack的时候，可能是几个网络原因：</p>
-
-<ol>
-  <li>分片丢失</li>
-  <li>网络把数据分片重新排序</li>
-  <li>ack或网络分片的复制（replication）</li>
-</ol>
-
-<p>In addition, a TCP receiver SHOULD send an immediate ACK when the incoming segment fills in (all or part) of a gap in the sequence space.</p>
-
-<p>TCP发送方基于到来的重复ack，使用快速重传算法来探测和修复丢包。
-快速重传算法使用3个重复ack作为直接启动的信号而不需要等重传计时器过时。
-在快速是重传算法发送了可能丢失的分片后，快速恢复算法接管新数据的传输，直到一个非重复ack的到来。
-不执行慢启动的理由是重复ack的收到不仅表明分片丢失，也表明分片很可能已经离开了网络（在缓冲区中）</p>
-
-<p>快速重传和快速恢复算法一起实现如下：</p>
-
-<ol>
-  <li>
-    <p>在发送方收到第一个和第二个重复ack时，应该发送一个之前未发送数据的分片<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">14</a></sup></p>
-  </li>
-  <li>
-    <p>当收到第三个重复的ack时，一个TCP必须把ssthresh设置为不超过<code class="language-plaintext highlighter-rouge">max(FlightSize/2, 2*SMSS)</code></p>
-  </li>
-  <li>
-    <p>开始在SND.UNA<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">15</a></sup>丢失的分片必须被重传，并且cwnd设置为<code class="language-plaintext highlighter-rouge">ssthresh + 3*SMSS</code>。<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">16</a></sup></p>
-  </li>
-  <li>
-    <p>对于每一个额外的重复ACK（在第三个之后）cwnd必须增加SMSS。<sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">17</a></sup></p>
-  </li>
-  <li>
-    <p>当之前未发送的数据可用，并且cwnd新值和接收方窗口允许时，TCP应该发送<code class="language-plaintext highlighter-rouge">1*SMSS</code>bytes数据。</p>
-  </li>
-  <li>
-    <p>当下一个ack到达并确认之前未确认的数据时，TCP必须将cwnd设置为ssthresh（set by step-2）<sup id="fnref:18" role="doc-noteref"><a href="#fn:18" class="footnote" rel="footnote">18</a></sup><sup id="fnref:19" role="doc-noteref"><a href="#fn:19" class="footnote" rel="footnote">19</a></sup></p>
-  </li>
-</ol>
-
-<p>众所周知，这个算法通常无法有效地从单个数据包飞行中的多次丢失中恢复。</p>
-
-<h2 id="4-additional-considerations">4. Additional Considerations</h2>
-
-<h3 id="41-restarting-idle-connections">4.1. Restarting Idle Connections</h3>
-
-<h3 id="42-generating-acknowledgments">4.2. Generating Acknowledgments</h3>
-
-<h3 id="43-loss-recovery-mechanisms">4.3. Loss Recovery Mechanisms</h3>
-
-<h2 id="5--security-considerations">5.  Security Considerations</h2>
-
-<p>这个per是什么鬼，还有这么用的，啥意思？并且TCP发送方不能改变cwnd来反映这两个分片。记住，使用SACK的发送方不能发送新数据除非到来的重复ack包含新的SACK信息</p>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>最大分片的负载大小，不包括TCP/IP headers。这个数值基于MTU、PMTUD、RMSS或者其他因素。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>由TCP MSS option决定，如果没有设置，则为536 bytes（TCP安全最大值） <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>限制TCP发送数据的状态变量，TCP发送数据的大小受cwnd和rwnd的双重限制 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>发送方的三次握手后的拥塞窗口 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>在重传计时器发现包的丢失时的拥塞窗口的大小 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:6" role="doc-endnote">
-      <p>在一个慢启动算法里，在一段停当（idle）的时间后，启动重传时的拥塞窗口大小 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:7" role="doc-endnote">
-      <p>已发送，但尚未被ack确认的数据数量，也就是“飞行中“的数据包 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:8" role="doc-endnote">
-      <p>Slow Start Threshold <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:13" role="doc-endnote">
-      <p>这么做是为了增加鲁棒性针对一些行为不端的接收方方通过同一分片的多次的ACK响应（ACK Division），每个ack仅是数据的一部分，每个ACK都会使得发送方窗口增加SMSS，结果使得发送方使用过大的发送窗口 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:12" role="doc-endnote">
-      <p>round-trip time, RTT <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:9" role="doc-endnote">
-      <p>包含当前允许发送的最大数据的分片，比如包含SMSS bytes的数据 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:10" role="doc-endnote">
-      <p>当cwnd非常大的时候，比如比<code class="language-plaintext highlighter-rouge">SMSS*SMSS</code> 还要大的时候，应该算为至少1 byte；同时更旧实现会增加一个额外常数，但这是错误的会导致性能损失 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:11" role="doc-endnote">
-      <p>缺点是需要维护一个额外的状态变量 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:14" role="doc-endnote">
-      <p>On the first and second duplicate ACKs received at a sender, a TCP SHOULD send a segment of previously unsent data per [RFC3042] provided that the receiver’s advertised window allows, the total FlightSize would remain less than or equal to cwnd plus 2*SMSS, and that new data is available for transmission <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:15" role="doc-endnote">
-      <p>Sender Unknowledge <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:16" role="doc-endnote">
-      <p>这人为地夸大了cwnd已经离开网络被接收方缓存3个分片 <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:17" role="doc-endnote">
-      <p>这人为地夸大了cwnd为了反映离开网络的额外分片。为了防止这一机制被接收方滥用，可以限制cwnd扩大的次数为未接收分片的数量。Note: When an advanced loss recovery mechanism (such as outlined in section 4.3) is not in use, this increase in FlightSize can cause equation (4) to slightly inflate cwnd and ssthresh, as some of the segments between SND.UNA and SND.NXT are assumed to have left the network but are still reflected in FlightSize. <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:18" role="doc-endnote">
-      <p>这被叫做窗口紧缩（deflating） <a href="#fnref:18" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:19" role="doc-endnote">
-      <p>这个ack应该是由step-3的重传引发的。除此之外，这个ack应该确认所有在丢失的分片和收到的第三个重复的分片发送的所有中间分片，如果中间没有丢失 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;net&quot;]" /><summary type="html"><![CDATA[This RFC is release on 2009.09 obsoletes RFC2581 which is release on 1999.04]]></summary></entry></feed>
+不要忘记最后运行<code class="language-plaintext highlighter-rouge">sudo update-grup</code>来更新配置。</p>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[编译实践1： 学习Linux内核模块开发，需要增加一个FORCE_UNLOADING feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。]]></summary></entry></feed>

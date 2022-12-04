@@ -390,7 +390,14 @@ Just (+) &lt;*&gt; Just 1 &lt;*&gt; Just 2
     <span class="p">(</span><span class="o">&lt;|&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
 </code></pre></div></div>
 
-<p>&lt;|&gt; ：其他的选择</p>
+<table>
+  <tbody>
+    <tr>
+      <td>&lt;</td>
+      <td>&gt; ：其他的选择</td>
+    </tr>
+  </tbody>
+</table>
 
 <div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="kt">Nothing</span> <span class="o">&lt;|&gt;</span> <span class="kt">Nothing</span> <span class="o">&lt;|&gt;</span> <span class="kt">Just</span> <span class="mi">1</span> <span class="o">&lt;|&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
 <span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">1</span>

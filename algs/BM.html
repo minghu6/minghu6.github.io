@@ -269,7 +269,7 @@
 <p>显然直观上看，此时根据<strong>观察3(b)</strong>， 将$pat$向左移动$k=5$个字符，使得后缀$\texttt{AT}$对齐，这种滑动可以获得$string$指针最大的滑动距离，此时$delta_2=k+patlen-1-j=5+7-1-4=7$，即$string$上指针向下滑动7​个字符。</p>
 
 <p>而从形式化逻辑看，此时，$delta_1=7-1-2=4,\ delta_2=5, \max(delta_1,delta_2)= 7$，
-这样从形式逻辑上支持了进行**观察3(b)**的跳转：</p>
+这样从形式逻辑上支持了进行<strong>观察3(b)</strong>的跳转：</p>
 
 \[\begin{aligned}
 \textit{pat}:\qquad\qquad &amp;\qquad\qquad\qquad\qquad\qquad\quad \;\, \texttt{AT-THAT} \\
@@ -1170,7 +1170,7 @@ pub fn build_delta_2_table_naive(p: &amp;[impl PartialEq]) -&gt; Vec&lt;usize&gt
 
 <p>$skip(m,k)$为发生失配时$pat$向下滑动$k$个字符的概率，（这里的$k$如同前文讨论的$k$一样，为$pat$实际滑动距离，不包括指针从失配位置回退到$patlastpos$位置的距离）。实际上所有字符串匹配算法的核就在于$skip(m,k)$，下面我们会通过分析$delta_1$和$delta_2$来计算BoyerMoore算法的$skip(m,k)$。</p>
 
-<h3 id="计算boyermoore算法的skipmk">计算BoyerMoore算法的\(skip(m,k)\)</h3>
+<h3 id="计算boyermoore算法的skipmk">计算BoyerMoore算法的$skip(m,k)$</h3>
 
 <h4 id="delta_1">$delta_1$</h4>
 

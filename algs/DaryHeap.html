@@ -488,7 +488,7 @@
 
 <p>在 <code class="language-plaintext highlighter-rouge">pop</code> 的时候理论上还优于之前介绍过的斐波那契堆，实际上由于这是建立在连续内存上的数据，比起基于链表的结构不知道好到哪里去了！</p>
 
-<p>**通常 d-ary 堆的基数是 32，也就是 E=5 **，这是个经验结论，在此之前，随着基数增大，时间效率呈现有意义地增加，而在此之后，时间效率几乎不增乃至减少。Clojure 自己的持久化 <code class="language-plaintext highlighter-rouge">Vector</code> 的实现里 Trie 的基数就是 $32$ 。</p>
+<p><strong>通常 d-ary 堆的基数是 32，也就是 E=5</strong>，这是个经验结论，在此之前，随着基数增大，时间效率呈现有意义地增加，而在此之后，时间效率几乎不增乃至减少。Clojure 自己的持久化 <code class="language-plaintext highlighter-rouge">Vector</code> 的实现里 Trie 的基数就是 $32$ 。</p>
 
 <h2 id="引用">引用</h2>
 

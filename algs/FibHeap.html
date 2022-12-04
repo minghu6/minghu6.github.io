@@ -239,7 +239,7 @@
 
 <div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop06.png" title="" /></div>
 
-<p>扫描到 $ \texttt{node(23)} $ ， $\texttt{rank = 0}$ ，Map中没有同 $\texttt{rank}$ 项，把 $\texttt{0 =&gt; node(23)}$ 插入到 $\texttt{Map}$ 中，继续向下扫描；</p>
+<p>扫描到 $\texttt{node(23)}$ ， $\texttt{rank = 0}$ ，Map中没有同 $\texttt{rank}$ 项，把 $\texttt{0 =&gt; node(23)}$ 插入到 $\texttt{Map}$ 中，继续向下扫描；</p>
 
 <div class="sx-center"><img src="/../assets/img/fibheap/fibheap_pop07.png" title="" /></div>
 
@@ -279,7 +279,7 @@
 
 <h3 id="复杂度分析-1">复杂度分析</h3>
 
-<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$ \texttt{H} $为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
+<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$\texttt{H}$为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
 
 <p>而由于每次规整后的，不存在相同 $\texttt{rank}$ 的树，所以标记 $\texttt{H’}$ 为 $\texttt{rank}$ 最大的树，有 $\texttt{trees} \leqslant \texttt{rank(H’) + 1}$ 。</p>
 
@@ -381,7 +381,7 @@
 
 <p>则称这两个数处于黄金比率，而这个黄金比率 $\varphi$ 可以通过定义</p>
 
-<p>$ 1 + \frac{b}{a} = \frac{a}{b} = \varphi\ $</p>
+<p>$1 + \frac{b}{a} = \frac{a}{b} = \varphi\$</p>
 
 <p>$1 + \frac{1}{\large \varphi} = \varphi $</p>
 
@@ -452,7 +452,7 @@ F_{n+2} &amp;=\ F_n + F_{n+1}\\
 &amp;=\ 1 + \sum_{i=0}^{n} F_i
 \end{array}\]
 
-<p>得到 $ F_{n+2} = 1 + \sum_{i=0}^{n} F_i $</p>
+<p>得到 $F_{n+2} = 1 + \sum_{i=0}^{n} F_i$</p>
 
 <h4 id="性质2">性质2</h4>
 
@@ -473,7 +473,7 @@ F_{n+2} &amp;=\ F_{n+1} + F_{n}\\
 &amp;=\ \varphi^n
 \end{array}\]
 
-<p>得到 $ F_{n+2} \geqslant \varphi^n $</p>
+<p>得到 $F_{n+2} \geqslant \varphi^n$</p>
 
 <h3 id="斐波那契堆的性质">斐波那契堆的性质</h3>
 
@@ -520,11 +520,11 @@ size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
 
 \[\texttt{size(k)} \geqslant F_{k+2} \geqslant \varphi^{k}\ \ \ (k \geqslant 0)\]
 
-<p>根据这个性质，两边取 $log$ ，得到  $ log_{\varphi}^{size(k)} \geqslant k = rank $ 。</p>
+<p>根据这个性质，两边取 $log$ ，得到  $log_{\varphi}^{size(k)} \geqslant k = rank$ 。</p>
 
 <p>回顾前面 <code class="language-plaintext highlighter-rouge">pop</code> 的时间复杂度分析，$\texttt{rank}$ ~ $O(log_{\varphi}^{\texttt{size(k)}})$ ~ $O(log\ n)$，也就是说我们在理论上证明了 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致的不严格二项式树，仍然不影响它的 $O(\text{log n})$ 的时间复杂度。</p>
 
-<h2 id="后续斐波那契堆的具体实现rust">后续：<strong><a href="/algs/FibHeapImplRust.html">斐波那契堆的具体实现（Rust）</a></strong></h2>
+<h2 id="后续具体实现rust">后续：<strong><a href="/algs/FibHeapImplRust.html">具体实现（Rust）</a></strong></h2>
 
 <h2 id="引用">引用</h2>
 
