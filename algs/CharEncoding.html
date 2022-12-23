@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/minghu6.jpeg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            字符编码（Character Encoding）
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/CharEncoding.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        字符编码（Character Encoding）
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        Home
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/minghu6.jpeg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">字符编码（Character Encoding）</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      December 20, 2022
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="序言">序言</h2>
+
+<p>每次谈到技术标准的问题，就一定要探究一下相关历史，这样才能搞清楚一堆相关概念到底是什么意思，才能理解这个标准的意义到底在哪儿。</p>
+
+<p>通常这个历史发展有三个阶段：</p>
+
+<ol>
+  <li>蛮荒时期，各参与实体相对独立开发，各有各的标准；</li>
+  <li>过渡时期，为适应相关领域的发展，开始有一个统一的标准，但各实体的标准还继续起作用；</li>
+  <li>大一统时期，统一的标准已经统一了应用，蛮荒时期的标准被废弃，只存在于个别非常旧的应用里</li>
+</ol>
+
+<p>对于字符编码这一领域，形成的统一标准是 Unicode<sup id="fnref:unicode-wiki" role="doc-noteref"><a href="#fn:unicode-wiki" class="footnote" rel="footnote">1</a></sup> ，它首先是一个抽象字符的码点（code point）方案，就是对每个字符编一个对应的数字编号。另外还提供了如何把字符编号转换成二进制的字节数据的官方编码方案 (Unicode Transformation Format)： UTF-8，UTF-16</p>
+
+<p>Unicode 里的字符指得是“同义“而不是“同象“，“象”问题交给排版渲染系统，不过也存在为了兼容做出的特例，比如 CJK（中日韩）字符集里的宽字符标点符号等等，也就是仍然重复编码了一些抽象上同语义的字符。</p>
+
+<h2 id="unicode-码点方案">Unicode 码点方案</h2>
+
+<h3 id="码点空间">码点空间</h3>
+
+<p>码点编号的空间是 $[0, \text{0x10FFFF}]$ ，也就是 $[0, 16]$ 共 $17$ 个 $\text{0xFFFF}$ ，也就是 $17 * 2^{16}$ 。</p>
+
+<h3 id="码点平面plane">码点平面（plane）</h3>
+
+<p>每个 $2^{16}$ 代表一个平面，这样编号了 $17$ 个平面，其中标号 $0$ 的平面用于基本字符的分配，这个平面也被叫做基本平面（BMP，Basic Multilingual Plane），而其他的平面叫做补充平面（Supplementary Planes）。</p>
+
+<h3 id="码点块block">码点块（Block）</h3>
+
+<p>每个平面又可以划分成块儿并唯一命名，每个块大小不一，但都是 $16$ 的倍数，也就是起始点都是十六进制的 $0$ ，也就是 $\text{XXX0}$ 。</p>
+
+<h2 id="utf-8-编码">UTF-8 编码<sup id="fnref:utf8-wiki" role="doc-noteref"><a href="#fn:utf8-wiki" class="footnote" rel="footnote">2</a></sup></h2>
+
+<p>以单字节为单位的变长编码</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Bytes Number</th>
+      <th>Patten</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>one byte</td>
+      <td>$\text{0xxxxxxx}$</td>
+    </tr>
+    <tr>
+      <td>two bytes</td>
+      <td>$\text{110xxxxx 10xxxxxx}$</td>
+    </tr>
+    <tr>
+      <td>three bytes</td>
+      <td>$\text{1110xxxx 10xxxxxx 10xxxxxx}$</td>
+    </tr>
+    <tr>
+      <td>four bytes</td>
+      <td>$\text{11110xxx 10xxxxxx 10xxxxxx 10xxxxxx}$</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="实现范例">实现范例</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="k">super</span><span class="p">::</span><span class="n">BitLen</span><span class="p">;</span>
+
+<span class="nd">#[derive(Debug,</span> <span class="nd">Clone,</span> <span class="nd">Copy)]</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF8CharSt</span> <span class="p">{</span>
+    <span class="n">First</span> <span class="p">{</span> <span class="n">partial</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span> <span class="n">nbyte</span><span class="p">:</span> <span class="nb">u8</span> <span class="p">},</span>
+    <span class="nf">Continue</span><span class="p">(</span><span class="nb">u8</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Debug)]</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF8DecodeError</span> <span class="p">{</span>
+    <span class="cd">/// Invalid Unicode</span>
+    <span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
+
+    <span class="cd">/// &gt; 1111_0xxx</span>
+    <span class="nf">OutRange</span><span class="p">(</span><span class="nb">u8</span><span class="p">),</span>
+
+    <span class="cd">/// 10xx_xxxx</span>
+    <span class="nf">TrailAtCodePoint</span><span class="p">(</span><span class="nb">u8</span><span class="p">),</span>
+
+    <span class="cd">///</span>
+    <span class="n">UnexpectedCodePoint</span> <span class="p">{</span>
+        <span class="n">expect</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
+        <span class="n">found</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
+    <span class="p">},</span>
+
+    <span class="n">UnexpectedEOF</span> <span class="p">{</span>
+        <span class="n">expect</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
+        <span class="n">found</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Debug)]</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF8EncodeError</span> <span class="p">{</span>
+    <span class="cd">/// Invalid Unicode</span>
+    <span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="nb">u16</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">UTF8Str</span> <span class="p">{</span>
+    <span class="n">inner</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span> <span class="n">TryFrom</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">UTF8CharSt</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">Error</span> <span class="o">=</span> <span class="n">UTF8DecodeError</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">try_from</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="nb">u8</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="k">Self</span><span class="p">::</span><span class="n">Error</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nf">Ok</span><span class="p">(</span><span class="k">if</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="mi">0x007F</span> <span class="p">{</span>
+            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
+                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span>
+                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="c1">// 10xx_xxxx, 0x80 - 0xBF</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="mi">0x80</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xBF</span> <span class="p">{</span>
+            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">Continue</span><span class="p">(</span><span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="c1">// 0011_1111</span>
+        <span class="p">}</span>
+        <span class="c1">// 110x_xxxx, 0xC0 - 0xDF</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xC0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xDF</span> <span class="p">{</span>
+            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
+                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x1F</span><span class="p">,</span> <span class="c1">// 0001_1111</span>
+                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="c1">// 1110_xxxx, 0xE0 - 0xEF</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xE0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xEF</span> <span class="p">{</span>
+            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
+                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x0F</span><span class="p">,</span> <span class="c1">// 0000_1111</span>
+                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="c1">// 1111_0xxx, 0xF0 - 0xF7</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xF0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xF7</span> <span class="p">{</span>
+            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
+                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x07</span><span class="p">,</span> <span class="c1">// 0000_0111</span>
+                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="nf">OutRange</span><span class="p">(</span><span class="n">c</span><span class="p">));</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span> <span class="n">UTF8Str</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push_char</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">_c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="p">{}</span>
+
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">to_string</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+        <span class="k">unsafe</span> <span class="p">{</span> <span class="nn">String</span><span class="p">::</span><span class="nf">from_utf8_unchecked</span><span class="p">(</span><span class="k">self</span><span class="py">.inner</span><span class="nf">.clone</span><span class="p">())</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="cd">/// Write order (Big endian)</span>
+<span class="cd">/// -&gt; (step, char)</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">next_utf8_unicode</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">u8</span><span class="p">,</span> <span class="nb">char</span><span class="p">),</span> <span class="n">UTF8DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">ch_1st</span> <span class="o">=</span> <span class="n">bytes</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="nd">#[allow(unused)]</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="mi">0u32</span><span class="p">;</span>
+    <span class="k">let</span> <span class="n">n</span><span class="p">;</span>
+
+    <span class="k">match</span> <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">try_from</span><span class="p">(</span><span class="n">ch_1st</span><span class="p">)</span><span class="o">?</span> <span class="p">{</span>
+        <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span> <span class="n">partial</span><span class="p">,</span> <span class="n">nbyte</span> <span class="p">}</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="n">partial</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">;</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">nbyte</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">Continue</span><span class="p">(</span><span class="n">_partial</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="nf">TrailAtCodePoint</span><span class="p">(</span><span class="n">ch_1st</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="k">as</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="n">UnexpectedEOF</span> <span class="p">{</span>
+            <span class="n">expect</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+            <span class="n">found</span><span class="p">:</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">,</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">n</span> <span class="k">as</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">match</span> <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">try_from</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">?</span> <span class="p">{</span>
+            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span> <span class="n">partial</span><span class="p">:</span> <span class="n">_</span><span class="p">,</span> <span class="n">nbyte</span><span class="p">:</span> <span class="n">_</span> <span class="p">}</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="n">UnexpectedCodePoint</span> <span class="p">{</span>
+                    <span class="n">expect</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+                    <span class="n">found</span><span class="p">:</span> <span class="n">i</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">,</span>
+                <span class="p">});</span>
+            <span class="p">}</span>
+            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">Continue</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">acc</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="p">|</span> <span class="n">partial</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">acc</span> <span class="o">&amp;&amp;</span> <span class="n">acc</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="n">acc</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">ch</span> <span class="o">=</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="nn">char</span><span class="p">::</span><span class="nf">from_u32_unchecked</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="p">};</span>
+
+    <span class="nf">Ok</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">ch</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf8_bytes</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">UTF8DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">chars</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">nbytes</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="nf">next_utf8_unicode</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bytes</span><span class="p">[</span><span class="n">step</span><span class="o">..</span><span class="p">])</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="n">step</span> <span class="o">+=</span> <span class="n">nbytes</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
+        <span class="n">chars</span><span class="nf">.push</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span> <span class="k">break</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">chars</span><span class="p">);</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf8_char</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">ch</span><span class="p">:</span> <span class="nb">u32</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="n">UTF8EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+
+    <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">ch</span> <span class="o">&amp;&amp;</span> <span class="n">ch</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8EncodeError</span><span class="p">::</span><span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">bitlen</span> <span class="o">=</span> <span class="n">ch</span><span class="nf">.bit_len</span><span class="p">();</span>
+
+    <span class="c1">// 7</span>
+    <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">7</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 5 + 6 = 11</span>
+    <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">11</span> <span class="p">{</span>
+        <span class="c1">// + 0b10xx_xxxx</span>
+        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
+
+        <span class="c1">// + 0b110x_xxxx, patch 5 bit, or 0xC0</span>
+        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x1F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0xC0</span><span class="p">;</span>
+
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 4 + 6 * 2 = 16</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">16</span> <span class="p">{</span>
+        <span class="c1">// + 0b10xx_xxxx</span>
+        <span class="k">let</span> <span class="n">byte_3rd</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
+
+        <span class="c1">// + 0b10xx_xxxx</span>
+        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
+
+        <span class="c1">// + 0b1110_xxxx, patch 4 bit, or 0xE0</span>
+        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0xF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0xE0</span><span class="p">;</span>
+
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_3rd</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 3 + 6 * 3 = 21</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">21</span> <span class="p">{</span>
+        <span class="c1">// + 0b10xx_xxxx</span>
+        <span class="k">let</span> <span class="n">byte_4th</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
+
+        <span class="c1">// + 0b10xx_xxxx</span>
+        <span class="k">let</span> <span class="n">byte_3rd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
+
+        <span class="c1">// + 0b10xx_xxxx</span>
+        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
+
+        <span class="c1">// + 0b1111_1xxx, patch 4 bit, or 0xE0</span>
+        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">18</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x7</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0xF8</span><span class="p">;</span>
+
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_3rd</span><span class="p">);</span>
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_4th</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="nd">unreachable!</span><span class="p">(</span><span class="s">"ch: {}, ({})"</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">bitlen</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(())</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h2 id="utf-16">UTF-16</h2>
+
+<ol>
+  <li>
+    <p>对于基本平面中的码点，可以直接用对应 16 bit 单元表示的数字代表，不过实际的表示范围要小一点，是 $\text{0000 - DFFF}$ 和 $\text{E000 - FFFF}$</p>
+  </li>
+  <li>
+    <p>对于补充平面上的码点，用两个 16 bit 单元构造，方法如下：</p>
+  </li>
+</ol>
+
+\[\begin{array}{l}
+\texttt{let}\ \text{codepoint U}\\
+\texttt{let}\ \text{U'} \gets \text{U - 0x10000}\\
+\texttt{let}\ \text{yyyyyyyyyyxxxxxxxxxx} \gets \text{U'}\\
+\\
+\texttt{Encode Into:} \\
+\\
+\text{110110yy yyyyyyyy} \\
+\text{110111xx xxxxxxxx}
+\end{array}\]
+
+<p>共 $20$ 位，覆盖 $16$ 个补充平面</p>
+
+<h3 id="实现范例-1">实现范例</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">const</span> <span class="n">BOM_U16_LE</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xFFFE</span><span class="p">;</span>
+<span class="k">pub</span> <span class="k">const</span> <span class="n">BOM_U16_BE</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xFEFF</span><span class="p">;</span>
+
+<span class="nd">macro_rules!</span> <span class="n">split_u16</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$name:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">((</span><span class="nv">$name</span> <span class="o">&amp;</span> <span class="mi">0xFF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">,</span> <span class="p">(</span><span class="nv">$name</span> <span class="o">&amp;</span> <span class="mi">0xFF00</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">)</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="nd">#[derive(Debug)]</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF16EncodeError</span> <span class="p">{</span>
+    <span class="cd">/// Invalid Unicode</span>
+    <span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
+    <span class="nf">Overflow</span><span class="p">(</span><span class="nb">u32</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Debug)]</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF16DecodeError</span> <span class="p">{</span>
+    <span class="nf">Overflow</span><span class="p">(</span><span class="nb">u32</span><span class="p">),</span>
+    <span class="n">UnexpectedEOF</span><span class="p">,</span>
+    <span class="n">UnfinishedUnits</span><span class="p">,</span>
+    <span class="n">ExpectHiFoundLow</span><span class="p">,</span>
+    <span class="n">ExpectLowFoundHi</span><span class="p">,</span>
+    <span class="n">ExpectHiFoundBMP</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Debug)]</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF16UnitSt</span> <span class="p">{</span>
+    <span class="cd">/// Basic Multilingual Plane</span>
+    <span class="nf">BMP</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
+
+    <span class="cd">/// Low surrogates, second unit, W2</span>
+    <span class="nf">Lo</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
+
+    <span class="cd">/// Hign surrogates, first unit, W1</span>
+    <span class="nf">Hi</span><span class="p">(</span><span class="nb">u16</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">impl</span> <span class="n">TryFrom</span><span class="o">&lt;</span><span class="nb">u16</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">UTF16UnitSt</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">Error</span> <span class="o">=</span> <span class="n">UTF16DecodeError</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">try_from</span><span class="p">(</span><span class="n">unit</span><span class="p">:</span> <span class="nb">u16</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="k">Self</span><span class="p">::</span><span class="n">Error</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nf">Ok</span><span class="p">(</span><span class="k">if</span> <span class="n">unit</span> <span class="o">&lt;=</span> <span class="mi">0xD7FF</span> <span class="p">{</span>
+            <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">unit</span> <span class="o">&amp;&amp;</span> <span class="n">unit</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">unit</span> <span class="o">&lt;=</span> <span class="mi">0xDBFF</span> <span class="p">{</span>  <span class="c1">// 0b_1101_10xx_xxxx_xxxx</span>
+                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Lo</span><span class="p">(</span><span class="n">unit</span> <span class="o">&amp;</span> <span class="mi">0x03FF</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>               <span class="c1">// 0b_1101_11xx_xxxx_xxxx</span>
+                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Hi</span><span class="p">(</span><span class="n">unit</span> <span class="o">&amp;</span> <span class="mi">0x03FF</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>  <span class="c1">// 0xE000 &lt;= unit</span>
+            <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+        <span class="p">})</span>
+
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf16_le</span><span class="p">(</span>
+    <span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">ch</span><span class="p">:</span> <span class="nb">u32</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="n">UTF16EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">ch</span> <span class="o">&amp;&amp;</span> <span class="n">ch</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16EncodeError</span><span class="p">::</span><span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="k">if</span> <span class="n">ch</span> <span class="o">&lt;</span> <span class="mi">0x01_00_00</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0xFF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0xFF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
+        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="mi">0x1_00_00</span> <span class="o">&lt;=</span> <span class="n">ch</span> <span class="o">&amp;&amp;</span> <span class="n">ch</span> <span class="o">&lt;=</span> <span class="mi">0x10_FF_FF</span> <span class="p">{</span>
+        <span class="c1">// U' = yyyyyyyyyyxxxxxxxxxx  // U - 0x10000</span>
+        <span class="c1">// W1 = 110110yyyyyyyyyy      // 0xD800 + yyyyyyyyyy</span>
+        <span class="c1">// W2 = 110111xxxxxxxxxx      // 0xDC00 + xxxxxxxxxx</span>
+
+        <span class="c1">// low bits</span>
+        <span class="c1">// 0b_1101_10_00_0000_0000 (10 bit) ..., 0xD800</span>
+        <span class="k">let</span> <span class="n">unit_1st</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xDC00</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
+
+        <span class="c1">// high bits 0b_1101_11_00_0000_0000, 0xDC00</span>
+        <span class="k">let</span> <span class="n">unit_2nd</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xD800</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">10</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">unit_1st</span><span class="p">);</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">)</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">unit_2nd</span><span class="p">);</span>
+
+        <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">]);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16EncodeError</span><span class="p">::</span><span class="nf">Overflow</span><span class="p">(</span><span class="n">ch</span><span class="p">));</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+
+
+<span class="k">fn</span> <span class="nf">next_u16_unit</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">UTF16UnitSt</span><span class="p">,</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">UnexpectedEOF</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bytes</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+
+    <span class="k">let</span> <span class="n">unit</span> <span class="o">=</span> <span class="p">((</span><span class="n">b1</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="p">|</span> <span class="n">b0</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
+
+    <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">try_from</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="cd">/// -&gt; (nbytes, utf16st)</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">next_u16_le_unicode</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">u8</span><span class="p">,</span> <span class="nb">char</span><span class="p">),</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="k">match</span> <span class="nf">next_u16_unit</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="o">?</span> <span class="p">{</span>
+        <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nn">char</span><span class="p">::</span><span class="nf">from_u32</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">())</span>
+        <span class="p">},</span>
+        <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Lo</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">match</span> <span class="nf">next_u16_unit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bytes</span><span class="p">[</span><span class="mi">2</span><span class="o">..</span><span class="p">])</span><span class="o">?</span> <span class="p">{</span>
+                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">ExpectHiFoundBMP</span><span class="p">);</span>
+                <span class="p">},</span>
+                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Lo</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">ExpectHiFoundLow</span><span class="p">);</span>
+                <span class="p">},</span>
+                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Hi</span><span class="p">(</span><span class="n">hi</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nn">char</span><span class="p">::</span><span class="nf">from_u32</span><span class="p">((</span><span class="n">hi</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span> <span class="p">|</span> <span class="n">lo</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">())</span>
+                <span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Hi</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">ExpectLowFoundHi</span><span class="p">);</span>
+        <span class="p">},</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf16_le</span><span class="p">(</span>
+    <span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">chars</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">nbytes</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="nf">next_u16_le_unicode</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bytes</span><span class="p">[</span><span class="n">step</span><span class="o">..</span><span class="p">])</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="n">step</span> <span class="o">+=</span> <span class="n">nbytes</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
+        <span class="n">chars</span><span class="nf">.push</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span> <span class="k">break</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">chars</span><span class="p">);</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个实现是考虑已知字节序是小段序的情况，关于 Unicode 有一个 BOM的概念，用来暗示字节序，如下面介绍 。</p>
+
+<h2 id="bombyte-order-mark">BOM（Byte order mark）</h2>
+
+<p>BOM 是放在文本流的开头，有特殊用途特别的 Unicode 字符：</p>
+
+<ol>
+  <li>声明字节序</li>
+  <li>表明文本具有很高置信水平地采用了 Unicode 编码</li>
+  <li>声明具体的 Unicode 编码方案</li>
+</ol>
+
+<p>UTF-16 ：UTF-16 小端序 FF FE ，UTF-16 大端序 FE FF</p>
+
+<p>UTF-8：EF BB BF</p>
+
+<p>GB18030：84 31 95 33</p>
+
+<p>主要有用的是 UTF-16，因为对基本平面上的码点使用了双字节的数字表示，需要明确字节序才能正确编码，而诸如 UTF-8 通常就加 BOM ，因为显然字节序可以很容易地探测出来。</p>
+
+<h2 id="gb18030">GB18030</h2>
+
+<ol>
+  <li>最早的码点并编码方案是1980年的 GB2312，双字节，构成，主要是简体和部分繁体以及其他国语言<sup id="fnref:gb2312-wiki" role="doc-noteref"><a href="#fn:gb2312-wiki" class="footnote" rel="footnote">3</a></sup>；</li>
+  <li>在1984年，台湾地区的五家厂商退出了繁体字编码的 Big5 ，这两个编码的转换问题是早期繁体中文游戏经常面临的问题；</li>
+  <li>在1993年，随着 Unicode 1.1 的出现，国标推出了对应的 GB13000.1-93 ， GBK 就是一个利用 GB2312 未使用码点装载 GB13000.1-93 中字符的 GB2312 拓展；</li>
+  <li>在2000年，GB18030 第一版发布，到最新版，已经实现了 Unicode 所有码点： 单字节用于英欧字符，双字节用于兼容 GBK ，四字节用于 编码其他 Unicode</li>
+</ol>
+
+<h2 id="比较">比较</h2>
+
+<p>首先虽然具体码点不一样，但 GB18030 毕竟编码了 Unicode 标准下的所有字符，也可以算非官方的 UTF 实现。</p>
+
+<p>比较 UTF-8、UTF-16、GB18030：</p>
+
+<ol>
+  <li>UTF-16首先出局，它在任何情况下的空间性能都差于 GB18030；</li>
+  <li>对于东亚字符 GB18030 显然是最好的选择；</li>
+  <li>其他，It depends ，如果字符在拓展 GBK 中，那么 GB18030 仍然是最好的，否则如果在 UTF-8 下能用三字节表示，那就是 UTF-8 更优，如果 UTF-8 也是四字节表示，那就相当</li>
+</ol>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:unicode-wiki" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/Unicode <a href="#fnref:unicode-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:utf8-wiki" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/UTF-8 <a href="#fnref:utf8-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:gb2312-wiki" role="doc-endnote">
+      <p>https://en.wikipedia.org/wiki/GB_2312 <a href="#fnref:gb2312-wiki" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
