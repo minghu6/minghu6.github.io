@@ -1,4 +1,106 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-12-23T21:11:01+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">字符编码（Character Encoding）</title><link href="/algs/CharEncoding.html" rel="alternate" type="text/html" title="字符编码（Character Encoding）" /><published>2022-12-20T00:00:00+08:00</published><updated>2022-12-20T00:00:00+08:00</updated><id>/algs/CharEncoding</id><content type="html" xml:base="/algs/CharEncoding.html"><![CDATA[<h2 id="序言">序言</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2022-12-26T12:16:46+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">编译器前端基础</title><link href="/algs/CompilerFrontEndBasic.html" rel="alternate" type="text/html" title="编译器前端基础" /><published>2022-12-23T00:00:00+08:00</published><updated>2022-12-23T00:00:00+08:00</updated><id>/algs/CompilerFrontEndBasic</id><content type="html" xml:base="/algs/CompilerFrontEndBasic.html"><![CDATA[<h2 id="关于龙书">关于龙书</h2>
+
+<p>本篇介绍的基本概念来自于经典的龙书（<em>Compilers Principles, Techniques and Tools</em>））。而整个龙书，不幸地是，很多技术概念完全是以 类C 语言为前提做的介绍，从名字上，从章节目录上感到应该有帮助，实际没用。</p>
+
+<p>另外对于 LR，LL 这些，似乎专注于做一个通用编译器的生成器，而不是编译器，而现在既然已有大量的通用生成器，但21世纪以来编程语言的发展趋势，是手写编译器，这背后一个重要原因机器性能的发展带来的质的变化：编译器性能得到了释放，手写可以得到更定制化地，更丰富特性地满足语言要求目标的复杂编译器。</p>
+
+<p>在完成对于这些概念学习后，我得到的最大收获是这些东西确实没什么用。这里就不得不提一下计算机科学领域和某些领域一样，很喜欢把一些平常的概念，易见的规律冠以专有名词，搞得明明一眼明了的简单事情变得特别抽象，下面就有一个鲜活的例子。</p>
+
+<p>因此我们对于这些概念的介绍也将专注于背后的算法思想，而不是照本宣科。</p>
+
+<h2 id="再探-first-set--follow-set">再探 First Set &amp;&amp; Follow Set</h2>
+
+<p>显然，但有必要强调，不管是 First Set 还是 Follow Set 针对得都是 <strong>非终结符（non-terminal）</strong></p>
+
+<p>在提这两个概念的时候，我们假设语法规则以巴科斯范式（Backus Normal Form）的形式给出</p>
+
+<h3 id="first-set">First Set</h3>
+
+<p>是指，对于一个非终结符号，它的每条产生式（production）的首个（first）终结符（terminal）的集合 （包括特殊的 ε 符号）</p>
+
+<h3 id="follow-set">Follow Set</h3>
+
+<p>是指，对于一个非终结符号，在所有产生式构成的语法上，紧跟在该非终结符后面的终结符（包括特殊的 $ 符号表示语法的终结）</p>
+
+<h2 id="shift-reduce">Shift-reduce</h2>
+
+<p>LR（Leftmost rightmost-derivation）parsing 的核心操作是 shift-reduce ，它是一个有栈结构的优先状态机，要么暂时处理不了推入栈中，要么弹出栈中元素向上合并。</p>
+
+<p>在手写编译器过程中，LR完全是用不上的，但可以在一点上发挥重要作用，就是按照操作符的优先级处理中缀表达式：就是把用二元中缀操作符处理成树型结构。</p>
+
+<p>可以用后缀表达式也就是逆波兰式（Reverse Polish Notation，RPN）也就是后根序（Post-order，LRN（left right node））遍历的形式方便地表示这棵树。</p>
+
+<p>如下是代码片段，完整见<sup id="fnref:m6parser-kit" role="doc-noteref"><a href="#fn:m6parser-kit" class="footnote" rel="footnote">1</a></sup></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Return Reverse Polish Notation (RPN) form (or Post-order, LRN(left right node) traversal)</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">parse_infix_expr</span><span class="o">&lt;</span><span class="n">O</span><span class="p">:</span> <span class="n">Bop</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">bops</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">O</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">pris</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">InfixExpr</span><span class="o">&lt;</span><span class="n">O</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="n">bops</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pris</span><span class="nf">.len</span><span class="p">());</span>
+    <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">bops</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="c1">// Resort the Infix expression by precedence (they don't change left most expr srcloc)</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">out_bop_stack</span> <span class="o">=</span> <span class="nn">Stack</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="n">bops</span><span class="p">);</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">out_pri_stack</span> <span class="o">=</span> <span class="nn">Stack</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="n">pris</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">staging_bop_stack</span><span class="p">:</span> <span class="n">Stack</span><span class="o">&lt;</span><span class="n">O</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nd">stack!</span><span class="p">[];</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">expr_stack</span> <span class="o">=</span> <span class="nd">stack!</span><span class="p">[</span><span class="nn">InfixExpr</span><span class="p">::</span><span class="nf">E</span><span class="p">(</span><span class="n">out_pri_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">())];</span>
+
+    <span class="c1">// out_bop_stack would be same with out_pri_stack in size.</span>
+    <span class="k">while</span> <span class="o">!</span><span class="p">(</span><span class="n">out_bop_stack</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">staging_bop_stack</span><span class="nf">.is_empty</span><span class="p">())</span> <span class="p">{</span>
+        <span class="c1">// Reduce</span>
+        <span class="k">if</span> <span class="n">out_bop_stack</span><span class="nf">.is_empty</span><span class="p">()</span>
+            <span class="p">||</span> <span class="o">!</span><span class="n">staging_bop_stack</span><span class="nf">.is_empty</span><span class="p">()</span>
+                <span class="o">&amp;&amp;</span> <span class="n">staging_bop_stack</span><span class="nf">.peek</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.precedence</span><span class="p">()</span>
+                    <span class="c1">// &gt;= for left associative operator</span>
+                    <span class="o">&gt;=</span> <span class="n">out_bop_stack</span><span class="nf">.peek</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.precedence</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">bop</span> <span class="o">=</span> <span class="n">staging_bop_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">rhexpr</span> <span class="o">=</span> <span class="n">expr_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">lfexpr</span> <span class="o">=</span> <span class="n">expr_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+            <span class="n">expr_stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">lfexpr</span><span class="nf">.combine</span><span class="p">(</span><span class="n">bop</span><span class="p">,</span> <span class="n">rhexpr</span><span class="p">));</span>
+        <span class="p">}</span>
+        <span class="c1">// Shift</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">staging_bop_stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">out_bop_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">());</span>
+            <span class="n">expr_stack</span><span class="nf">.push</span><span class="p">(</span><span class="nn">InfixExpr</span><span class="p">::</span><span class="nf">E</span><span class="p">(</span><span class="n">out_pri_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">expr_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h2 id="ll">LL</h2>
+
+<p>LL （Leftmost leftmost derivation）parsing 是一个从上到下的解析过程。</p>
+
+<p>最常见的问题是左递归，就是某个非终结符的某个产生式的第一项是一个非终结符，这个非终结符直接或间接地会导会这个非终结符本身。</p>
+
+<p>但这些都是形式推导方面的问题，通过重构生成式，使得终结符出现在产生式第一项可以解决这个问题。</p>
+
+<h3 id="ll1">LL(1)</h3>
+
+<p>参考<sup id="fnref:rust-ll1engine" role="doc-noteref"><a href="#fn:rust-ll1engine" class="footnote" rel="footnote">2</a></sup></p>
+
+<h3 id="lln">LL(n)</h3>
+
+<p>基于状态机而不是形式符号推导</p>
+
+<p>在手写编译器过程中，几乎不会考虑到形式推导里面的什么左递归什么二元歧义。</p>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:m6parser-kit" role="doc-endnote">
+      <p>https://github.com/minghu6/m6parserkit <a href="#fnref:m6parser-kit" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:rust-ll1engine" role="doc-endnote">
+      <p>https://github.com/minghu6/rust-ll1engine <a href="#fnref:rust-ll1engine" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[关于龙书]]></summary></entry><entry><title type="html">字符编码（Character Encoding）</title><link href="/algs/CharEncoding.html" rel="alternate" type="text/html" title="字符编码（Character Encoding）" /><published>2022-12-20T00:00:00+08:00</published><updated>2022-12-20T00:00:00+08:00</updated><id>/algs/CharEncoding</id><content type="html" xml:base="/algs/CharEncoding.html"><![CDATA[<h2 id="序言">序言</h2>
 
 <p>每次谈到技术标准的问题，就一定要探究一下相关历史，这样才能搞清楚一堆相关概念到底是什么意思，才能理解这个标准的意义到底在哪儿。</p>
 
@@ -3690,15 +3792,4 @@ rsync <span class="nt">-a</span> LargeDir/ LargeDir2
       <p>https://www.suse.com/support/kb/doc/?id=000018399 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[问题背景]]></summary></entry><entry><title type="html">kernel crash dump</title><link href="/os/kernel-crash-dump.html" rel="alternate" type="text/html" title="kernel crash dump" /><published>2022-09-01T00:00:00+08:00</published><updated>2022-09-01T00:00:00+08:00</updated><id>/os/kernel-crash-dump</id><content type="html" xml:base="/os/kernel-crash-dump.html"><![CDATA[<h2 id="ubuntu">Ubuntu</h2>
-
-<p><a href="https://ubuntu.com/server/docs/kernel-crash-dump">install linux-crashdump</a></p>
-
-<h2 id="dump-output">Dump Output</h2>
-
-<p><code class="language-plaintext highlighter-rouge">alias crash="crash /usr/lib/debug/boot/vmlinux-$(uname -r)"</code></p>
-
-<p><code class="language-plaintext highlighter-rouge">crash /var/crash/&lt;yyyymmmmhhmm&gt;/dump.&lt;yyyymmmmhhmm&gt;</code></p>
-
-<p>bt: backtrace
-log: kernel log</p>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[Ubuntu]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;os&quot;]" /><summary type="html"><![CDATA[问题背景]]></summary></entry></feed>

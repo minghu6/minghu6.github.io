@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/minghu6.jpeg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            编译器前端基础
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/CompilerFrontEndBasic.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        编译器前端基础
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        Home
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/minghu6.jpeg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">编译器前端基础</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      December 23, 2022
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="关于龙书">关于龙书</h2>
+
+<p>本篇介绍的基本概念来自于经典的龙书（<em>Compilers Principles, Techniques and Tools</em>））。而整个龙书，不幸地是，很多技术概念完全是以 类C 语言为前提做的介绍，从名字上，从章节目录上感到应该有帮助，实际没用。</p>
+
+<p>另外对于 LR，LL 这些，似乎专注于做一个通用编译器的生成器，而不是编译器，而现在既然已有大量的通用生成器，但21世纪以来编程语言的发展趋势，是手写编译器，这背后一个重要原因机器性能的发展带来的质的变化：编译器性能得到了释放，手写可以得到更定制化地，更丰富特性地满足语言要求目标的复杂编译器。</p>
+
+<p>在完成对于这些概念学习后，我得到的最大收获是这些东西确实没什么用。这里就不得不提一下计算机科学领域和某些领域一样，很喜欢把一些平常的概念，易见的规律冠以专有名词，搞得明明一眼明了的简单事情变得特别抽象，下面就有一个鲜活的例子。</p>
+
+<p>因此我们对于这些概念的介绍也将专注于背后的算法思想，而不是照本宣科。</p>
+
+<h2 id="再探-first-set--follow-set">再探 First Set &amp;&amp; Follow Set</h2>
+
+<p>显然，但有必要强调，不管是 First Set 还是 Follow Set 针对得都是 <strong>非终结符（non-terminal）</strong></p>
+
+<p>在提这两个概念的时候，我们假设语法规则以巴科斯范式（Backus Normal Form）的形式给出</p>
+
+<h3 id="first-set">First Set</h3>
+
+<p>是指，对于一个非终结符号，它的每条产生式（production）的首个（first）终结符（terminal）的集合 （包括特殊的 ε 符号）</p>
+
+<h3 id="follow-set">Follow Set</h3>
+
+<p>是指，对于一个非终结符号，在所有产生式构成的语法上，紧跟在该非终结符后面的终结符（包括特殊的 $ 符号表示语法的终结）</p>
+
+<h2 id="shift-reduce">Shift-reduce</h2>
+
+<p>LR（Leftmost rightmost-derivation）parsing 的核心操作是 shift-reduce ，它是一个有栈结构的优先状态机，要么暂时处理不了推入栈中，要么弹出栈中元素向上合并。</p>
+
+<p>在手写编译器过程中，LR完全是用不上的，但可以在一点上发挥重要作用，就是按照操作符的优先级处理中缀表达式：就是把用二元中缀操作符处理成树型结构。</p>
+
+<p>可以用后缀表达式也就是逆波兰式（Reverse Polish Notation，RPN）也就是后根序（Post-order，LRN（left right node））遍历的形式方便地表示这棵树。</p>
+
+<p>如下是代码片段，完整见<sup id="fnref:m6parser-kit" role="doc-noteref"><a href="#fn:m6parser-kit" class="footnote" rel="footnote">1</a></sup></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Return Reverse Polish Notation (RPN) form (or Post-order, LRN(left right node) traversal)</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">parse_infix_expr</span><span class="o">&lt;</span><span class="n">O</span><span class="p">:</span> <span class="n">Bop</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">bops</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">O</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">pris</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">InfixExpr</span><span class="o">&lt;</span><span class="n">O</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="n">bops</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pris</span><span class="nf">.len</span><span class="p">());</span>
+    <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">bops</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="c1">// Resort the Infix expression by precedence (they don't change left most expr srcloc)</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">out_bop_stack</span> <span class="o">=</span> <span class="nn">Stack</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="n">bops</span><span class="p">);</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">out_pri_stack</span> <span class="o">=</span> <span class="nn">Stack</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="n">pris</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">staging_bop_stack</span><span class="p">:</span> <span class="n">Stack</span><span class="o">&lt;</span><span class="n">O</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nd">stack!</span><span class="p">[];</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">expr_stack</span> <span class="o">=</span> <span class="nd">stack!</span><span class="p">[</span><span class="nn">InfixExpr</span><span class="p">::</span><span class="nf">E</span><span class="p">(</span><span class="n">out_pri_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">())];</span>
+
+    <span class="c1">// out_bop_stack would be same with out_pri_stack in size.</span>
+    <span class="k">while</span> <span class="o">!</span><span class="p">(</span><span class="n">out_bop_stack</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">staging_bop_stack</span><span class="nf">.is_empty</span><span class="p">())</span> <span class="p">{</span>
+        <span class="c1">// Reduce</span>
+        <span class="k">if</span> <span class="n">out_bop_stack</span><span class="nf">.is_empty</span><span class="p">()</span>
+            <span class="p">||</span> <span class="o">!</span><span class="n">staging_bop_stack</span><span class="nf">.is_empty</span><span class="p">()</span>
+                <span class="o">&amp;&amp;</span> <span class="n">staging_bop_stack</span><span class="nf">.peek</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.precedence</span><span class="p">()</span>
+                    <span class="c1">// &gt;= for left associative operator</span>
+                    <span class="o">&gt;=</span> <span class="n">out_bop_stack</span><span class="nf">.peek</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.precedence</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">bop</span> <span class="o">=</span> <span class="n">staging_bop_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">rhexpr</span> <span class="o">=</span> <span class="n">expr_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">lfexpr</span> <span class="o">=</span> <span class="n">expr_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+            <span class="n">expr_stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">lfexpr</span><span class="nf">.combine</span><span class="p">(</span><span class="n">bop</span><span class="p">,</span> <span class="n">rhexpr</span><span class="p">));</span>
+        <span class="p">}</span>
+        <span class="c1">// Shift</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">staging_bop_stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">out_bop_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">());</span>
+            <span class="n">expr_stack</span><span class="nf">.push</span><span class="p">(</span><span class="nn">InfixExpr</span><span class="p">::</span><span class="nf">E</span><span class="p">(</span><span class="n">out_pri_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">expr_stack</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h2 id="ll">LL</h2>
+
+<p>LL （Leftmost leftmost derivation）parsing 是一个从上到下的解析过程。</p>
+
+<p>最常见的问题是左递归，就是某个非终结符的某个产生式的第一项是一个非终结符，这个非终结符直接或间接地会导会这个非终结符本身。</p>
+
+<p>但这些都是形式推导方面的问题，通过重构生成式，使得终结符出现在产生式第一项可以解决这个问题。</p>
+
+<h3 id="ll1">LL(1)</h3>
+
+<p>参考<sup id="fnref:rust-ll1engine" role="doc-noteref"><a href="#fn:rust-ll1engine" class="footnote" rel="footnote">2</a></sup></p>
+
+<h3 id="lln">LL(n)</h3>
+
+<p>基于状态机而不是形式符号推导</p>
+
+<p>在手写编译器过程中，几乎不会考虑到形式推导里面的什么左递归什么二元歧义。</p>
+
+<h2 id="引用">引用</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:m6parser-kit" role="doc-endnote">
+      <p>https://github.com/minghu6/m6parserkit <a href="#fnref:m6parser-kit" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:rust-ll1engine" role="doc-endnote">
+      <p>https://github.com/minghu6/rust-ll1engine <a href="#fnref:rust-ll1engine" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
