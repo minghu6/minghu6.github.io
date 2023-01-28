@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LLVM IR入门笔记
+            BST(4) - 伸展树（Splay Tree）
         
     "
 />
 
-<meta property="og:url" content="//lang/llvm_notes_0.html" />
+<meta property="og:url" content="//algs/BST-4-Splay-Tree.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LLVM IR入门笔记
+        BST(4) - 伸展树（Splay Tree）
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LLVM IR入门笔记</h1>
+    <h1 class="post__title__text">BST(4) - 伸展树（Splay Tree）</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/lang.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
-            ProgLang
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      October 13, 2021
+      January 19, 2023
     </div>
     
   </div>
@@ -127,25 +127,21 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="function">Function</h2>
+    <div class="post__content"><h2 id="基本概念">基本概念</h2>
 
-<p>任何函数体 必须有一个<code class="language-plaintext highlighter-rouge">ret</code>指令显式地提供返回值, 包括return void.</p>
+<h2 id="基础定义">基础定义</h2>
 
-<h2 id="basic-block">Basic Block</h2>
+<h3 id="共同结构">共同结构</h3>
 
-<p>block只能是function的下层结构, 一个function value至少有一个block, 多个block按照固定顺序排列.</p>
+<h3 id="平衡校验">平衡校验</h3>
 
-<p>也就是说block不能嵌套, 只能顺序排列.</p>
+<h2 id="重平衡">重平衡</h2>
 
-<p>函数体的入口是first block, <strong>但后续的基本块必须通过条件或非条件的分支指令来手动连接</strong>, 否则通常会提示:</p>
+<h3 id="插入重平衡">插入重平衡</h3>
 
-<p><code class="language-plaintext highlighter-rouge">Basic Block in function 'xxx' does not have terminator!</code></p>
+<h3 id="删除重平衡">删除重平衡</h3>
 
-<p>这是因为<code class="language-plaintext highlighter-rouge">ret</code> 指令所在的最后一个块没有被连接上, 所以函数检查不到该指令, 所以判断该函数<code class="language-plaintext highlighter-rouge">xxx</code>的第一个block没有结束</p>
-
-<h2 id="参考">参考:</h2>
-
-<p>^1. https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/</p>
+<h2 id="总装">总装</h2>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

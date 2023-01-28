@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LLVM IR入门笔记
+            BST(2) - RB(1) - 左偏红黑树
         
     "
 />
 
-<meta property="og:url" content="//lang/llvm_notes_0.html" />
+<meta property="og:url" content="//algs/BST-2-RB-Tree-1-LLRB-Tree.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LLVM IR入门笔记
+        BST(2) - RB(1) - 左偏红黑树
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LLVM IR入门笔记</h1>
+    <h1 class="post__title__text">BST(2) - RB(1) - 左偏红黑树</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/lang.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
-            ProgLang
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      October 13, 2021
+      January 20, 2023
     </div>
     
   </div>
@@ -127,25 +127,9 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="function">Function</h2>
+    <div class="post__content"><h2 id="基本概念">基本概念</h2>
 
-<p>任何函数体 必须有一个<code class="language-plaintext highlighter-rouge">ret</code>指令显式地提供返回值, 包括return void.</p>
-
-<h2 id="basic-block">Basic Block</h2>
-
-<p>block只能是function的下层结构, 一个function value至少有一个block, 多个block按照固定顺序排列.</p>
-
-<p>也就是说block不能嵌套, 只能顺序排列.</p>
-
-<p>函数体的入口是first block, <strong>但后续的基本块必须通过条件或非条件的分支指令来手动连接</strong>, 否则通常会提示:</p>
-
-<p><code class="language-plaintext highlighter-rouge">Basic Block in function 'xxx' does not have terminator!</code></p>
-
-<p>这是因为<code class="language-plaintext highlighter-rouge">ret</code> 指令所在的最后一个块没有被连接上, 所以函数检查不到该指令, 所以判断该函数<code class="language-plaintext highlighter-rouge">xxx</code>的第一个block没有结束</p>
-
-<h2 id="参考">参考:</h2>
-
-<p>^1. https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/</p>
+<p>LLRB 是简化后红黑树，基本来源是一个 <a href="https://en.wikipedia.org/wiki/Robert_Sedgewick_(computer_scientist)">Robert Sedgewick</a> 的教学 PPT ，和红黑树一样，基本也不太行（指得是实现复杂，不直观，而且不体面（指得是删除操作依靠节点内容的交换））</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
