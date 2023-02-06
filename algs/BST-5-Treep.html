@@ -119,7 +119,7 @@
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      January 19, 2023
+      February 02, 2023
     </div>
     
   </div>
@@ -129,19 +129,262 @@
   <div class="post__content_container">
     <div class="post__content"><h2 id="基本概念">基本概念</h2>
 
+<p>树堆的概念首次是由 <a href="https://en.wikipedia.org/wiki/Raimund_Seidel">Raimund Seidel</a> and <a href="https://en.wikipedia.org/wiki/Cecilia_R._Aragon">Cecilia R. Aragon</a> 在 1989 年提出，它意思是节点用两个属性分别维护了二叉搜索树的性质和堆的性质。从二叉搜索树的角度看，可以类比前面的 <code class="language-plaintext highlighter-rouge">Splay树</code>，<code class="language-plaintext highlighter-rouge">Splay</code> 平衡性好要依赖于输入的数据具有随机性，而树堆干脆利用随机生成的权重来手动制造这种随机性。实质上都是通过随机化的输入来达到树结构的平衡。</p>
+
 <h2 id="基础定义">基础定义</h2>
 
 <h3 id="共同结构">共同结构</h3>
 
-<h3 id="平衡校验">平衡校验</h3>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">def_attr_macro!</span><span class="p">(</span><span class="n">w</span><span class="p">);</span>
 
-<h2 id="重平衡">重平衡</h2>
+<span class="nd">impl_node!</span><span class="p">();</span>
+<span class="nd">impl_node_!</span><span class="p">({</span> <span class="n">w</span><span class="p">:</span> <span class="nb">usize</span> <span class="p">});</span>
+<span class="nd">def_tree!</span><span class="p">(</span><span class="n">Treap</span> <span class="p">{</span> <span class="n">improve_search</span><span class="p">:</span> <span class="nb">bool</span> <span class="p">});</span>
+<span class="nd">impl_tree_debug!</span><span class="p">(</span><span class="n">Treap</span><span class="p">);</span>
 
-<h3 id="插入重平衡">插入重平衡</h3>
+<span class="nd">impl_rotate_cleanup!</span><span class="p">(</span><span class="n">Treap</span><span class="p">);</span>
+</code></pre></div></div>
 
-<h3 id="删除重平衡">删除重平衡</h3>
+<h3 id="堆校验">堆校验</h3>
 
-<h2 id="总装">总装</h2>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_balance_validation!</span><span class="p">(</span><span class="n">Treap</span><span class="p">);</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// Validate MaxHeap</span>
+    <span class="nd">#[cfg(test)]</span>
+    <span class="k">fn</span> <span class="nf">balance_validation</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="nd">left!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">left</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">w!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nd">w!</span><span class="p">(</span><span class="n">left</span><span class="p">));</span>
+            <span class="n">left</span><span class="nf">.balance_validation</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">right</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">w!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nd">w!</span><span class="p">(</span><span class="n">right</span><span class="p">));</span>
+            <span class="n">right</span><span class="nf">.balance_validation</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="基本操作">基本操作</h2>
+
+<p>树堆基本操作有两种方式，就像讲到一般二叉搜索树的基础方法时，一种是展开型，一种是递归型 。在常见的树堆的文章里介绍得是递归型的方法，依靠 <code class="language-plaintext highlighter-rouge">Split</code> 和 <code class="language-plaintext highlighter-rouge">Join</code> 这两个基础型方法（这两个方法本身也是递归实现的）。</p>
+
+<p>我们这里介绍展开型的实现方法，而这种方法就像一般堆的实现一样，依赖 <code class="language-plaintext highlighter-rouge">Sift-up</code> 和 <code class="language-plaintext highlighter-rouge">Sift-down</code> 操作来维护堆修改后的性质 ，而这两个操作背后又通过树的旋转实现。树的旋转不仅保持了二叉搜索树的性质，也保留了既有的堆的权重大小关系 。</p>
+
+<h3 id="sift-up">Sift-up</h3>
+
+<p>把一个权重较大的节点试着向上提升，直到符合堆的性质。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl Treap</span>
+
+<span class="k">fn</span> <span class="nf">siftup</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+    <span class="k">while</span> <span class="n">p</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">w!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nd">w!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="nd">index_of_child!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="nf">.rev</span><span class="p">());</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="sift-down">Sift-down</h3>
+
+<p>把权重较小的节点向下沉，直到符合堆的性质。选择左右孩子中权重最大的那一个，把它旋转到根，如此反复直到堆的性质得到维护。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl Treap</span>
+
+<span class="cd">/// rotate down if MaxHeap violation</span>
+<span class="k">fn</span> <span class="nf">siftdown</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="nd">left!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">max_w</span> <span class="o">=</span> <span class="nd">w!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">max_child</span> <span class="o">=</span> <span class="nb">None</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">left</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">w!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_w</span> <span class="p">{</span>
+            <span class="n">max_w</span> <span class="o">=</span> <span class="nd">w!</span><span class="p">(</span><span class="n">left</span><span class="p">);</span>
+            <span class="n">max_child</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">(</span><span class="nb">Left</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">right</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">w!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_w</span> <span class="p">{</span>
+            <span class="n">max_child</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">(</span><span class="nb">Right</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">child_dir</span><span class="p">)</span> <span class="o">=</span> <span class="n">max_child</span> <span class="p">{</span>
+            <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">child_dir</span><span class="nf">.rev</span><span class="p">());</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="搜索">搜索</h3>
+
+<p>和一般的二叉搜索树的搜索方法没什么不同。唯一特别的是两位原作者建议可以在搜索的时候给经常访问的节点更高的权重，来加快搜索效率。这样就结合了伸缩树的特点，但是没有那么直接，没有访问一次就直接提到根。我们实现这个做法是采用了 wiki 上建议，每次访问给一个随机数，当超过当前节点的权重时，就赋予这个权重然后 <code class="language-plaintext highlighter-rouge">Sift-up</code> 。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl Treap</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">get</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="n">V</span><span class="o">&gt;</span>
+<span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span>
+<span class="p">{</span>
+    <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nd">bst_search!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.improve_search</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.aragon_seidel_search_suggestion</span><span class="p">(</span><span class="n">x</span><span class="nf">.clone</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="nf">Some</span><span class="p">(</span><span class="nd">val!</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="nb">None</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">get_mut</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">mut</span> <span class="n">V</span><span class="o">&gt;</span>
+<span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span>
+<span class="p">{</span>
+    <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nd">bst_search!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.improve_search</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.aragon_seidel_search_suggestion</span><span class="p">(</span><span class="n">x</span><span class="nf">.clone</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="nf">Some</span><span class="p">(</span><span class="nd">val_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="nb">None</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="cd">/// https://en.wikipedia.org/wiki/Treap</span>
+<span class="k">fn</span> <span class="nf">aragon_seidel_search_suggestion</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">neww</span> <span class="o">=</span> <span class="nf">random</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="n">neww</span> <span class="o">&gt;</span> <span class="nd">w!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nd">w!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">neww</span><span class="p">);</span>
+        <span class="nd">mut_self!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.siftup</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="插入">插入</h3>
+
+<p>使用 <code class="language-plaintext highlighter-rouge">Sift-up</code> 修复新节点插入时可能造成的对堆的性质的破坏</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl Treap</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+<span class="p">{</span>
+    <span class="k">let</span> <span class="n">z</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span> <span class="n">BST</span> <span class="p">{</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span> <span class="nf">random</span><span class="p">()</span> <span class="p">});</span>
+
+    <span class="k">let</span> <span class="n">popped</span> <span class="o">=</span> <span class="nd">bst_insert!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">z</span><span class="nf">.clone</span><span class="p">());</span>
+
+    <span class="k">if</span> <span class="n">popped</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.siftup</span><span class="p">(</span><span class="n">z</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">popped</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="删除">删除</h3>
+
+<p>和标准的二叉搜索树的删除方法一致。有一点需要额外调整，就是当被删除的节点左右孩子都不为空的时候。这时候 <code class="language-plaintext highlighter-rouge">y</code> 与 <code class="language-plaintext highlighter-rouge">y.left</code> , <code class="language-plaintext highlighter-rouge">y.right</code></p>
+
+<p>的权重大小关系就不确定了，需要对 <code class="language-plaintext highlighter-rouge">y</code> 进行 <code class="language-plaintext highlighter-rouge">Sift-down</code> 操作。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl Treap</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">remove</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+<span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">Debug</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span>
+<span class="p">{</span>
+
+    <span class="k">let</span> <span class="n">z</span> <span class="o">=</span> <span class="nd">bst_search!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="n">z</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nb">None</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">subtree_shift!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="nd">right!</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nd">right!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">subtree_shift!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="nd">left!</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="cm">/* case-1       case-2
+
+                    z            z
+                    \            \
+                    y            z.right
+                                /
+                                / (left-most)
+                                y
+                                \
+                                y.right
+                */</span>
+
+            <span class="k">let</span> <span class="n">y</span> <span class="o">=</span> <span class="nd">bst_successor!</span><span class="p">(</span><span class="n">z</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="o">!</span><span class="nd">right!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="o">&amp;</span><span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nd">subtree_shift!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="nd">right!</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+                <span class="nd">conn_right!</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nd">right!</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+            <span class="p">}</span>
+            <span class="nd">subtree_shift!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+            <span class="nd">conn_left!</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nd">left!</span><span class="p">(</span><span class="n">z</span><span class="p">));</span>
+
+            <span class="cm">/* Only y and y.left and maybe y.right violate weight */</span>
+            <span class="k">self</span><span class="nf">.siftdown</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nf">Some</span><span class="p">(</span><span class="nd">unwrap_into!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.into_value</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="创建">创建</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// impl Treap</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+    <span class="k">Self</span> <span class="p">{</span>
+        <span class="n">root</span><span class="p">:</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">(),</span>
+        <span class="n">improve_search</span><span class="p">:</span> <span class="k">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">improve_search</span><span class="p">(</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+    <span class="k">self</span><span class="py">.improve_search</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+    <span class="k">self</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h2 id="总结">总结</h2>
+
+<p>树堆是一个相对来讲容易理解，实现简单（相对红黑树家族），性能表现令人满意的二叉搜索树的数据结构。</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
