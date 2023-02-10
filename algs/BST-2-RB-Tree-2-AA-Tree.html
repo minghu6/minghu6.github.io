@@ -129,17 +129,378 @@
   <div class="post__content_container">
     <div class="post__content"><h2 id="基本概念">基本概念</h2>
 
+<p><code class="language-plaintext highlighter-rouge">AA</code> 树（以下简称 AA）由 <a href="https://en.wikipedia.org/w/index.php?title=Arne_Andersson_(computer_science)&amp;action=edit&amp;redlink=1">Arne Andersson</a> 在 1993 年发明提出。</p>
+
+<p>AA 从理解到实现和 LLRB 是<strong>高度相似</strong>的（但是从作者关系上我们还是选择先介绍 LLRB），而一般的介绍资料，不管是 LLRB 还是 AA 的，都没有提这种密切的联系。</p>
+
+<p>在 LLRB 里面，通过颜色关系，让节点与 2-3/2-4 树的节点一一对应；而在 AA 里每个节点也对应2-3树的节点。我们说 LLRB 是左偏的红黑树，那么 AA 实质上更早出现的右偏红黑树（<code class="language-plaintext highlighter-rouge">RLRB</code>）。</p>
+
+<h3 id="基本性质">基本性质</h3>
+
+<p><code class="language-plaintext highlighter-rouge">AA</code> 节点有一个用于辅助树平衡的字段：$\texttt{level}$ ， 表明节点所在的层级，叶子节点（这里的叶子不同于一般红黑树概念里的 $\texttt{nil}$ 叶子，而是普通意义上的叶子）的 $\texttt{level}$ 为 $1$ ， $\texttt{nil}$ 节点的 $\texttt{level}$ 为 $0$</p>
+
+<p>如下就是一棵 AA树：</p>
+
+<p><img src="/../assets/img/bst_aa/lv_intro.png" alt="" /></p>
+
+<h4 id="3-节点">3-节点</h4>
+
+<p>在同一 $\texttt{level}$ 上相连的节点，对应的是 <code class="language-plaintext highlighter-rouge">2-3树</code> 里的<code class="language-plaintext highlighter-rouge">3-节点</code></p>
+
+<p><img src="/../assets/img/bst_aa/3_node.png" alt="" /></p>
+
+<h4 id="5特性">5特性</h4>
+
+<p>更具体地，AA 有以下 $5$ 个性质：</p>
+
+<ol>
+  <li>叶子节点（左右孩子都为 $\texttt{nil}$ 的节点）的 $\texttt{level}$ 为 $1$；</li>
+  <li>左孩子在下一层；</li>
+  <li>右孩子在同一层或下一层；</li>
+  <li>右孙子（右孩子的所有孩子）一定在下一层；</li>
+  <li>如果节点的 $\texttt{level} \gt 1$ ，它一定有两个孩子</li>
+</ol>
+
+<p>解释一下这5个性质：</p>
+
+<ol>
+  <li>叶子节点 $\texttt{level} = 1$ ，是一个规定，设置 $\texttt{level}$ 的基准；</li>
+  <li>左节点在下一层因为这是 “LRRB“ ，只有右孩子能够在同一层；</li>
+  <li>“LRRB“ ，只有右孩子能够在同一层；</li>
+  <li>如果连续两个孩子都在同一层，那就出现了4-节点，而我们对应的 2-3 树 ，最多只能有 3-节点；</li>
+  <li>$\texttt{lv} \gt 1$ 的节点如果只有一个孩子，那么一定可以把它的孩子转到右边，并放在第一层</li>
+</ol>
+
+<h4 id="黑平衡">黑平衡</h4>
+
+<p>显然对于 AA 来说，叶子节点到祖先节点的左链接数应该保持相等，这就是它的黑平衡</p>
+
+<h4 id="性质校验">性质校验</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_balance_validation!</span><span class="p">(</span><span class="n">AA</span> <span class="k">-&gt;</span>
+    <span class="nd">#[cfg(test)]</span>
+    <span class="k">fn</span> <span class="nf">balance_validation</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.root</span><span class="nf">.validate_balance</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">);</span>
+
+
+<span class="c1">// impl AA</span>
+
+<span class="nd">#[cfg(test)]</span>
+<span class="k">fn</span> <span class="nf">validate_balance</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">self</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="nd">left!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+
+    <span class="c1">// Invariants-1: if x is leaf then x.lv == 1</span>
+    <span class="k">if</span> <span class="n">left</span><span class="nf">.is_none</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">right</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">assert_eq!</span><span class="p">(</span><span class="nd">lv!</span><span class="p">(</span><span class="k">self</span><span class="p">),</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Invariant-2.: x.left.lv + 1 = x.lv.</span>
+    <span class="nd">assert_eq!</span><span class="p">(</span><span class="n">left</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">self</span><span class="nf">.lv</span><span class="p">());</span>
+
+    <span class="c1">// Invariant-3.: x.right.lv == x.lv || x.right.lv + 1 == x.lv.</span>
+    <span class="nd">assert!</span><span class="p">(</span>
+        <span class="n">right</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">==</span> <span class="k">self</span><span class="nf">.lv</span><span class="p">()</span>
+        <span class="p">||</span> <span class="n">right</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="k">self</span><span class="nf">.lv</span><span class="p">()</span>
+    <span class="p">);</span>
+
+    <span class="c1">// Invariant-4.: x.right.child.lv &lt; x.lv</span>
+    <span class="k">if</span> <span class="n">right</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="nd">left!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">&lt;</span> <span class="nd">lv!</span><span class="p">(</span><span class="k">self</span><span class="p">));</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">&lt;</span> <span class="nd">lv!</span><span class="p">(</span><span class="k">self</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Invariant-5.: if x.lv &gt; 1 then x.children.len == 2</span>
+    <span class="k">if</span> <span class="k">self</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="n">left</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">right</span><span class="nf">.is_some</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="n">left</span><span class="nf">.validate_balance</span><span class="p">();</span>
+    <span class="n">right</span><span class="nf">.validate_balance</span><span class="p">();</span>
+
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
 <h2 id="基础定义">基础定义</h2>
 
 <h3 id="共同结构">共同结构</h3>
 
-<h3 id="专属辅助">专属辅助</h3>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_node!</span><span class="p">();</span>
+<span class="nd">impl_node_!</span><span class="p">({</span> <span class="n">lv</span><span class="p">:</span> <span class="nb">usize</span> <span class="p">});</span>
 
-<h2 id="重平衡">重平衡</h2>
+<span class="nd">impl_tree!</span><span class="p">(</span><span class="n">AA</span> <span class="p">{});</span>
+<span class="nd">impl_rotate_cleanup!</span><span class="p">(</span><span class="n">AA</span><span class="p">);</span>
 
-<h3 id="插入重平衡">插入重平衡</h3>
 
-<h2 id="总装">总装</h2>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">AA</span> <span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">root</span><span class="p">:</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+	
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+
+    <span class="k">fn</span> <span class="nf">lv</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="mi">0</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">lv!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="重平衡操作">重平衡操作</h2>
+
+<p>为了维护 插/删 造成的树的性质的破坏（不平衡），发明了两种基本操作：（确保）（向右）倾斜（<code class="language-plaintext highlighter-rouge">skew</code>）、分离（<code class="language-plaintext highlighter-rouge">4-节点</code>）（<code class="language-plaintext highlighter-rouge">split</code>）</p>
+
+<h3 id="skew">Skew</h3>
+
+<p><img src="/../assets/img/bst_aa/skew_1.png" alt="" /> <img src="/../assets/img/rarrow.png" alt="" /> <img src="/../assets/img/bst_aa/skew_2.png" alt="" /></p>
+
+<p>实际上就是右旋，只不过有一个额外的警戒哨的功能，确保把箭头倾倒在右边</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl </span>
+
+<span class="k">fn</span> <span class="nf">skew</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">t</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">t</span><span class="nf">.is_some</span><span class="p">());</span>
+
+    <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">==</span> <span class="n">t</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="nb">Right</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="n">t</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="split">Split</h3>
+
+<p>实际是带警戒哨的左旋，确保把 <code class="language-plaintext highlighter-rouge">4-节点</code> 分割出来，另外不要忘了让新的根节点的 $\texttt{level} + 1$</p>
+
+<p><img src="/../assets/img/bst_aa/split_1.png" alt="" /> <img src="/../assets/img/rarrow.png" alt="" /> <img src="/../assets/img/bst_aa/split_2.png" alt="" /></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl AA</span>
+
+
+<span class="k">fn</span> <span class="nf">split</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">t</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">t</span><span class="nf">.is_some</span><span class="p">());</span>
+
+    <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="n">right</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">right!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">==</span> <span class="n">t</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="nb">Left</span><span class="p">);</span>
+
+        <span class="nd">lv!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nd">lv!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>  <span class="c1">// t == right</span>
+    <span class="p">}</span>
+
+    <span class="n">t</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<p>就像 <code class="language-plaintext highlighter-rouge">LLRB</code> 一样，插入删除的实现实际上是为了重平衡操作的实现</p>
+
+<h3 id="插入">插入</h3>
+
+<p>严重依赖于子过程 <code class="language-plaintext highlighter-rouge">insert_at</code> 的递归操作，<code class="language-plaintext highlighter-rouge">insert_at</code> 返回旧的节点（如果存在）的值和新的根节点。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl AA</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+<span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">popped</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.insert_at</span><span class="p">(</span>
+        <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">(),</span>
+        <span class="n">k</span><span class="p">,</span>
+        <span class="n">v</span>
+    <span class="p">);</span>
+
+    <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="n">root</span><span class="p">;</span>
+
+    <span class="n">popped</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">insert_at</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">t</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">t</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nd">node!</span><span class="p">(</span><span class="n">BST</span> <span class="p">{</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">lv</span><span class="p">:</span> <span class="mi">1</span> <span class="p">}),</span> <span class="nb">None</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">popped</span><span class="p">;</span>
+
+    <span class="k">match</span> <span class="n">k</span><span class="nf">.cmp</span><span class="p">(</span><span class="nd">key!</span><span class="p">(</span><span class="n">t</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="p">{</span>  <span class="c1">// replace node</span>
+            <span class="k">let</span> <span class="n">old_valptr</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+            <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="nd">boxptr!</span><span class="p">(</span><span class="n">v</span><span class="p">));</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nf">Some</span><span class="p">(</span><span class="nd">unboxptr!</span><span class="p">(</span><span class="n">old_valptr</span><span class="p">)));</span>
+        <span class="p">}</span>
+        <span class="n">Less</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">popped_</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.insert_at</span><span class="p">(</span><span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+
+            <span class="nd">conn_left!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">left</span><span class="p">);</span>
+            <span class="n">popped</span> <span class="o">=</span> <span class="n">popped_</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">popped_</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.insert_at</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+
+            <span class="nd">conn_right!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">right</span><span class="p">);</span>
+            <span class="n">popped</span> <span class="o">=</span> <span class="n">popped_</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.skew</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.split</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+
+    <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">popped</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h3 id="删除">删除</h3>
+
+<p>严重依赖于子过程 <code class="language-plaintext highlighter-rouge">remove_at</code> 的递归操作，<code class="language-plaintext highlighter-rouge">remove_at</code> 返回符合删除条件的节点（用指针表示）的值和新的根节点。</p>
+
+<p>如果被删除的节点不是叶子节点，就在它不为空的孩子上寻找后继或前驱，然后在那个孩子上使用原递归调用删除，最后用假替换把删除后的前驱或后继节点的 <code class="language-plaintext highlighter-rouge">key-val</code> 与当前节点交换，并进行对该节点的重平衡操作。</p>
+
+<p>每次递归调用过程的重平衡操作可以总结为 $3$ 次分别在 <code class="language-plaintext highlighter-rouge">t</code>、<code class="language-plaintext highlighter-rouge">t.right</code>、<code class="language-plaintext highlighter-rouge">t.right.right</code> 上 <code class="language-plaintext highlighter-rouge">skew</code> 和 $2$ 次 在 <code class="language-plaintext highlighter-rouge">t</code> 和 <code class="language-plaintext highlighter-rouge">t.right</code> 上 <code class="language-plaintext highlighter-rouge">split</code> 。注意得是每次 <code class="language-plaintext highlighter-rouge">skew</code> 或 <code class="language-plaintext highlighter-rouge">split</code>，不仅根节点变动，右孩子的节点也会变动，需要动态计算。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl AA</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">remove</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+<span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">Debug</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span>
+<span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">popped</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.remove_at</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">k</span><span class="p">);</span>
+
+    <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="n">root</span><span class="p">;</span>
+
+    <span class="n">popped</span><span class="nf">.map</span><span class="p">(|(</span><span class="n">k_ptr</span><span class="p">,</span> <span class="n">v_ptr</span><span class="p">)|</span> <span class="p">{</span>
+        <span class="nd">unboxptr!</span><span class="p">(</span><span class="n">k_ptr</span><span class="p">);</span>
+        <span class="nd">unboxptr!</span><span class="p">(</span><span class="n">v_ptr</span><span class="p">)</span>
+    <span class="p">})</span>
+<span class="p">}</span>    
+
+
+<span class="k">fn</span> <span class="n">remove_at</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">t</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span>
+<span class="k">-&gt;</span> <span class="p">(</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="o">*</span><span class="k">mut</span> <span class="n">K</span><span class="p">,</span> <span class="o">*</span><span class="k">mut</span> <span class="n">V</span><span class="p">)</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">Debug</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="n">t</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">None</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">popped</span> <span class="o">=</span>
+
+    <span class="k">match</span> <span class="n">k</span><span class="nf">.cmp</span><span class="p">(</span><span class="nd">key!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.borrow</span><span class="p">())</span> <span class="p">{</span>
+        <span class="n">Less</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">popped_</span><span class="p">)</span>
+            <span class="o">=</span> <span class="k">self</span><span class="nf">.remove_at</span><span class="p">(</span><span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">k</span><span class="p">);</span>
+            <span class="nd">conn_left!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">left</span><span class="p">);</span>
+            <span class="n">popped_</span>
+        <span class="p">}</span>
+        <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">popped_</span><span class="p">)</span>
+            <span class="o">=</span> <span class="k">self</span><span class="nf">.remove_at</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">k</span><span class="p">);</span>
+            <span class="nd">conn_right!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">right</span><span class="p">);</span>
+            <span class="n">popped_</span>
+        <span class="p">}</span>
+            <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">old_keyptr</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                    <span class="k">let</span> <span class="n">old_valptr</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+                    <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="nf">null_mut</span><span class="p">());</span>
+                    <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="nf">null_mut</span><span class="p">());</span>
+
+                    <span class="k">return</span> <span class="p">(</span>
+                        <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">(),</span>
+                        <span class="nf">Some</span><span class="p">((</span>
+                            <span class="n">old_keyptr</span><span class="p">,</span>
+                            <span class="n">old_valptr</span>
+                        <span class="p">))</span>
+                    <span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="k">let</span> <span class="n">nil_dir</span> <span class="o">=</span> <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span> <span class="nb">Left</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nb">Right</span> <span class="p">};</span>
+                <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="k">if</span> <span class="n">nil_dir</span><span class="nf">.is_left</span><span class="p">()</span>
+                    <span class="p">{</span> <span class="nd">bst_successor!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nd">bst_predecessor!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="p">};</span>
+
+                <span class="k">let</span> <span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">l_entry</span><span class="p">)</span>
+                    <span class="o">=</span> <span class="k">self</span><span class="nf">.remove_at</span><span class="p">(</span><span class="nd">child!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">nil_dir</span><span class="nf">.rev</span><span class="p">()),</span> <span class="nd">key!</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="nf">.borrow</span><span class="p">());</span>
+
+                <span class="nd">conn_child!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">nil_dir</span><span class="nf">.rev</span><span class="p">());</span>
+
+                <span class="k">let</span> <span class="n">old_keyptr</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+                <span class="k">let</span> <span class="n">old_valptr</span> <span class="o">=</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+
+                <span class="k">let</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="n">l_entry</span><span class="nf">.unwrap</span><span class="p">();</span>
+                <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+                <span class="nd">attr!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+
+                <span class="nf">Some</span><span class="p">((</span><span class="n">old_keyptr</span><span class="p">,</span> <span class="n">old_valptr</span><span class="p">))</span>
+            <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">t</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">||</span> <span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">t</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">{</span>
+        <span class="cm">/* Decrease lv */</span>
+
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">lv</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="nf">min</span><span class="p">(</span><span class="n">left</span><span class="nf">.lv</span><span class="p">(),</span> <span class="n">right</span><span class="nf">.lv</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">lv</span> <span class="o">&lt;</span> <span class="n">t</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">lv!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">lv</span> <span class="o">&lt;</span> <span class="n">right</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">lv!</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* Tripple skew */</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.skew</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+
+        <span class="c1">// Warnning: right(t) changes after this</span>
+        <span class="k">self</span><span class="nf">.skew</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">));</span>
+
+        <span class="k">if</span> <span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">right!</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.skew</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">)));</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* Double split */</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.split</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.split</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">popped</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+</code></pre></div></div>
+
+<h2 id="总结">总结</h2>
+
+<p>AA 是更扁平化的红黑树变种也因此需要付出更多的旋转来维护平衡，实际测试感觉和 AVL 差不多，总体结果就是没什么用，一方面不如 AVL 更容易实现，一方面也丢掉了红黑树维护旋转少的特点，和 LLRB 一样鸡肋。</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

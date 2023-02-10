@@ -230,12 +230,7 @@
                 <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
             <span class="p">}</span>
             <span class="k">else</span> <span class="p">{</span>
-                <span class="k">if</span> <span class="n">p_dir</span><span class="nf">.is_left</span><span class="p">()</span> <span class="p">{</span>
-                    <span class="nd">conn_left!</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
-                <span class="p">}</span>
-                <span class="k">else</span> <span class="p">{</span>
-                    <span class="nd">conn_right!</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
-                <span class="p">}</span>
+				<span class="nd">conn_child!</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">p_dir</span><span class="p">);</span>
             <span class="p">}</span>
 
             <span class="k">break</span><span class="p">;</span>
