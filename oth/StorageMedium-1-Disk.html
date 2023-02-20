@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            Disk上的存储结构
+        
+    "
+/>
+
+<meta property="og:url" content="//oth/StorageMedium-1-Disk.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        Disk上的存储结构
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        Home
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">Disk上的存储结构</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/oth.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
+            Other
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      February 13, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p>介绍的是磁盘的存储结构，但技术原理上对于光盘也是通用的。</p>
+
+<h2 id="盘片划分">盘片划分</h2>
+
+<p>一个盘片的基本两级结构是： 轨道（Track）- 扇区（Sector）。</p>
+
+<p>轨道是盘片上的同心圆（考虑到轨道的宽度，实际上是很窄的同心圆环）</p>
+
+<p>而扇区则是一条轨道上按照一定角度划分的弧，是最基本的存储单元。</p>
+
+<p>注意这个概念显然有别于几何学上的扇区，这里的扇区实际是几何意义上的扇区在某一轨道上的交集。</p>
+
+<h2 id="轨道">轨道</h2>
+
+<h3 id="编号习惯">编号习惯</h3>
+
+<p>轨道的编号传统上从小到大按照从外到内的顺序。</p>
+
+<h3 id="pmr-vs-smr">PMR vs SMR</h3>
+
+<p>现在业界现在有两种主流的与轨道排布相关的磁记录方式：<strong>垂直式磁记录（Perpendicular magnetic recording，PMR）</strong>、<strong>叠瓦式磁记录（Shingled magnetic recording，SMR）</strong></p>
+
+<p><strong>PMR</strong> 也可以称为<strong>传统式磁记录（Conventional magnetic recording，CMR）</strong>有着数十年的悠久历史。</p>
+
+<p><strong>SMR</strong> 是为了增加 PMR 的存储密度上限而发明的，使用了更窄的轨道排布布局，代价是安全性和访问效率都有所下降。</p>
+
+<h2 id="扇区">扇区</h2>
+
+<p>传统 HDD 的扇区是 512 bytes，CD-ROM 和 DVD-ROM 是 2048 bytes，现代 HDD 的扇区是 4096 bytes。</p>
+
+<h3 id="物理扇区和逻辑扇区">物理扇区和逻辑扇区</h3>
+
+<p>为了向后兼容，扇区还分了<strong>逻辑扇区</strong>和<strong>物理扇区</strong>两个概念。</p>
+
+<p><strong>物理扇区</strong>是实际上的扇区划分比如 4096 bytes。</p>
+
+<p><strong>逻辑扇区</strong>实际上是划分了物理扇区，比如 512 bytes，以提供更小的扇区的访问的后向兼容性，但这种访问显然是低效的，因为每次都要取出整个物理扇区修改后再重新写回去。因此除非必要，默认都采取逻辑扇区和物理扇区一样大小。</p>
+
+<h3 id="扇区结构">扇区结构</h3>
+
+<p>header area（so-called ID） + data area</p>
+
+<h4 id="header">header</h4>
+
+<p>同步字节+地址标志符+缺陷标志（flaw flag）+错误检查和纠正信息，如果数据区不可靠，还可一包含备用地址</p>
+
+<h4 id="data">data</h4>
+
+<p>同步字节+存储的数据+错误纠正码（ECC）</p>
+
+<h3 id="区位记录">区位记录</h3>
+
+<p>Zero bit recording，ZBR。</p>
+
+<p>按照传统磁盘扇区的划分方式，显然越靠外面的弧越长，磁密度越小，相对最里面的弧，显然存在严重的数据容量上的浪费。</p>
+
+<p>如果按照半径范围，把盘上所有的轨道归为几个不同的分区（Zone），把不同的分区上的轨道的弧划分成从1到n不等数量的扇区，越靠外的弧划分出的轨道越多。</p>
+
+<p>下图来自 <a href="https://en.wikipedia.org/wiki/Zone_bit_recording">wiki</a> ，其中红绿灰三色就是三个分区，不同分区的弧分别可以有 $1$、$2$、$4$ 个扇区。</p>
+
+<p><img src="/../assets/img/disk/zone.svg" alt="" /></p>
+
+<p>ZBR实际上是把原来的固定角速度转变为固定线速度，带来了数据容量的提高和外部扇区访问速度的提升。</p>
+
+<p>不过由于系统编号管理是从到内，这就带来一个系统初创测试时期和后续使用过程中较大的性能差异的问题，有的drive会故意减慢读外周时的转速来避免这种差异。</p>
+
+<p>现代的HDD普遍使用了 ZBR 的设计</p>
+
+<h2 id="文件系统映射">文件系统映射</h2>
+
+<p>block 或 allocation unit 或 cluster ，指得是文件系统存储的基本单位，对应一般从 $1$ 个扇区 ($512$ bytes) 到 $128$ 个扇区 ($64$ Kbytes )。</p>
+
+<p>这样的 cluster 包含的扇区不一定要在物理上是连续的。<em>注意：它们不是碎片，因为在逻辑上它们是连续的</em></p>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+    </div>
+
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
