@@ -54,7 +54,7 @@
     
     <span>
       <a href="/">
-        Home
+        <img src="/assets/img/icons/home.png">
       </a>
     </span>
     
@@ -137,7 +137,7 @@
 
 <h2 id="基础介绍">基础介绍</h2>
 
-<p>想象一下，如果我们的的模式字符串$pat$，被放在文本字符串$string$的左手起头部，使它们的第一个字符对齐。</p>
+<p>想象一下，如果我们的的模式字符串 $pat$ ，被放在文本字符串$string$的左手起头部，使它们的第一个字符对齐。</p>
 
 \[\begin{aligned}
 \textit{pat}:\qquad\qquad &amp;\texttt{EXAMPLE} \\
@@ -161,7 +161,7 @@
 
 <p>更一般地，<strong>如果出现在$pat$最末尾（也就是最右边）的那一个$char$字符的位置是离末尾端差了$delta_1$个字符</strong>，</p>
 
-<p>那么就可以不用匹配，直接将$pat$向后滑动$delta_1$个字符：如果滑动距离少于$delta_1$，那么仅就$char$这个字符就无法被匹配，当然模式字符串$pat$也就不会被匹配。</p>
+<p>那么就可以不用匹配，直接将$pat$向后滑动 $delta_1$ 个字符：如果滑动距离少于$delta_1$，那么仅就$char$这个字符就无法被匹配，当然模式字符串$pat$也就不会被匹配。</p>
 
 <p>因此除非$char$字符可以和$pat$末尾的那个字符匹配，否则$string$要跳过$delta_1$个字符（相当于$pat$向后滑动了$delta_1$个字符）。并且我们可以得到一个计算$delta_1$的函数$delta_1(char)$：</p>
 
@@ -1474,8 +1474,15 @@ probdelta1(m, 1) \times probdelta2(m, 1) &amp; \text{for} &amp; k = 1\\
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
     </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
 
+    </div> -->
   </div>
 
 </article>

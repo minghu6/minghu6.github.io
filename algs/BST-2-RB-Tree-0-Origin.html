@@ -54,7 +54,7 @@
     
     <span>
       <a href="/">
-        Home
+        <img src="/assets/img/icons/home.png">
       </a>
     </span>
     
@@ -372,19 +372,19 @@
 
 <p>$\texttt{psib}$ 是红节点，只需要把 $\texttt{pp}$ , $\texttt{p}$ , $\texttt{psib}$ 反色，并一路向上修复，这样既修复了红违背又保持了黑平衡</p>
 
-<p><img src="/../assets/img/bst_rb/insert_case1_start.png" alt="初始" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/insert_case1_end.png" alt="修复" /></p>
+<p><img src="/../assets/img/bst_rb/insert_case1_start.png" alt="初始" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/insert_case1_end.png" alt="修复" /></p>
 
 <h4 id="case-2">case-2</h4>
 
 <p>$\texttt{psib}$ 是黑节点，并且 $\texttt{p} \rightarrow \texttt{i}$ 的方向与 $\texttt{pp} \rightarrow \texttt{p}$ 的方向相反，向 $\texttt{p} \rightarrow \texttt{i}$ 的反方向旋转，到 <strong>case-3</strong></p>
 
-<p><img src="/../assets/img/bst_rb/insert_case2_start.png" alt="初始" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/insert_case2_end.png" alt="修复" /></p>
+<p><img src="/../assets/img/bst_rb/insert_case2_start.png" alt="初始" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/insert_case2_end.png" alt="修复" /></p>
 
 <h4 id="case-3">case-3</h4>
 
 <p>$\texttt{psib}$ 是黑节点，并且 $\texttt{p} \rightarrow \texttt{i}$ 的方向与 $\texttt{pp} \rightarrow \texttt{p}$ 的方向相同，向 $\texttt{p} \rightarrow \texttt{i}$ 的反方向旋转，并且把 $\texttt{p}$ 和 $\texttt{pp}$ 反色</p>
 
-<p><img src="/../assets/img/bst_rb/insert_case3_start.png" alt="初始" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/insert_case3_end.png" alt="修复" /></p>
+<p><img src="/../assets/img/bst_rb/insert_case3_start.png" alt="初始" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/insert_case3_end.png" alt="修复" /></p>
 
 <p><em>case-2 可以直接双旋，然后反色一步到位地解决</em></p>
 
@@ -576,7 +576,7 @@
 
 <p>$\texttt{sib}$ 反色为红，这样 $\texttt{n}$ 和 $\texttt{sib}$ 树的节点的黑高就都少了 $1$ 。但它们是（在 $\texttt{p}$ 上）平衡了，但 $\texttt{p}$ 整体黑高就少了 $\texttt{1}$ ，双黑圈就套到了 $\texttt{p}$上，问题没有直接解决，但是可以推后，什么问题可以留给后代解决（在 $\texttt{p}$ 上继续递归），那也就相当于解决了。</p>
 
-<p><img src="/../assets/img/bst_rb/remove_case_1_1.png" alt="" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_1_2.png" alt="" /></p>
+<p><img src="/../assets/img/bst_rb/remove_case_1_1.png" alt="" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_1_2.png" alt="" /></p>
 
 <h4 id="case-2-1">(case-2)</h4>
 
@@ -584,7 +584,7 @@
 
 <p>交换 $\texttt{p}$ 与 $\texttt{sib}$ 的颜色，这样 $\texttt{sib}$ 的黑高没有变化，而 $\texttt{sib}$ 的黑高增加了 $1$ ，这样双黑节点就直接解决了，这是一种完美的情况。</p>
 
-<p><img src="/../assets/img/bst_rb/remove_case_2_1.png" alt="" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_2_2.png" alt="" /></p>
+<p><img src="/../assets/img/bst_rb/remove_case_2_1.png" alt="" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_2_2.png" alt="" /></p>
 
 <h4 id="case-3-1">(case-3)</h4>
 
@@ -599,7 +599,7 @@
 
 <p>对于 $\texttt{sib}_c$ 叶子的黑高不变，$\texttt{sib}_d$ 路径上的黑节点少了 $\texttt{sib}$ 但自己变成了黑节点，对于自己的叶子黑高也是不变的（自己原来是红节点，不可能是叶子节点）这样双黑节点也解决了，这是另一种完美情况。</p>
 
-<p><img src="/../assets/img/bst_rb/remove_case_3_1.png" alt="" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_3_3.png" alt="" /></p>
+<p><img src="/../assets/img/bst_rb/remove_case_3_1.png" alt="" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_3_3.png" alt="" /></p>
 
 <h4 id="case-4">[case-4]</h4>
 
@@ -613,7 +613,7 @@
 
 <p>这样情况就变成了，<strong>(case-3)</strong> （新 $\texttt{sib}$ 黑色，新 $\texttt{sib}_d$ 红色）的情况 。</p>
 
-<p><img src="/../assets/img/bst_rb/remove_case_4_1.png" alt="" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_4_3.png" alt="" /></p>
+<p><img src="/../assets/img/bst_rb/remove_case_4_1.png" alt="" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_4_3.png" alt="" /></p>
 
 <h4 id="case-5">[case-5]</h4>
 
@@ -627,7 +627,7 @@
 
 <p>这时新的 $\texttt{sib}$ 变为 $\texttt{sib}_c$ （新的 $\texttt{sib}$ 为黑色）。根据新 $\texttt{sib}$ 的颜色关系选择 <strong>(case-2)</strong> 、 <strong>(case-3)</strong> 、 <strong>(case-4)</strong> 继续处理</p>
 
-<p><img src="/../assets/img/bst_rb/remove_case_5_1.png" alt="" />  <img src="/../assets/img/bst_rb/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_5_3.png" alt="" /></p>
+<p><img src="/../assets/img/bst_rb/remove_case_5_1.png" alt="" />  <img src="/../assets/img/rarrow.png" alt="" />  <img src="/../assets/img/bst_rb/remove_case_5_3.png" alt="" /></p>
 
 <h4 id="流程图">流程图</h4>
 
@@ -705,8 +705,15 @@
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
     </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
 
+    </div> -->
   </div>
 
 </article>

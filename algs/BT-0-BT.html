@@ -54,7 +54,7 @@
     
     <span>
       <a href="/">
-        Home
+        <img src="/assets/img/icons/home.png">
       </a>
     </span>
     
@@ -127,13 +127,1128 @@
   
 
   <div class="post__content_container">
-    <div class="post__content">
+    <div class="post__content"><p>B 树是波音实验室的 <a href="https://en.wikipedia.org/wiki/Rudolf_Bayer">Rudolf Bayer</a> and <a href="https://en.wikipedia.org/wiki/Edward_M._McCreight">Edward M. McCreight</a> 最初发明用来存储大量索引（超过主内存）的数据结构，在 1970 年的论文里正式提出。</p>
+
+<p>本系列将介绍 B 树以及 B+ 树、B+ 树的 TreeMap 实现、 B+* 树等一些列算是 B 树的变种。</p>
+
+<h2 id="概念基础">概念基础</h2>
+
+<p>B 树是<strong>完全平衡</strong>的<strong>多路搜索树</strong>，基本上已经是传统红黑树的上位替代。</p>
+
+<ol>
+  <li>节点数的减少，极大地节省了内存；</li>
+  <li>在 Intel 这样的大缓存 CPU 架构下，性能明显高于传统二叉搜索树</li>
+</ol>
+
+<p><strong>完全平衡</strong>指得是每个叶子节点到根节点的深度相等。</p>
+
+<p>B 树节点一般可以分为最后一层的叶子节点（leaf）和中间的节点（internal），当B 树只有一层的时候，那就只有叶子节点。</p>
+
+<p>对于 $m$ 阶 B 树（最多有 $m$ 个孩子）有这样的性质：</p>
+
+<ol>
+  <li>中间节点的键数 $N_{\large\text{key}} \in [\lceil {\large\frac{m}{2}}\rceil-1,m)$</li>
+  <li>叶子节点的键数 $N_{\large\text{key}} \in [1,m)$</li>
+</ol>
+
+<p>其中根节点比较特殊，对于高度大于 $1$ 的 B 树，根节点显然属于是中间节点，但它可以像叶子节点一样最少只有单键<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>。因此一些介绍里把 internal 节点的概念定义为不包括根节点，而另外的介绍里则保留这种矛盾，这是让初学者很困惑的一个地方。</p>
+
+<p>而中间节点的最小键数 $\lceil {\large\frac{m}{2}}\rceil-1$  ，是由一个溢出节点的分裂过程推导出的：</p>
+
+<p>假设一个节点溢出了，则此时它有 $m$ 个键，此时应该取出中间的一个键，推到父节点上，然后把左右两边的键平分为两个节点。这种情况下 $\lceil{\large\frac{m}{2}}\rceil + \lceil{\large\frac{m}{2}}\rceil - 2 = m + 1 - 2 = m - 1$ 。</p>
+
+<p>并且显然，应该有 $m \geqslant 3$ ，二叉树一个节点里只有一个键，没有节点分裂与合并的空间。</p>
+
+<h2 id="重平衡">重平衡</h2>
+
+<p>我们把对插入时节点键值溢出和删除时节点键值不足的情况的处理操作，按照前文二叉搜索树的惯例，也一样地称之为重平衡。</p>
+
+<p>文字说明未必直观，可以通过<a href="https://www.cs.usfca.edu/~galles/visualization/BTree.html">在线的 B 树的模拟页面</a>直观地体验算法过程</p>
+
+<h3 id="插入">插入</h3>
+
+<p>当插入某个键后发现节点溢出了，就要分裂节点：</p>
+
+<ol>
+  <li>把中间的一个键提升到父节点，其余的键分到左右两个新节点<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup> ；</li>
+  <li>递归地在父节点上调用，直到根节点；</li>
+  <li>当根节点溢出时，中间的键单独构成一个新节点，作为新的根节点<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，算法终止</li>
+</ol>
+
+<h3 id="删除">删除</h3>
+
+<p>当删除某个键后发现节点不足，就要<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">4</a></sup>：</p>
+
+<ol>
+  <li>尝试<strong>节点重平衡</strong>；</li>
+  <li>如果平衡失败，递归地<strong>合并节点</strong></li>
+</ol>
+
+<p>尝试<strong>节点重平衡</strong>（try rebalancing）：</p>
+
+<ol>
+  <li>如果有左邻居，检查左邻居节点是否有多余的键：
+    <ol>
+      <li>如果有，弹出最大的键替换父节点的键，而把原父节点的键插入到目标节点，分配成功；</li>
+      <li>否则，继续检查</li>
+    </ol>
+  </li>
+  <li>如果有右邻居，检查右邻居节点是否有多余的键：
+    <ol>
+      <li>如果有，弹出最小的键替换父节点的键，而把原父节点的键插入到目标节点，分配成功；</li>
+      <li>否则，重平衡失败</li>
+    </ol>
+  </li>
+</ol>
+
+<p>下图假设了一个 $m=3$ 的 B 树删除情况，空白节点是被删除的 $4$ ：</p>
+
+<p><img src="/../assets/img/bt_basic/rebalancing_1.png" alt="" /></p>
+
+<p>之后情况变为如下所示：</p>
+
+<p><img src="/../assets/img/bt_basic/rebalancing_2.png" alt="" /></p>
+
+<p>递归地<strong>合并节点</strong>：</p>
+
+<ol>
+  <li>把左邻居节点、对应父节点的键和目标节点合并<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">5</a></sup>；</li>
+  <li>递归地在父节点上调用，直到根节点；</li>
+  <li>当根节点的键不足时，弹出它的孩子<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">6</a></sup>作为新的根节点<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">7</a></sup></li>
+</ol>
+
+<h2 id="实现-数据结构">实现-&gt;数据结构</h2>
+
+<h3 id="辅助宏">辅助宏</h3>
+
+<p>就像前文二叉搜索树那样，我们首先通过一个宏，来描述这个系列的 B 树的代码结构，来避免无谓的重复<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">8</a></sup>：</p>
+
+<p>其中 M 表示阶数，这也暗示我们的节点将不再像二叉搜索树那样在字段名上分出键和孩子的顺序，而是采用更一般化地安排。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">impl_tree</span> <span class="p">{</span>
+    <span class="p">(</span>
+        <span class="nv">$</span><span class="p">(</span><span class="nd">#[</span><span class="err">$</span><span class="nd">attr:meta]</span><span class="p">)</span><span class="o">*</span>
+        <span class="nv">$treename:ident</span> <span class="p">{</span>
+            <span class="nv">$</span><span class="p">(</span>
+                <span class="nv">$</span><span class="p">(</span><span class="nd">#[</span><span class="err">$</span><span class="nd">field_attr:meta]</span><span class="p">)</span><span class="o">*</span>
+                <span class="nv">$name</span><span class="p">:</span> <span class="n">ident</span> <span class="p">:</span> <span class="nv">$ty</span><span class="p">:</span> <span class="n">ty</span>
+            <span class="p">),</span><span class="o">*</span>
+        <span class="p">}</span>
+    <span class="p">)</span> <span class="k">=&gt;</span>
+    <span class="p">{</span>
+        <span class="nv">$</span><span class="p">(</span><span class="nd">#[</span><span class="err">$</span><span class="nd">attr]</span><span class="p">)</span><span class="o">*</span>
+        <span class="k">pub</span> <span class="k">struct</span> <span class="nv">$treename</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+            <span class="n">root</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+
+            <span class="cm">/* extra attr */</span>
+            <span class="nv">$</span><span class="p">(</span>
+                <span class="nv">$</span><span class="p">(</span><span class="nd">#[</span><span class="err">$</span><span class="nd">field_attr]</span><span class="p">)</span><span class="o">*</span>
+                <span class="nv">$name</span><span class="p">:</span> <span class="nv">$ty</span>
+            <span class="p">),</span><span class="o">*</span>
+        <span class="p">}</span>
+        <span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="nv">$treename</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+            <span class="k">const</span> <span class="k">fn</span> <span class="nf">entries_low_bound</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+                <span class="n">M</span><span class="nf">.div_ceil</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">}</span>
+
+            <span class="k">const</span> <span class="k">fn</span> <span class="nf">entries_high_bound</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+                <span class="n">M</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>节点包装 <code class="language-plaintext highlighter-rouge">Node&lt;K, V&gt;</code> 沿用<a href="/algs/BST-0-Basic.html#完整包装">二叉搜索树里的实现</a>。</p>
+
+<p>而我对属性访问相关的宏 <code class="language-plaintext highlighter-rouge">attr</code> 和 <code class="language-plaintext highlighter-rouge">def_attr_macro</code> ，为了更加丰富的功能和完整一致的语义而进行了重构：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Evil hack for Rc&lt;RefCell&lt;T&gt;&gt;</span>
+<span class="nd">#[macro_export]</span>
+<span class="nd">macro_rules!</span> <span class="n">attr</span> <span class="p">{</span>
+    <span class="p">(</span><span class="n">ref_mut</span> <span class="p">|</span> <span class="nv">$node:expr</span><span class="p">,</span> <span class="nv">$attr:ident</span><span class="p">,</span> <span class="nv">$ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_unr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="nf">.clone</span><span class="p">()</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">_bor</span> <span class="o">=</span> <span class="n">_unr</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.borrow</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">_attr</span> <span class="o">=</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">_bor</span>.<span class="nv">$attr</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">const</span> <span class="nv">$ty</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="nv">$ty</span><span class="p">;</span>
+            <span class="nf">drop</span><span class="p">(</span><span class="n">_bor</span><span class="p">);</span>
+            <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="o">*</span><span class="n">_attr</span> <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"Access {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="k">ref</span> <span class="p">|</span> <span class="nv">$node:expr</span><span class="p">,</span> <span class="nv">$attr:ident</span><span class="p">,</span> <span class="nv">$ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_unr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="nf">.clone</span><span class="p">()</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">_bor</span> <span class="o">=</span> <span class="n">_unr</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.borrow</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">_attr</span> <span class="o">=</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">_bor</span>.<span class="nv">$attr</span><span class="p">)</span> <span class="k">as</span> <span class="o">*</span><span class="k">const</span> <span class="nv">$ty</span><span class="p">;</span>
+            <span class="nf">drop</span><span class="p">(</span><span class="n">_bor</span><span class="p">);</span>
+            <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span><span class="n">_attr</span> <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"Access {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">clone</span> <span class="p">|</span> <span class="nv">$node:expr</span><span class="p">,</span> <span class="nv">$attr:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_unr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="nf">.clone</span><span class="p">()</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">_bor</span> <span class="o">=</span> <span class="n">_unr</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.borrow</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">_attr</span> <span class="o">=</span> <span class="n">_bor</span>.<span class="nv">$attr</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="nf">drop</span><span class="p">(</span><span class="n">_bor</span><span class="p">);</span>
+            <span class="n">_attr</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"Access {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="k">self</span> <span class="p">|</span> <span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_unr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="nf">.clone</span><span class="p">()</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span> <span class="n">_unr</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"Call {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">self_mut</span> <span class="p">|</span> <span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_unr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="nf">.clone</span><span class="p">()</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="o">*</span> <span class="n">_unr</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"Call {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$node:expr</span><span class="p">,</span> <span class="nv">$attr:ident</span><span class="p">,</span> <span class="nv">$val:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">bor</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="nf">.clone</span><span class="p">()</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="n">bor</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.borrow_mut</span><span class="p">()</span>.<span class="nv">$attr</span> <span class="o">=</span> <span class="nv">$val</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"MAccess {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="nd">#[macro_export]</span>
+<span class="nd">macro_rules!</span> <span class="n">def_attr_macro</span> <span class="p">{</span>
+    <span class="p">(</span><span class="k">ref</span> <span class="p">|</span> <span class="nv">$</span><span class="p">((</span><span class="nv">$name:ident</span><span class="p">,</span><span class="nv">$ty:ty</span><span class="p">)),</span><span class="o">+</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nv">$</span><span class="p">(</span>
+            <span class="nd">macro_rules!</span> <span class="nv">$name</span> <span class="p">{</span>
+                <span class="p">(</span><span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="nd">attr!</span><span class="p">(</span><span class="k">ref</span> <span class="p">|</span> <span class="nv">$$node</span><span class="p">,</span> <span class="nv">$name</span><span class="p">,</span> <span class="nv">$ty</span><span class="p">)</span>
+                <span class="p">};</span>
+                <span class="p">(</span><span class="nv">$node:expr</span><span class="p">,</span> <span class="nv">$val:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="nd">attr!</span><span class="p">(</span><span class="nv">$$node</span><span class="p">,</span> <span class="nv">$name</span><span class="p">,</span> <span class="nv">$$val</span><span class="p">)</span>
+                <span class="p">};</span>
+            <span class="p">}</span>
+            <span class="nd">#[allow(unused)]</span>
+            <span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span> <span class="k">use</span> <span class="nv">$name</span><span class="p">;</span>
+
+            <span class="nn">coll</span><span class="p">::</span><span class="nd">paste!</span><span class="p">(</span>
+                <span class="nd">#[allow(unused)]</span>
+                <span class="nd">macro_rules!</span> <span class="p">[</span><span class="o">&lt;</span><span class="nv">$name</span> <span class="n">_mut</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="p">(</span><span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                        <span class="nd">attr!</span><span class="p">(</span><span class="n">ref_mut</span> <span class="p">|</span> <span class="nv">$$node</span><span class="p">,</span> <span class="nv">$name</span><span class="p">,</span> <span class="nv">$ty</span><span class="p">)</span>
+                    <span class="p">};</span>
+                <span class="p">}</span>
+                <span class="nd">#[allow(unused)]</span>
+                <span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span> <span class="k">use</span> <span class="p">[</span><span class="o">&lt;</span><span class="nv">$name</span> <span class="n">_mut</span><span class="o">&gt;</span><span class="p">];</span>
+            <span class="p">);</span>
+        <span class="p">)</span><span class="o">+</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="n">clone</span> <span class="p">|</span> <span class="nv">$</span><span class="p">(</span><span class="nv">$name:ident</span><span class="p">),</span><span class="o">+</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nv">$</span><span class="p">(</span>
+            <span class="nd">macro_rules!</span> <span class="nv">$name</span> <span class="p">{</span>
+                <span class="p">(</span><span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="nd">attr!</span><span class="p">(</span><span class="n">clone</span> <span class="p">|</span> <span class="nv">$$node</span><span class="p">,</span> <span class="nv">$name</span><span class="p">)</span>
+                <span class="p">};</span>
+                <span class="p">(</span><span class="nv">$node:expr</span><span class="p">,</span> <span class="nv">$val:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="nd">attr!</span><span class="p">(</span><span class="nv">$$node</span><span class="p">,</span> <span class="nv">$name</span><span class="p">,</span> <span class="nv">$$val</span><span class="p">)</span>
+                <span class="p">};</span>
+            <span class="p">}</span>
+            <span class="nd">#[allow(unused)]</span>
+            <span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span> <span class="k">use</span> <span class="nv">$name</span><span class="p">;</span>
+
+        <span class="p">)</span><span class="o">+</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="b-树结构">B-树结构</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_tree!</span><span class="p">(</span>
+    <span class="cd">/// B-Trees</span>
+    <span class="cd">///</span>
+    <span class="cd">/// Panic: M &gt; 2</span>
+    <span class="cd">///</span>
+    <span class="cd">/// Recommend: maybe 60, 90, 250</span>
+    <span class="cd">/// (Rust use M=12 (B=6, M=2B-1+1) maybe increase it in the futer)</span>
+    <span class="nd">#[derive(Debug)]</span>
+    <span class="n">BT</span> <span class="p">{}</span>
+<span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="b-树节点">B-树节点</h3>
+
+<p>前面都是公共的代码，而对于真正节点的定义 <code class="language-plaintext highlighter-rouge">Node_</code> 的定义是真正独特设计的体现，这里有两点需要注意的：</p>
+
+<ol>
+  <li>普通的 B 树就像二叉搜索树一样直接把键值存在一起，这里用 <code class="language-plaintext highlighter-rouge">KVEntry</code> 把它们直接放到一起便于集中管理，<code class="language-plaintext highlighter-rouge">KVEntry</code> 是一个以第一个元素为排序键的二元组。</li>
+  <li>对节点内键的存储使用了连续地址的向量结构，这是我在实现时的第一选择，在经典的 CPU 架构下，这样不超过 $100$ 个 指针宽度的数组的读写是最优的<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">9</a></sup></li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_node!</span><span class="p">();</span>
+
+<span class="nd">def_attr_macro!</span><span class="p">(</span><span class="n">clone</span><span class="p">|</span>
+    <span class="n">paren</span>
+<span class="p">);</span>
+<span class="nd">def_attr_macro!</span><span class="p">(</span><span class="k">ref</span><span class="p">|</span>
+    <span class="p">(</span><span class="n">entries</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">struct</span> <span class="n">Node_</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">entries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="cd">/// 即使是叶子节点，也要保持孩子数量 = k-v 数量 + 1</span>
+    <span class="n">children</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="n">paren</span><span class="p">:</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="kventry">KVEntry</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Debug,</span> <span class="nd">Clone)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">(</span><span class="k">pub</span> <span class="n">K</span><span class="p">,</span> <span class="k">pub</span> <span class="n">V</span><span class="p">);</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">drain</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">(</span><span class="k">self</span><span class="na">.0</span><span class="p">,</span> <span class="k">self</span><span class="na">.1</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">PartialEq</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="nb">PartialEq</span> <span class="k">for</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">eq</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="na">.0</span> <span class="o">==</span> <span class="n">other</span><span class="na">.0</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">PartialOrd</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="nb">PartialOrd</span> <span class="k">for</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">Ordering</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="na">.0</span><span class="nf">.partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">other</span><span class="na">.0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Eq</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="nb">Eq</span> <span class="k">for</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="nb">Ord</span> <span class="k">for</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Ordering</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">other</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="实现-基础方法">实现-&gt;基础方法</h2>
+
+<p>如果是从二叉搜索树第一次接触到 B 树这样的 $m$ 路搜索树（$m \geqslant 3$），会感到很多观念上的不适应，一些基础操作到底怎么实现，难以想得很清楚<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">10</a></sup>。</p>
+
+<p>一个关键的区别在于二叉搜索树一个节点只有一个键，在这种情况下，键就是节点，节点就是键，找到了节点就找到了键，反之亦然。</p>
+
+<p>而 B 树这样的多路搜索树不止有一个键，找到了节点后还要在节点里寻找键，不仅考虑得是节点间的关系，还要考虑节点内键之间的关系，以及某个键的对应的左右孩子的索引位置。</p>
+
+<p>因此这里我们首先要点出键和孩子在节点内的布局。</p>
+
+<h3 id="节点布局">节点布局</h3>
+
+<ol>
+  <li>对于键，按向量的地址增长顺序从小到大排列；</li>
+  <li>对于孩子，也按照同样地顺序排列</li>
+</ol>
+
+<p>这样有 $\text{len(keys) + 1 = len(children)}$ ，并且节点内索引为 $i$ 的键对应的左右孩子分别为 $\text{children}[i]$ 和 $\text{children}[i+1]$ 。</p>
+
+<p>也就是说，与孩子同编号的是右邻居键，每个键与它的左孩子同编号：</p>
+
+<p><img src="/../assets/img/bt_basic/key_children_idx.png" alt="" /></p>
+
+<h3 id="创建节点">创建节点</h3>
+
+<p>我们同样可以使用二叉搜索树那里用过的 <code class="language-plaintext highlighter-rouge">node</code> 宏来简化节点的创建。</p>
+
+<p>创建新节点的情景有两种：</p>
+
+<ol>
+  <li>树为空的时候，从新开始创建一个叶子节点，这时只需要指明键值对儿即可；</li>
+  <li>节点分裂以及 <code class="language-plaintext highlighter-rouge">push_new_level</code> 的时候，这时需要指明节点的各个属性</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">coll</span><span class="p">::{</span> <span class="o">*</span><span class="p">,</span> <span class="n">node</span> <span class="k">as</span> <span class="n">aux_node</span> <span class="p">};</span>
+
+<span class="c1">// ...</span>
+
+<span class="nd">macro_rules!</span> <span class="n">node</span> <span class="p">{</span>
+    <span class="p">(</span><span class="n">kv</span><span class="p">|</span> <span class="nv">$k:expr</span><span class="p">,</span> <span class="nv">$v:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="c1">// overflow is M</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">entries</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">M</span><span class="p">);</span>
+        <span class="n">entries</span><span class="nf">.push</span><span class="p">(</span><span class="nf">KVEntry</span><span class="p">(</span><span class="nv">$k</span><span class="p">,</span> <span class="nv">$v</span><span class="p">));</span>
+
+        <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span> <span class="p">;</span> <span class="mi">2</span><span class="p">];</span>
+
+        <span class="nd">node!</span><span class="p">(</span><span class="n">basic</span><span class="p">|</span> <span class="n">entries</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">())</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">basic</span><span class="p">|</span> <span class="nv">$entries:expr</span><span class="p">,</span> <span class="nv">$children:expr</span><span class="p">,</span> <span class="nv">$paren:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="nd">aux_node!</span><span class="p">(</span><span class="n">FREE</span> <span class="p">{</span>
+            <span class="n">entries</span><span class="p">:</span> <span class="nv">$entries</span><span class="p">,</span>
+            <span class="n">children</span><span class="p">:</span> <span class="nv">$children</span><span class="p">,</span>
+            <span class="n">paren</span><span class="p">:</span> <span class="nv">$paren</span>
+        <span class="p">})</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="求取子节点索引">求取子节点索引</h3>
+
+<p>在二叉搜索树的系列里常用到一个给出子节点，求它是父节点的左孩子还是右孩子的操作，使用这个 <code class="language-plaintext highlighter-rouge">index_of_child</code> 宏。</p>
+
+<p>在 B 树上更有这样需求，不管是获取键还是孩子。</p>
+
+<p><strong>最普遍性的方法是遍历父节点的孩子索引</strong>：</p>
+
+<p>显然它的时间复杂度是线性的，是 $O(m)$</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// O(M)</span>
+<span class="nd">macro_rules!</span> <span class="n">index_of_child_by_rc</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$p</span><span class="p">:</span> <span class="n">expr</span><span class="p">,</span> <span class="nv">$child</span><span class="p">:</span> <span class="n">expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$p</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$child</span><span class="p">;</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">child</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.position</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="n">child</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">idx</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"There are no matched child"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>虽然 $m$ 也不会很大，但是线性时间复杂度显然有改进的余地。</p>
+
+<p>我们可以直接通过利用孩子节点里任一一个<strong>键在父节点上执行二分查找</strong>：</p>
+
+<p>时间复杂度就变成对数级的，是 $O(\text{log}\ m)$</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// O(logM) search by key</span>
+<span class="nd">macro_rules!</span> <span class="n">index_of_child</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$p</span><span class="p">:</span> <span class="n">expr</span><span class="p">,</span> <span class="nv">$child</span><span class="p">:</span> <span class="n">expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$p</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$child</span><span class="p">;</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">child</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">match</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.binary_search</span><span class="p">(</span><span class="n">child</span><span class="nf">.last_entry</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nf">Ok</span><span class="p">(</span><span class="n">oldidx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="nd">panic!</span><span class="p">(</span><span class="s">"Dup key on {oldidx}"</span><span class="p">);</span>
+            <span class="p">},</span>
+            <span class="nf">Err</span><span class="p">(</span><span class="n">inseridx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="n">inseridx</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">#[track_caller]</span>
+    <span class="k">fn</span> <span class="nf">last_entry</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">ent</span><span class="p">)</span> <span class="o">=</span> <span class="nd">entries!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.last</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">ent</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"EMPTY entries"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>但是这个方法存在限制，无法适用于空节点的情况，在删除键的一些情境下只能回归到普遍性的算法上。</p>
+
+<h3 id="搜索到叶子节点">搜索到叶子节点</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// 漂亮的尾递归</span>
+    <span class="k">fn</span> <span class="n">search</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="k">Self</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span>
+    <span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">match</span> <span class="nd">entries!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.binary_search_by_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">k</span><span class="p">,</span> <span class="p">|</span><span class="n">ent</span><span class="p">|</span> <span class="n">ent</span><span class="na">.0</span><span class="nf">.borrow</span><span class="p">())</span> <span class="p">{</span>
+                <span class="nf">Ok</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nf">Some</span><span class="p">((</span><span class="k">self</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">idx</span><span class="p">)),</span>
+                <span class="nf">Err</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nd">children!</span><span class="p">(</span><span class="k">self</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.search</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nb">None</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="实现-公开方法">实现-&gt;公开方法</h2>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="n">M</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"M should be greater than 2"</span><span class="p">);</span>
+
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">root</span><span class="p">:</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">get</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span>
+    <span class="p">{</span>
+        <span class="k">self</span>
+        <span class="py">.root</span>
+        <span class="nf">.search</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="nf">.map</span><span class="p">(|(</span><span class="n">node</span><span class="p">,</span> <span class="n">idx</span><span class="p">)|</span> <span class="o">&amp;</span><span class="nd">entries!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="na">.1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">get_mut</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">mut</span> <span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span>
+    <span class="p">{</span>
+        <span class="k">self</span>
+        <span class="py">.root</span>
+        <span class="nf">.search</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="nf">.map</span><span class="p">(|(</span><span class="n">node</span><span class="p">,</span> <span class="n">idx</span><span class="p">)|</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="na">.1</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="实现-插入方法">实现-&gt;插入方法</h2>
+
+<h3 id="搜索插入">搜索、插入</h3>
+
+<p>这个插入的主流程和二叉搜索树的插入结构上是类似的。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">y</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">x</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">match</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.binary_search_by_key</span><span class="p">(</span><span class="o">&amp;&amp;</span><span class="n">k</span><span class="p">,</span> <span class="p">|</span><span class="n">ent</span><span class="p">|</span> <span class="o">&amp;</span><span class="n">ent</span><span class="na">.0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nf">Ok</span><span class="p">(</span><span class="n">idx_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">idx_</span><span class="p">;</span>
+
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">},</span>
+                <span class="nf">Err</span><span class="p">(</span><span class="n">idx_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">idx_</span><span class="p">;</span>
+
+                    <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">y</span><span class="p">)[</span><span class="n">idx</span><span class="p">];</span>
+                <span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Some</span><span class="p">(</span>
+                <span class="nf">replace</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="na">.1</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">y</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">kv</span><span class="p">|</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="cm">/* insert into leaf */</span>
+
+            <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nf">KVEntry</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span><span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">());</span>
+
+            <span class="k">if</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="n">M</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.promote</span><span class="p">(</span><span class="n">y</span><span class="nf">.clone</span><span class="p">());</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nb">None</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="节点提升">节点提升</h3>
+
+<p>Rust 标准库里的 <code class="language-plaintext highlighter-rouge">Vec</code> 为我们提供了一切的便利方法，从二分查找到向量分割（<code class="language-plaintext highlighter-rouge">split_off</code>）。不过与其说是 Rust 为我们提供了便利，不如说是它的 API 设计指导了我们的代码风格。</p>
+
+<p>回顾之前的<a href="#插入">节点提升的算法</a>，对比下这里的代码实现：</p>
+
+<h4 id="分离节点">分离节点</h4>
+
+<ol>
+  <li>目标节点的键值按照 $\lceil {\large\frac{m}{2}}\rceil$ 分出右半部分，左半部分弹出尾部的键值作为提升；</li>
+  <li>目标节点的孩子按照 $\lceil {\large\frac{m}{2}}\rceil$ 分出右半部分，把分出的这些键值和孩子组合成新的右邻居节点；</li>
+  <li>不要忘记更新新节点的孩子的反向引用指向自己</li>
+</ol>
+
+<h4 id="检查是否停止">检查是否停止</h4>
+
+<ol>
+  <li>如果到达根节点，把提升的键值，和分裂出的两个孩子组合成新的根节点；</li>
+  <li>否则把提升的键值和右邻节点插入到对应的父节点中，检查父节点是否溢出，递归地进行提升</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// 漂亮的尾递归</span>
+    <span class="k">fn</span> <span class="nf">promote</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">(),</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">());</span>
+
+        <span class="cm">/* split node */</span>
+
+        <span class="k">let</span> <span class="n">split_pos</span> <span class="o">=</span> <span class="n">M</span><span class="nf">.div_ceil</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">entries_x</span> <span class="o">=</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">entries_x2</span> <span class="o">=</span> <span class="n">entries_x</span><span class="nf">.split_off</span><span class="p">(</span><span class="n">split_pos</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">entry_head</span> <span class="o">=</span> <span class="n">entries_x</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="k">let</span> <span class="n">children_x2</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.split_off</span><span class="p">(</span><span class="n">split_pos</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">x2</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">basic</span><span class="p">|</span> <span class="n">entries_x2</span><span class="p">,</span> <span class="n">children_x2</span><span class="p">,</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">());</span>
+        <span class="nd">children_revref!</span><span class="p">(</span><span class="n">x2</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">p</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="cm">/* push new level */</span>
+
+            <span class="k">let</span> <span class="n">entries</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">entry_head</span><span class="p">];</span>
+            <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">x2</span><span class="p">];</span>
+
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">basic</span><span class="p">|</span> <span class="n">entries</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">());</span>
+
+            <span class="nd">children_revref!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="cm">/* insert into paren node */</span>
+
+            <span class="k">let</span> <span class="n">x_idx</span> <span class="o">=</span> <span class="nd">index_of_child!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>
+
+            <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="n">x_idx</span><span class="p">,</span> <span class="n">entry_head</span><span class="p">);</span>
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="n">x_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x2</span><span class="nf">.clone</span><span class="p">());</span>
+
+            <span class="nd">paren!</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">p</span><span class="nf">.downgrade</span><span class="p">());</span>
+
+            <span class="k">if</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.promote</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>   
+<span class="p">}</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">children_revref</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$x:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$x</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="k">in</span> <span class="n">children</span> <span class="p">{</span>
+                    <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">x</span><span class="nf">.downgrade</span><span class="p">());</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="实现-删除方法">实现-&gt;删除方法</h2>
+
+<h3 id="搜索删除">搜索、删除</h3>
+
+<p>删除的主流程，同样类似于二叉搜索树的算法，找到目标键，和后继键交换，确保最终要删除的键位于叶子节点。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">remove</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">Debug</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="k">mut</span> <span class="n">x</span><span class="p">,</span> <span class="k">mut</span> <span class="n">idx</span><span class="p">))</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.search</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="cm">/* Swap with its successor leaf node */</span>
+
+            <span class="k">if</span> <span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="p">(</span><span class="n">succ</span><span class="p">,</span> <span class="n">succ_idx</span><span class="p">)</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="nf">.minimum</span><span class="p">();</span>
+
+                <span class="nf">swap</span><span class="p">(</span>
+                    <span class="o">&amp;</span><span class="k">mut</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">idx</span><span class="p">],</span>
+                    <span class="o">&amp;</span><span class="k">mut</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">succ</span><span class="p">)[</span><span class="n">succ_idx</span><span class="p">],</span>
+                <span class="p">);</span>
+
+                <span class="n">x</span> <span class="o">=</span> <span class="n">succ</span><span class="p">;</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">succ_idx</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_none</span><span class="p">());</span>
+
+            <span class="k">let</span> <span class="n">popped</span> <span class="o">=</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="n">idx</span><span class="p">);</span>
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.pop</span><span class="p">();</span>
+
+            <span class="k">if</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+                <span class="p">}</span>
+                <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">self</span><span class="nf">.unpromote</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="nf">Some</span><span class="p">(</span><span class="n">popped</span><span class="na">.1</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nb">None</span>
+        <span class="p">}</span>
+    <span class="p">}</span>   
+<span class="p">}</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// Left most</span>
+    <span class="k">fn</span> <span class="nf">minimum</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="k">Self</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">x</span> <span class="o">=</span> <span class="k">self</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">y</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+
+        <span class="k">while</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.first</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="节点下沉">节点下沉</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+	<span class="k">fn</span> <span class="nf">unpromote</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Exclude leaf node</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span>
+            <span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_none</span><span class="p">()</span>
+                <span class="p">||</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">);</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Err</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">))</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.try_rebalancing</span><span class="p">(</span><span class="o">&amp;</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+            <span class="cm">/* merge with sib node (rebalance failed means that each node are small) */</span>
+
+            <span class="c1">// merge left child</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">));</span>
+                <span class="nd">merge_node!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="c1">// merge right child</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span><span class="nd">entries_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+                <span class="nd">merge_node!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+                <span class="c1">// pop new level</span>
+                <span class="k">if</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_some</span><span class="p">());</span>
+                    <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">(),</span> <span class="mi">1</span><span class="p">);</span>
+
+                    <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+                    <span class="nd">paren!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">());</span>
+                <span class="p">}</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">self</span><span class="nf">.unpromote</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="尝试重平衡">尝试重平衡</h3>
+
+<p>这里使用了二叉搜索树里定义的 <code class="language-plaintext highlighter-rouge">Dir</code> 枚举结构，提供方向标识。</p>
+
+<p>对节点的重平衡当初是用宏来描述的，但完全可以替换成一般的方法。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="k">crate</span><span class="p">::</span><span class="nn">bst</span><span class="p">::{</span><span class="nb">Left</span><span class="p">,</span> <span class="nb">Right</span><span class="p">};</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+	<span class="k">fn</span> <span class="nf">try_rebalancing</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span>
+    <span class="k">-&gt;</span> <span class="nn">std</span><span class="p">::</span><span class="nn">result</span><span class="p">::</span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="p">(</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span>
+    <span class="p">{</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="nd">index_of_child_by_rc!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>
+
+        <span class="cm">/* Check if siblings has remains */</span>
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="nd">try_node_redistribution!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">Left</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="nd">try_node_redistribution!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">Right</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nf">Err</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="cd">/// (parent, left-idx, sib_dir)</span>
+<span class="nd">macro_rules!</span> <span class="n">try_node_redistribution</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$p:expr</span><span class="p">,</span> <span class="nv">$idx:expr</span><span class="p">,</span> <span class="nv">$sib_dir:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$p</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="nv">$idx</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">sib_dir</span> <span class="o">=</span> <span class="nv">$sib_dir</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">children</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">children</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">];</span>
+
+        <span class="k">let</span> <span class="n">sib</span> <span class="o">=</span> <span class="k">if</span> <span class="n">sib_dir</span><span class="nf">.is_left</span><span class="p">()</span> <span class="p">{</span> <span class="n">left</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">right</span> <span class="p">};</span>
+
+        <span class="k">if</span> <span class="nd">children!</span><span class="p">(</span><span class="n">sib</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_none</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="p">||</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="n">sib_dir</span><span class="nf">.is_left</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="nf">replace</span><span class="p">(</span>
+                        <span class="o">&amp;</span><span class="k">mut</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">],</span>
+                        <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="p">);</span>
+
+                <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+                <span class="k">if</span> <span class="n">child</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">right</span><span class="nf">.downgrade</span><span class="p">());</span>
+                <span class="p">}</span>
+
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">child</span>
+                <span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span>
+                    <span class="nf">replace</span><span class="p">(</span>
+                        <span class="o">&amp;</span><span class="k">mut</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">],</span>
+                        <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">);</span>
+
+                <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="n">child</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">left</span><span class="nf">.downgrade</span><span class="p">());</span>
+                <span class="p">}</span>
+
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span>
+                    <span class="n">child</span>
+                <span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(())</span>
+        <span class="p">}</span>
+	<span class="p">}</span> <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="合并节点">合并节点</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// (parent, left-idx)</span>
+<span class="nd">macro_rules!</span> <span class="n">merge_node</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$p:expr</span><span class="p">,</span> <span class="nv">$idx:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$p</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="nv">$idx</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="n">children</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="n">children</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="c1">// merge right's children to the left</span>
+
+        <span class="k">let</span> <span class="n">left_children</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">child</span> <span class="k">in</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.drain</span><span class="p">(</span><span class="o">..</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">child</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">left</span><span class="nf">.downgrade</span><span class="p">());</span>
+            <span class="p">}</span>
+
+            <span class="n">left_children</span><span class="nf">.push</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">// merge entries</span>
+        <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.extend</span><span class="p">(</span><span class="nd">entries_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.drain</span><span class="p">(</span><span class="o">..</span><span class="p">));</span>
+
+        <span class="c1">// remove right from p</span>
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h2 id="高空台">高空台</h2>
+
+<p>这里介绍了测试与调试相关的代码</p>
+
+<h3 id="打印节点">打印节点</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">key</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$x:expr</span><span class="p">,</span> <span class="nv">$idx:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="o">&amp;</span><span class="nd">entries!</span><span class="p">(</span><span class="nv">$x</span><span class="p">)[</span><span class="nv">$idx</span><span class="p">]</span><span class="na">.0</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="n">Debug</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">Debug</span> <span class="k">for</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">fmt</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">Formatter</span><span class="o">&lt;</span><span class="nv">'_</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">kn</span> <span class="o">=</span> <span class="nd">entries!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.len</span><span class="p">();</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">kn</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="nd">write!</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">"{:?}, "</span><span class="p">,</span> <span class="nd">key!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="nd">write!</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">"{:?}"</span><span class="p">,</span> <span class="nd">key!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">kn</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">write!</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">"nil"</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nf">Ok</span><span class="p">(())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="打印树">打印树</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="n">debug_write</span><span class="o">&lt;</span><span class="n">W</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">fmt</span><span class="p">::</span><span class="n">Write</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="p">,</span>
+        <span class="n">f</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">W</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nn">std</span><span class="p">::</span><span class="nn">fmt</span><span class="p">::</span><span class="nb">Result</span>
+    <span class="k">where</span>
+    	<span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">fmt</span><span class="p">::</span><span class="n">Debug</span><span class="p">,</span>
+    	<span class="n">V</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">fmt</span><span class="p">::</span><span class="n">Debug</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">use</span> <span class="nn">common</span><span class="p">::</span><span class="n">vecdeq</span><span class="p">;</span>
+
+        <span class="cm">/* print header */</span>
+
+        <span class="nd">writeln!</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">"{self:?}"</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="cm">/* print body */</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Ok</span><span class="p">(());</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">this_q</span> <span class="o">=</span> <span class="nd">vecdeq!</span><span class="p">[</span><span class="nd">vec!</span><span class="p">[</span><span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">()]];</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="o">!</span><span class="n">this_q</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">writeln!</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+            <span class="nd">writeln!</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">"############ Level: {lv} #############"</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+            <span class="nd">writeln!</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">nxt_q</span> <span class="o">=</span> <span class="nd">vecdeq!</span><span class="p">[];</span>
+
+            <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">children</span><span class="p">)</span> <span class="o">=</span> <span class="n">this_q</span><span class="nf">.pop_front</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">in</span> <span class="n">children</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+                    <span class="k">if</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="n">nxt_q</span><span class="nf">.push_back</span><span class="p">(</span><span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.clone</span><span class="p">());</span>
+                    <span class="p">}</span>
+
+                    <span class="nd">writeln!</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">"({i:02}): {x:?} (p: {p:?})"</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="nd">writeln!</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">this_q</span> <span class="o">=</span> <span class="n">nxt_q</span><span class="p">;</span>
+            <span class="n">lv</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nd">writeln!</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">"------------- end --------------</span><span class="se">\n</span><span class="s">"</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="nf">Ok</span><span class="p">(())</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">debug_print</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span>
+    <span class="k">where</span>
+    <span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">fmt</span><span class="p">::</span><span class="n">Debug</span><span class="p">,</span>
+    <span class="n">V</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">fmt</span><span class="p">::</span><span class="n">Debug</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">cache</span> <span class="o">=</span> <span class="nn">String</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+        <span class="k">self</span><span class="nf">.debug_write</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">cache</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="nd">println!</span><span class="p">(</span><span class="s">"{cache}"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="性质校验">性质校验</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>        
+	<span class="k">fn</span> <span class="nf">validate</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span>
+    <span class="k">where</span>
+    	<span class="n">K</span><span class="p">:</span> <span class="n">Debug</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">collections</span><span class="p">::</span><span class="n">VecDeque</span><span class="p">;</span>
+
+        <span class="k">use</span> <span class="nn">common</span><span class="p">::</span><span class="n">vecdeq</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">cur_q</span> <span class="o">=</span> <span class="nd">vecdeq!</span><span class="p">[</span><span class="nd">vecdeq!</span><span class="p">[</span><span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">(),</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">()]];</span>
+
+        <span class="k">while</span> <span class="o">!</span><span class="n">cur_q</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">nxt_q</span> <span class="o">=</span> <span class="nd">vecdeq!</span><span class="p">[];</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">leaf_num</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">internal_num</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+            <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="k">mut</span> <span class="n">group</span><span class="p">)</span> <span class="o">=</span> <span class="n">cur_q</span><span class="nf">.pop_front</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">group</span><span class="nf">.pop_front</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+                <span class="k">for</span> <span class="n">child</span> <span class="k">in</span> <span class="n">group</span><span class="nf">.iter</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="nd">assert!</span><span class="p">(</span><span class="n">child</span><span class="nf">.is_some</span><span class="p">());</span>
+
+                    <span class="nd">assert_eq!</span><span class="p">(</span>
+                        <span class="nd">entries!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="nd">children!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">(),</span>
+                        <span class="s">"{child:?}"</span>
+                    <span class="p">);</span>
+                    <span class="nd">assert!</span><span class="p">(</span>
+                        <span class="nd">children!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">M</span><span class="p">,</span>
+                        <span class="s">"{child:?}: {}"</span><span class="p">,</span>
+                        <span class="nd">children!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span>
+                    <span class="p">);</span>
+                    <span class="nd">assert!</span><span class="p">(</span>
+                        <span class="nd">entries!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">()</span>
+                    <span class="p">);</span>
+
+                    <span class="c1">// Exclude leaf</span>
+                    <span class="k">if</span> <span class="nd">children!</span><span class="p">(</span><span class="n">child</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="nd">assert!</span><span class="p">(</span><span class="nd">entries!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+                        <span class="n">leaf_num</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="c1">// Exclude the root (which is always one when it's internal node)</span>
+                        <span class="k">if</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                            <span class="nd">assert!</span><span class="p">(</span>
+                                <span class="nd">entries!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span>
+                                <span class="o">&gt;=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span>
+                            <span class="p">);</span>
+                        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                            <span class="nd">assert!</span><span class="p">(</span><span class="nd">children!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">);</span>
+                        <span class="p">}</span>
+
+                        <span class="n">internal_num</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+                        <span class="k">let</span> <span class="k">mut</span> <span class="n">nxt_children</span> <span class="o">=</span>
+                        <span class="nn">VecDeque</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="nd">children!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.clone</span><span class="p">());</span>
+                        <span class="n">nxt_children</span><span class="nf">.push_front</span><span class="p">(</span><span class="n">child</span><span class="nf">.clone</span><span class="p">());</span>
+
+                        <span class="n">nxt_q</span><span class="nf">.push_back</span><span class="p">(</span><span class="n">nxt_children</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+                <span class="c1">// All leaves are in same level</span>
+                <span class="nd">assert!</span><span class="p">(</span>
+                    <span class="n">leaf_num</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">internal_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s">"leaf: {leaf_num}, internal: {internal_num}"</span>
+                <span class="p">);</span>
+
+                <span class="c1">// Ordered</span>
+                <span class="k">if</span> <span class="n">p</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">last_child</span> <span class="o">=</span> <span class="n">group</span><span class="nf">.pop_back</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+                    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span> <span class="k">in</span> <span class="n">group</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="nd">assert!</span><span class="p">(</span><span class="nd">entries!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="nf">.is_sorted</span><span class="p">());</span>
+
+                        <span class="k">let</span> <span class="n">child_max_key</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">child</span><span class="nf">.last_entry</span><span class="p">()</span><span class="na">.0</span><span class="p">;</span>
+                        <span class="k">let</span> <span class="n">branch_key</span> <span class="o">=</span> <span class="nd">key!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+
+                        <span class="nd">assert!</span><span class="p">(</span>
+                            <span class="n">child_max_key</span> <span class="o">&lt;</span> <span class="n">branch_key</span><span class="p">,</span>
+                            <span class="s">"child: {child_max_key:?}, branch:{branch_key:?}"</span>
+                        <span class="p">);</span>
+                    <span class="p">}</span>
+
+                    <span class="nd">assert!</span><span class="p">(</span><span class="nd">key!</span><span class="p">(</span><span class="n">last_child</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">p</span><span class="nf">.last_entry</span><span class="p">()</span><span class="na">.0</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="n">cur_q</span> <span class="o">=</span> <span class="n">nxt_q</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="注解">注解</h2>
+
+<hr />
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>这是为了让插入提升能够在根节点处终止 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>当然实际上其中一个节点可以是旧节点的重新利用 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>这个过程在很多实现里被惯例地称为 <code class="language-plaintext highlighter-rouge">push_new_level</code> 之类的名字 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>也可以采用惰性删除的方法，但这里就不介绍了 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>当然也可以合并目标节点、父节点键和右邻居节点 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>根节点键不足的时候也就是只有空节点和一个孩子的情况 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>这个降低树高的过程可以称为 <code class="language-plaintext highlighter-rouge">pop_level</code> <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>如果可以，我不愿意多打哪怕一个重复的字符 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:8" role="doc-endnote">
+      <p>后面的以一种实现的性能测试实际完全验证了我的这种认识 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:9" role="doc-endnote">
+      <p>对于我来讲，想不清楚的就躺床上慢慢想，这也是笛卡尔思考问题的办法，当初解析几何的想法就是在床上想出来的 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
     </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
 
+    </div> -->
   </div>
 
 </article>

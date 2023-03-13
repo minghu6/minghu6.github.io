@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            Common Lisp 语法
+            BT(1) - B+* 树（Vec）
         
     "
 />
 
-<meta property="og:url" content="//lang/common-lisp-grammer.html" />
+<meta property="og:url" content="//algs/BT-1-BPT.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        Common Lisp 语法
+        BT(1) - B+* 树（Vec）
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">Common Lisp 语法</h1>
+    <h1 class="post__title__text">BT(1) - B+* 树（Vec）</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/lang.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
-            ProgLang
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      July 22, 2020
+      March 13, 2023
     </div>
     
   </div>
@@ -127,17 +127,18 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><ol>
-  <li>
-    <p>列表和点对的区别：</p>
+    <div class="post__content"><p>在前一篇的文章里介绍了 B 树，这里介绍它的变种 B+ 树以及 B* 性质的实现。</p>
 
-    <p>点对是列表构成的基本单元，列表通过点对嵌套构成:</p>
+<p>如果说之前好不容易把观念从二叉搜索树转换到了 B 树，那么从现在开始，从 B 树到 B+ 树又需要有一个很大的观念转变。不过请放心，本文讲得是依靠 <code class="language-plaintext highlighter-rouge">Vec</code> 实现的 B+ 树，后面还会介绍用 <code class="language-plaintext highlighter-rouge">TreeMap</code> 实现的 B+ 树，那时又需要一个很大的观念转变。</p>
 
-    <p><code class="language-plaintext highlighter-rouge">'(1 . (2 . nil))</code></p>
+<p>整个 B 树系列计划了三篇文章，即使层层铺叠，每篇间的学习曲线都很陡峭，可谓是一山三绝弯！</p>
 
-    <p>反过来，点对<code class="language-plaintext highlighter-rouge">(1 . 2)</code>看起来像长度为2的列表，但如果它的cdr不是列表，那么它就不是列表</p>
-  </li>
-</ol>
+<h2 id="概念基础">概念基础</h2>
+
+<h2 id="注解">注解</h2>
+
+<hr />
+
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
