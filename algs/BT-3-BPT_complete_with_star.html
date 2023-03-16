@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            BT(3) - B+树完整版以及B*性质
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/BT-3-BPT_complete_with_star.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        BT(3) - B+树完整版以及B*性质
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">BT(3) - B+树完整版以及B*性质</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      March 14, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p>继承前两篇 <a href="/algs/BT-1-BPT.html">B+树(Vec)</a> 和 <a href="/algs/BT-2-BPT2.html">B+树(TreeMap)</a> 的完整版 B+ 树 (Vec) 实现。系列所有代码可以在<a href="https://github.com/minghu6/rust-minghu6/tree/snapshot-2">这里</a></p>
+
+<h2 id="数据结构">数据结构</h2>
+
+<h3 id="树">树</h3>
+
+<p>为了 <code class="language-plaintext highlighter-rouge">pop_first</code> / <code class="language-plaintext highlighter-rouge">pop_last</code> 增加了最小、最大节点。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_tree!</span><span class="p">(</span>
+    <span class="cd">/// B+ Trees</span>
+    <span class="cd">///</span>
+    <span class="n">BPT</span> <span class="p">{</span>
+        <span class="n">cnt</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+        <span class="n">min_node</span><span class="p">:</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">max_node</span><span class="p">:</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">);</span>
+</code></pre></div></div>
+
+<h2 id="新增简单方法">新增简单方法</h2>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.cnt</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">nodes</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+        <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_generator</span><span class="p">(</span><span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="n">cur</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">yield</span> <span class="n">cur</span><span class="nf">.clone</span><span class="p">();</span>
+
+                <span class="n">cur</span> <span class="o">=</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">entries</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">K</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_generator</span><span class="p">(</span><span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="k">in</span> <span class="k">self</span><span class="nf">.nodes</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">ent</span> <span class="k">in</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">ent</span><span class="na">.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ent</span><span class="na">.1</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">keys</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">K</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.entries</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|</span><span class="n">ent</span><span class="p">|</span> <span class="n">ent</span><span class="na">.0</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">values</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.entries</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|</span><span class="n">ent</span><span class="p">|</span> <span class="n">ent</span><span class="na">.1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">into_iter</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+        <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_generator</span><span class="p">(</span><span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="n">cur</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">nxt</span> <span class="o">=</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+
+                <span class="k">for</span> <span class="n">ent</span> <span class="k">in</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span><span class="nf">.drain</span><span class="p">(</span><span class="o">..</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">yield</span> <span class="n">ent</span><span class="nf">.drain</span><span class="p">();</span>
+                <span class="p">}</span>
+
+                <span class="n">cur</span> <span class="o">=</span> <span class="n">nxt</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="nf">drop</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+    
+    <span class="cd">/// collect all item without drop itself used for BPT2::remove</span>
+    <span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span> <span class="k">fn</span> <span class="nf">drain_all</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+        <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_generator</span><span class="p">(</span><span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="k">while</span> <span class="n">cur</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">nxt</span> <span class="o">=</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+
+                <span class="k">for</span> <span class="n">ent</span> <span class="k">in</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span><span class="nf">.drain</span><span class="p">(</span><span class="o">..</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">yield</span> <span class="n">ent</span><span class="nf">.drain</span><span class="p">();</span>
+                <span class="p">}</span>
+
+                <span class="n">cur</span> <span class="o">=</span> <span class="n">nxt</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline]</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">min_key</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="n">K</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.min_node</span>
+            <span class="nf">.upgrade</span><span class="p">()</span>
+            <span class="nf">.min_key</span><span class="p">()</span>
+            <span class="nf">.map</span><span class="p">(|</span><span class="n">k</span><span class="p">|</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span><span class="p">(</span><span class="n">k</span> <span class="k">as</span> <span class="o">*</span><span class="k">const</span> <span class="n">K</span><span class="p">)</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline]</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">max_key</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="n">K</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.max_node</span>
+            <span class="nf">.upgrade</span><span class="p">()</span>
+            <span class="nf">.max_key</span><span class="p">()</span>
+            <span class="nf">.map</span><span class="p">(|</span><span class="n">k</span><span class="p">|</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span><span class="p">(</span><span class="n">k</span> <span class="k">as</span> <span class="o">*</span><span class="k">const</span> <span class="n">K</span><span class="p">)</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="修改的既有方法">修改的既有方法</h2>
+
+<h3 id="插入">插入</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">search_to_leaf</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">k</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.insert_into_leaf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">insert_into_leaf</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="cm">/* NonInternal Node */</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="o">!</span><span class="n">x</span><span class="nf">.is_internal</span><span class="p">());</span>
+
+        <span class="cm">/* Nil */</span>
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">kv</span> <span class="p">|</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+            <span class="k">self</span><span class="py">.min_node</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.downgrade</span><span class="p">();</span>
+            <span class="k">self</span><span class="py">.max_node</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.downgrade</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="cm">/* Leaf */</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="k">match</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.binary_search_by_key</span><span class="p">(</span><span class="o">&amp;&amp;</span><span class="n">k</span><span class="p">,</span> <span class="p">|</span><span class="n">ent</span><span class="p">|</span> <span class="o">&amp;</span><span class="n">ent</span><span class="na">.0</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="nf">Ok</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nf">Some</span><span class="p">(</span><span class="nf">replace</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="na">.1</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="p">}</span>
+                <span class="nf">Err</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">idx</span><span class="p">,</span>
+            <span class="p">};</span>
+
+            <span class="cm">/* insert into leaf */</span>
+
+            <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nf">KVEntry</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+
+            <span class="k">self</span><span class="nf">.insert_retracing</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">self</span><span class="py">.cnt</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="nb">None</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">insert_retracing</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="n">M</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.promote</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">promote</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">x</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+        <span class="cm">/* split node */</span>
+
+        <span class="k">let</span> <span class="n">lpos</span> <span class="o">=</span> <span class="n">M</span><span class="nf">.div_floor</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">hpos</span> <span class="o">=</span> <span class="n">M</span><span class="nf">.div_ceil</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">head_key</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">x2</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_leaf</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">(),</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">());</span>
+
+            <span class="c1">// keep key for leaf</span>
+            <span class="k">let</span> <span class="n">entries_x2</span> <span class="o">=</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.split_off</span><span class="p">(</span><span class="n">lpos</span><span class="p">);</span>
+
+            <span class="n">head_key</span> <span class="o">=</span> <span class="n">entries_x2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="n">x2</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span>
+                <span class="n">basic</span> <span class="o">-</span> <span class="n">leaf</span> <span class="p">|</span> <span class="n">entries_x2</span><span class="p">,</span>
+                <span class="nd">succ!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.downgrade</span><span class="p">(),</span>
+                <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span>
+            <span class="p">);</span>
+
+            <span class="nd">succ!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x2</span><span class="nf">.clone</span><span class="p">());</span>
+
+            <span class="k">if</span> <span class="n">x</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.max_node</span><span class="nf">.upgrade</span><span class="p">())</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.max_node</span> <span class="o">=</span> <span class="n">x2</span><span class="nf">.downgrade</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="nd">keys!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">(),</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">());</span>
+
+            <span class="k">let</span> <span class="n">keys_x2</span> <span class="o">=</span> <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.split_off</span><span class="p">(</span><span class="n">hpos</span><span class="p">);</span>
+
+            <span class="n">head_key</span> <span class="o">=</span> <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+            <span class="k">let</span> <span class="n">children_x2</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.split_off</span><span class="p">(</span><span class="n">hpos</span><span class="p">);</span>
+
+            <span class="n">x2</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span>
+                <span class="n">basic</span> <span class="o">-</span> <span class="n">internal</span> <span class="p">|</span> <span class="n">keys_x2</span><span class="p">,</span>
+                <span class="n">children_x2</span><span class="p">,</span>
+                <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span>
+            <span class="p">);</span>
+
+            <span class="nd">children_revref!</span><span class="p">(</span><span class="o">&amp;</span><span class="n">x2</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* push new level */</span>
+        <span class="k">if</span> <span class="n">p</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">keys</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">head_key</span><span class="p">];</span>
+            <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">x2</span><span class="p">];</span>
+
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span>
+                <span class="nd">node!</span><span class="p">(</span><span class="n">basic</span> <span class="o">-</span> <span class="n">internal</span> <span class="p">|</span> <span class="n">keys</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">());</span>
+
+            <span class="nd">children_revref!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="cm">/* insert into paren node */</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">x_idx</span> <span class="o">=</span> <span class="nd">index_of_child!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">);</span>
+
+            <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="n">x_idx</span><span class="p">,</span> <span class="n">head_key</span><span class="p">);</span>
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="n">x_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x2</span><span class="nf">.clone</span><span class="p">());</span>
+
+            <span class="nd">paren!</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">p</span><span class="nf">.clone</span><span class="p">());</span>
+
+            <span class="k">if</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.promote</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="删除">删除</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">remove</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span>
+        <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">x</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">internal_and_idx</span> <span class="o">=</span> <span class="nb">None</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">x</span><span class="nf">.is_internal</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">match</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.binary_search_by_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">k</span><span class="p">,</span> <span class="p">|</span><span class="n">k_</span><span class="p">|</span> <span class="n">k_</span><span class="nf">.borrow</span><span class="p">())</span> <span class="p">{</span>
+                <span class="nf">Ok</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">internal_and_idx</span><span class="nf">.is_none</span><span class="p">());</span>
+                    <span class="n">internal_and_idx</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">((</span><span class="n">x</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">idx</span><span class="p">));</span>
+
+                    <span class="n">x</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+                <span class="p">}</span>
+                <span class="nf">Err</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">idx</span><span class="p">];</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">idx</span><span class="p">;</span>
+        <span class="k">match</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.binary_search_by_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">k</span><span class="p">,</span> <span class="p">|</span><span class="n">ent</span><span class="p">|</span> <span class="n">ent</span><span class="na">.0</span><span class="nf">.borrow</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nf">Ok</span><span class="p">(</span><span class="n">idx_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">idx_</span><span class="p">,</span>
+            <span class="nf">Err</span><span class="p">(</span><span class="n">_idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="k">return</span> <span class="nb">None</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">self</span><span class="nf">.remove_on_leaf</span><span class="p">(</span><span class="n">internal_and_idx</span><span class="p">,</span> <span class="n">x</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">idx</span><span class="p">)</span>
+            <span class="nf">.map</span><span class="p">(|(</span><span class="n">_</span><span class="p">,</span> <span class="n">v</span><span class="p">)|</span> <span class="n">v</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">remove_on_leaf</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span>
+        <span class="n">internal_and_idx</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="cm">/* Update internal key with its succsessor key */</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">internal</span><span class="p">,</span> <span class="n">i_idx</span><span class="p">))</span> <span class="o">=</span> <span class="n">internal_and_idx</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.update_internal_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">internal</span><span class="p">,</span> <span class="n">i_idx</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">,</span> <span class="n">idx</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">popped</span> <span class="o">=</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="n">idx</span><span class="p">);</span>
+        <span class="k">self</span><span class="nf">.remove_retracing</span><span class="p">(</span><span class="n">x</span><span class="nf">.clone</span><span class="p">());</span>
+
+        <span class="k">self</span><span class="py">.cnt</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="nf">Some</span><span class="p">((</span><span class="n">popped</span><span class="na">.0</span><span class="p">,</span> <span class="n">popped</span><span class="na">.1</span><span class="p">))</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">remove_retracing</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="o">&amp;</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+                <span class="k">self</span><span class="py">.min_node</span> <span class="o">=</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+                <span class="k">self</span><span class="py">.max_node</span> <span class="o">=</span> <span class="nn">WeakNode</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.unpromote</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">unpromote</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span>
+            <span class="n">x</span><span class="nf">.is_leaf</span><span class="p">()</span> <span class="p">||</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">p</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="nd">index_of_child_by_rc!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_rebalancing</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* merge node */</span>
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.merge_node</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.merge_node</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">p</span><span class="nf">.is_internal</span><span class="p">());</span>
+
+            <span class="k">if</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+                <span class="c1">// pop new level</span>
+                <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+                <span class="nd">paren!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">());</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.unpromote</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="cd">/// (parent, left-idx)</span>
+    <span class="k">fn</span> <span class="nf">merge_node</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="n">children</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="n">children</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="c1">// for leaf node</span>
+        <span class="k">if</span> <span class="n">left</span><span class="nf">.is_leaf</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="n">idx</span><span class="p">);</span>
+
+            <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.extend</span><span class="p">(</span><span class="nd">entries_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.drain</span><span class="p">(</span><span class="o">..</span><span class="p">));</span>
+
+            <span class="c1">// update succ</span>
+            <span class="nd">succ!</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">right</span><span class="p">));</span>
+
+            <span class="c1">// update max_node</span>
+            <span class="k">if</span> <span class="n">right</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.max_node</span><span class="nf">.upgrade</span><span class="p">())</span> <span class="p">{</span>
+                <span class="c1">// update max_node</span>
+                <span class="k">self</span><span class="py">.max_node</span> <span class="o">=</span> <span class="n">left</span><span class="nf">.downgrade</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="c1">// for internal node</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span><span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="n">idx</span><span class="p">));</span>
+            <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.extend</span><span class="p">(</span><span class="nd">keys_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.drain</span><span class="p">(</span><span class="o">..</span><span class="p">));</span>
+
+            <span class="c1">// merge right's children to the left</span>
+            <span class="k">let</span> <span class="n">left_children</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">);</span>
+
+            <span class="k">for</span> <span class="n">child</span> <span class="k">in</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.drain</span><span class="p">(</span><span class="o">..</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">left</span><span class="nf">.clone</span><span class="p">());</span>
+
+                <span class="n">left_children</span><span class="nf">.push</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="c1">// remove right from p</span>
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="cd">/// parent, x idx of parent</span>
+    <span class="k">fn</span> <span class="nf">try_rebalancing</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="c1">// Try left first</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">Left</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Try right then</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">Right</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">false</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">try_node_redistribution</span><span class="p">(</span>
+        <span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+        <span class="n">sib_dir</span><span class="p">:</span> <span class="n">Dir</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">children</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">children</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+
+        <span class="k">let</span> <span class="n">sib</span> <span class="o">=</span> <span class="k">if</span> <span class="n">sib_dir</span><span class="nf">.is_left</span><span class="p">()</span> <span class="p">{</span> <span class="n">left</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">right</span> <span class="p">};</span>
+
+        <span class="k">if</span> <span class="n">sib</span><span class="nf">.is_leaf</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">sib_dir</span><span class="nf">.is_left</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+                    <span class="nf">.insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">());</span>
+            <span class="p">}</span>
+            <span class="c1">// sib is right</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span><span class="nd">entries_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+
+                <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">right</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">sib</span><span class="nf">.is_internal</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">sib_dir</span><span class="nf">.is_left</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="nf">replace</span><span class="p">(</span>
+                        <span class="o">&amp;</span><span class="k">mut</span> <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">],</span>
+                        <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">(),</span>
+                    <span class="p">),</span>
+                <span class="p">);</span>
+
+                <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+                <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">right</span><span class="nf">.clone</span><span class="p">());</span>
+
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">child</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span><span class="nf">replace</span><span class="p">(</span>
+                    <span class="o">&amp;</span><span class="k">mut</span> <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">],</span>
+                    <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                <span class="p">));</span>
+
+                <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+                <span class="nd">paren!</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">left</span><span class="nf">.clone</span><span class="p">());</span>
+
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="测试">测试</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="n">Debug</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">Debug</span> <span class="k">for</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">fmt</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">Formatter</span><span class="o">&lt;</span><span class="nv">'_</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span> <span class="p">{</span>
+        <span class="n">f</span><span class="nf">.debug_struct</span><span class="p">(</span><span class="s">"BPT"</span><span class="p">)</span>
+            <span class="nf">.field</span><span class="p">(</span><span class="s">"root"</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">)</span>
+            <span class="nf">.field</span><span class="p">(</span><span class="s">"cnt"</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.cnt</span><span class="p">)</span>
+            <span class="nf">.field</span><span class="p">(</span><span class="s">"min_node"</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.min_node</span><span class="nf">.upgrade</span><span class="p">())</span>
+            <span class="nf">.field</span><span class="p">(</span><span class="s">"max_node"</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.max_node</span><span class="nf">.upgrade</span><span class="p">())</span>
+            <span class="nf">.finish</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="新增方法">新增方法</h2>
+
+<h3 id="push_back">push_back</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// push into max</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push_back</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+        <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="k">self</span><span class="py">.max_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+        <span class="k">self</span><span class="nf">.insert_into_leaf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="push_front">push_front</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// push into min</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push_front</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+        <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+        <span class="c1">// self.insert_into_leaf(x, k, v);</span>
+
+        <span class="k">self</span><span class="py">.cnt</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="cm">/* Nil */</span>
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">kv</span> <span class="p">|</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+            <span class="k">self</span><span class="py">.min_node</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.downgrade</span><span class="p">();</span>
+            <span class="k">self</span><span class="py">.max_node</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.downgrade</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="cm">/* Leaf */</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="cm">/* insert into leaf */</span>
+
+            <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nf">KVEntry</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+
+            <span class="k">self</span><span class="nf">.insert_retracing</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="pop_first">pop_first</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">pop_first</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* min-key has no internal index */</span>
+
+        <span class="k">self</span><span class="nf">.remove_on_leaf</span><span class="p">(</span><span class="nb">None</span><span class="p">,</span> <span class="n">x</span><span class="nf">.clone</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="pop_last">pop_last</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">pop_last</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="k">self</span><span class="py">.max_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">internal_and_idx</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">p</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="n">internal_and_idx</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">((</span><span class="n">p</span><span class="nf">.clone</span><span class="p">(),</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">));</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">internal_and_idx</span> <span class="o">=</span> <span class="nb">None</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">self</span><span class="nf">.remove_on_leaf</span><span class="p">(</span><span class="n">internal_and_idx</span><span class="p">,</span> <span class="n">x</span><span class="nf">.clone</span><span class="p">(),</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="rank">rank</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// Start from 0 O(n/M)</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">rank</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nn">std</span><span class="p">::</span><span class="nn">result</span><span class="p">::</span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">search_to_leaf</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="n">key</span><span class="p">);</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">x</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">idx</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">is_err</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+        <span class="k">match</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.binary_search_by_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">key</span><span class="p">,</span> <span class="p">|</span><span class="n">ent</span><span class="p">|</span> <span class="n">ent</span><span class="na">.0</span><span class="nf">.borrow</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nf">Ok</span><span class="p">(</span><span class="n">idx_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">idx_</span><span class="p">,</span>
+            <span class="nf">Err</span><span class="p">(</span><span class="n">idx_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">idx_</span><span class="p">;</span>
+                <span class="n">is_err</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">rem</span> <span class="o">=</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+        <span class="k">while</span> <span class="n">cur</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">rem</span> <span class="o">+=</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span><span class="nf">.len</span><span class="p">();</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">rk</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="n">rem</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="n">is_err</span> <span class="p">{</span>
+            <span class="nf">Ok</span><span class="p">(</span><span class="n">rk</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nf">Err</span><span class="p">(</span><span class="n">rk</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="nth">nth</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// return Nth child (start from 0), O(n/M)</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">nth</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">K</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="k">self</span><span class="py">.min_node</span><span class="nf">.upgrade</span><span class="p">();</span>
+
+        <span class="k">while</span> <span class="n">cur</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">ent</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nd">entries!</span><span class="p">(</span><span class="n">cur</span><span class="p">)[</span><span class="n">idx</span><span class="p">];</span>
+                <span class="k">return</span> <span class="nf">Some</span><span class="p">((</span><span class="o">&amp;</span><span class="n">ent</span><span class="na">.0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ent</span><span class="na">.1</span><span class="p">));</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">idx</span> <span class="o">-=</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span><span class="nf">.len</span><span class="p">();</span>
+                <span class="n">cur</span> <span class="o">=</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nb">None</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="split_off">split_off</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// return [at, ...)</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">split_off</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">at</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+        <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">oth</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">at</span> <span class="o">&gt;=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">oth</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">oth</span><span class="nf">.bulk_push_front</span><span class="p">(</span><span class="k">self</span><span class="nf">.bulk_pop</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="n">at</span><span class="p">));</span>
+
+        <span class="n">oth</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="b-性质">B* 性质</h2>
+
+<p>B* 就是在键值插入的时候如果发生节点溢出时，不急着先分裂节点，而是和删除时一样，首先尝试从邻居节点进行平衡操作。</p>
+
+<h3 id="try_balacing">try_balacing</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">promote</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">x</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">p</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">idx</span> <span class="o">=</span> <span class="nd">index_of_child_by_rc!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_rebalancing</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        
+        <span class="c1">// ...</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// parent, x idx of parent</span>
+    <span class="k">fn</span> <span class="nf">try_rebalancing</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="c1">// Try left first</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution_eager</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">Left</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Try right then</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution_eager</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">Right</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">false</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">try_node_redistribution_eager</span><span class="p">(</span>
+        <span class="n">p</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+        <span class="n">sib_dir</span><span class="p">:</span> <span class="n">Dir</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span>
+    <span class="k">where</span>
+        <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">use</span> <span class="nn">common</span><span class="p">::</span><span class="n">vec_even_up</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">children</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">left</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">children</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">children</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+
+        <span class="k">let</span> <span class="p">(</span><span class="n">sib</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">=</span> <span class="k">if</span> <span class="n">sib_dir</span><span class="nf">.is_left</span><span class="p">()</span> <span class="p">{</span>
+            <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+        <span class="p">};</span>
+
+        <span class="k">if</span> <span class="n">sib</span><span class="nf">.is_leaf</span><span class="p">()</span>
+            <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                <span class="p">||</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">()</span>
+                    <span class="o">&amp;&amp;</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nf">vec_even_up</span><span class="p">(</span><span class="nd">entries_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">));</span>
+
+            <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nd">entries!</span><span class="p">(</span><span class="n">right</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">sib</span><span class="nf">.is_internal</span><span class="p">()</span>
+            <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nd">keys!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span>
+                <span class="o">&amp;&amp;</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_low_bound</span><span class="p">()</span>
+                <span class="p">||</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">()</span>
+                    <span class="o">&amp;&amp;</span> <span class="nd">keys!</span><span class="p">(</span><span class="n">sib</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">entries_high_bound</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">left_old_len</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.len</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">right_old_len</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.len</span><span class="p">();</span>
+
+            <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.push</span><span class="p">(</span><span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.clone</span><span class="p">());</span>
+            <span class="nf">vec_even_up</span><span class="p">(</span><span class="nd">keys_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">));</span>
+            <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nd">keys_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+            <span class="nf">vec_even_up</span><span class="p">(</span><span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">));</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nd">children!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="nd">children!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.len</span><span class="p">())</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+                    <span class="nf">.insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nd">children_mut!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">());</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">left_old_len</span> <span class="o">&lt;</span> <span class="n">right_old_len</span>  <span class="p">{</span>
+                <span class="nd">children_revref!</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">left_old_len</span><span class="o">..</span><span class="nd">children!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span><span class="nf">.len</span><span class="p">());</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">children_revref!</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="mi">0</span><span class="o">..</span><span class="nd">children!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span><span class="o">-</span><span class="n">right_old_len</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="vec_even_up">vec_even_up</h3>
+
+<p>保持左右的顺序前提下，平分左右两个数组。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Even up two vector using clone</span>
+<span class="cd">///</span>
+<span class="cd">/// (This implementation is inspired by Vec::remove)</span>
+<span class="cd">///</span>
+<span class="cd">/// ```</span>
+<span class="cd">/// use m6_common::vec_even_up;</span>
+<span class="cd">///</span>
+<span class="cd">/// /* case-0 left max for pop is easy (odd) */</span>
+<span class="cd">///</span>
+<span class="cd">/// let mut v0 = (0..2).collect();</span>
+<span class="cd">/// let mut v1 = (4..7).collect();</span>
+<span class="cd">/// vec_even_up(&amp;mut v0, &amp;mut v1);</span>
+<span class="cd">/// assert_eq!(v0, vec![0, 1, 4]);</span>
+<span class="cd">/// assert_eq!(v1, vec![5, 6]);</span>
+<span class="cd">///</span>
+<span class="cd">/// /* case-1 the left is samller (even) */</span>
+<span class="cd">///</span>
+<span class="cd">/// let mut v0 = (0..2).collect();</span>
+<span class="cd">/// let mut v1 = (4..8).collect();</span>
+<span class="cd">/// vec_even_up(&amp;mut v0, &amp;mut v1);</span>
+<span class="cd">/// assert_eq!(v0, vec![0, 1, 4]);</span>
+<span class="cd">/// assert_eq!(v1, vec![5, 6, 7]);</span>
+<span class="cd">///</span>
+<span class="cd">/// /* case-2 the left is larger (even) */</span>
+<span class="cd">///</span>
+<span class="cd">/// let mut v0 = (0..4).collect();</span>
+<span class="cd">/// let mut v1 = (4..6).collect();</span>
+<span class="cd">/// vec_even_up(&amp;mut v0, &amp;mut v1);</span>
+<span class="cd">/// assert_eq!(v0, vec![0, 1, 2]);</span>
+<span class="cd">/// assert_eq!(v1, vec![3, 4, 5]);</span>
+<span class="cd">///</span>
+<span class="cd">///</span>
+<span class="cd">/// /* case-3-0 the left is larger (given more than old_len) */</span>
+<span class="cd">///</span>
+<span class="cd">/// let mut v0 = (0..7).collect();</span>
+<span class="cd">/// let mut v1 = (7..9).collect();</span>
+<span class="cd">/// vec_even_up(&amp;mut v0, &amp;mut v1);</span>
+<span class="cd">/// assert_eq!(v0, vec![0, 1, 2, 3, 4,]);</span>
+<span class="cd">/// assert_eq!(v1, vec![5, 6, 7, 8]);</span>
+<span class="cd">///</span>
+<span class="cd">/// ```</span>
+<span class="cd">///</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">vec_even_up</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">v0</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">v1</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">v0_old_len</span> <span class="o">=</span> <span class="n">v0</span><span class="nf">.len</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">v1_old_len</span> <span class="o">=</span> <span class="n">v1</span><span class="nf">.len</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">tnt</span> <span class="o">=</span> <span class="n">v0_old_len</span> <span class="o">+</span> <span class="n">v1_old_len</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="n">cnt_lf</span> <span class="o">=</span> <span class="n">tnt</span><span class="nf">.div_ceil</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">cnt_rh</span> <span class="o">=</span> <span class="n">tnt</span> <span class="o">-</span> <span class="n">cnt_lf</span><span class="p">;</span>
+
+    <span class="cm">/* Check if it's balanced? */</span>
+    <span class="k">if</span> <span class="n">v0_old_len</span> <span class="o">==</span> <span class="n">cnt_lf</span> <span class="p">{</span>
+        <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="n">v1</span><span class="nf">.len</span><span class="p">(),</span> <span class="n">cnt_rh</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">v0_old_len</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">v1_old_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">ptr</span><span class="p">::{</span> <span class="n">copy</span><span class="p">,</span> <span class="n">copy_nonoverlapping</span><span class="p">,</span> <span class="n">read</span> <span class="p">};</span>
+
+    <span class="c1">// V0 is smaller</span>
+    <span class="k">if</span> <span class="n">v0_old_len</span> <span class="o">&lt;</span> <span class="n">cnt_lf</span> <span class="p">{</span>
+        <span class="c1">// let v0_get = cnt_lf - v0_old_len;</span>
+        <span class="k">let</span> <span class="n">v1_given</span> <span class="o">=</span> <span class="n">v1_old_len</span> <span class="o">-</span> <span class="n">cnt_rh</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">v1_ptr</span> <span class="o">=</span> <span class="n">v1</span><span class="nf">.as_mut_ptr</span><span class="p">();</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="n">v0</span><span class="nf">.resize_with</span><span class="p">(</span><span class="n">cnt_lf</span><span class="p">,</span> <span class="k">move</span> <span class="p">||</span> <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">v</span> <span class="o">=</span> <span class="nf">read</span><span class="p">(</span><span class="n">v1_ptr</span><span class="nf">.add</span><span class="p">(</span><span class="n">i</span><span class="p">));</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="n">v</span>
+        <span class="p">});</span>
+
+        <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="nf">copy</span><span class="p">(</span>
+                <span class="n">v1_ptr</span><span class="nf">.add</span><span class="p">(</span><span class="n">v1_given</span><span class="p">),</span>
+                <span class="n">v1_ptr</span><span class="p">,</span>
+                <span class="n">cnt_rh</span>
+            <span class="p">);</span>
+
+            <span class="n">v1</span><span class="nf">.set_len</span><span class="p">(</span><span class="n">cnt_rh</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// V0 is larger</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">v0_given</span> <span class="o">=</span> <span class="n">v0_old_len</span> <span class="o">-</span> <span class="n">cnt_lf</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">v0_ptr</span> <span class="o">=</span> <span class="n">v0</span><span class="nf">.as_mut_ptr</span><span class="p">();</span>
+
+        <span class="n">v1</span><span class="nf">.resize_with</span><span class="p">(</span><span class="n">cnt_rh</span><span class="p">,</span> <span class="k">move</span> <span class="p">||</span> <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="c1">// Fill with dirty data</span>
+            <span class="c1">// read(v0_ptr)</span>
+            <span class="nn">std</span><span class="p">::</span><span class="nn">mem</span><span class="p">::</span><span class="nf">zeroed</span><span class="p">()</span>
+        <span class="p">});</span>
+
+        <span class="c1">// get ptr after resize to avoid realloc issue</span>
+        <span class="k">let</span> <span class="n">v1_ptr</span> <span class="o">=</span> <span class="n">v1</span><span class="nf">.as_mut_ptr</span><span class="p">();</span>
+
+        <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="nf">copy</span><span class="p">(</span>
+                <span class="n">v1_ptr</span><span class="p">,</span>
+                <span class="n">v1_ptr</span><span class="nf">.add</span><span class="p">(</span><span class="n">v0_given</span><span class="p">),</span>
+                <span class="n">v1_old_len</span>
+            <span class="p">);</span>
+
+            <span class="nf">copy_nonoverlapping</span><span class="p">(</span>
+                <span class="n">v0_ptr</span><span class="nf">.add</span><span class="p">(</span><span class="n">cnt_lf</span><span class="p">),</span>
+                <span class="n">v1_ptr</span><span class="p">,</span>
+                <span class="n">v0_given</span>
+            <span class="p">);</span>
+
+            <span class="n">v0</span><span class="nf">.set_len</span><span class="p">(</span><span class="n">cnt_lf</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="总结">总结</h3>
+
+<p>B* 没什么用，对插入的性能改进没有什么帮助</p>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
