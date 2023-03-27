@@ -165,13 +165,15 @@
   </li>
 </ol>
 
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_01.svg" zoom="200%" /></div>
+<div class="sx-center">
+<img src="/assets/img/fibheap/fibheap_01.svg" width="50%" /></div>
 
 <p>二项式堆（Binomial Heap）就是由多棵二项式树构成，每棵树都是小顶堆（Min Heap），并且每棵子树的 $\texttt{rank}$ 独特。</p>
 
 <p>每个二项式堆都可以这样构造出来，二项式堆的结点数 $\texttt{n}$ 的二进制表示的每一位对应一个 $\texttt{rank}$ 数值。</p>
 
-<div class="sx-center"><img src="/../assets/img/fibheap/fibheap_02.svg" zoom="200%" /></div>
+<div class="sx-center">
+<img src="/assets/img/fibheap/fibheap_02.svg" width="50%" /></div>
 
 <p><em>而二项堆里的每棵二项树的孩子构成的森林都可以理解为完全二项堆。</em></p>
 
@@ -195,9 +197,9 @@
 
 <p>根据定义，直接把单个节点插入到根链表中即可，必要的话更新堆指针。</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_push1.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_push1.png" alt="" /></p>
 
-<p><img src="/../assets/img/fibheap/fibheap_push2.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_push2.png" alt="" /></p>
 
 <h3 id="复杂度分析">复杂度分析</h3>
 
@@ -222,63 +224,63 @@
 
 <p><em>图中黑色节点为标记节点，decrease-min 操作中使用，表示该树失去过孩子</em></p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop01.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop01.png" alt="" /></p>
 
 <p>当前最小根指向 $\texttt{node(3)}$，它的孩子有 $\texttt{node(18), node(52), node(41)}$  ；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop02.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop02.png" alt="" /></p>
 
 <p>把它的 $3$ 个孩子插入到根链表中，更新最小根为 $7$ ；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop03.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop03.png" alt="" /></p>
 
 <p>从当前最小根节点开始递归地合并同 $\texttt{rank}$ 的树；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop04.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop04.png" alt="" /></p>
 
 <p>扫描到 $\texttt{node(7)}$ ， $\texttt{rank = 1}$ ，插入当前 $\texttt{rank =&gt; root}$ 对儿到 $\texttt{Map}$ 中，继续向下扫描；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop05.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop05.png" alt="" /></p>
 
 <p>扫描到 $\texttt{node(24)}$ ， $\texttt{rank = 2}$ ，Map中没有同 $\texttt{rank}$ 项，插入当前 $\texttt{rank =&gt; root}$ 对儿到 $\texttt{Map}$ 中，继续向下扫描；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop06.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop06.png" alt="" /></p>
 
 <p>扫描到 $\texttt{node(23)}$ ， $\texttt{rank = 0}$ ，Map中没有同 $\texttt{rank}$ 项，把 $\texttt{0 =&gt; node(23)}$ 插入到 $\texttt{Map}$ 中，继续向下扫描；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop07.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop07.png" alt="" /></p>
 
 <p>扫描到 $\texttt{node(17)}$ ，$\texttt{rank = 0}$ ，Map中发现同 $\texttt{rank}$ 的 $\texttt{node(23)}$ ，把该项从 $\texttt{Map}$ 取出， 把较大的 $\texttt{node(23)}$ 插入到 $\texttt{node(17)}$ ，检查同 $\texttt{rank}$ 项 <em>显然这个同 rank 树的合并不影响后面没扫描过的根节点</em>；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop08.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop08.png" alt="" /></p>
 
 <p>更新后的 $\texttt{17}$ 的 $\texttt{rank += 1}$ ，为 $1$ ，与 $\texttt{node(7)}$ 相同，继续合并，较大的 $\texttt{node(17)}$ 插入到 $\texttt{node(7)}$ ；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop09.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop09.png" alt="" /></p>
 
 <p>更新后的 $\texttt{node(7)}$ 的 $\texttt{rank += 1} $，为 $2$ ，与 $\texttt{node(24)}$ 相同，继续合并，较大的 $\texttt{rank += 1}$ 插入到 $\texttt{node(7)}$ ；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop10.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop10.png" alt="" /></p>
 
 <p>更新后的 $\texttt{node(7)}$ 的 $\texttt{rank += 1} $，为 $3$ ， 没有同 $\texttt{rank}$ 项，把 $\texttt{3 =&gt; node(7)}$ 插入到 $\texttt{Map}$ 中，向下扫描；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop11.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop11.png" alt="" /></p>
 
 <p>扫描到 $\texttt{node(18)}$ ，$\texttt{rank = 1}$，没有同 $\texttt{rank}$ 项，把 $\texttt{1 =&gt; node(18)}$，插入到 $\texttt{Map}$ 中，向下扫描；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop12.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop12.png" alt="" /></p>
 
 <p>扫描到 $\texttt{node(52)}$ ，$\texttt{rank = 0}$，没有同 $\texttt{rank}$ 项，继续向下；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop13.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop13.png" alt="" /></p>
 
 <p>扫描到 $\texttt{node(41)}$ ，$\texttt{rank = 1}$，与 $\texttt{node(18)}$ 的 $\texttt{rank}$ 相同，合并；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop14.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop14.png" alt="" /></p>
 
 <p>更新后的树 $\texttt{rank = 2}$ ，没有同 $\texttt{rank}$ 项，插入 $\texttt{Map}$ ，向下扫描；</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_pop15.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_pop15.png" alt="" /></p>
 
 <p>发现所有节点已被扫描完，规整结束 <em>堆的数据结构里维护一个根节点数的变量，用它来指示扫描何时结束</em> 。</p>
 
@@ -321,35 +323,35 @@
 
 <p><em>decrease-key</em> 流程：</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk1.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk1.png" alt="" /></p>
 
 <p><em>cut-meld-unmark</em> 流程：</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk2.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk2.png" alt="" /></p>
 
 <p>图例是一个 <code class="language-plaintext highlighter-rouge">decrease-key</code> 的非平凡情况</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk_2b_01.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk_2b_01.png" alt="" /></p>
 
 <p>对节点 $x$ 的 $\texttt{key}$ 从 $35$ 降到 $5$</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk_2b_03.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk_2b_03.png" alt="" /></p>
 
 <p>发现堆性质被破坏，先对 $x$ 执行 <em>cut-meld-unmark</em></p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk_2b_04.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk_2b_04.png" alt="" /></p>
 
 <p>向上递归，发现 $p$ 被标记，意味着 $p$ 之前已经失去过一个孩子，加上这次，已经失去了两个孩子，</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk_2b_05.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk_2b_05.png" alt="" /></p>
 
 <p>对 $p$ 执行 <em>cut-meld-unmark</em> ，</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk_2b_06.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk_2b_06.png" alt="" /></p>
 
 <p>递归地检查 $p$ 的父节点 $p’$ ， $p’$ 也被标记</p>
 
-<p><img src="/../assets/img/fibheap/fibheap_dk_2b_07.png" alt="" /></p>
+<p><img src="/assets/img/fibheap/fibheap_dk_2b_07.png" alt="" /></p>
 
 <p>对 $p’$ 执行 <em>cut-meld-unmark</em> ，到了根节点，cut-meld-unmark 整个过程停止，检查最小根，发现 $\texttt{x = 5 &lt; 7}$ ，于是把最小根更新到 $x$ 。</p>
 

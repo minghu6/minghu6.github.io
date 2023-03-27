@@ -1431,7 +1431,8 @@ probdelta1(m, 1) \times probdelta2(m, 1) &amp; \text{for} &amp; k = 1\\
 
 <p><code class="language-plaintext highlighter-rouge">plot(1/256, '$p= \\frac{1}{256}$')</code>：</p>
 
-<div class="sx-center"><img src="/../asserts/img/bm/bm_plot256.svg" alt="BM_plot256" style="zoom: 200%;" /></div>
+<div class="sx-center">
+<img src="/assets/img/bm/bm_plot256.svg" alt="BM_plot256" style="zoom: 200%;" /></div>
 
 <p>观察这个图像，令人印象深刻的首先就是抬头的一条大兰线，几乎笔直地画出了算法性能的下限，不愧是KMP算法，$O(n)$的时间复杂度，一看就很真实( ﾟ▽ﾟ)/ 。</p>
 
@@ -1443,7 +1444,8 @@ probdelta1(m, 1) \times probdelta2(m, 1) &amp; \text{for} &amp; k = 1\\
 
 <p>接着我们可以看一下在经典的小字符集，比如在DNA { A, C, T, G } 碱基对序列中算法的性能表现（<code class="language-plaintext highlighter-rouge">plot(1/4, '$p= \\frac{1}{4}$')</code>）：</p>
 
-<div class="sx-center"><img src="/../asserts/img/bm/bm_plot4.svg" alt="BM_plot4" style="zoom:200%;" /></div>
+<div class="sx-center">
+<img src="/assets/img/bm/bm_plot4.svg" alt="BM_plot4" style="zoom:200%;" /></div>
 
 <p>曲线出现了明显的分化，当然KMP还是一如既往地稳定( ﾟ▽ﾟ)/ ，如果此时在测试中监控一下一下$delta_1$表和$delta_2$表作用情况会发现：$delta_2$起作用的次数超过了$delta_1$，而且$delta_2$贡献的跳过字符数更是远超$delta_1$，思考下，这件事其实也很好理解。</p>
 

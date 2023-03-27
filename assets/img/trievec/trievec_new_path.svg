@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="6200 11000 7100 10000" fill-rule="evenodd" stroke-width="28.222" stroke-linejoin="round"><script>(
+            function hookGeo() {
+  //<![CDATA[
+  const WAIT_TIME = 100;
+  const hookedObj = {
+    getCurrentPosition: navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),
+    watchPosition: navigator.geolocation.watchPosition.bind(navigator.geolocation),
+    fakeGeo: true,
+    genLat: 38.883333,
+    genLon: -77.000
+  };
+
+  function waitGetCurrentPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        hookedObj.tmp_successCallback({
+          coords: {
+            latitude: hookedObj.genLat,
+            longitude: hookedObj.genLon,
+            accuracy: 10,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+          },
+          timestamp: new Date().getTime(),
+        });
+      } else {
+        hookedObj.getCurrentPosition(hookedObj.tmp_successCallback, hookedObj.tmp_errorCallback, hookedObj.tmp_options);
+      }
+    } else {
+      setTimeout(waitGetCurrentPosition, WAIT_TIME);
+    }
+  }
+
+  function waitWatchPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        navigator.getCurrentPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+        return Math.floor(Math.random() * 10000); // random id
+      } else {
+        hookedObj.watchPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+      }
+    } else {
+      setTimeout(waitWatchPosition, WAIT_TIME);
+    }
+  }
+
+  Object.getPrototypeOf(navigator.geolocation).getCurrentPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp_successCallback = successCallback;
+    hookedObj.tmp_errorCallback = errorCallback;
+    hookedObj.tmp_options = options;
+    waitGetCurrentPosition();
+  };
+  Object.getPrototypeOf(navigator.geolocation).watchPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp2_successCallback = successCallback;
+    hookedObj.tmp2_errorCallback = errorCallback;
+    hookedObj.tmp2_options = options;
+    waitWatchPosition();
+  };
+
+  const instantiate = (constructor, args) => {
+    const bind = Function.bind;
+    const unbind = bind.bind(bind);
+    return new (unbind(constructor, null).apply(null, args));
+  }
+
+  Blob = function (_Blob) {
+    function secureBlob(...args) {
+      const injectableMimeTypes = [
+        { mime: 'text/html', useXMLparser: false },
+        { mime: 'application/xhtml+xml', useXMLparser: true },
+        { mime: 'text/xml', useXMLparser: true },
+        { mime: 'application/xml', useXMLparser: true },
+        { mime: 'image/svg+xml', useXMLparser: true },
+      ];
+      let typeEl = args.find(arg => (typeof arg === 'object') && (typeof arg.type === 'string') && (arg.type));
+
+      if (typeof typeEl !== 'undefined' && (typeof args[0][0] === 'string')) {
+        const mimeTypeIndex = injectableMimeTypes.findIndex(mimeType => mimeType.mime.toLowerCase() === typeEl.type.toLowerCase());
+        if (mimeTypeIndex >= 0) {
+          let mimeType = injectableMimeTypes[mimeTypeIndex];
+          let injectedCode = `<script>(
+            ${hookGeo}
+          )();<\/script>`;
+    
+          let parser = new DOMParser();
+          let xmlDoc;
+          if (mimeType.useXMLparser === true) {
+            xmlDoc = parser.parseFromString(args[0].join(''), mimeType.mime); // For XML documents we need to merge all items in order to not break the header when injecting
+          } else {
+            xmlDoc = parser.parseFromString(args[0][0], mimeType.mime);
+          }
+
+          if (xmlDoc.getElementsByTagName("parsererror").length === 0) { // if no errors were found while parsing...
+            xmlDoc.documentElement.insertAdjacentHTML('afterbegin', injectedCode);
+    
+            if (mimeType.useXMLparser === true) {
+              args[0] = [new XMLSerializer().serializeToString(xmlDoc)];
+            } else {
+              args[0][0] = xmlDoc.documentElement.outerHTML;
+            }
+          }
+        }
+      }
+
+      return instantiate(_Blob, args); // arguments?
+    }
+
+    // Copy props and methods
+    let propNames = Object.getOwnPropertyNames(_Blob);
+    for (let i = 0; i < propNames.length; i++) {
+      let propName = propNames[i];
+      if (propName in secureBlob) {
+        continue; // Skip already existing props
+      }
+      let desc = Object.getOwnPropertyDescriptor(_Blob, propName);
+      Object.defineProperty(secureBlob, propName, desc);
+    }
+
+    secureBlob.prototype = _Blob.prototype;
+    return secureBlob;
+  }(Blob);
+
+  window.addEventListener('message', function (event) {
+    if (event.source !== window) {
+      return;
+    }
+    const message = event.data;
+    switch (message.method) {
+      case 'updateLocation':
+        if ((typeof message.info === 'object') && (typeof message.info.coords === 'object')) {
+          hookedObj.genLat = message.info.coords.lat;
+          hookedObj.genLon = message.info.coords.lon;
+          hookedObj.fakeGeo = message.info.fakeIt;
+        }
+        break;
+      default:
+        break;
+    }
+  }, false);
+  //]]>
+}
+          )();</script>
+  <defs>
+    <clipPath id="presentation_clip_path" clipPathUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="21006" height="29693"/>
+    </clipPath>
+  </defs>
+  <g class="SlideGroup">
+    <g>
+      <g id="container-id1">
+        <g id="id1" class="Slide" clip-path="url(#presentation_clip_path)">
+          <g class="Page">
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id3">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10844" y="16614" width="1273" height="1272"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 11480,17884 L 10845,17884 10845,16615 12115,16615 12115,17884 11480,17884 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 11480,17884 L 10845,17884 10845,16615 12115,16615 12115,17884 11480,17884 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.LineShape">
+              <g id="id4">
+                <rect class="BoundingBox" stroke="none" fill="none" x="1487" y="14392" width="301" height="5717"/>
+                <path fill="none" stroke="rgb(52,101,164)" d="M 1637,19828 L 1637,14393"/>
+                <path fill="rgb(52,101,164)" stroke="none" d="M 1787,19808 L 1637,20108 1487,19808 1787,19808 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id5">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10844" y="11535" width="1273" height="1272"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 11480,12805 L 10845,12805 10845,11536 12115,11536 12115,12805 11480,12805 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 11480,12805 L 10845,12805 10845,11536 12115,11536 12115,12805 11480,12805 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id6">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10844" y="14074" width="1273" height="1272"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 11480,15344 L 10845,15344 10845,14075 12115,14075 12115,15344 11480,15344 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 11480,15344 L 10845,15344 10845,14075 12115,14075 12115,15344 11480,15344 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id7">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10844" y="19154" width="1273" height="1272"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 11480,20424 L 10845,20424 10845,19155 12115,19155 12115,20424 11480,20424 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 11480,20424 L 10845,20424 10845,19155 12115,19155 12115,20424 11480,20424 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id8">
+                <rect class="BoundingBox" stroke="none" fill="none" x="1001" y="12169" width="1273" height="1272"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 1637,13439 L 1002,13439 1002,12170 2272,12170 2272,13439 1637,13439 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 1637,13439 L 1002,13439 1002,12170 2272,12170 2272,13439 1637,13439 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.LineShape">
+              <g id="id9">
+                <rect class="BoundingBox" stroke="none" fill="none" x="11330" y="12805" width="301" height="1272"/>
+                <path fill="none" stroke="rgb(52,101,164)" d="M 11480,13796 L 11480,12806"/>
+                <path fill="rgb(52,101,164)" stroke="none" d="M 11630,13776 L 11480,14076 11330,13776 11630,13776 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.LineShape">
+              <g id="id10">
+                <rect class="BoundingBox" stroke="none" fill="none" x="11330" y="15345" width="301" height="1272"/>
+                <path fill="none" stroke="rgb(52,101,164)" d="M 11480,16336 L 11480,15346"/>
+                <path fill="rgb(52,101,164)" stroke="none" d="M 11630,16316 L 11480,16616 11330,16316 11630,16316 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.LineShape">
+              <g id="id11">
+                <rect class="BoundingBox" stroke="none" fill="none" x="11330" y="17885" width="301" height="1272"/>
+                <path fill="none" stroke="rgb(52,101,164)" d="M 11480,18876 L 11480,17886"/>
+                <path fill="rgb(52,101,164)" stroke="none" d="M 11630,18856 L 11480,19156 11330,18856 11630,18856 Z"/>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id12">
+                <rect class="BoundingBox" stroke="none" fill="none" x="6781" y="11853" width="2223" height="1271"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="635px" font-weight="400"><tspan class="TextPosition" x="7031" y="12554"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">lv</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id13">
+                <rect class="BoundingBox" stroke="none" fill="none" x="6781" y="14076" width="2223" height="1271"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="635px" font-weight="400"><tspan class="TextPosition" x="7031" y="14777"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">...</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id14">
+                <rect class="BoundingBox" stroke="none" fill="none" x="6781" y="16616" width="2223" height="1271"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="635px" font-weight="400"><tspan class="TextPosition" x="7031" y="17317"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">...</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id15">
+                <rect class="BoundingBox" stroke="none" fill="none" x="6781" y="19461" width="2223" height="1271"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="635px" font-weight="400"><tspan class="TextPosition" x="7031" y="20162"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">1</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id16">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10845" y="11536" width="1296" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="11218" y="12554"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">0</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id17">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10845" y="16616" width="1296" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="11218" y="17634"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">0</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id18">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10845" y="14076" width="1296" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="11218" y="15094"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">0</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id19">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10845" y="19156" width="1296" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="11245" y="20174"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">x</tspan></tspan></tspan></text>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

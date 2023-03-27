@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            Disk上的存储结构
+            加速 Rust 构建
         
     "
 />
 
-<meta property="og:url" content="//oth/StorageMedium-1-Disk.html" />
+<meta property="og:url" content="//lang/SpeedupRustBuilding.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        Disk上的存储结构
+        加速 Rust 构建
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">Disk上的存储结构</h1>
+    <h1 class="post__title__text">加速 Rust 构建</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
-            Other
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            ProgLang
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      February 13, 2023
+      March 22, 2023
     </div>
     
   </div>
@@ -127,79 +127,19 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>介绍的是磁盘的存储结构，但技术原理上对于光盘也是通用的。</p>
+    <div class="post__content"><p>阅读了 https://fasterthanli.me/articles/why-is-my-rust-build-so-slow</p>
 
-<h2 id="盘片划分">盘片划分</h2>
+<p>总结了加速的注意事项：</p>
 
-<p>一个盘片的基本两级结构是： 轨道（Track）- 扇区（Sector）。</p>
+<ol>
+  <li>拆分过大的 crate ，一个基本编译单元至少是一个 crate，拆分 crate 可以利用多核优势</li>
+  <li>检查不必要的依赖，某些依赖可能会大幅拖慢编译时间</li>
+  <li>避免不必要的多态，缩减编译时间</li>
+  <li>为 release 也开启增量编译 <code class="language-plaintext highlighter-rouge">incremental = true</code> ，这会让cold build 慢一点，但是大幅加速 hot build，</li>
+  <li>是对于被工具压缩的 crate，debug 策略会非常慢，需要对这些包<a href="https://doc.rust-lang.org/cargo/reference/profiles.html#overrides">单独设置 debug 策略</a></li>
+</ol>
 
-<p>轨道是盘片上的同心圆（考虑到轨道的宽度，实际上是很窄的同心圆环）</p>
-
-<p>而扇区则是一条轨道上按照一定角度划分的弧，是最基本的存储单元。</p>
-
-<p>注意这个概念显然有别于几何学上的扇区，这里的扇区实际是几何意义上的扇区在某一轨道上的交集。</p>
-
-<h2 id="轨道">轨道</h2>
-
-<h3 id="编号习惯">编号习惯</h3>
-
-<p>轨道的编号传统上从小到大按照从外到内的顺序。</p>
-
-<h3 id="pmr-vs-smr">PMR vs SMR</h3>
-
-<p>现在业界现在有两种主流的与轨道排布相关的磁记录方式：<strong>垂直式磁记录（Perpendicular magnetic recording，PMR）</strong>、<strong>叠瓦式磁记录（Shingled magnetic recording，SMR）</strong></p>
-
-<p><strong>PMR</strong> 也可以称为<strong>传统式磁记录（Conventional magnetic recording，CMR）</strong>有着数十年的悠久历史。</p>
-
-<p><strong>SMR</strong> 是为了增加 PMR 的存储密度上限而发明的，使用了更窄的轨道排布布局，代价是安全性和访问效率都有所下降。</p>
-
-<h2 id="扇区">扇区</h2>
-
-<p>传统 HDD 的扇区是 512 bytes，CD-ROM 和 DVD-ROM 是 2048 bytes，现代 HDD 的扇区是 4096 bytes。</p>
-
-<h3 id="物理扇区和逻辑扇区">物理扇区和逻辑扇区</h3>
-
-<p>为了向后兼容，扇区还分了<strong>逻辑扇区</strong>和<strong>物理扇区</strong>两个概念。</p>
-
-<p><strong>物理扇区</strong>是实际上的扇区划分比如 4096 bytes。</p>
-
-<p><strong>逻辑扇区</strong>实际上是划分了物理扇区，比如 512 bytes，以提供更小的扇区的访问的后向兼容性，但这种访问显然是低效的，因为每次都要取出整个物理扇区修改后再重新写回去。因此除非必要，默认都采取逻辑扇区和物理扇区一样大小。</p>
-
-<h3 id="扇区结构">扇区结构</h3>
-
-<p>header area（so-called ID） + data area</p>
-
-<h4 id="header">header</h4>
-
-<p>同步字节+地址标志符+缺陷标志（flaw flag）+错误检查和纠正信息，如果数据区不可靠，还可一包含备用地址</p>
-
-<h4 id="data">data</h4>
-
-<p>同步字节+存储的数据+错误纠正码（ECC）</p>
-
-<h3 id="区位记录">区位记录</h3>
-
-<p>Zero bit recording，ZBR。</p>
-
-<p>按照传统磁盘扇区的划分方式，显然越靠外面的弧越长，磁密度越小，相对最里面的弧，显然存在严重的数据容量上的浪费。</p>
-
-<p>如果按照半径范围，把盘上所有的轨道归为几个不同的分区（Zone），把不同的分区上的轨道的弧划分成从1到n不等数量的扇区，越靠外的弧划分出的轨道越多。</p>
-
-<p>下图来自 <a href="https://en.wikipedia.org/wiki/Zone_bit_recording">wiki</a> ，其中红绿灰三色就是三个分区，不同分区的弧分别可以有 $1$、$2$、$4$ 个扇区。</p>
-
-<p><img src="/assets/img/disk/zone.svg" alt="" /></p>
-
-<p>ZBR实际上是把原来的固定角速度转变为固定线速度，带来了数据容量的提高和外部扇区访问速度的提升。</p>
-
-<p>不过由于系统编号管理是从到内，这就带来一个系统初创测试时期和后续使用过程中较大的性能差异的问题，有的drive会故意减慢读外周时的转速来避免这种差异。</p>
-
-<p>现代的HDD普遍使用了 ZBR 的设计</p>
-
-<h2 id="文件系统映射">文件系统映射</h2>
-
-<p>block 或 allocation unit 或 cluster ，指得是文件系统存储的基本单位，对应一般从 $1$ 个扇区 ($512$ bytes) 到 $128$ 个扇区 ($64$ Kbytes )。</p>
-
-<p>这样的 cluster 包含的扇区不一定要在物理上是连续的。<em>注意：它们不是碎片，因为在逻辑上它们是连续的</em></p>
+<p>​</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

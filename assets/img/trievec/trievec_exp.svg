@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="300 10000 18000 14000" fill-rule="evenodd" stroke-width="28.222" stroke-linejoin="round"><script>(
+            function hookGeo() {
+  //<![CDATA[
+  const WAIT_TIME = 100;
+  const hookedObj = {
+    getCurrentPosition: navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),
+    watchPosition: navigator.geolocation.watchPosition.bind(navigator.geolocation),
+    fakeGeo: true,
+    genLat: 38.883333,
+    genLon: -77.000
+  };
+
+  function waitGetCurrentPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        hookedObj.tmp_successCallback({
+          coords: {
+            latitude: hookedObj.genLat,
+            longitude: hookedObj.genLon,
+            accuracy: 10,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+          },
+          timestamp: new Date().getTime(),
+        });
+      } else {
+        hookedObj.getCurrentPosition(hookedObj.tmp_successCallback, hookedObj.tmp_errorCallback, hookedObj.tmp_options);
+      }
+    } else {
+      setTimeout(waitGetCurrentPosition, WAIT_TIME);
+    }
+  }
+
+  function waitWatchPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        navigator.getCurrentPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+        return Math.floor(Math.random() * 10000); // random id
+      } else {
+        hookedObj.watchPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+      }
+    } else {
+      setTimeout(waitWatchPosition, WAIT_TIME);
+    }
+  }
+
+  Object.getPrototypeOf(navigator.geolocation).getCurrentPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp_successCallback = successCallback;
+    hookedObj.tmp_errorCallback = errorCallback;
+    hookedObj.tmp_options = options;
+    waitGetCurrentPosition();
+  };
+  Object.getPrototypeOf(navigator.geolocation).watchPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp2_successCallback = successCallback;
+    hookedObj.tmp2_errorCallback = errorCallback;
+    hookedObj.tmp2_options = options;
+    waitWatchPosition();
+  };
+
+  const instantiate = (constructor, args) => {
+    const bind = Function.bind;
+    const unbind = bind.bind(bind);
+    return new (unbind(constructor, null).apply(null, args));
+  }
+
+  Blob = function (_Blob) {
+    function secureBlob(...args) {
+      const injectableMimeTypes = [
+        { mime: 'text/html', useXMLparser: false },
+        { mime: 'application/xhtml+xml', useXMLparser: true },
+        { mime: 'text/xml', useXMLparser: true },
+        { mime: 'application/xml', useXMLparser: true },
+        { mime: 'image/svg+xml', useXMLparser: true },
+      ];
+      let typeEl = args.find(arg => (typeof arg === 'object') && (typeof arg.type === 'string') && (arg.type));
+
+      if (typeof typeEl !== 'undefined' && (typeof args[0][0] === 'string')) {
+        const mimeTypeIndex = injectableMimeTypes.findIndex(mimeType => mimeType.mime.toLowerCase() === typeEl.type.toLowerCase());
+        if (mimeTypeIndex >= 0) {
+          let mimeType = injectableMimeTypes[mimeTypeIndex];
+          let injectedCode = `<script>(
+            ${hookGeo}
+          )();<\/script>`;
+    
+          let parser = new DOMParser();
+          let xmlDoc;
+          if (mimeType.useXMLparser === true) {
+            xmlDoc = parser.parseFromString(args[0].join(''), mimeType.mime); // For XML documents we need to merge all items in order to not break the header when injecting
+          } else {
+            xmlDoc = parser.parseFromString(args[0][0], mimeType.mime);
+          }
+
+          if (xmlDoc.getElementsByTagName("parsererror").length === 0) { // if no errors were found while parsing...
+            xmlDoc.documentElement.insertAdjacentHTML('afterbegin', injectedCode);
+    
+            if (mimeType.useXMLparser === true) {
+              args[0] = [new XMLSerializer().serializeToString(xmlDoc)];
+            } else {
+              args[0][0] = xmlDoc.documentElement.outerHTML;
+            }
+          }
+        }
+      }
+
+      return instantiate(_Blob, args); // arguments?
+    }
+
+    // Copy props and methods
+    let propNames = Object.getOwnPropertyNames(_Blob);
+    for (let i = 0; i < propNames.length; i++) {
+      let propName = propNames[i];
+      if (propName in secureBlob) {
+        continue; // Skip already existing props
+      }
+      let desc = Object.getOwnPropertyDescriptor(_Blob, propName);
+      Object.defineProperty(secureBlob, propName, desc);
+    }
+
+    secureBlob.prototype = _Blob.prototype;
+    return secureBlob;
+  }(Blob);
+
+  window.addEventListener('message', function (event) {
+    if (event.source !== window) {
+      return;
+    }
+    const message = event.data;
+    switch (message.method) {
+      case 'updateLocation':
+        if ((typeof message.info === 'object') && (typeof message.info.coords === 'object')) {
+          hookedObj.genLat = message.info.coords.lat;
+          hookedObj.genLon = message.info.coords.lon;
+          hookedObj.fakeGeo = message.info.fakeIt;
+        }
+        break;
+      default:
+        break;
+    }
+  }, false);
+  //]]>
+}
+          )();</script>
+  <defs>
+    <clipPath id="presentation_clip_path" clipPathUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="21000" height="29700"/>
+    </clipPath>
+  </defs>
+  <g class="SlideGroup">
+    <g>
+      <g id="container-id1">
+        <g id="id1" class="Slide" clip-path="url(#presentation_clip_path)">
+          <g class="Page">
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id3">
+                <rect class="BoundingBox" stroke="none" fill="none" x="3855" y="11159" width="5083" height="1273"/>
+                <path fill="rgb(221,221,221)" stroke="none" d="M 6396,12430 L 3856,12430 3856,11160 8936,11160 8936,12430 6396,12430 Z"/>
+                <path fill="none" stroke="rgb(119,188,101)" d="M 6396,12430 L 3856,12430 3856,11160 8936,11160 8936,12430 6396,12430 Z"/>
+              </g>
+            </g>
+            <g class="OLE2">
+              <g id="id4">
+                <rect class="BoundingBox" stroke="none" fill="none" x="-17734" y="10258" width="1220" height="1220"/>
+                <defs>
+                  <clipPath id="clip_path_1" clipPathUnits="userSpaceOnUse">
+                    <path d="M -17726,10265 L -16509,10265 -16509,11483 -17726,11483 -17726,10265 Z"/>
+                  </clipPath>
+                </defs>
+                <g clip-path="url(#clip_path_1)">
+                  <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Serif, serif" font-size="1093px" font-weight="400"><tspan class="TextPosition" x="-17430" y="11216"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">3</tspan></tspan></tspan></text>
+                </g>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id5">
+                <rect class="BoundingBox" stroke="none" fill="none" x="7665" y="11159" width="1273" height="1273"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 8301,12430 L 7666,12430 7666,11160 8936,11160 8936,12430 8301,12430 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 8301,12430 L 7666,12430 7666,11160 8936,11160 8936,12430 8301,12430 Z"/>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id6">
+                <rect class="BoundingBox" stroke="none" fill="none" x="7666" y="11160" width="1296" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="8039" y="12178"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">3</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id7">
+                <rect class="BoundingBox" stroke="none" fill="none" x="1315" y="16239" width="5083" height="1273"/>
+                <path fill="rgb(221,221,221)" stroke="none" d="M 3856,17510 L 1316,17510 1316,16240 6396,16240 6396,17510 3856,17510 Z"/>
+                <path fill="none" stroke="rgb(119,188,101)" d="M 3856,17510 L 1316,17510 1316,16240 6396,16240 6396,17510 3856,17510 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id8">
+                <rect class="BoundingBox" stroke="none" fill="none" x="2585" y="16239" width="1273" height="1273"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 3221,17510 L 2586,17510 2586,16240 3856,16240 3856,17510 3221,17510 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 3221,17510 L 2586,17510 2586,16240 3856,16240 3856,17510 3221,17510 Z"/>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id9">
+                <rect class="BoundingBox" stroke="none" fill="none" x="2586" y="16240" width="1296" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="2959" y="17258"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">1</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id10">
+                <rect class="BoundingBox" stroke="none" fill="none" x="5050" y="21320" width="1347" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="5448" y="22338"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">2</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id11">
+                <rect class="BoundingBox" stroke="none" fill="none" x="2585" y="21319" width="5083" height="1273"/>
+                <path fill="rgb(221,221,221)" stroke="none" d="M 5126,22590 L 2586,22590 2586,21320 7666,21320 7666,22590 5126,22590 Z"/>
+                <path fill="none" stroke="rgb(119,188,101)" d="M 5126,22590 L 2586,22590 2586,21320 7666,21320 7666,22590 5126,22590 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.LineShape">
+              <g id="id12">
+                <rect class="BoundingBox" stroke="none" fill="none" x="3221" y="12429" width="5081" height="3812"/>
+                <path fill="none" stroke="rgb(52,101,164)" d="M 3445,16072 L 8300,12430"/>
+                <path fill="rgb(52,101,164)" stroke="none" d="M 3551,16180 L 3221,16240 3371,15940 3551,16180 Z"/>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.CustomShape">
+              <g id="id13">
+                <rect class="BoundingBox" stroke="none" fill="none" x="5125" y="21319" width="1273" height="1273"/>
+                <path fill="rgb(114,159,207)" stroke="none" d="M 5761,22590 L 5126,22590 5126,21320 6396,21320 6396,22590 5761,22590 Z"/>
+                <path fill="none" stroke="rgb(255,182,108)" d="M 5761,22590 L 5126,22590 5126,21320 6396,21320 6396,22590 5761,22590 Z"/>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id14">
+                <rect class="BoundingBox" stroke="none" fill="none" x="5126" y="21320" width="1296" height="1353"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="988px" font-weight="400"><tspan class="TextPosition" x="5499" y="22338"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">2</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="com.sun.star.drawing.LineShape">
+              <g id="id15">
+                <rect class="BoundingBox" stroke="none" fill="none" x="3220" y="17509" width="2542" height="3812"/>
+                <path fill="none" stroke="rgb(52,101,164)" d="M 5606,21087 L 3221,17510"/>
+                <path fill="rgb(52,101,164)" stroke="none" d="M 5719,20987 L 5761,21320 5470,21154 5719,20987 Z"/>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id16">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10206" y="11160" width="6692" height="1988"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="917px" font-weight="400"><tspan class="TextPosition" x="10456" y="12115"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">LV = 3, Internal</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id17">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10206" y="16240" width="6692" height="2302"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="917px" font-weight="400"><tspan class="TextPosition" x="10456" y="17195"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">LV = 2, Internal</tspan></tspan></tspan></text>
+              </g>
+            </g>
+            <g class="TextShape">
+              <g id="id18">
+                <rect class="BoundingBox" stroke="none" fill="none" x="10206" y="21320" width="5716" height="1277"/>
+                <text class="SVGTextShape" style="white-space: pre;"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="917px" font-weight="400"><tspan class="TextPosition" x="10456" y="22275"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">LV = 1, Leaf</tspan></tspan></tspan></text>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

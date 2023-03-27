@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            基于前缀树的持久化向量（TrieVec）
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/TrieVec.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        基于前缀树的持久化向量（TrieVec）
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">基于前缀树的持久化向量（TrieVec）</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      March 17, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p>在前面介绍了从 Fibonacci 堆、Dary 堆，到图上的诸多算法，从 BST 到 BT 的一系列数据结构和算法，并提供了它们的 Rust 实现，如果把这些代码都集成起来，可能就会发现这个编译的过程怎么这么熬人，似乎越来越让人难以忍受，这时可以参考一下<a href="./SpeedupRustBuilding">另篇关于降低构建时间的笔记</a>。</p>
+
+<h2 id="前言">前言</h2>
+
+<p>本篇作为一个阶段性的总结篇，介绍一个基于前缀树（Trie）的持久化向量（Vector）的实现<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> ，以下用 TrieVec 简称。</p>
+
+<p>一方面，Vector 作为函数式编程语言里的允许随机读写的数据结构，本身有很重要的意义，没有它，传统的用类 C 描述的算法就无法落地；</p>
+
+<p>另一方面，讲到持久化数据结构，其实大部分都已涉及，只有持久化向量比较陌生并且比较复杂，有必要专门看一下；</p>
+
+<p>最后，在看这个实现的过程中，会发现这是一个总体概念陌生但局部细节熟悉的数据结构，它可以串起之前介绍过的诸多数据结构，不管是结构特点、设计方案还是实现方法，是一个合适的阶段尾声。</p>
+
+<h2 id="概念基础">概念基础</h2>
+
+<p>TrieVec 本质上就像我们在<a href="/algs/DaryHeap.html">多叉堆</a>上那样的做法，只不过多叉堆建立在数组上，而 TrieVec 则以树的的形式组织。</p>
+
+<p>比如对于一棵节点数宽度为 $2$ ，也就是 $2^2 = 4$ 阶的树，访问 idx = 54</p>
+
+\[\begin{array}{l}
+54 &amp;=\underbrace{11}\ \underbrace{01}\ \underbrace{10}\\
+&amp;=\ \ \ 3\quad\ \ \ 1\quad\quad 2
+\end{array}\]
+
+<p>情况如下图：</p>
+
+<div class="sx-center">
+<img src="/assets/img/trievec/trievec_exp.svg" width="65%" /></div>
+
+<p>这要求树的完全平衡，也就是每个叶子到根的高度都一样，然后把数据存储在每个叶子上，这一点又和我们在<a href="/algs/BT-1-BPT.html">B+ 树</a>上的情况相似。</p>
+
+<p>而对树层级的定义又和 <a href="./BST-2-RB-Tree-2-AA">AA 树</a> 是一样，用 level 的概念来描述是非常恰当的，叶子层的 level 是 $1$ ，空树的 level 是 $0$ 。</p>
+
+<p>对于持久化的要求来讲，每次操作，Push/Pop/Update etc. 只需要复制从根节点到叶子一条路径的节点，对数级别的开销是一个可以接受的代价。</p>
+
+<p>另外，对于某些时间敏感的任务，Clojure 还允许把持久化的结构转变为易变的结构（Transient）来做就地修改，然后再转回持久性结构，以避免复制开销。这样的话需要在每个节点上做出标识来追踪节点的创建者，在下一部分的<a href="#标记">标记</a>一节具体讨论。</p>
+
+<p>与易变向量的节点，以及区分历史上由不同线程创建的节点。</p>
+
+<h2 id="数据结构">数据结构</h2>
+
+<h3 id="树">树</h3>
+
+<p>这里有一个优化的小改动<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup>，就是把 TrieVec 最后一个节点（Bucket）从 Trie 中单独拿出来，作为尾节点，这会使得 Clojure 里像 <code class="language-plaintext highlighter-rouge">conj</code> 这样等价于 push 的操作在常量时间里完成。我们计算 TrieVec 的结构时候需要把尾部节点的长度扣除。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Clone)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">cnt</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">tail</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">cnt</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">tail</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="常量定义">常量定义</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">BIT_WIDTH</span><span class="p">:</span> <span class="nb">u32</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">NODE_SIZE</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">BIT_WIDTH</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">MASK</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">NODE_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h4 id="从-trie-size-反推-trie-height">从 Trie size 反推 Trie height</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">h</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$self:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nf">trie_height</span><span class="p">(</span><span class="nd">tailoff!</span><span class="p">(</span><span class="nv">$self</span><span class="p">))</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">const</span> <span class="k">fn</span> <span class="nf">trie_height</span><span class="p">(</span><span class="n">trie_size</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">u32</span> <span class="p">{</span>
+    <span class="k">match</span> <span class="n">trie_size</span> <span class="p">{</span>
+        <span class="mi">0</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">1</span> <span class="k">=&gt;</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">x</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="nf">.ilog2</span><span class="p">()</span> <span class="o">/</span> <span class="n">BIT_WIDTH</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">NODE_SIZE</span><span class="nf">.pow</span><span class="p">(</span><span class="n">h</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">h</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">h</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="根据总索引和当前层得到索引位置">根据总索引和当前层得到索引位置</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">idx</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$idx:expr</span><span class="p">,</span> <span class="nv">$lv:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="c1">// Precedence: '*' &gt; '&gt;&gt;' &gt; '&amp;'</span>
+        <span class="nv">$idx</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="nv">$lv</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">BIT_WIDTH</span> <span class="o">&amp;</span> <span class="n">MASK</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="尾部偏移量">尾部偏移量</h4>
+
+<p>也就是尾节点之前的元素数，也就是实际 Trie 的大小</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">tailoff</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$self:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nv">$self</span><span class="py">.cnt</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="mi">0</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="p">((</span><span class="nv">$self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">BIT_WIDTH</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">BIT_WIDTH</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="标志">标志</h3>
+
+<p>由于存在持久与易变版本间的转换，一个节点可能是持久版本的节点，也可能是历史上不同线程创建的易变节点。</p>
+
+<p>这里使用 <code class="language-plaintext highlighter-rouge">u64</code> <sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup>表示的 Thread id 作为标志，表示历史上创建易变节点的线程，Thread id 都大于 0 ，于是我们可以用 0 来表示持久版本的节点。</p>
+
+<p>这样对于可编辑节点需要满足：</p>
+
+<ol>
+  <li>不是持久化节点</li>
+  <li>不是历史上其他线程创建的节点</li>
+</ol>
+
+<p>不满足条件就需要复制节点，创造属于当前线程的节点。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">edit</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nn">std</span><span class="p">::</span><span class="nn">thread</span><span class="p">::</span><span class="nf">current</span><span class="p">()</span><span class="nf">.id</span><span class="p">()</span><span class="nf">.as_u64</span><span class="p">()</span><span class="nf">.get</span><span class="p">()</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+<span class="nd">macro_rules!</span> <span class="n">no_edit</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="mi">0</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">type</span> <span class="n">ID</span> <span class="o">=</span> <span class="nb">u64</span><span class="p">;</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">id</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">ID</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="mi">0</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">id!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.clone</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="内部节点">内部节点</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">enum</span> <span class="n">Node_</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">Internal</span> <span class="p">{</span> <span class="n">id</span><span class="p">:</span> <span class="n">ID</span><span class="p">,</span> <span class="n">children</span><span class="p">:</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="p">},</span>
+    <span class="n">Leaf</span> <span class="p">{</span> <span class="n">id</span><span class="p">:</span> <span class="n">ID</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">},</span>
+<span class="p">}</span>
+<span class="k">use</span> <span class="nn">Node_</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Node_</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">is_leaf</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="nd">matches!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">Leaf</span> <span class="p">{</span> <span class="o">..</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="nd">def_node__heap_access!</span><span class="p">(</span><span class="n">both</span><span class="p">,</span> <span class="n">id</span><span class="p">,</span> <span class="n">ID</span><span class="p">);</span>
+    <span class="nd">def_node__heap_access!</span><span class="p">(</span><span class="n">internal</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">);</span>
+    <span class="nd">def_node__heap_access!</span><span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">Array</code> 使用的是前面 <code class="language-plaintext highlighter-rouge">DaryHeap</code> 使用过的分配在堆上的静态数组；</li>
+  <li><code class="language-plaintext highlighter-rouge">def_node__heap_access</code> 宏使用的之前 B+ 树里面使用过的宏</li>
+</ol>
+
+<h3 id="节点包装">节点包装</h3>
+
+<p>考虑到持久化数据结构的跨线程使用的情况，节点包装里面的引用计数器将不再采用之前的 <code class="language-plaintext highlighter-rouge">std::rc::Rc</code> ，而改用同步版本的 <code class="language-plaintext highlighter-rouge">std::sync::Arc</code> <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">4</a></sup> 。</p>
+
+<p>但即使如此，由于 Rust 的严格限制，我们仍然不能把 <code class="language-plaintext highlighter-rouge">Node</code> 跨线程使用，即使我们确信作为持久化的结构时，是可以这样安全使用的。在 <code class="language-plaintext highlighter-rouge">std::sync</code> 的包里有各种各样的同步手段：</p>
+
+<ol>
+  <li>临界区（Exclusive）</li>
+  <li>惰性锁（LazyLock）</li>
+  <li>单写锁（OnceLock）</li>
+  <li>栅栏（Barrier）</li>
+  <li>条件变量（CondVar）</li>
+  <li>锁（Mutex）</li>
+  <li>单次锁 （Once）</li>
+  <li>读写锁 （RwLock）</li>
+</ol>
+
+<p>看了让人直呼好家伙，上世纪的那点儿古董玩意儿都让它给复活了😅，但是这里面没有我们需要的，我们的持久化结构实际避免了同步的需求，但是需要有一种机制让编译器知道这个情况以便能通过 Trait 检查，而显然标准库里没有提供这种手段。</p>
+
+<p>不过我们自己可以通过定义一个新的包装结构，为它实现 <code class="language-plaintext highlighter-rouge">Sync</code> 和 <code class="language-plaintext highlighter-rouge">Send</code> 两个 Trait 来实现持久化结构需要的 Trait 语义，<a href="https://github.com/bamidev/unsafe-send-sync">已经有人干得很好了</a>，我们在它的基础上按照我们的需求改进，得到一个告知编译器通过同步检查的包装结构，<code class="language-plaintext highlighter-rouge">UnsafeSendSync</code></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Default,</span> <span class="nd">Clone,</span> <span class="nd">Copy)]</span>
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">T</span><span class="p">);</span>
+
+<span class="cd">/// 一个自动实现Trait的宏，细节不展开了</span>
+<span class="nd">impl_unpack!</span><span class="p">(</span><span class="n">UnsafeSendSync</span> <span class="p">|</span> <span class="nb">AsRef</span><span class="p">,</span> <span class="nb">AsMut</span><span class="p">,</span> <span class="n">Deref</span><span class="p">,</span> <span class="n">DerefMut</span><span class="p">,</span> <span class="nb">From</span><span class="p">);</span>
+
+<span class="k">unsafe</span> <span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Send</span> <span class="k">for</span> <span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+<span class="k">unsafe</span> <span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Sync</span> <span class="k">for</span> <span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">unwrap</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="k">self</span><span class="na">.0</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">as_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">*</span><span class="k">const</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="na">.0</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">unsafe</span> <span class="k">fn</span> <span class="nf">as_ref_mut_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">*</span><span class="k">mut</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="na">.0</span> <span class="k">as</span> <span class="o">*</span><span class="k">const</span> <span class="n">_</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="n">_</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>于是我们重新修改了前面定义节点包装器的 <code class="language-plaintext highlighter-rouge">impl_node</code> 的宏：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[macro_export]</span>
+<span class="nd">macro_rules!</span> <span class="n">impl_node</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_node!</span><span class="p">(</span><span class="k">pub</span><span class="p">(</span><span class="k">self</span><span class="p">));</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$vis:vis</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_node!</span><span class="p">(</span><span class="nv">$vis</span> <span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">rc</span><span class="p">);</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$vis:vis</span> <span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g:ident</span><span class="p">),</span><span class="o">+&gt;</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_node!</span><span class="p">(</span>
+            <span class="nv">$vis</span> <span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span><span class="p">,</span>
+            <span class="nn">std</span><span class="p">::</span><span class="nn">rc</span><span class="p">::</span><span class="nb">Rc</span><span class="o">&lt;</span><span class="nn">std</span><span class="p">::</span><span class="nn">cell</span><span class="p">::</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node_</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;&gt;&gt;</span><span class="p">,</span>
+            <span class="nn">std</span><span class="p">::</span><span class="nn">rc</span><span class="p">::</span><span class="n">Weak</span><span class="o">&lt;</span><span class="nn">std</span><span class="p">::</span><span class="nn">cell</span><span class="p">::</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node_</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;&gt;&gt;</span>
+        <span class="p">);</span>
+
+        <span class="nd">#[allow(unused)]</span>
+        <span class="k">impl</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">as_ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">*</span><span class="k">mut</span> <span class="n">Node_</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+                <span class="k">match</span> <span class="k">self</span><span class="na">.0</span> <span class="p">{</span>
+                    <span class="nf">Some</span><span class="p">(</span><span class="k">ref</span> <span class="n">rc</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">rc</span><span class="nf">.as_ptr</span><span class="p">(),</span>
+                    <span class="nb">None</span> <span class="k">=&gt;</span> <span class="nn">std</span><span class="p">::</span><span class="nn">ptr</span><span class="p">::</span><span class="nf">null_mut</span><span class="p">(),</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nd">#[allow(unused)]</span>
+        <span class="nd">macro_rules!</span> <span class="n">aux_node</span> <span class="p">{</span>
+            <span class="p">({</span> <span class="nv">$$</span><span class="p">(</span><span class="nv">$attr:ident</span> <span class="p">:</span> <span class="nv">$attr_val:expr</span><span class="p">),</span><span class="o">*</span> <span class="nv">$$</span><span class="p">(,)</span><span class="o">?</span> <span class="p">})</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="nf">Node</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">std</span><span class="p">::</span><span class="nn">rc</span><span class="p">::</span><span class="nn">Rc</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">std</span><span class="p">::</span><span class="nn">cell</span><span class="p">::</span><span class="nn">RefCell</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">Node_</span> <span class="p">{</span>
+                    <span class="nv">$$</span><span class="p">(</span>
+                        <span class="nv">$attr</span><span class="p">:</span> <span class="nv">$attr_val</span>
+                    <span class="p">),</span><span class="o">*</span>
+                <span class="p">}))))</span>
+            <span class="p">};</span>
+            <span class="p">(</span><span class="n">ENUM</span> <span class="nv">$ty:ident</span> <span class="p">{</span> <span class="nv">$$</span><span class="p">(</span><span class="nv">$attr:ident</span> <span class="p">:</span> <span class="nv">$attr_val:expr</span><span class="p">),</span><span class="o">*</span> <span class="nv">$$</span><span class="p">(,)</span><span class="o">?</span> <span class="p">})</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="nf">Node</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">std</span><span class="p">::</span><span class="nn">rc</span><span class="p">::</span><span class="nn">Rc</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">std</span><span class="p">::</span><span class="nn">cell</span><span class="p">::</span><span class="nn">RefCell</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">Node_</span><span class="p">::</span><span class="nv">$ty</span> <span class="p">{</span>
+                    <span class="nv">$$</span><span class="p">(</span>
+                        <span class="nv">$attr</span><span class="p">:</span> <span class="nv">$attr_val</span>
+                    <span class="p">),</span><span class="o">*</span>
+                <span class="p">}))))</span>
+            <span class="p">};</span>
+        <span class="p">}</span>
+
+        <span class="nd">#[allow(unused)]</span>
+        <span class="nd">macro_rules!</span> <span class="n">unwrap_into</span> <span class="p">{</span>
+            <span class="p">(</span><span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="nn">std</span><span class="p">::</span><span class="nn">rc</span><span class="p">::</span><span class="nn">Rc</span><span class="p">::</span><span class="nf">try_unwrap</span><span class="p">(</span><span class="nv">$node</span><span class="na">.0</span><span class="nf">.unwrap</span><span class="p">())</span>
+                    <span class="nf">.unwrap</span><span class="p">()</span>
+                    <span class="nf">.into_inner</span><span class="p">()</span>
+            <span class="p">};</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$vis:vis</span> <span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g:ident</span><span class="p">),</span><span class="o">+&gt;</span><span class="p">,</span> <span class="n">arc</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_node!</span><span class="p">(</span>
+            <span class="nv">$vis</span> <span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span><span class="p">,</span>
+            <span class="nn">std</span><span class="p">::</span><span class="nn">sync</span><span class="p">::</span><span class="nb">Arc</span><span class="o">&lt;</span><span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">Node_</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;&gt;&gt;</span><span class="p">,</span>
+            <span class="nn">std</span><span class="p">::</span><span class="nn">sync</span><span class="p">::</span><span class="n">Weak</span><span class="o">&lt;</span><span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">Node_</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;&gt;&gt;</span>
+        <span class="p">);</span>
+        <span class="nd">macro_rules!</span> <span class="n">aux_node</span> <span class="p">{</span>
+            <span class="p">({</span> <span class="nv">$$</span><span class="p">(</span><span class="nv">$attr:ident</span> <span class="p">:</span> <span class="nv">$attr_val:expr</span><span class="p">),</span><span class="o">*</span> <span class="p">})</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="nf">Node</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">std</span><span class="p">::</span><span class="nn">sync</span><span class="p">::</span><span class="nn">Arc</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">UnsafeSendSync</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">Node_</span> <span class="p">{</span>
+                    <span class="nv">$$</span><span class="p">(</span>
+                        <span class="nv">$attr</span><span class="p">:</span> <span class="nv">$attr_val</span>
+                    <span class="p">),</span><span class="o">*</span>
+                <span class="p">}))))</span>
+            <span class="p">};</span>
+            <span class="p">(</span><span class="n">ENUM</span> <span class="nv">$ty:ident</span> <span class="p">{</span> <span class="nv">$$</span><span class="p">(</span><span class="nv">$attr:ident</span> <span class="p">:</span> <span class="nv">$attr_val:expr</span><span class="p">),</span><span class="o">*</span> <span class="p">})</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="nf">Node</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">std</span><span class="p">::</span><span class="nn">sync</span><span class="p">::</span><span class="nn">Arc</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">UnsafeSendSync</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">Node_</span><span class="p">::</span><span class="nv">$ty</span> <span class="p">{</span>
+                    <span class="nv">$$</span><span class="p">(</span>
+                        <span class="nv">$attr</span><span class="p">:</span> <span class="nv">$attr_val</span>
+                    <span class="p">),</span><span class="o">*</span>
+                <span class="p">}))))</span>
+            <span class="p">};</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$vis:vis</span> <span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g:ident</span><span class="p">),</span><span class="o">+&gt;</span><span class="p">,</span> <span class="nv">$rc:ty</span><span class="p">,</span> <span class="nv">$wk:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nv">$vis</span> <span class="k">struct</span> <span class="n">Node</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span><span class="p">(</span>
+            <span class="nb">Option</span><span class="o">&lt;</span><span class="nv">$rc</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="p">);</span>
+
+        <span class="cd">/// Used for reverse reference to avoid circular-reference</span>
+        <span class="cd">///</span>
+        <span class="cd">/// So we can easy auto drop</span>
+        <span class="k">struct</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span><span class="p">(</span>
+            <span class="nb">Option</span><span class="o">&lt;</span><span class="nv">$wk</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="p">);</span>
+
+        <span class="nd">#[allow(unused)]</span>
+        <span class="k">impl</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">downgrade</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+                <span class="nf">WeakNode</span><span class="p">(</span>
+                    <span class="k">self</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|</span><span class="k">ref</span> <span class="n">rc</span><span class="p">|</span> <span class="o">&lt;</span><span class="nv">$rc</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">downgrade</span><span class="p">(</span><span class="n">rc</span><span class="p">)),</span>
+                <span class="p">)</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">none</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">(</span><span class="nb">None</span><span class="p">)</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">is_some</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+                <span class="k">self</span><span class="na">.0</span><span class="nf">.is_some</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">is_none</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+                <span class="k">self</span><span class="na">.0</span><span class="nf">.is_none</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">rc_eq</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+                <span class="k">match</span> <span class="k">self</span><span class="na">.0</span> <span class="p">{</span>
+                    <span class="nf">Some</span><span class="p">(</span><span class="k">ref</span> <span class="n">rc1</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="k">ref</span> <span class="n">rc2</span><span class="p">)</span> <span class="o">=</span> <span class="n">other</span><span class="na">.0</span> <span class="p">{</span>
+                            <span class="o">&lt;</span><span class="nv">$rc</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">ptr_eq</span><span class="p">(</span><span class="n">rc1</span><span class="p">,</span> <span class="n">rc2</span><span class="p">)</span>
+                        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                            <span class="kc">false</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="nb">None</span> <span class="k">=&gt;</span> <span class="n">other</span><span class="nf">.is_none</span><span class="p">(),</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+
+        <span class="k">impl</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="nb">Default</span> <span class="k">for</span> <span class="n">Node</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">default</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+
+        <span class="k">impl</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="nb">Clone</span> <span class="k">for</span> <span class="n">Node</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">(</span><span class="k">self</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">())</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+
+        <span class="nd">#[allow(unused)]</span>
+        <span class="k">impl</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">upgrade</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+                <span class="nf">Node</span><span class="p">(</span><span class="k">self</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|</span><span class="n">weak</span><span class="p">|</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">strong</span><span class="p">)</span> <span class="o">=</span> <span class="n">weak</span><span class="nf">.upgrade</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="n">strong</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="nd">unreachable!</span><span class="p">(</span><span class="s">"weak node upgrade failed"</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">}))</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">none</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">(</span><span class="nb">None</span><span class="p">)</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">is_none</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+                <span class="k">self</span><span class="na">.0</span><span class="nf">.is_none</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">is_some</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+                <span class="k">self</span><span class="na">.0</span><span class="nf">.is_some</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="k">fn</span> <span class="nf">replace</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">oth</span><span class="p">:</span> <span class="k">Self</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">self</span><span class="na">.0</span> <span class="o">=</span> <span class="n">oth</span><span class="na">.0</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+
+        <span class="k">impl</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="nb">Clone</span> <span class="k">for</span> <span class="n">WeakNode</span><span class="o">&lt;</span><span class="nv">$</span><span class="p">(</span><span class="nv">$g</span><span class="p">),</span><span class="o">+&gt;</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">(</span><span class="k">self</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">())</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>并更新节点包装的访问宏，增加新的用例：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[macro_export]</span>
+<span class="nd">macro_rules!</span> <span class="n">def_attr_macro</span> <span class="p">{</span>
+	<span class="c1">// ...</span>
+    <span class="p">(</span><span class="n">call_unsafe_sync</span> <span class="p">|</span> <span class="nv">$</span><span class="p">(</span><span class="nv">$name:ident</span><span class="p">),</span><span class="o">+</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nv">$</span><span class="p">(</span>
+            <span class="nn">coll</span><span class="p">::</span><span class="nd">paste!</span><span class="p">(</span>
+                <span class="nd">macro_rules!</span> <span class="nv">$name</span> <span class="p">{</span>
+                    <span class="p">(</span><span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                        <span class="nd">attr!</span><span class="p">(</span><span class="n">self_unsafe_sync</span> <span class="p">|</span> <span class="nv">$$node</span><span class="p">)</span>.<span class="nv">$name</span><span class="p">()</span>
+                    <span class="p">};</span>
+                <span class="p">}</span>
+            <span class="p">);</span>
+
+            <span class="nn">coll</span><span class="p">::</span><span class="nd">paste!</span><span class="p">(</span>
+                <span class="nd">#[allow(unused)]</span>
+                <span class="nd">macro_rules!</span> <span class="p">[</span><span class="o">&lt;</span><span class="nv">$name</span> <span class="n">_mut</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="p">(</span><span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                        <span class="nd">attr!</span><span class="p">(</span><span class="n">self_unsafe_sync_mut</span> <span class="p">|</span> <span class="nv">$$node</span><span class="p">)</span>.<span class="p">[</span><span class="o">&lt;</span><span class="nv">$name</span> <span class="n">_mut</span><span class="o">&gt;</span><span class="p">]()</span>
+                    <span class="p">};</span>
+                <span class="p">}</span>
+            <span class="p">);</span>
+        <span class="p">)</span><span class="o">+</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="nd">#[macro_export]</span>
+<span class="nd">macro_rules!</span> <span class="n">attr</span> <span class="p">{</span>
+	<span class="c1">// ...</span>
+    <span class="p">(</span><span class="n">self_unsafe_sync</span> <span class="p">|</span> <span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="k">ref</span> <span class="n">_unr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span> <span class="n">_unr</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"Call {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">self_unsafe_sync_mut</span> <span class="p">|</span> <span class="nv">$node:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="k">ref</span> <span class="n">_unr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">$node</span><span class="na">.0</span> <span class="p">{</span>
+            <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;</span><span class="k">mut</span><span class="o">*</span> <span class="n">_unr</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.as_ref_mut_ptr</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">panic!</span><span class="p">(</span><span class="s">"MAccess {} on None"</span><span class="p">,</span> <span class="nd">stringify!</span><span class="p">(</span><span class="nv">$attr</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>于是得到我们自己定义的节点的访问宏：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_node!</span><span class="p">(</span><span class="k">pub</span> <span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">arc</span><span class="p">);</span>
+
+<span class="nd">def_attr_macro!</span><span class="p">(</span><span class="n">call_unsafe_sync</span> <span class="p">|</span> <span class="n">id</span><span class="p">,</span> <span class="n">children</span><span class="p">,</span> <span class="n">values</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>并用它们定义一些节点包装上的方法：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">is_leaf</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">attr!</span><span class="p">(</span><span class="n">self_unsafe_sync</span> <span class="p">|</span> <span class="k">self</span><span class="p">)</span><span class="nf">.is_leaf</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">is_internal</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nd">attr!</span><span class="p">(</span><span class="n">self_unsafe_sync</span> <span class="p">|</span> <span class="k">self</span><span class="p">)</span><span class="nf">.is_leaf</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="nf">.is_some</span><span class="p">());</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.is_internal</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">children!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">values!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">id</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">ID</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="mi">0</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">id!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span><span class="nf">.clone</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="简单方法">简单方法</h2>
+
+<p>首先定义下向量的持久化版本和易变版本共通的一些方法：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">impl_trie_common</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+            <span class="k">Self</span> <span class="p">{</span>
+                <span class="n">cnt</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">root</span><span class="p">:</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">(),</span>
+                <span class="n">tail</span><span class="p">:</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">(),</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">pub</span> <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.cnt</span>
+        <span class="p">}</span>
+
+        <span class="k">pub</span> <span class="k">fn</span> <span class="nf">id</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">ID</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.tail</span><span class="nf">.id</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="k">pub</span> <span class="k">fn</span> <span class="nf">nth</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="n">T</span> <span class="p">{</span>
+            <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">&gt;</span> <span class="n">idx</span><span class="p">);</span>
+
+            <span class="k">let</span> <span class="n">leaf</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.down_to_leaf</span><span class="p">(</span><span class="n">idx</span><span class="p">);</span>
+
+            <span class="o">&amp;</span><span class="nd">values!</span><span class="p">(</span><span class="n">leaf</span><span class="p">)[</span><span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Alias as search to leaf, array_for, etc</span>
+        <span class="k">fn</span> <span class="nf">down_to_leaf</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.cnt</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">;</span>
+
+            <span class="k">while</span> <span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="n">cur</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">cur</span><span class="p">)[</span><span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">lv</span><span class="p">)];</span>
+                <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">cur</span><span class="nf">.clone</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ol>
+  <li>不同于 Clojure 里面的实现，我们检查尾节点的 <code class="language-plaintext highlighter-rouge">id</code> 而不是根节点的，因为尾节点才是首先被插入的节点</li>
+</ol>
+
+<h2 id="创建节点">创建节点</h2>
+
+<p>定义一个创建节点的宏可以极大地方便我们后续持久性以及易变性数据结构推入或弹出节点的过程。</p>
+
+<h3 id="基础创建">基础创建</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">node</span> <span class="p">{</span>
+	<span class="c1">// ...</span>
+    <span class="p">(</span><span class="n">single</span><span class="o">-</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$v:expr</span><span class="p">,</span> <span class="nv">$cap:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">node</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="nv">$cap</span><span class="p">);</span>
+        <span class="nd">values_mut!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$v</span><span class="p">;</span>
+        <span class="n">node</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$cap:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="nd">aux_node!</span><span class="p">(</span><span class="n">ENUM</span> <span class="n">Leaf</span> <span class="p">{</span>
+            <span class="n">id</span><span class="p">:</span> <span class="nv">$id</span><span class="p">,</span>
+            <span class="n">values</span><span class="p">:</span> <span class="nn">Array</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nv">$cap</span><span class="p">)</span>
+        <span class="p">})</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">internal</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$cap:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="nd">aux_node!</span><span class="p">(</span><span class="n">ENUM</span> <span class="n">Internal</span> <span class="p">{</span>
+            <span class="n">id</span><span class="p">:</span> <span class="nv">$id</span><span class="p">,</span>
+            <span class="n">children</span><span class="p">:</span> <span class="nn">Array</span><span class="p">::</span><span class="nf">new_with_clone</span><span class="p">(</span><span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">(),</span> <span class="nv">$cap</span><span class="p">)</span>
+        <span class="p">})</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="带有容积参数的复制">带有容积参数的复制</h3>
+
+<p>创建一个指定大小的数组，并在允许范围内复制一个既有节点。这既可以用在 <code class="language-plaintext highlighter-rouge">push</code> 时创建一个扩容的新节点，也可以用在 <code class="language-plaintext highlighter-rouge">pop</code> 时创建一个缩容的新节点，当然也可以原封不动地复制节点。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">node</span> <span class="p">{</span>
+	<span class="c1">// ...    </span>
+   <span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$x:expr</span><span class="p">,</span> <span class="nv">$cap:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_leaf</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="nv">$cap</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">internal</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="nv">$cap</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$x:expr</span><span class="p">,</span> <span class="nv">$cap:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">cap</span> <span class="o">=</span> <span class="nv">$cap</span><span class="p">;</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">cap</span> <span class="o">&lt;=</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">node</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">cap</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">x</span><span class="nf">.len</span><span class="p">(),</span> <span class="n">cap</span><span class="p">);</span>
+
+        <span class="nd">values_mut!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="o">..</span><span class="n">n</span><span class="p">]</span><span class="nf">.clone_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="nd">values!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="o">..</span><span class="n">n</span><span class="p">]);</span>
+
+        <span class="n">node</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">internal</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$x:expr</span><span class="p">,</span> <span class="nv">$cap:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">cap</span> <span class="o">=</span> <span class="nv">$cap</span><span class="p">;</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">cap</span> <span class="o">&lt;=</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">x</span><span class="nf">.len</span><span class="p">(),</span> <span class="n">cap</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">node</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">internal</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">cap</span><span class="p">);</span>
+
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="o">..</span><span class="n">n</span><span class="p">]</span><span class="nf">.clone_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="o">..</span><span class="n">n</span><span class="p">]);</span>
+
+        <span class="n">nod</span>
+    <span class="p">}</span> <span class="p">}</span>
+<span class="p">}</span>       
+</code></pre></div></div>
+
+<h3 id="复制时容量-1-1">复制时容量 +1/-1</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">node</span> <span class="p">{</span>
+	<span class="c1">// ...        </span>
+    <span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">inc</span><span class="o">-</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$x:expr</span><span class="p">,</span> <span class="nv">$v:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">x</span><span class="nf">.is_leaf</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">node</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="nd">values_mut!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="n">x</span><span class="nf">.len</span><span class="p">()]</span> <span class="o">=</span> <span class="nv">$v</span><span class="p">;</span>
+
+        <span class="n">node</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">inc</span><span class="o">-</span><span class="n">internal</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$x:expr</span><span class="p">,</span> <span class="nv">$v:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+		
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">x</span><span class="nf">.is_internal</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">node</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">internal</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="n">x</span><span class="nf">.len</span><span class="p">()]</span> <span class="o">=</span> <span class="nv">$v</span><span class="p">;</span>
+
+        <span class="n">node</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">dec</span><span class="p">|</span> <span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$x:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">x</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_leaf</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">leaf</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span><span class="o">-</span><span class="n">with</span><span class="o">-</span><span class="n">internal</span><span class="p">|</span> <span class="nv">$id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+</code></pre></div></div>
+
+<p>值得注意的是，对 +1 复制与 -1 复制的实现行为有些不同，+1 复制要单独分为两种情况，这是因为它有一个额外的参数 <code class="language-plaintext highlighter-rouge">$v</code> ，也就是需要插入节点的值，而值的类型是异构的，不能动态地分发，只能手动静态地分发。</p>
+
+<h2 id="push">Push</h2>
+
+<h3 id="主流程">主流程</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">cnt</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">root</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">tail</span><span class="p">;</span>
+
+        <span class="c1">// trie is empty</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">single</span> <span class="o">-</span> <span class="n">leaf</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">v</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="c1">// tail is available</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">NODE_SIZE</span> <span class="p">{</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="o">-</span> <span class="n">inc</span> <span class="o">-</span> <span class="n">leaf</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="c1">// tail is full</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">single</span> <span class="o">-</span> <span class="n">leaf</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">v</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+            <span class="n">root</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.push_tail_into_trie</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">cnt</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">tail</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="创建新路径">创建新路径</h3>
+
+<p>创建一条从某 $\text{lv}$ 开始直到叶子( $\text{lv}=1$ )的新路径：</p>
+
+<div class="sx-center">
+<img src="/assets/img/trievec/trievec_new_path.svg" width="40%" /></div>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Top-down clone new path from lv (1..h)</span>
+<span class="k">fn</span> <span class="n">new_path</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">id</span><span class="p">:</span> <span class="n">ID</span><span class="p">,</span> <span class="n">lv</span><span class="p">:</span> <span class="nb">u32</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">x</span><span class="nf">.clone</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">node</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">internal</span> <span class="p">|</span> <span class="n">id</span><span class="p">,</span> <span class="n">cap</span><span class="p">);</span>
+
+    <span class="nd">children_mut!</span><span class="p">(</span><span class="n">node</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nf">new_path</span><span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">lv</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">cap</span><span class="p">);</span>
+
+    <span class="n">node</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里使用了递归的实现，在原版的作为 Clojure 标准库的 Java 实现里所有 Trie 上的操作都采用了类似结构的递归的实现，这或许能简化一些代码，但是严重牺牲了代码的可读性：一方面接口丑陋，作为递归函数的代价，包含了过多不应该属于接口而是栈上临时的参数；另一方面递归本身又隐藏了细节，让人难以看清楚到底这个过程做了什么事情。因此后面我们将使用我们自己的展开版本的实现作为替代。</p>
+
+<h3 id="推入尾节点">推入尾节点</h3>
+
+<p>当 <code class="language-plaintext highlighter-rouge">push</code> 时发现尾节点已满时，需要把旧的尾节点推入 Trie 里面，按照 Trie 树高可以分为三种情况：</p>
+
+<ol>
+  <li>$\text{lv}=0$ ，也就是 Trie 为空的情况，把旧尾节点作为 Trie 的根；</li>
+  <li>$\text{lv}=1$ ，此时发现根溢出，于是创建一个新的节点包含原来的旧根和推入的尾节点。但是更进一步地，可以推广到包含 $\text{lv}=1$ 在内的全部根溢出的情况，此时新根插入的不是原来的尾节点，而是 <code class="language-plaintext highlighter-rouge">new_path</code> 创建的包含尾节点的一整条路径；</li>
+  <li>$\text{lv} \ge 2$ ，从根节点开始复制，注意选择合适的数组容量，当中间节点超过一层时，自顶向下地复制每一层的节点，并把上一层中间节点里对本层节点的引用更新为新创建的节点，当发现新的节点在一个还未创建的路径时，可以直接使用 <code class="language-plaintext highlighter-rouge">new_path</code> 创建到叶子的新路径，然后插入到上一层节点。</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">push_tail_into_trie</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="k">self</span><span class="py">.tail</span><span class="nf">.len</span><span class="p">(),</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">leaf_i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">root</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="k">return</span> <span class="n">root</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="c1">// Complete trie including case lv == 1</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">==</span> <span class="n">NODE_SIZE</span><span class="nf">.pow</span><span class="p">(</span><span class="n">lv</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">internal</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="mi">2</span><span class="p">);</span>
+
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">root</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">root</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nf">new_path</span><span class="p">(</span><span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">lv</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="n">root</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">p_i</span> <span class="p">{</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span>
+                <span class="n">dup</span> <span class="o">-</span> <span class="n">inc</span> <span class="o">-</span> <span class="n">internal</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span>
+                <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span>
+                <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span>
+            <span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="k">let</span> <span class="n">root</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="c1">// Go down through the branch</span>
+        <span class="k">while</span> <span class="n">lv</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="p">{</span>
+            <span class="c1">// at p's level</span>
+
+            <span class="k">if</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">old_cur</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">];</span>
+                <span class="k">let</span> <span class="n">cur</span><span class="p">;</span>
+                <span class="k">let</span> <span class="n">cur_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="n">old_cur</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">cur_i</span> <span class="p">{</span>
+                    <span class="n">cur</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">old_cur</span><span class="p">);</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">cur</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span>
+                        <span class="n">dup</span> <span class="o">-</span> <span class="n">inc</span> <span class="o">-</span> <span class="n">internal</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span>
+                        <span class="n">old_cur</span><span class="p">,</span>
+                        <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">()</span>
+                    <span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="nf">.clone</span><span class="p">();</span>
+
+                <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+                <span class="n">p_i</span> <span class="o">=</span> <span class="n">cur_i</span><span class="p">;</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">cur</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span>
+                    <span class="nf">new_path</span><span class="p">(</span><span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">lv</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+                <span class="k">return</span> <span class="n">root</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="n">lv</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="n">root</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="assoc">Assoc</h2>
+
+<p>按照索引更新向量，如果索引和长度相等，就顺势插入。</p>
+
+<p>和前面 <code class="language-plaintext highlighter-rouge">push_tail_into_trie</code> 同样自顶向下地复制一条只到叶子的路径，只不过前者相当于访问的索引是 <code class="language-plaintext highlighter-rouge">self.cnt - 1</code> ，而这里使用的是传入的索引。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>    
+	<span class="cd">/// idx in `[0, self.len()]` (update or push)</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">assoc</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">&gt;=</span> <span class="n">idx</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="k">self</span><span class="py">.cnt</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">self</span><span class="nf">.push</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">cnt</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">root</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">tail</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="n">tail</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">);</span>
+            <span class="nd">values_mut!</span><span class="p">(</span><span class="n">tail</span><span class="p">)[</span><span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">);</span>
+
+            <span class="n">root</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="k">if</span> <span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="c1">// at p's level</span>
+
+                <span class="k">loop</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">old_cur</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">];</span>
+                    <span class="k">let</span> <span class="n">cur</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">old_cur</span><span class="p">);</span>
+
+                    <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="nf">.clone</span><span class="p">();</span>
+
+                    <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+                    <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">cur</span><span class="p">;</span>
+
+                    <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="nd">values_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+
+            <span class="n">tail</span> <span class="o">=</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">cnt</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">tail</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="pop">Pop</h2>
+
+<h3 id="主流程-1">主流程</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>       
+	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">pop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"Can't pop empty vector"</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">cnt</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">root</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">tail</span><span class="p">;</span>
+
+        <span class="c1">// Get empty vec</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="c1">// Get non-empty tail</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="o">-</span> <span class="n">dec</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// the last two idx</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.down_to_leaf</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+
+            <span class="n">root</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.pop_tail_from_trie</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">cnt</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">tail</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="弹出尾节点">弹出尾节点</h3>
+
+<p>与 <code class="language-plaintext highlighter-rouge">push</code> 的操作相对的，当弹出尾部元素后发现尾节点为空时，需要把 Trie 最后一个节点弹出来作为尾节点。</p>
+
+<p>有两点值得一讲：</p>
+
+<ol>
+  <li>
+    <p>使用 <code class="language-plaintext highlighter-rouge">self.cnt - 2</code> 作为对 Trie 上最后一个节点的访问索引，因为此时原尾节点上只有一个元素，因此 Trie 上有 <code class="language-plaintext highlighter-rouge">self.cnt - 1</code> 个元素；</p>
+  </li>
+  <li>
+    <p>弹出尾节点可能会产生空路径，也就是唯一的子节点为空的节点，空路径可能会一路向上延伸，直到根节点<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>。对应推入尾节点时有根溢出的情况，这时应该叫做根不足吧😀。</p>
+
+    <p>从结构上进行判断的话，需要从尾部再回溯到根，由于 Trie 节点没有对父节点的反向引用，所以在自顶向下过程中还要保存一下整条节点路径，然后进行检查。</p>
+
+    <p>不过有更简单的，就是直接检查 Trie 的大小，是否弹出尾节点后后高度会下降</p>
+  </li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>       
+	<span class="k">fn</span> <span class="nf">pop_tail_from_trie</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">),</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="c1">// Get empty tail</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">leaf_i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// tail size 1</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">root</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="k">while</span> <span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">cur</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]);</span>
+
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">cur</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+        
+        <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">NODE_SIZE</span> <span class="o">==</span> <span class="n">NODE_SIZE</span><span class="nf">.pow</span><span class="p">(</span><span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="cm">/* pop root */</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">root</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="n">root</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="易变版本实现">易变版本实现</h2>
+
+<h3 id="数据结构-1">数据结构</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">cnt</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">tail</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">!</span><span class="nb">Send</span> <span class="k">for</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">!</span><span class="nb">Sync</span> <span class="k">for</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>由于 <code class="language-plaintext highlighter-rouge">Sync</code> 和 <code class="language-plaintext highlighter-rouge">Send</code> 是自动 Trait，由于 Node 因为我们定义的 <code class="language-plaintext highlighter-rouge">UnsafeSendSync</code> 自动实现了这两个 Trait ，因此 <code class="language-plaintext highlighter-rouge">PTrieVec</code> 和 <code class="language-plaintext highlighter-rouge">TTrieVec</code> 也都自动实现了这两个 Trait ，但我们不喜欢让 <code class="language-plaintext highlighter-rouge">TTrieVec</code> 能后被跨线程的分发与访问，于是通过“负实现”取消这两个 Trait 的自动实现。</p>
+
+<h3 id="transient">transient</h3>
+
+<p>把持久向量变为属于当前线程的可变向量。</p>
+
+<p>不会马上复制整棵树的所有节点，而只是 TrieVec 的根节点和尾节点。</p>
+
+<p>使用宏 <code class="language-plaintext highlighter-rouge">ensure_editable</code> 作为警戒哨，确保最后得到一个属于当前线程的可变的节点。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">ensure_editable</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$id:expr</span><span class="p">,</span> <span class="nv">$x:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">id</span> <span class="o">=</span> <span class="nv">$id</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="nv">$x</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">x</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="n">id</span> <span class="o">==</span> <span class="n">x</span><span class="nf">.id</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">x</span><span class="nf">.clone</span><span class="p">()</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="o">-</span> <span class="n">with</span> <span class="p">|</span> <span class="n">id</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">NODE_SIZE</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$x:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">ensure_editable!</span><span class="p">(</span><span class="nd">edit!</span><span class="p">(),</span> <span class="nv">$x</span><span class="p">)</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>    
+	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">transient</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="n">TTrieVec</span> <span class="p">{</span>
+            <span class="n">cnt</span><span class="p">:</span> <span class="k">self</span><span class="py">.cnt</span><span class="p">,</span>
+            <span class="n">root</span><span class="p">:</span> <span class="nd">ensure_editable!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">),</span>
+            <span class="n">tail</span><span class="p">:</span> <span class="nd">ensure_editable!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="push-1">push</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">is_editable</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.cnt</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="k">self</span><span class="nf">.id</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+
+	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">push</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="nf">.is_editable</span><span class="p">());</span>
+
+        <span class="c1">// trie is empty</span>
+        <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.tail</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">single</span> <span class="o">-</span> <span class="n">leaf</span> <span class="p">|</span> <span class="nd">edit!</span><span class="p">(),</span> <span class="n">v</span><span class="p">,</span> <span class="n">NODE_SIZE</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="c1">// tail is available</span>
+        <span class="c1">// WARNING: neq `tail.len` for it's array capcity</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">NODE_SIZE</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">leaf_i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">leaf_i</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.tail</span> <span class="o">=</span>
+                    <span class="nd">node!</span><span class="p">(</span><span class="n">dup</span> <span class="o">-</span> <span class="n">with</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">,</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="nd">values_mut!</span><span class="p">(</span><span class="k">self</span><span class="py">.tail</span><span class="p">)[</span><span class="n">leaf_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="c1">// tail is full</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.push_tail_into_trie</span><span class="p">();</span>
+            <span class="k">self</span><span class="py">.tail</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">single</span> <span class="o">-</span> <span class="n">leaf</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">v</span><span class="p">,</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">self</span><span class="py">.cnt</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">cnt</span><span class="p">:</span> <span class="k">self</span><span class="py">.cnt</span><span class="p">,</span>
+            <span class="n">root</span><span class="p">:</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">(),</span>
+            <span class="n">tail</span><span class="p">:</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+   	<span class="k">fn</span> <span class="nf">push_tail_into_trie</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">debug_assert_eq!</span><span class="p">(</span><span class="k">self</span><span class="py">.tail</span><span class="nf">.len</span><span class="p">(),</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">leaf_i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">==</span> <span class="n">NODE_SIZE</span><span class="nf">.pow</span><span class="p">(</span><span class="n">lv</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">root</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span><span class="n">internal</span> <span class="p">|</span> <span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">root</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="nd">children_mut!</span><span class="p">(</span><span class="n">root</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>
+                <span class="nf">new_path</span><span class="p">(</span><span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">lv</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">,</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="n">root</span><span class="p">;</span>
+
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.ensure_editable</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="k">while</span> <span class="n">lv</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="p">{</span>
+            <span class="c1">// at p's level</span>
+
+            <span class="k">if</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">cur</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.ensure_editable</span><span class="p">(</span><span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]);</span>
+                <span class="k">let</span> <span class="n">cur_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="nf">.clone</span><span class="p">();</span>
+
+                <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+                <span class="n">p_i</span> <span class="o">=</span> <span class="n">cur_i</span><span class="p">;</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">cur</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span>
+                    <span class="nf">new_path</span><span class="p">(</span><span class="k">self</span><span class="nf">.id</span><span class="p">(),</span> <span class="n">lv</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">,</span> <span class="n">NODE_SIZE</span><span class="p">);</span>
+
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>基本过程和持久化版本高度一致，有一个区别是：</p>
+
+<ol>
+  <li>持久化版本扩容时容量最多增加 $1$ ，而易变版本直接分配满额的节点；</li>
+  <li>直接修改 TrieVec 头，<code class="language-plaintext highlighter-rouge">self.root</code>, <code class="language-plaintext highlighter-rouge">self.tail</code></li>
+</ol>
+
+<h3 id="assoc-1">assoc</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>      
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">assoc</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">&gt;=</span> <span class="n">idx</span><span class="p">);</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="nf">.is_editable</span><span class="p">());</span>
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="k">self</span><span class="py">.cnt</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">self</span><span class="nf">.push</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.tail</span><span class="nf">.id</span><span class="p">()</span> <span class="o">==</span> <span class="k">self</span><span class="nf">.id</span><span class="p">());</span>
+            <span class="nd">values_mut!</span><span class="p">(</span><span class="k">self</span><span class="py">.tail</span><span class="p">)[</span><span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">();</span>
+
+            <span class="k">if</span> <span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="c1">// at p's level</span>
+
+                <span class="k">loop</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">cur</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.ensure_editable</span><span class="p">(</span><span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]);</span>
+                    <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur</span><span class="nf">.clone</span><span class="p">();</span>
+
+                    <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+                    <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">cur</span><span class="p">;</span>
+
+                    <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="nd">values_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">cnt</span><span class="p">:</span> <span class="k">self</span><span class="py">.cnt</span><span class="p">,</span>
+            <span class="n">root</span><span class="p">:</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">(),</span>
+            <span class="n">tail</span><span class="p">:</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="pop-1">pop</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>   
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">pop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Default</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"Can't pop empty vector"</span><span class="p">);</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="nf">.is_editable</span><span class="p">());</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.tail</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="nd">values_mut!</span><span class="p">(</span><span class="k">self</span><span class="py">.tail</span><span class="p">)[</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="nd">tailoff!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span>
+                <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">tail</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.ensure_editable</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="nf">.down_to_leaf</span><span class="p">(</span><span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">2</span><span class="p">));</span>
+
+            <span class="k">self</span><span class="nf">.pop_tail_from_trie</span><span class="p">();</span>
+
+            <span class="k">self</span><span class="py">.tail</span> <span class="o">=</span> <span class="n">tail</span><span class="p">;</span>
+        <span class="p">}</span>
+
+
+        <span class="k">self</span><span class="py">.cnt</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">cnt</span><span class="p">:</span> <span class="k">self</span><span class="py">.cnt</span><span class="p">,</span>
+            <span class="n">root</span><span class="p">:</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">(),</span>
+            <span class="n">tail</span><span class="p">:</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.clone</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">pop_tail_from_trie</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">);</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">lv</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">leaf_i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.clone</span><span class="p">();</span>
+
+        <span class="k">while</span> <span class="n">lv</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">cur</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.ensure_editable</span><span class="p">(</span><span class="o">&amp;</span><span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]);</span>
+
+            <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="n">p_i</span> <span class="o">=</span> <span class="nd">idx!</span><span class="p">(</span><span class="n">leaf_i</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">cur</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="n">p_i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">Node</span><span class="p">::</span><span class="nf">none</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.cnt</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">NODE_SIZE</span> <span class="o">==</span> <span class="n">NODE_SIZE</span><span class="nf">.pow</span><span class="p">(</span><span class="nd">h!</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.root</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="persistent">persistent</h3>
+
+<p>把易变版本转换回持久化版本。改一下头尾节点的标记就可以。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">TTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>       
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">persistent</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="nf">.is_editable</span><span class="p">());</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.tail</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="o">*</span><span class="nd">id_mut!</span><span class="p">(</span><span class="k">self</span><span class="py">.tail</span><span class="p">)</span> <span class="o">=</span> <span class="nd">no_edit!</span><span class="p">();</span>
+        <span class="p">}</span>
+        
+        <span class="n">PTrieVec</span> <span class="p">{</span>
+            <span class="n">cnt</span><span class="p">:</span> <span class="k">self</span><span class="py">.cnt</span><span class="p">,</span>
+            <span class="n">root</span><span class="p">:</span> <span class="k">self</span><span class="py">.root</span><span class="p">,</span>
+            <span class="n">tail</span><span class="p">:</span> <span class="k">self</span><span class="py">.tail</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>由于 Rust 的编程模型，易变版本持久化后原来的易变版本保证无法访问，相比 Clojure 的 Java 实现会简化很多过程。</p>
+
+<h2 id="调试方法">调试方法</h2>
+
+<h3 id="打印方法">打印方法</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nd">#[cfg(test)]</span>
+<span class="nd">macro_rules!</span> <span class="n">impl_trie_test_common</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">#[allow(unused)]</span>
+        <span class="k">fn</span> <span class="nf">debug_print</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span>
+        <span class="k">where</span>
+            <span class="n">T</span><span class="p">:</span> <span class="n">Debug</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nf">debug_print</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.tail</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="nd">#[cfg(test)]</span>
+<span class="k">fn</span> <span class="n">debug_print</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">tail</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">Debug</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">use</span> <span class="nn">common</span><span class="p">::</span><span class="n">vecdeq</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="mi">1usize</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cur_q</span> <span class="o">=</span> <span class="nd">vecdeq!</span><span class="p">[];</span>
+
+    <span class="nd">println!</span><span class="p">();</span>
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"MAIN TRIE:"</span><span class="p">);</span>
+    <span class="nd">println!</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="n">root</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">cur_q</span><span class="nf">.push_back</span><span class="p">(</span><span class="nd">vec!</span><span class="p">[</span><span class="n">root</span><span class="p">]);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nd">println!</span><span class="p">(</span><span class="s">"empty.</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="o">!</span><span class="n">cur_q</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">println!</span><span class="p">(</span><span class="s">"############ Level: {} #############</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">lv</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">nxt_q</span> <span class="o">=</span> <span class="nd">vecdeq!</span><span class="p">[];</span>
+
+        <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">=</span> <span class="n">cur_q</span><span class="nf">.pop_front</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span> <span class="k">in</span> <span class="n">group</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nd">println!</span><span class="p">(</span><span class="s">"{i:02}. {child:?}"</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="n">child</span><span class="nf">.is_internal</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">child_group</span> <span class="o">=</span> <span class="nd">children!</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+                        <span class="nf">.iter</span><span class="p">()</span>
+                        <span class="nf">.filter</span><span class="p">(|</span><span class="o">&amp;</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">())</span>
+                        <span class="nf">.collect</span><span class="p">();</span>
+                    <span class="n">nxt_q</span><span class="nf">.push_back</span><span class="p">(</span><span class="n">child_group</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="nd">println!</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="n">cur_q</span> <span class="o">=</span> <span class="n">nxt_q</span><span class="p">;</span>
+        <span class="n">lv</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// print tail</span>
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"###################################</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"TAIL: </span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="n">tail</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nd">println!</span><span class="p">(</span><span class="s">"{:?}"</span><span class="p">,</span> <span class="n">tail</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nd">println!</span><span class="p">(</span><span class="s">"empty."</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nd">println!</span><span class="p">(</span><span class="s">"------------- end --------------"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="尾声">尾声</h2>
+
+<p><a href="">代码参考</a></p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>参考自 <a href="https://hypirion.com/musings/understanding-persistent-vector-pt-1">hyPiRion 介绍的系列博文</a> 和 <a href="https://github.com/clojure/clojure/blob/clojure-1.11.0-alpha2/src/jvm/clojure/lang/PersistentVector.java">Clojure 源代码</a> <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>https://hypirion.com/musings/understanding-persistent-vector-pt-3#the-rationale-for-tails <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>在原版 Clojure 的 Java 里，标志使用了原子类型，这主要是担心易变类型在跨线程使用时重新变为持久类型时的竞争问题，但是由于 Rust 的编程模型限制了易变类型不允许跨线程使用，因此就不需要变为原子类型 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>Atomic Rc <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>对于树高至少为 $2$ 作为的 Trie 来讲，空路径应该是根节点的第二个孩子， <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>

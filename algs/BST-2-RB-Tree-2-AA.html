@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//algs/BST-2-RB-Tree-2-AA-Tree.html" />
+<meta property="og:url" content="//algs/BST-2-RB-Tree-2-AA.html" />
 
     <meta property="og:type" content="article" />
 
@@ -141,13 +141,13 @@
 
 <p>如下就是一棵 AA树：</p>
 
-<p><img src="/../assets/img/bst_aa/lv_intro.png" alt="" /></p>
+<p><img src="/assets/img/bst_aa/lv_intro.png" alt="" /></p>
 
 <h4 id="3-节点">3-节点</h4>
 
 <p>在同一 $\texttt{level}$ 上相连的节点，对应的是 <code class="language-plaintext highlighter-rouge">2-3树</code> 里的<code class="language-plaintext highlighter-rouge">3-节点</code></p>
 
-<p><img src="/../assets/img/bst_aa/3_node.png" alt="" /></p>
+<p><img src="/assets/img/bst_aa/3_node.png" alt="" /></p>
 
 <h4 id="5特性">5特性</h4>
 
@@ -271,7 +271,7 @@
 
 <h3 id="skew">Skew</h3>
 
-<p><img src="/../assets/img/bst_aa/skew_1.png" alt="" /> <img src="/../assets/img/rarrow.png" alt="" /> <img src="/../assets/img/bst_aa/skew_2.png" alt="" /></p>
+<p><img src="/assets/img/bst_aa/skew_1.png" alt="" /> <img src="/assets/img/rarrow.png" alt="" /> <img src="/assets/img/bst_aa/skew_2.png" alt="" /></p>
 
 <p>实际上就是右旋，只不过有一个额外的警戒哨的功能，确保把箭头倾倒在右边</p>
 
@@ -294,7 +294,7 @@
 
 <p>实际是带警戒哨的左旋，确保把 <code class="language-plaintext highlighter-rouge">4-节点</code> 分割出来，另外不要忘了让新的根节点的 $\texttt{level} + 1$</p>
 
-<p><img src="/../assets/img/bst_aa/split_1.png" alt="" /> <img src="/../assets/img/rarrow.png" alt="" /> <img src="/../assets/img/bst_aa/split_2.png" alt="" /></p>
+<p><img src="/assets/img/bst_aa/split_1.png" alt="" /> <img src="/assets/img/rarrow.png" alt="" /> <img src="/assets/img/bst_aa/split_2.png" alt="" /></p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl AA</span>
 

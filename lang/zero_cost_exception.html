@@ -334,7 +334,7 @@
 
 <p>This routine returns the address of the language-specific data area for the current stack frame.</p>
 
-<p><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>This routine is not stricly required: it could be accessed through <code class="language-plaintext highlighter-rouge">_Unwind_GetIP</code> using the documented format of the <code class="language-plaintext highlighter-rouge">UnwindInfoBlock</code>, but since this work has been done for finding the personality routine in the first place, it makes sense to cache the result in the context. We could also pass it as an argument to the personality routine.</em></p>
+<p><img src="https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>This routine is not stricly required: it could be accessed through <code class="language-plaintext highlighter-rouge">_Unwind_GetIP</code> using the documented format of the <code class="language-plaintext highlighter-rouge">UnwindInfoBlock</code>, but since this work has been done for finding the personality routine in the first place, it makes sense to cache the result in the context. We could also pass it as an argument to the personality routine.</em></p>
 
 <p><strong>_Unwind_GetRegionStart</strong></p>
 
@@ -360,7 +360,7 @@ The unwinder encountered the end of the stack during phase 1, without finding a 
   <li><code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE1_ERROR</code>: The unwinder encountered an unexpected error during phase 1, e.g. stack corruption.</li>
 </ol>
 
-<p><em><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> The unwind runtime will likely have modified the stack (e.g. popped frames from it) or register context, or landing pad code may have corrupted them. As a result, the the caller of <code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code> can make no assumptions about the state of its stack or registers.</em></p>
+<p><em><img src="https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> The unwind runtime will likely have modified the stack (e.g. popped frames from it) or register context, or landing pad code may have corrupted them. As a result, the the caller of <code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code> can make no assumptions about the state of its stack or registers.</em></p>
 
 <p><strong>_Unwind_ForcedUnwind</strong></p>
 
@@ -405,11 +405,11 @@ In order to allow <code class="language-plaintext highlighter-rouge">_Unwind_For
 
 <p>如果<code class="language-plaintext highlighter-rouge">stop</code>函数返回了任何<code class="language-plaintext highlighter-rouge">_URC_NO_REASON</code>意外的reason code, 从 <code class="language-plaintext highlighter-rouge">_Unwind_ForcedUnwind</code>的调用者的角度讲, 栈的状态是不确定的. 因此, unwind library 应该返回 <code class="language-plaintext highlighter-rouge">_URC_FATAL_PHASE2_ERROR</code> 给它的调用者.</p>
 
-<p><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>Example: <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code></em></p>
+<p><img src="https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>Example: <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code></em></p>
 
 <p><em>期望的<code class="language-plaintext highlighter-rouge">longjmp_unwind()</code>的实现是这样的. <code class="language-plaintext highlighter-rouge">setjmp()</code> 保存了状态后 (包括帧的指针).  <code class="language-plaintext highlighter-rouge">longjmp_unwind()</code>将会调用<code class="language-plaintext highlighter-rouge">_Unwind_ForcedUnwind</code>,用context里记录的帧地址和当前保存的帧地址进行比较. 如果相等就调用 <code class="language-plaintext highlighter-rouge">setjmp()</code> 进行恢复, 否则返回 <code class="language-plaintext highlighter-rouge">_URC_NO_REASON</code> 或者 <code class="language-plaintext highlighter-rouge">_URC_END_OF_STACK</code>.</em></p>
 
-<p><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>如果未来对 两阶段的foced unwinding 有新的需求, 可以定义另外的例程和新的<code class="language-plaintext highlighter-rouge">actions</code> 参数类型来进行支持</em></p>
+<p><img src="https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE&lt;/b&gt;:" /> <em>如果未来对 两阶段的foced unwinding 有新的需求, 可以定义另外的例程和新的<code class="language-plaintext highlighter-rouge">actions</code> 参数类型来进行支持</em></p>
 
 <p><strong>_Unwind_Resume</strong></p>
 
@@ -418,9 +418,9 @@ In order to allow <code class="language-plaintext highlighter-rouge">_Unwind_For
 
 <p>恢复异常的传播 e.g. 在部分展开的栈中执行清理代码(clean-up code)后如果不能恢复程序的正常执行, 就会恢复该异常的传播. 具体地就是在执行清理任务的landing pad结尾调用它(<code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>).</p>
 
-<p><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE 1&lt;/b&gt;:" /><em><code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>不能用来实现重抛(re-throwing). 这是一个两阶段模型, 之前的unwind session会被关闭. 重抛需要使用<code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code>.</em></p>
+<p><img src="https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE 1&lt;/b&gt;:" /><em><code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>不能用来实现重抛(re-throwing). 这是一个两阶段模型, 之前的unwind session会被关闭. 重抛需要使用<code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code>.</em></p>
 
-<p><img src="/https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE 2&lt;/b&gt;:" /> This is the only routine in the unwind library which is expected to be called directly by generated code: it will be called at the end of a landing pad in a “landing-pad” model.</p>
+<p><img src="https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE 2&lt;/b&gt;:" /> This is the only routine in the unwind library which is expected to be called directly by generated code: it will be called at the end of a landing pad in a “landing-pad” model.</p>
 
 <h3 id="异常对象的管理">异常对象的管理</h3>
 
