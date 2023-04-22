@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            分段树（Segment Tree）
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/SegmentTree.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        分段树（Segment Tree）
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">分段树（Segment Tree）</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      April 10, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p>更常见的名字是<strong>线段树</strong>，但正如我不喜欢“倍增”而宁愿用“指数提升”一样，“线段”这种追求辞藻而导致语义失焦<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>的翻译，也不如“分段”这种平白直接的翻译。我一贯主张，翻译、特别是技术术语的翻译，应该以朴实易懂为主，但长期一来的翻译风格完全背道相驰，都是利用中文的博大精深，把一个简单的概念翻译得玄里玄幻，让人不仅摸不着头脑，而且望而生畏，难道他们的目的就在于此？</p>
+
+<p>本文基本算是对 <a href="https://cp-algorithms.com/data_structures/segment_tree.html">cp-algorithms - Segment Tree</a> 的一个 Rust 实现版本的介绍。</p>
+
+<h2 id="基础概念">基础概念</h2>
+
+<p>分段树是用来解决数组上区间查询问题的数据结构。</p>
+
+<p>它把数组代表的区间不断二分，直到区间小到只含有单个元素，把它们用二叉树的结构组织起来，顶点代表整个区间，它的左孩子和右孩子分别代表整个区间的左右两半，以此类推，直到叶子节点。</p>
+
+<p>如<a href="https://cp-algorithms.com/data_structures/segment_tree.html#structure-of-the-segment-tree">原文这里</a>所示。</p>
+
+<p>它非常好地体现了分治<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>思想，有了这样的数据结构后，当面对一个区间查询时，只需要在从根到叶子对树递归时把已有的局部区间的答案进行组合，就能得到最终答案。</p>
+
+<h3 id="查询的复杂度">查询的复杂度</h3>
+
+<p>可以证明查询过程中每一层最多访问 $4$ 个节点。</p>
+
+<p>使用归纳法证明，初始条件是一个节点，符合。</p>
+
+<p>假设上一层访问不超过 $4$ 个节点：</p>
+
+<ol>
+  <li>如果上一层只访问了两个或更少的节点，那么这一层最多访问 $4$ 个；</li>
+  <li>如果上一层访问 $3$ 个或 $4$ 个节点，由于访问的区间是连续的，中间部分正好对应分段树的区间，会直接返回，因此只有边缘的左右两个节点可能会向下访问，这一层仍然最多访问 $4$ 个</li>
+</ol>
+
+<p>证毕。</p>
+
+<p>因此查询的时间复杂度由树高决定，是 $O(\text{log}n)$ 。</p>
+
+<h2 id="实现前瞻">实现前瞻</h2>
+
+<p>作为树型结构自然就有数组和指针两种实现，而分段树可以很容易地使用数组实现<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，这让它看起来非常靠谱！</p>
+
+<p>接下来我们主要讨论的就是线段树的<a href="https://github.com/minghu6/rust-minghu6/tree/v0.1.3/coll/src/segment_tree">数组实现</a>。</p>
+
+<h2 id="树的布局">树的布局</h2>
+
+<p>我们首先想到的就是水平布局，也就是按照完全二叉树的结构，依次放置每一层的节点，我们可以称之为 BFS 型布局。</p>
+
+<h3 id="bfs-型">BFS 型</h3>
+
+<p>BFS 型有一个很好的性质就是计算节点的左右孩子的位置非常简单，如果我们的数组编号从 $1$ 开始，那么根据完全二叉树的性质， $t[i]$ 节点的左孩子和右孩子分别为 $t[2i]$ 和 $t[2i+1]$ 。</p>
+
+<p>可以很容易地证明这一点：</p>
+
+<p>首先，已知高度为 $h$ 的满的完全二叉树有 $2^h - 1$ 个节点<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup>，高度为 $h$ 的层有 $2^{h-1}$ 个节点。</p>
+
+<p>假设 $t[i]$ 节点在树的 $h$ 层，同一层的前面包括它在内，有 $x$ 个节点，后面有 $y$ 个节点，那么显然有:</p>
+
+\[\begin{array}{l}
+i &amp;= 2^{h-1} - 1 + x &amp;\quad(1)\\
+x+y &amp;= 2^{h-1} &amp;\quad (2)\\
+\end{array}\]
+
+<p>而它与左孩子的距离 $d$ 有 $d=y+2(x-1)+1$ ，利用 $(2)$ 式消解掉 $y$ ，得到 $d=2^{h-1} + x - 1 = i$ ，也就是 $t[i]$ 节点的左孩子距离为 $i$ ，右孩子紧邻左孩子，距离为 $i+1$ ，证毕。</p>
+
+<p>如果我们的编号不从 1 开始，而是从 0 开始，那么有 $i’ = i-1$ ，带入 ${\large i_{\text{left}}} = 2i$ ，有 ${\large i ’_{\text{left}}}+1=2(i’+1)$  ，于是：</p>
+
+\[\begin{array}{l}
+{\large i ’_{\text{left}}} &amp;=2i'+1\\
+{\large i ’_{\text{right}}} &amp;=2i’+2
+\end{array}\]
+
+<p>需要指出的是，虽然我们按照完全二叉树的结构排列节点，但<strong>分段树本身并不一定是完全二叉树，最后一层的节点并不是规律地从左开始分布</strong><sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，而是按照本身的奇偶性规律排布，比如考虑 $6$ 个元素的分段树：$(6)-(3, 3)-(2, 1, 2, 1)$ 。</p>
+
+<p>按照水平布局，分段树数组需要的节点数按照满的完全二叉树来说是 $2^h -1 = 2^{\lceil \text{log}_2 n \rceil} - 1 &lt; 2^{\lceil \text{log}_2 n\rceil} \leqslant 4n$ ，因此即使以 $1$ 为基，也只需要分配 $4n$ 大小的空间。</p>
+
+<h3 id="dfs-型">DFS 型</h3>
+
+<p>仔细考虑一下分段树的形状，发现它准确说应该是一棵<a href="https://en.wikipedia.org/wiki/Binary_tree#Types_of_binary_trees">满二叉树（full binary tree）</a>，而满二叉树有这样的性质，就是如果叶子节点数为 $i$ ，那么中间节点数就是 $i-1$ ，整棵树的节点数就是 $2i-1$ 。</p>
+
+<p>这个性质不需要特别证明，它直接就是定义给出的，满二叉树的直接定义是节点要么没有孩子，要么有两个孩子。但它还有一个递归定义：</p>
+
+<ol>
+  <li>单节点是满二叉树；</li>
+  <li>根的两个孩子都是满二叉树的二叉树是满二叉树</li>
+</ol>
+
+<p>这个递归定义也就是我们诱导推理的过程：</p>
+
+<ol>
+  <li>单节点的时候，叶子节点比中间节点数多 $1$ ；</li>
+  <li>假设根的两个孩子都是满二叉树，那么左右孩子上的叶子节点数之和比中间结点数之和多 $2$ ，加上作为中间节点的根节点，于是整棵树的叶子节点仍然比中间节点多 $1$</li>
+</ol>
+
+<p>证毕。</p>
+
+<p>根据满二叉树这个性质，我们可以发现，<strong>为长度为 $n$ 的数组建立的分段树确定地含有 $2n-1$ 个节点</strong> ，这么一看，BFS 型申请的 $4n$ 的空间实在有些浪费，于是有了内存节省布局的 DFS 型。</p>
+
+<p>DFS 顾名思义是垂直布局，放置根节点后，先放置整棵左树，再放置整棵右树。不过单纯地垂直布局并不会节省空间，真正关键的是在垂直分布中，我们使用了满二叉树的布局而不是完全二叉树的布局，这是因为在树上遍历的过程中，我们知道节点所代表的范围区间，也就是节点所代表的子树的叶子节点数，因此我们可以计算出整棵子树的大小。</p>
+
+<p>这样我们就可以直接计算出左右孩子的位置，对节点 $t[i]$ ，设左孩子对应区间长度为 $l$ ，则它的左右孩子分别为 $t[i+1]$ 和 $t[i+2l-1 + 1]=t[i+2l]$ 。</p>
+
+<p>这样即使仍然基 $1$ ，也只需要申请 $2n$ 大小的空间，比起 BFS 型整整节省了一半的空间！</p>
+
+<p>全面地比较这两型布局：</p>
+
+<p>时间性能上，由于我们的访问是逐层进行的，BFS 的分层布局使得左右两个孩子紧邻，有更好地局部性，但毕竟仍然是在同一个数组上访问，差距也大不到哪儿去，事实上经过一个简单测试，发现两型的性能几乎没有区别；</p>
+
+<p>空间性能上，DFS 型完胜，BFS double 了空间占用，太差了；</p>
+
+<p>易用性上，BFS 是普通人都能想到的，左右孩子的位置也很简单，不过 DFS 型经过我的讲解也是非常的简单易懂，两者没有明显差别。</p>
+
+<p>综合以上比较，更推荐 DFS 型作为默认地数组上的默认布局。</p>
+
+<h2 id="范式的描述">范式的描述</h2>
+
+<p>我们尝试尽量用 Rust 的抽象机制勉强算是强大的伸缩性，把本篇涉及的所有概念这些可选项揉到一起。</p>
+
+<h3 id="布局和游标">布局和游标</h3>
+
+<p>为了描述分段树的布局，我们先用一个结构统一保存树上遍历需要的索引信息：分段数组的索引 <code class="language-plaintext highlighter-rouge">i</code> 和对应原数组的区间<code class="language-plaintext highlighter-rouge">[tl, tr]</code> ：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// (i, tl, tr)</span>
+<span class="nd">#[derive(Debug,</span> <span class="nd">Clone,</span> <span class="nd">Copy)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">Cursor</span> <span class="p">{</span>
+    <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>于是可以定义树形布局的抽象：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">trait</span> <span class="n">TreeLayout</span><span class="p">:</span> <span class="nn">private</span><span class="p">::</span><span class="n">Sealed</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">left_i</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span><span class="p">;</span>
+    <span class="k">fn</span> <span class="nf">right_i</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span><span class="p">;</span>
+    <span class="k">fn</span> <span class="nf">size</span><span class="p">(</span><span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">mod</span> <span class="n">private</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">trait</span> <span class="n">Sealed</span> <span class="p">{}</span>
+
+    <span class="k">impl</span> <span class="n">Sealed</span> <span class="k">for</span> <span class="k">super</span><span class="p">::</span><span class="n">BFS</span> <span class="p">{}</span>
+    <span class="k">impl</span> <span class="n">Sealed</span> <span class="k">for</span> <span class="k">super</span><span class="p">::</span><span class="n">DFS</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里使用了继承私有模块的公共 Trait 来封装暴露给下游的公共 Trait 的技巧，因为我们定义并暴露出 <code class="language-plaintext highlighter-rouge">TreeLayout</code> 只是为了允许用户自由选择他们需要的线段树布局，而并不期望用户实现它。</p>
+
+<p>对于 BFS 和 DFS 两型：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span> <span class="n">TreeLayout</span> <span class="k">for</span> <span class="n">BFS</span> <span class="p">{</span>
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">left_i</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="n">c</span><span class="py">.i</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">right_i</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="n">c</span><span class="py">.i</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">size</span><span class="p">(</span><span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="mi">4</span> <span class="o">*</span> <span class="n">cap</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span> <span class="n">TreeLayout</span> <span class="k">for</span> <span class="n">DFS</span> <span class="p">{</span>
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">left_i</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="n">c</span><span class="py">.i</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">right_i</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="c1">// left_i + 2(n(left)) - 1</span>
+        <span class="k">Self</span><span class="p">::</span><span class="nf">left_i</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="nd">tm!</span><span class="p">(</span><span class="n">c</span><span class="py">.tl</span><span class="p">,</span> <span class="n">c</span><span class="py">.tr</span><span class="p">)</span> <span class="o">-</span> <span class="n">c</span><span class="py">.tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">size</span><span class="p">(</span><span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="mi">2</span> <span class="o">*</span> <span class="n">cap</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="分段树">分段树</h3>
+
+<p>此时我们可以初步地引出我们分段树的结构：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span> <span class="o">=</span> <span class="n">DFS</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span>
+    <span class="n">_note</span><span class="p">:</span> <span class="n">PhantomData</span><span class="o">&lt;</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">trait</span> <span class="n">Count</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">Stats</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="n">combine</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">;</span>
+    <span class="cd">/// identity element: any stats combine with e results itself</span>
+    <span class="k">fn</span> <span class="nf">e</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>泛型 <code class="language-plaintext highlighter-rouge">T</code> 代表了分段树储存的对数组区间的统计信息，泛型 <code class="language-plaintext highlighter-rouge">C</code> 代表了统计方法，它提供了一个归并两个统计数据的方法和一个返回幺元的方法。</p>
+
+<p>借着是分段树的创建，可一窥树上遍历的基本方法：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">new</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">U</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="n">C</span><span class="p">,</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="o">!</span><span class="n">raw</span><span class="nf">.is_empty</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span> <span class="nn">L</span><span class="p">::</span><span class="nf">size</span><span class="p">(</span><span class="n">raw</span><span class="nf">.len</span><span class="p">())];</span>
+
+        <span class="k">let</span> <span class="n">root</span> <span class="o">=</span> <span class="nn">Cursor</span><span class="p">::</span><span class="nf">init</span><span class="p">(</span><span class="n">raw</span><span class="nf">.len</span><span class="p">());</span>
+
+        <span class="k">Self</span><span class="p">::</span><span class="nf">build</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">data</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">root</span><span class="p">);</span>
+
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">root</span><span class="p">,</span>
+            <span class="n">_note</span><span class="p">:</span> <span class="nn">PhantomData</span><span class="p">::</span><span class="o">&lt;</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="n">build</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">arr</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">U</span><span class="p">],</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="n">C</span><span class="p">,</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="n">c</span><span class="nf">.is_end</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">c</span><span class="py">.i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">c</span><span class="py">.tl</span><span class="p">]</span><span class="nf">.clone</span><span class="p">()</span><span class="nf">.raw_into_stats</span><span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">Self</span><span class="p">::</span><span class="nf">build</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">));</span>
+            <span class="k">Self</span><span class="p">::</span><span class="nf">build</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">));</span>
+
+            <span class="n">data</span><span class="p">[</span><span class="n">c</span><span class="py">.i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.i</span><span class="p">])</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span> <span class="n">Cursor</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">init</span><span class="p">(</span><span class="n">raw_len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">i</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">tl</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">tr</span><span class="p">:</span> <span class="n">raw_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">is_end</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.tl</span> <span class="o">==</span> <span class="k">self</span><span class="py">.tr</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">is_matched</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">))</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.tl</span> <span class="o">==</span> <span class="n">l</span> <span class="o">&amp;&amp;</span> <span class="k">self</span><span class="py">.tr</span> <span class="o">==</span> <span class="n">r</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="n">godown_left</span><span class="o">&lt;</span><span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">i</span><span class="p">:</span> <span class="nn">L</span><span class="p">::</span><span class="nf">left_i</span><span class="p">(</span><span class="k">self</span><span class="p">),</span>
+            <span class="n">tl</span><span class="p">:</span> <span class="k">self</span><span class="py">.tl</span><span class="p">,</span>
+            <span class="n">tr</span><span class="p">:</span> <span class="nd">tm!</span><span class="p">(</span><span class="k">self</span><span class="py">.tl</span><span class="p">,</span> <span class="k">self</span><span class="py">.tr</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="n">godown_right</span><span class="o">&lt;</span><span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">i</span><span class="p">:</span> <span class="nn">L</span><span class="p">::</span><span class="nf">right_i</span><span class="p">(</span><span class="k">self</span><span class="p">),</span>
+            <span class="n">tl</span><span class="p">:</span> <span class="nd">tm!</span><span class="p">(</span><span class="k">self</span><span class="py">.tl</span><span class="p">,</span> <span class="k">self</span><span class="py">.tr</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">tr</span><span class="p">:</span> <span class="k">self</span><span class="py">.tr</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">tm</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$tl:expr</span><span class="p">,</span> <span class="nv">$tr:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">(</span><span class="nv">$tl</span> <span class="o">+</span> <span class="nv">$tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+<span class="nd">macro_rules!</span> <span class="n">left</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$c:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nv">$c</span><span class="py">.godown_left</span><span class="p">::</span><span class="o">&lt;</span><span class="n">L</span><span class="o">&gt;</span><span class="p">()</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+<span class="nd">macro_rules!</span> <span class="n">right</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$c:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nv">$c</span><span class="py">.godown_right</span><span class="p">::</span><span class="o">&lt;</span><span class="n">L</span><span class="o">&gt;</span><span class="p">()</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里涉及了一个 <code class="language-plaintext highlighter-rouge">RawIntoStats</code> 的 Trait ，它提供了原始数组上的元素针对某种统计方法需要的某个统计类型进行转换的抽象：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">trait</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="n">S</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">Stats</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">raw_into_stats</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="查询">查询</h3>
+
+<p>尝试划分按照分段树的区间进行划分，直到一个错误的区间范围，这时直接返回幺元，比起检查返回值要简洁很多</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span> <span class="p">{</span>    
+	<span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span><span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="py">.root</span><span class="p">),</span> <span class="k">self</span><span class="py">.root</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">query_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">c</span><span class="nf">.is_matched</span><span class="p">((</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="nf">.clone</span><span class="p">()</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span>
+                <span class="o">&amp;</span><span class="k">self</span><span class="nf">.query_</span><span class="p">((</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.tr</span><span class="p">,</span> <span class="n">r</span><span class="p">)),</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)),</span>
+                <span class="o">&amp;</span><span class="k">self</span><span class="nf">.query_</span><span class="p">((</span><span class="nf">max</span><span class="p">(</span><span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.tl</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">),</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cd">/// -&gt; (l, r)</span>
+<span class="nd">macro_rules!</span> <span class="n">parse_range</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$range:expr</span><span class="p">,</span> <span class="nv">$root:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">ops</span><span class="p">::</span><span class="nn">Bound</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">range</span> <span class="o">=</span> <span class="nv">$range</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">l</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">r</span><span class="p">;</span>
+
+        <span class="k">match</span> <span class="n">range</span><span class="nf">.start_bound</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nf">Included</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span><span class="p">,</span>
+            <span class="nf">Excluded</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">match</span> <span class="n">range</span><span class="nf">.end_bound</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nf">Included</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span><span class="p">,</span>
+            <span class="nf">Excluded</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="nd">assert!</span><span class="p">(</span><span class="o">*</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"range upper is invalid (=0)"</span><span class="p">);</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">}</span>
+            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="nv">$root</span><span class="py">.tr</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="更新">更新</h3>
+
+<p>如果原数组的某个值发生了更新，那么对应地，从分段树的根一直到该值所在的叶子，整条路径也需要更新：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span> <span class="p">{</span>        
+	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">assoc</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">new_val</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;=</span> <span class="k">self</span><span class="py">.root.tr</span><span class="p">);</span>
+        <span class="k">self</span><span class="nf">.assoc_</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">new_val</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">assoc_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span> <span class="n">ti</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">new_val</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">c</span><span class="nf">.is_end</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">c</span><span class="py">.i</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_val</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">clf</span> <span class="o">=</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">crh</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">ti</span> <span class="o">&lt;=</span> <span class="n">clf</span><span class="py">.tr</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.assoc_</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">new_val</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.assoc_</span><span class="p">(</span><span class="n">crh</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">new_val</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">c</span><span class="py">.i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">clf</span><span class="py">.i</span><span class="p">],</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">crh</span><span class="py">.i</span><span class="p">]);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="经典问题">经典问题</h2>
+
+<p>我们将会层层递进地介绍一些适用于上述分段树范式的经典问题。</p>
+
+<p>但是在此之前，先介绍下一个方便对为数字类型批量实现 <code class="language-plaintext highlighter-rouge">RawIntoStats</code> 的辅助宏。出于一些考虑，Rust 并没有把数字，包括整型和浮点数型单独抽象出来，而是针对具体地实类型单独实现方法。不过它们也没有真的手写这些代码，也是用宏来批量实现的<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>，正如我前面某篇博文里吐槽过的，凡是 Rust 自己都觉得不方便而开发内部辅助结构的，下游用户一定会重新造轮子，一个它内部工具的复制品。</p>
+
+<h3 id="辅助宏">辅助宏</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">impl_raw_into_stats</span> <span class="p">{</span>
+    <span class="p">(</span><span class="n">monomorphic</span> <span class="p">|</span> <span class="nv">$struct:ident</span><span class="p">,</span> <span class="nv">$for_ty:ty</span><span class="p">,</span> <span class="nv">$stats_ty:ty</span> <span class="p">{</span> <span class="nv">$fn:item</span> <span class="p">})</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">impl</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="nv">$struct</span><span class="o">&gt;</span> <span class="k">for</span> <span class="nv">$for_ty</span> <span class="p">{</span>
+            <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="nv">$stats_ty</span><span class="p">;</span>
+
+            <span class="nv">$fn</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$struct:ident</span><span class="p">,</span> <span class="nv">$for_ty:ty</span><span class="p">,</span> <span class="nv">$stats_ty:ty</span> <span class="p">{</span> <span class="nv">$fn:item</span> <span class="p">})</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">impl</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="nv">$struct</span><span class="o">&lt;</span><span class="nv">$for_ty</span><span class="o">&gt;&gt;</span> <span class="k">for</span> <span class="nv">$for_ty</span> <span class="p">{</span>
+            <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="nv">$stats_ty</span><span class="p">;</span>
+
+            <span class="nv">$fn</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">impl_for_num</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$name:ident</span><span class="p">|</span><span class="n">all</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">int</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">float</span><span class="p">);</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$name:ident</span><span class="p">|</span><span class="nb">int</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="n">sint</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">uint</span><span class="p">);</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$name:ident</span><span class="p">|</span><span class="nb">float</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">f32</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">f64</span><span class="p">);</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$name:ident</span><span class="p">|</span><span class="nb">uint</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">u128</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">u64</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">usize</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">u32</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">u16</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">u8</span><span class="p">);</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$name:ident</span><span class="p">|</span><span class="n">sint</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">i128</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">i64</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">isize</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">i32</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">i16</span><span class="p">);</span>
+        <span class="nd">impl_for_num!</span><span class="p">(</span><span class="nv">$name</span><span class="p">|</span><span class="nb">i8</span><span class="p">);</span>
+    <span class="p">};</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个用于数字类型批量实现的辅助宏起始可以广泛地使用。</p>
+
+<h3 id="简单单值">简单单值</h3>
+
+<p>最简单的情况，就是统计类型和原数组值类型一致。</p>
+
+<p>比如，查询原数组上给定区间范围的元素和。</p>
+
+<p>这非常简单：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">PhantomData</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">);</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Count</span> <span class="k">for</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">combine</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="n">l</span><span class="nf">.borrow</span><span class="p">()</span> <span class="o">+</span> <span class="n">r</span><span class="nf">.borrow</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">e</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="nn">T</span><span class="p">::</span><span class="nf">default</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">impl_for_num</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    
+    <span class="p">(</span><span class="n">sum_stats</span><span class="p">|</span> <span class="nv">$for_ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_raw_into_stats!</span><span class="p">(</span><span class="n">Sum</span><span class="p">,</span> <span class="nv">$for_ty</span><span class="p">,</span> <span class="nv">$for_ty</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">raw_into_stats</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+                <span class="k">self</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+    
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+
+<span class="nd">impl_for_num!</span><span class="p">(</span><span class="n">sum_stats</span> <span class="p">|</span> <span class="n">all</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>类似地，求解最大值，最大公约数，最小公倍数等等，都是类似的，这里不再赘述。</p>
+
+<h3 id="复合类型">复合类型</h3>
+
+<p>稍微复杂一点，统计给定区间的最大值和出现次数。</p>
+
+<p>这里的 <code class="language-plaintext highlighter-rouge">Min&lt;T&gt;</code> Trait 是为所有数字类型实现的获取其最小值的抽象，相当于 <code class="language-plaintext highlighter-rouge">T::MIN</code> ,</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">MaxStats</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">PhantomData</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">);</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Count</span> <span class="k">for</span> <span class="n">MaxStats</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">Min</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="nb">usize</span><span class="p">);</span>
+
+    <span class="k">fn</span> <span class="nf">combine</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="k">match</span> <span class="n">l</span><span class="na">.0</span><span class="nf">.cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">r</span><span class="na">.0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Less</span> <span class="k">=&gt;</span> <span class="n">r</span><span class="nf">.clone</span><span class="p">(),</span>
+            <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">l</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">l</span><span class="na">.1</span> <span class="o">+</span> <span class="n">r</span><span class="na">.1</span><span class="p">),</span>
+            <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="n">l</span><span class="nf">.clone</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">e</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="p">(</span><span class="o">&lt;</span><span class="n">T</span> <span class="k">as</span> <span class="n">Min</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">::</span><span class="nf">min</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">trait</span> <span class="n">Min</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">min</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="n">T</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">impl_for_num</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    
+    <span class="p">(</span><span class="n">max_stats_stats</span><span class="p">|</span> <span class="nv">$for_ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_raw_into_stats!</span><span class="p">(</span><span class="n">MaxStats</span><span class="p">,</span> <span class="nv">$for_ty</span><span class="p">,</span> <span class="p">(</span><span class="nv">$for_ty</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">raw_into_stats</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+                <span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+
+    <span class="p">(</span><span class="n">min</span><span class="p">|</span> <span class="nv">$for_ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">impl</span> <span class="n">Min</span><span class="o">&lt;</span><span class="nv">$for_ty</span><span class="o">&gt;</span> <span class="k">for</span> <span class="nv">$for_ty</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">min</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="nv">$for_ty</span> <span class="p">{</span>
+                <span class="o">&lt;</span><span class="nv">$for_ty</span><span class="o">&gt;</span><span class="p">::</span><span class="n">MIN</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+
+<span class="nd">impl_for_num!</span><span class="p">(</span><span class="n">min</span> <span class="p">|</span> <span class="n">all</span><span class="p">);</span>
+<span class="nd">impl_for_num!</span><span class="p">(</span><span class="n">max_stats_stats</span> <span class="p">|</span> <span class="nb">int</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="排名位置">排名位置</h3>
+
+<p>比如，统计 $0$ 的个数，并查找第 $k$ 个 $0$ 的位置</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">ZeroStats</span><span class="p">;</span>
+
+
+<span class="k">impl</span> <span class="n">Count</span> <span class="k">for</span> <span class="n">ZeroStats</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="nb">usize</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">combine</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="o">*</span><span class="n">l</span> <span class="o">+</span> <span class="o">*</span><span class="n">r</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">e</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">impl_for_num</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="p">(</span><span class="n">zero_stats</span><span class="p">|</span> <span class="nv">$for_ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_raw_into_stats!</span><span class="p">(</span><span class="n">monomorphic</span><span class="p">|</span><span class="n">ZeroStats</span><span class="p">,</span> <span class="nv">$for_ty</span><span class="p">,</span> <span class="nb">usize</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">raw_into_stats</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="k">self</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span> <span class="mi">1</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>设计上，特殊的方法放到具体 Trait 上，下同。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span> <span class="n">ZeroStats</span> <span class="p">{</span>
+    <span class="cd">/// Start from 0</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">find_nth</span><span class="o">&lt;</span><span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">SegmentTree</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="k">Self</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">tree</span><span class="p">[</span><span class="n">tree</span><span class="py">.root</span><span class="p">]</span> <span class="p">{</span>
+            <span class="nb">None</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nf">Some</span><span class="p">(</span><span class="k">Self</span><span class="p">::</span><span class="nf">find_nth_</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">tree</span><span class="py">.root</span><span class="p">))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="n">find_nth_</span><span class="o">&lt;</span><span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">SegmentTree</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="k">Self</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">c</span><span class="nf">.is_end</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">c</span><span class="py">.tl</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">clf</span> <span class="o">=</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">crh</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">tree</span><span class="p">[</span><span class="n">clf</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">::</span><span class="nf">find_nth_</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">::</span><span class="nf">find_nth_</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">tree</span><span class="p">[</span><span class="n">clf</span><span class="p">],</span> <span class="n">crh</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>类似地还有查找给定区间里的元素位置，使得它的前缀和不小于给定值。</p>
+
+<h3 id="findfirst">FindFirst</h3>
+
+<p>查找给定区间里第一个符合条件的元素的位置。</p>
+
+<p>比如，查找给定区间里第一个严格大于给定值的值的位置。</p>
+
+<p>首先构建一个统计最大值的分段树：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">Max</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">PhantomData</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">);</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Count</span> <span class="k">for</span> <span class="n">Max</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">combine</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="k">match</span> <span class="n">l</span><span class="nf">.cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Less</span> <span class="k">=&gt;</span> <span class="n">r</span><span class="p">,</span>
+            <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="n">l</span><span class="p">,</span>
+            <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="n">l</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="nf">.clone</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">e</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">impl_for_num</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="p">(</span><span class="n">max_stats</span><span class="p">|</span> <span class="nv">$for_ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_raw_into_stats!</span><span class="p">(</span><span class="n">Max</span><span class="p">,</span> <span class="nv">$for_ty</span><span class="p">,</span> <span class="nv">$for_ty</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">raw_into_stats</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+                <span class="k">self</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+
+<span class="nd">impl_for_num!</span><span class="p">(</span><span class="n">max_stats</span> <span class="p">|</span> <span class="nb">int</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>在此基础上实现 findfirst 类型的问题：</p>
+
+<p>从根开始下降，直到区间范围在给定的范围之内，这是 <code class="language-plaintext highlighter-rouge">query_first_gt_1</code> 做的事情，然后在这个区间里做<a href="#查找排名位置">前一个小节</a>里那样的查询。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Max</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span><span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query_first_gt</span><span class="o">&lt;</span><span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="k">Self</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">T</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">Self</span><span class="p">::</span><span class="nf">query_first_gt_1</span><span class="p">(</span>
+            <span class="n">tree</span><span class="p">,</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="n">tree</span><span class="py">.root</span><span class="p">),</span>
+            <span class="n">tree</span><span class="py">.root</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="n">query_first_gt_1</span><span class="o">&lt;</span><span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="k">Self</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">T</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="c1">// left or right</span>
+        <span class="k">if</span> <span class="n">c</span><span class="py">.tl</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">||</span> <span class="n">c</span><span class="py">.tr</span> <span class="o">&lt;</span> <span class="n">l</span> <span class="p">{</span>
+            <span class="nb">None</span>
+        <span class="p">}</span>
+        <span class="c1">// inner</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="n">c</span><span class="py">.tr</span> <span class="o">&lt;=</span> <span class="n">r</span> <span class="o">&amp;&amp;</span> <span class="n">c</span><span class="py">.tl</span> <span class="o">&gt;=</span> <span class="n">l</span> <span class="p">{</span>
+            <span class="k">Self</span><span class="p">::</span><span class="nf">query_first_gt_2</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="c1">// cross</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// avoid bound overflow</span>
+            <span class="k">let</span> <span class="n">left_res</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">query_first_gt_1</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">));</span>
+
+            <span class="k">if</span> <span class="n">left_res</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">left_res</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">Self</span><span class="p">::</span><span class="nf">query_first_gt_1</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="n">query_first_gt_2</span><span class="o">&lt;</span><span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="k">Self</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="o">&amp;</span><span class="n">tree</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">c</span><span class="nf">.is_end</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nf">Some</span><span class="p">(</span><span class="n">c</span><span class="py">.tl</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="o">&amp;</span><span class="n">tree</span><span class="p">[</span><span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="n">x</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">::</span><span class="nf">query_first_gt_2</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">Self</span><span class="p">::</span><span class="nf">query_first_gt_2</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="最大和的子分段">最大和的子分段</h3>
+
+<p>这是一个特定的，但是复杂的问题：查找给定区间范围内的一个子区间，使得有区间里所有元素之和最大。</p>
+
+<p>解决这个问题的构思还是比较巧妙的，利用一个复杂的统计结构，分而治之地分而治之，这个结构包含 4 个成员：</p>
+
+<ol>
+  <li>pref，最大前缀和；</li>
+  <li>suff，最大后缀和；</li>
+  <li>sum，区间元素之和；</li>
+  <li>ans，区间答案，也就是最大的子区间和</li>
+</ol>
+
+<p>区间答案就是由三个后选值：</p>
+
+<ol>
+  <li>左区间的答案；</li>
+  <li>右区间的答案；</li>
+  <li>左区间最大后缀和 + 右区间最大前缀和</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Clone,</span> <span class="nd">Copy,</span> <span class="nd">Debug,</span> <span class="nd">Default)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">SubSegMaxSumStats</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// total sum of the segment</span>
+    <span class="k">pub</span> <span class="n">sum</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+    <span class="cd">/// max prefix sum</span>
+    <span class="k">pub</span> <span class="n">pref</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+    <span class="cd">/// max suffix sum</span>
+    <span class="k">pub</span> <span class="n">suff</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+    <span class="cd">/// query answer of max sum of the segment</span>
+    <span class="k">pub</span> <span class="n">ans</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Count</span> <span class="k">for</span> <span class="n">SubSegMaxSum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">SubSegMaxSumStats</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">combine</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="n">SubSegMaxSumStats</span> <span class="p">{</span>
+            <span class="n">sum</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">l</span><span class="py">.sum</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.sum</span><span class="p">,</span>
+            <span class="n">pref</span><span class="p">:</span> <span class="nf">max</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="py">.pref</span><span class="p">,</span> <span class="o">&amp;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="py">.sum</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.pref</span><span class="p">))</span><span class="nf">.clone</span><span class="p">(),</span>
+            <span class="n">suff</span><span class="p">:</span> <span class="nf">max</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="py">.suff</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.sum</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.suff</span><span class="p">)</span><span class="nf">.clone</span><span class="p">(),</span>
+            <span class="n">ans</span><span class="p">:</span> <span class="nd">max!</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="py">.ans</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.ans</span><span class="p">,</span> <span class="o">&amp;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="py">.suff</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.pref</span><span class="p">))</span><span class="nf">.clone</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">e</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">max</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$</span><span class="p">(</span><span class="nv">$val:expr</span><span class="p">),</span><span class="o">+</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="p">[</span><span class="nv">$</span><span class="p">(</span><span class="nv">$val</span><span class="p">),</span><span class="o">+</span><span class="p">]</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.max</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">impl_for_num</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="p">(</span><span class="n">sub_seg_max_sum_stats</span><span class="p">|</span> <span class="nv">$for_ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">impl_raw_into_stats!</span><span class="p">(</span><span class="n">SubSegMaxSum</span><span class="p">,</span> <span class="nv">$for_ty</span><span class="p">,</span> <span class="n">SubSegMaxSumStats</span><span class="o">&lt;</span><span class="nv">$for_ty</span><span class="o">&gt;</span> <span class="p">{</span>
+            <span class="k">fn</span> <span class="nf">raw_into_stats</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">non_neg</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="p">);</span>
+
+                <span class="n">SubSegMaxSumStats</span> <span class="p">{</span>
+                    <span class="n">sum</span><span class="p">:</span> <span class="k">self</span><span class="p">,</span>
+                    <span class="n">pref</span><span class="p">:</span> <span class="n">non_neg</span><span class="p">,</span>
+                    <span class="n">suff</span><span class="p">:</span> <span class="n">non_neg</span><span class="p">,</span>
+                    <span class="n">ans</span><span class="p">:</span> <span class="n">non_neg</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nd">impl_for_num!</span><span class="p">(</span><span class="n">sub_seg_max_sum_stats</span> <span class="p">|</span> <span class="n">sint</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h2 id="保存整个子数组">保存整个子数组</h2>
+
+<p>有一种分段树是在每个点上保存原数组对应区间里的所有值。</p>
+
+<p>如果保存的子数组是用有序向量存储的，那么这个分段树实际上是在空间上还原了归并排序的整个过程，因此它也可以叫做 “<strong>Merge Sort Tree</strong>” ，可以在上面执行一系列查询的操作。</p>
+
+<p>存储有序向量对原数组的元素修改时成本较高，可以改为经典的以 TreeMap 为基础的 multiset <sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup>，</p>
+
+<h3 id="findfirst-1">FindFirst</h3>
+
+<p>分段树本身的查询复杂度是 $O(\text{log}n)$ ，有序向量或者 multiset 上查询的时间复杂度也是 $O(\text{log}n)$ ，因此总的时间复杂度是 $O(\text{log}^2n)$ 。</p>
+
+<h3 id="分片级联">分片级联</h3>
+
+<p>可以考虑使用 <a href="/algs/FractionalCascading.html">分片级联</a> 的思想来加速对 findfirst 问题查询的过程。</p>
+
+<p>这样的话，在树的构建过程中，不只是存储整个子数组，而是分片级联里面的 $M$  列表，区别是原来是级联下一级，所以存储下一级的索引，而现在要级联左右孩子，需要存储左右孩子上的索引。</p>
+
+<p>另外，由于需要保存整个子数组，所以只级联，不分片<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup> 。</p>
+
+<p>于是查询的过程就变为，在根节点上进行一次二分查找，然后做最多树高度的拉链。</p>
+
+<p>以 $3$ 倍的空间为代价，让查询的时间复杂度降到了 $O(\text{log}n)$ 。</p>
+
+<h2 id="区间更新">区间更新</h2>
+
+<p>分段树支持一种在给定区间上快速地批量更新元素<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">9</a></sup>的方法。</p>
+
+<p>这个区间更新的方法利用了“惰性更新”的思想，不妨以 update-add ，也就是批量增加一个固定值为例：</p>
+
+<h3 id="惰性方法">惰性方法<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">10</a></sup></h3>
+
+<p>在更新的时候，只更新到给定区间覆盖到的分段树上的区间。</p>
+
+<p>比如对于分段树 $t[0..7]$ ，更新区间 $[3..7]$ ，则惰性更新的路径为：</p>
+
+\[\begin{array}{l}
+t[0..7] &amp; \rightarrow [0..3] \rightarrow [2..3] \rightarrow [3]\\
+        &amp; \rightarrow [4..7]
+\end{array}\]
+
+<p>这就需要在分段树的区间上额外存储惰性更新的值，为了不影响既有结构，我们用额外的一个辅助数组来存储它：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">UpdaterAdd</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">PhantomData</span><span class="o">&lt;</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">);</span>
+
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">create_updater</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">UpdaterAdd</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nf">UpdaterAdd</span><span class="p">(</span><span class="nd">vec!</span><span class="p">[</span><span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()],</span> <span class="n">PhantomData</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>惰性更新的过程与一般得分段树的查询过程一样：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span> <span class="n">UpdaterAdd</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;</span><span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">AddAssign</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">assoc</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span>
+        <span class="n">addend</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+    <span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.assoc_</span><span class="p">(</span>
+            <span class="n">tree</span><span class="p">,</span>
+            <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="n">tree</span><span class="py">.root</span><span class="p">),</span>
+            <span class="n">addend</span><span class="p">,</span>
+            <span class="n">tree</span><span class="py">.root</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">assoc_</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span>
+        <span class="n">addend</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">c</span><span class="nf">.is_matched</span><span class="p">((</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">tree</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">addend</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="n">addend</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.propagate</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">c</span><span class="p">);</span>
+
+            <span class="k">self</span><span class="nf">.assoc_</span><span class="p">(</span>
+                <span class="n">tree</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.tr</span><span class="p">)),</span>
+                <span class="n">addend</span><span class="nf">.clone</span><span class="p">(),</span>
+                <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">),</span>
+            <span class="p">);</span>
+            <span class="k">self</span><span class="nf">.assoc_</span><span class="p">(</span>
+                <span class="n">tree</span><span class="p">,</span>
+                <span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.tl</span><span class="p">),</span> <span class="n">r</span><span class="p">),</span>
+                <span class="n">addend</span><span class="p">,</span>
+                <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">),</span>
+            <span class="p">);</span>
+
+            <span class="n">tree</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tree</span><span class="p">[</span><span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)],</span> <span class="o">&amp;</span><span class="n">tree</span><span class="p">[</span><span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)]);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">is_marked</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">!=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">true</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">false</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// Lazy propagation</span>
+    <span class="k">fn</span> <span class="nf">propagate</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">self</span><span class="nf">.is_marked</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">tree</span><span class="p">[</span><span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">+=</span> <span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="k">self</span><span class="p">[</span><span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">self</span><span class="p">[</span><span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">+</span> <span class="o">&amp;</span><span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">];</span>
+
+            <span class="n">tree</span><span class="p">[</span><span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">+=</span> <span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+            <span class="k">self</span><span class="p">[</span><span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">self</span><span class="p">[</span><span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">+</span> <span class="o">&amp;</span><span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">];</span>
+
+            <span class="k">self</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>惰性更新只有当查询到某一层时，才会把更新推到分段树的下一层：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="n">TreeLayout</span><span class="o">&gt;</span> <span class="n">UpdaterAdd</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;</span><span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">AddAssign</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span>
+    <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span>
+            <span class="n">tree</span><span class="p">,</span>
+            <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="n">tree</span><span class="py">.root</span><span class="p">),</span>
+            <span class="n">tree</span><span class="py">.root</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">query_</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span>
+        <span class="n">tree</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">SegmentTree</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">L</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">c</span><span class="nf">.is_matched</span><span class="p">((</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">tree</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="nf">.clone</span><span class="p">()</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.propagate</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">c</span><span class="p">);</span>
+
+            <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span>
+                <span class="o">&amp;</span><span class="k">self</span><span class="nf">.query_</span><span class="p">(</span>
+                    <span class="n">tree</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.tr</span><span class="p">)),</span>
+                    <span class="nd">left!</span><span class="p">(</span><span class="n">c</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="o">&amp;</span><span class="k">self</span><span class="nf">.query_</span><span class="p">(</span>
+                    <span class="n">tree</span><span class="p">,</span>
+                    <span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="py">.tl</span><span class="p">),</span> <span class="n">r</span><span class="p">),</span>
+                    <span class="nd">right!</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="其他更新">其他更新</h3>
+
+<p>对于给定区间的批量赋值，更加简单，只需要每个需要更新的区间存储一个标记位。</p>
+
+<h2 id="推广到更高维度">推广到更高维度<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">11</a></sup></h2>
+
+<p>简单的二维分段树基本按照先构建第一个维度，然后在第一个维度下降到叶子时再构建第二个维度。</p>
+
+<h2 id="持久化版本">持久化版本</h2>
+
+<p>谈到持久化版本，就是树型结构，而且是指针构造的树型结构。</p>
+
+<p>分段树自然很容易做成持久化版本，更新的时候直接复制更新路径就可以。</p>
+
+<p>但是需要从本来的数组实现转为指针实现，这让这个问题变得有点儿鸡肋，因为性能损失实在有些不可接受。</p>
+
+<h2 id="动态分段">动态分段</h2>
+
+<p>如果不能一次性地构建完整棵分段树，可以进行动态分段，只有当查询到某个区间的节点时再进行创建。</p>
+
+<p>但是这也假设了指针实现版本的分段树，同样鸡肋。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>你不知道主语义是<strong>线</strong>状还是分<strong>段</strong> <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>divide and rule <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>如果原数组的长度是确定的，那么对应的线段树也是确定的 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>由等比数列前项和 $S_n = a_1{\Large \frac{1-q^n}{1-q}} = 1·{\Large \frac{1-2^n}{1-2}} = 2^n - 1$ 可推 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>只要数组的大小不是 $2$ 的幂 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>这实在有些，说句文言，脱裤子放屁，还不如想办法用 Trait 数字类型给抽象出来 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>bag <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:8" role="doc-endnote">
+      <p>或者说分片大小为 $1$ <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>比如批量地增加一个值，或者批量地赋予一个值 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:11" role="doc-endnote">
+      <p>Lazy propagation <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:9" role="doc-endnote">
+      <p>树套树 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>

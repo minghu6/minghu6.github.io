@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            分片级联（Fractional Cascading）
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/FractionalCascading.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        分片级联（Fractional Cascading）
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">分片级联（Fractional Cascading）</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      April 17, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p><em>本文主要参考 <a href="https://en.wikipedia.org/wiki/Fractional_cascading">wiki</a> ，对其中一些内容进行了拓展，对个别错误进行了修正。</em></p>
+
+<p>分片级联是一种同时对多个有序列表进行二分查找的加速技术。</p>
+
+<p>假设有 $k$ 个有序列表，给定一个元素 $q$ ，查询在每个有序列表上的位置。</p>
+
+<h2 id="思路">思路</h2>
+
+<h3 id="原始做法">原始做法</h3>
+
+<p>依次在每个有序列表上执行二分查找，假设每个列表的<strong>平均长度为 $n$</strong> ，总长度 $N=kn$ ， 则时间复杂度为 $O(k\ \text{log}\ n)$ 。</p>
+
+<h3 id="改进的做法">改进的做法</h3>
+
+<p>可以提前处理下这 $k$ 个有序列表，为其中每个元素计算在每个列表的位置，然后把这些元素和对应的在每个列表的位置合成一个大的有序列表，查找的时候只需要在这个大的有序列表上进行一次二分查找就可以了。</p>
+
+<p>根据查找到的元素对应的统计信息，直接得到全部 $k$ 个有序列表上的位置。</p>
+
+<p>例如如下 $k=4$ 个有序列表的</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">L\i</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">1</td>
+      <td>24</td>
+      <td>64</td>
+      <td>65</td>
+      <td>80</td>
+      <td>93</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">2</td>
+      <td>23</td>
+      <td>25</td>
+      <td>26</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">3</td>
+      <td>13</td>
+      <td>44</td>
+      <td>62</td>
+      <td>66</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">4</td>
+      <td>11</td>
+      <td>35</td>
+      <td>46</td>
+      <td>79</td>
+      <td>81</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>得到</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>L[0,6,12]</th>
+      <th>L[1,7,13]</th>
+      <th>L[2,8,14]</th>
+      <th>L[3,9,15]</th>
+      <th>l[4,10,16]</th>
+      <th>l[5,11,17]</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>11[0,0,0,0]</td>
+      <td>13[0,0,0,1]</td>
+      <td>23[0,1,1,1]</td>
+      <td>24[0,1,1,1]</td>
+      <td>25[1,1,1,1]</td>
+      <td>26[1,2,1,1]</td>
+    </tr>
+    <tr>
+      <td>35[1,3,1,1]</td>
+      <td>44[1,3,1,2]</td>
+      <td>46[1,3,2,2]</td>
+      <td>62[1,3,2,3]</td>
+      <td>64[1,3,3,3]</td>
+      <td>65[2,3,3,3]</td>
+    </tr>
+    <tr>
+      <td>66[3,3,3,3]</td>
+      <td>79[3,3,4,3]</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>具体说明这个统计信息，以 $46[1,3,2,2]$ 为例，表明 $46$ 在 $L_1$ 的位置为 1 ，在 $L_2$ 的位置为 $3$ ，在 $L_3$ 的位置为 $2$ , 在 $L_4$ 的位置为 $2$ 。</p>
+
+<p>这样如果我们查找 $q=45$ ，发现落到 $46$ 的位置，就直接使用 $46$ 的索引统计 $q=45$ 的索引结果即可。</p>
+
+<p>这种做法，花费 $(k-1)n\text{log}(n)$ 的预处理时间，和 $kN$ <sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>的空间，以实现 $O(\text{log}N)$ 时间复杂度的单次查询。</p>
+
+<p>这样，单次查询的时间复杂度，从 $O(k\text{log}n)$ 变为 $O(\text{log}kn)$ , 相当于把 $k$ 放进了 log 里，性能得到了提升。</p>
+
+<p>但是空间上 $kN$ 是非常的昂贵。</p>
+
+<h3 id="分片级联">分片级联</h3>
+
+<p>那么如何<em>在尽量保持改进的查询时间复杂度的情况下</em>降低空间复杂度呢？ 这才引出来，我们分片级联的技术。</p>
+
+<p><strong>分片</strong>指得是分片取样（fractional sampling），<strong>级联</strong>（cascading）指得是并不同时保存所有k个列表的索引信息，而只是保存紧邻下一级的索引信息，然后一层层进行连锁。<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
+
+<p>具体说就是：</p>
+
+<ol>
+  <li>构建一个预处理的列表 $M$ ，它的每一级 $M_i$ 都是由对应 $L_i$ 和下一级的 $M_{i+1}$ 中的元素构成，$M_i$ 存储元素本身以及每个元素在 $L_i$ 上的索引位置和 $M_{i+1}$ 上索引位置，这样一直到最后一级 $M_k$ ，因为没有下一级，所以只保存 $L_k$ 的元素，这体现了级联；</li>
+  <li>次一级的 $M_{i+1}$ 里面不是每个元素都提升到 $M_i$ 里，而是两两取样<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，</li>
+</ol>
+
+<p>例如上述例子为</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">M\I</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">1</td>
+      <td>24[0,1]</td>
+      <td>25[1,1]</td>
+      <td>35[1,3]</td>
+      <td>64[1,5]</td>
+      <td>65[2,5]</td>
+      <td>79[3,5]</td>
+      <td>80[3,6]</td>
+      <td>93[4,6]</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">2</td>
+      <td>23[0,1]</td>
+      <td>25[1,1]</td>
+      <td>26[2,1]</td>
+      <td>35[3,1]</td>
+      <td>62[3,3]</td>
+      <td>79[3,5]</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">3</td>
+      <td>13[0,1]</td>
+      <td>35[1,1]</td>
+      <td>44[1,2]</td>
+      <td>62[2,3]</td>
+      <td>66[3,3]</td>
+      <td>79[4,3]</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">4</td>
+      <td>11[0,0]</td>
+      <td>35[1,0]</td>
+      <td>46[2,0]</td>
+      <td>79[3,0]</td>
+      <td>81[4,0]</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>对于前面的，$q=45$ 的例子，假设取样的分片大小为 $f=2$</p>
+
+<ol>
+  <li>
+    <p>对 $M_1$ ，进行二分查找，发现最小的 $\geqslant 45$ 的是 $64[1,5]$ ，于是对于 $L_1$ 的<strong>结果是 $1$</strong>，然后从 $M_2[5]$ 开始，直接根据所属分片的级联的信息，就像拉拉链一样，最多经过 $f-1$ 次比较就可以得到结果；</p>
+  </li>
+  <li>
+    <p>然后比较 $M_2[5]$ 和它的前一项 $M_2[4]$ <sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup>发现 $M_2[5]=62[3,3]$ 是最小的 $\geqslant q$ 的一项，于是 $L_2$ 的<strong>结果是 $3$</strong>；</p>
+  </li>
+  <li>
+    <p>比较 $M_3[3]$ 和 $M_3[2]$，发现 $M_3[3] =62[2,3]$ 是最小的 $\geqslant q$ 的项，于是 $L_3$ 的<strong>结果是 $2$</strong>；</p>
+  </li>
+  <li>
+    <p>比较 $M_4[3]$ 和 $M_4[2]$ ，发现 $M_4[2]=46[2,0]$ 是最小的 $\geqslant q$ 的项，于是 $L_4$ 的<strong>结果是 $4$</strong>；</p>
+  </li>
+</ol>
+
+<p>利用合并两个有序列表的方法处理每个 $L_i$ 和 $M_{i+1}$ 的分片，使用 $(k-1)n$ 的预处理时间，消耗的内存小于 $2N$ 个单元，对于数字类型来说，也就是 $3 * 2N = 6N$ 的空间复杂度。</p>
+
+<h4 id="空间复杂度证明">空间复杂度证明</h4>
+
+<p>预处理列表 M 每一层的空间（单元）：</p>
+
+\[|M_i| = {\displaystyle n \sum_{j=1}^{k-i+1} (\frac{1}{f})^{j-1}}\]
+
+<p>总共空间是（单元）：</p>
+
+\[\begin{array}{l}
+{\displaystyle \sum_{i=1}^k|M_i|} &amp;= {\displaystyle n\sum_{i=1}^k \sum_{j=1}^{k-i+1} (\frac{1}{f})^{j-1}}\\
+&amp;\lt {\displaystyle n \sum_{i=1}^k \sum_{j=1}^{k+1} (\frac{1}{f})^{j-1}}\\
+&amp;= {\displaystyle n \sum_{i=1}^k 1 + (\frac{1}{f}) + (\frac{1}{f})^2 ...,+(\frac{1}{f})^k}\\
+&amp;\lt 2n{\displaystyle \sum_{i=1}^k 1}\\
+&amp;= 2N
+\end{array}\]
+
+<h4 id="时间复杂度分析">时间复杂度分析</h4>
+
+<p>由于 $M_1 \lt 2n$ ，因此单次查询的时间复杂度为 $O(\text{log}n + (f-1)k)$ 。</p>
+
+<p>由于除了 log ，还多了一个 $k$ ,  于是情况就比较微妙了 。</p>
+
+<ol>
+  <li>
+    <p>一方面，当 $k \ll n$ 时，分片级联的性能好于原始办法。</p>
+  </li>
+  <li>
+    <p>但另一方面，如果 $k$ 相对 $n$ 较大，那分片级联相比于原始算法就没有优势，甚至更慢。</p>
+  </li>
+  <li>
+    <p>而在几乎所有的情况下，只要 $k$ 不是特别小，改进算法还是最快的，是快好几倍的<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup> ：很明显，对于 $\text{log}N$ ,即使 $N$ 取一个 <code class="language-plaintext highlighter-rouge">u64</code> 能表示的最大值，也就是相当于 $k=64$ 的大小，因此只要稍微大一点的 $k$ 都会使得查询性能不如改进算法</p>
+  </li>
+</ol>
+
+<p>我们可以通过一个图表把这个问题看得更清楚，取一个固定的 $N$ ，让 $k$ 增长，观察</p>
+
+<ol>
+  <li>原始做法-raw</li>
+  <li>改进做法-best</li>
+  <li>$f=2$ 的分片级联-fc2</li>
+  <li>$f=4$ 的分片级联-fc4</li>
+</ol>
+
+<p>的运行时间的变化：</p>
+
+<p><img src="/assets/img/fc/time_stats1.svg" alt="" /></p>
+
+<p>我们发现当 $k$ 从一个较小的值增长的时候，原始算法的性能会变得有些优于 $f=4$ 的分片级联。</p>
+
+<p><img src="/assets/img/fc/time_stats2.svg" alt="" /></p>
+
+<p>但如果拉长 $k$ 的取值话，发现分片级联还是明显优于原始做法。</p>
+
+<h2 id="实现">实现</h2>
+
+<p><a href="https://github.com/minghu6/rust-minghu6/blob/v0.1.3/coll/src/frac_casc.rs">源代码</a></p>
+
+<h3 id="数据结构">数据结构</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">FractionalCascading</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="k">const</span> <span class="n">F</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">m</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">METype</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span>
+    <span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="n">T</span><span class="p">]],</span>
+<span class="p">}</span>
+
+<span class="k">type</span> <span class="n">METype</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>对于 $q$ 的二分查找返回的结果是,  $\text{min}({x \in L,\ x &gt;= q})$</p>
+
+<h3 id="构建">构建</h3>
+
+<p>分片级联，对于输入有一些动态时才能检查的条件：</p>
+
+<ol>
+  <li>$k &gt; 0$；</li>
+  <li>输入的 $k$ 个列表每个列表都不为空且都是有序的；</li>
+  <li>分片大小 $f &gt; 0$</li>
+</ol>
+
+<p>构建 M 时：</p>
+
+<ol>
+  <li>采用 merge-sort 里面的 merge 操作合并 $L_i$ 和 $M_{i+1}$ ；</li>
+  <li>对于列表中重复的元素只保留一份，因为标准的二分搜索不会区分不同位置的重复元素，留着也没用；</li>
+  <li>同时注意如果 $M_{i+1}$ 的长度不能恰好被分片 $f$ 整除，需要把最后的尾元素补上，这样使得所有的完整的或者不完整的分片都有一个代表，就是分片的最大值，简化了比较逻辑</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="k">const</span> <span class="n">F</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">FractionalCascading</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">F</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="p">[</span><span class="o">&amp;</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="n">l</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="n">l</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.all</span><span class="p">(|</span><span class="n">i</span><span class="p">|</span> <span class="n">i</span><span class="nf">.is_sorted</span><span class="p">()));</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="n">F</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">);</span>
+
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">l</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.all</span><span class="p">(|</span><span class="n">i</span><span class="p">|</span> <span class="o">!</span><span class="n">i</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">i</span><span class="nf">.is_sorted</span><span class="p">()));</span>
+
+        <span class="k">let</span> <span class="n">m</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">build_m</span><span class="p">(</span><span class="n">l</span><span class="p">);</span>
+
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">m</span><span class="p">,</span> <span class="n">l</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">build_m</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="o">&amp;</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">METype</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;&gt;</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">k</span> <span class="o">=</span> <span class="n">l</span><span class="nf">.len</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">m</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nd">vec!</span><span class="p">[];</span> <span class="n">k</span><span class="p">];</span>
+
+        <span class="cm">/* Init m_k*/</span>
+
+        <span class="k">let</span> <span class="n">l_k</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">m_k</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">m</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">in</span> <span class="n">l_k</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">m_k</span><span class="nf">.push</span><span class="p">((</span><span class="n">v</span><span class="p">,</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="mi">0</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="cm">/* on guard */</span>
+
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">m</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">m_i</span> <span class="k">in</span> <span class="p">(</span><span class="mi">0</span><span class="o">..=</span><span class="n">k</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span><span class="nf">.rev</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">l1</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="n">m_i</span><span class="p">];</span>
+            <span class="k">let</span> <span class="n">m2</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">m</span><span class="p">[</span><span class="n">m_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">m1</span> <span class="o">=</span>
+                <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">l1</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="n">m2</span><span class="nf">.len</span><span class="p">()</span><span class="nf">.div_ceil</span><span class="p">(</span><span class="n">F</span><span class="p">));</span>
+
+            <span class="cm">/* merge two sorted vec */</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="nd">macro_rules!</span> <span class="n">nxt_j</span> <span class="p">{</span>
+                <span class="p">(</span><span class="nv">$j:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="c1">// end</span>
+                    <span class="k">if</span> <span class="nv">$j</span> <span class="o">==</span> <span class="n">m2</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+                        <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nv">$j</span> <span class="o">+</span> <span class="n">F</span> <span class="o">&gt;</span> <span class="n">m2</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+                        <span class="n">m2</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="nv">$j</span> <span class="o">+</span> <span class="n">F</span>
+                    <span class="p">}</span>
+                <span class="p">};</span>
+            <span class="p">}</span>
+
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">l1</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">m2</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">match</span> <span class="n">l1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">m2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="na">.0</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">Less</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                        <span class="n">m1</span><span class="nf">.push</span><span class="p">((</span><span class="n">l1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">(),</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">j</span><span class="p">));</span>
+
+                        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                    <span class="p">}</span>
+                    <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                        <span class="n">m1</span><span class="nf">.push</span><span class="p">((</span><span class="n">l1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">(),</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">j</span><span class="p">));</span>
+
+                        <span class="cm">/* skip dup */</span>
+
+                        <span class="k">let</span> <span class="n">dup</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">l1</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+                        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">l1</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;</span><span class="n">l1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">dup</span> <span class="p">{</span>
+                            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                        <span class="p">}</span>
+
+                        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">m2</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;</span><span class="n">m2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="na">.0</span> <span class="o">==</span> <span class="n">dup</span> <span class="p">{</span>
+                            <span class="n">j</span> <span class="o">=</span> <span class="nd">nxt_j!</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                    <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                        <span class="n">m1</span><span class="nf">.push</span><span class="p">((</span><span class="n">m2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">(),</span> <span class="nf">Err</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">j</span><span class="p">));</span>
+
+                        <span class="n">j</span> <span class="o">=</span> <span class="nd">nxt_j!</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">l1</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">m1</span><span class="nf">.push</span><span class="p">((</span><span class="n">l1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">(),</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">m2</span><span class="nf">.len</span><span class="p">()));</span>
+
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">m2</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">m1</span><span class="nf">.push</span><span class="p">((</span><span class="n">m2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="na">.0</span><span class="nf">.clone</span><span class="p">(),</span> <span class="nf">Err</span><span class="p">(</span><span class="n">l1</span><span class="nf">.len</span><span class="p">()),</span> <span class="n">j</span><span class="p">));</span>
+
+                <span class="n">j</span> <span class="o">=</span> <span class="nd">nxt_j!</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="n">m</span><span class="p">[</span><span class="n">m_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">m1</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">m</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="查询">查询</h3>
+
+<p>按照 Rust 的 API 风格，查找元素时用 <code class="language-plaintext highlighter-rouge">Result&lt;usize, usize&gt;</code> 类型区分相等的情况和最小大于的情况。</p>
+
+<h4 id="查询-1">查询</h4>
+
+<p>主流程：</p>
+
+<ol>
+  <li>在 <code class="language-plaintext highlighter-rouge">m[0]</code> 上执行二分查找，找到“拉链头”；</li>
+  <li>然后在后续的 <code class="language-plaintext highlighter-rouge">m[1..m.len()]</code> 上“拉拉链”，在每一级上，都会在分片大小的范围内找到结果</li>
+</ol>
+
+<p>考虑重复元素的情况，实际上前面讲的“区分相等的情况和最小大于的情况”的说法并不严谨，实际 API 返回值的要求应该是<strong>相等和插入后保持有序两种情况</strong> ，这意味着：</p>
+
+<ol>
+  <li>如果存在重复的最小大于的元素，不能随便选一个返回它的索引位置，而是应该返回最左边的那一个；</li>
+  <li>在极端的最坏情况下，这可能会拖累性能到线性</li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="k">const</span> <span class="n">F</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">FractionalCascading</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">F</span><span class="o">&gt;</span> <span class="p">{</span>    
+	<span class="k">pub</span> <span class="k">fn</span> <span class="n">find</span><span class="o">&lt;</span><span class="n">Q</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.find_</span><span class="p">(</span><span class="n">k</span><span class="nf">.borrow</span><span class="p">(),</span> <span class="k">Self</span><span class="p">::</span><span class="n">find_handle_approx_result</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">fn</span> <span class="nf">find_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">T</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">FindHandler</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">F</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nf">Err</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="k">self</span><span class="py">.m</span><span class="nf">.len</span><span class="p">()];</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">j</span><span class="p">;</span>
+
+        <span class="c1">// 1. assign res[0]</span>
+        <span class="c1">//</span>
+        <span class="c1">// 2. m_idx</span>
+        <span class="c1">//</span>
+        <span class="k">match</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.binary_search_by_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">k</span><span class="nf">.borrow</span><span class="p">(),</span> <span class="p">|</span><span class="n">x</span><span class="p">|</span> <span class="o">&amp;</span><span class="n">x</span><span class="na">.0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nf">Ok</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="na">.1</span><span class="p">;</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="na">.2</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="nf">Err</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nf">Err</span><span class="p">(</span><span class="k">self</span><span class="py">.l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="nf">.len</span><span class="p">());</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="na">.2</span><span class="p">;</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="na">.1</span><span class="nf">.and_then</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="nf">Err</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="na">.2</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="k">self</span><span class="py">.m</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">elected</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="n">elected</span> <span class="o">=</span> <span class="n">j</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="k">mut</span> <span class="n">cand</span> <span class="o">=</span> <span class="n">j</span><span class="p">;</span>
+
+                <span class="k">while</span> <span class="n">cand</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">k</span><span class="nf">.borrow</span><span class="p">()</span> <span class="o">&lt;</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">cand</span><span class="p">]</span><span class="na">.0</span> <span class="p">{</span>
+                    <span class="n">cand</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">if</span> <span class="n">cand</span> <span class="o">&lt;</span> <span class="n">j</span> <span class="o">&amp;&amp;</span> <span class="n">k</span><span class="nf">.borrow</span><span class="p">()</span> <span class="o">&gt;</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">cand</span><span class="p">]</span><span class="na">.0</span> <span class="p">{</span>
+                    <span class="n">cand</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="n">elected</span> <span class="o">=</span> <span class="n">cand</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">elected</span> <span class="o">=</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nf">handler</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">elected</span><span class="p">);</span>
+
+            <span class="n">j</span> <span class="o">=</span> <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">elected</span><span class="p">]</span><span class="na">.2</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">res</span>
+    <span class="p">}</span>
+    
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">find_handle_approx_result</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+        <span class="n">j</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="n">dup</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.0</span><span class="p">;</span>
+
+        <span class="k">match</span> <span class="n">k</span><span class="nf">.borrow</span><span class="p">()</span><span class="nf">.cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Less</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="k">mut</span> <span class="n">idx</span> <span class="o">=</span> <span class="nd">unpack_result!</span><span class="p">(</span><span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.1</span><span class="p">);</span>
+
+                <span class="c1">// go back (the worst case down to O(nk))</span>
+                <span class="k">while</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.l</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">dup</span> <span class="p">{</span>
+                    <span class="n">idx</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="nf">Err</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.1</span>
+            <span class="p">}</span>
+            <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="k">mut</span> <span class="n">idx</span> <span class="o">=</span> <span class="nd">unpack_result!</span><span class="p">(</span><span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.1</span><span class="p">);</span>
+
+                <span class="c1">// go forward (the worst case down to O(nk))</span>
+                <span class="k">while</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.l</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">dup</span> <span class="p">{</span>
+                    <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="k">self</span><span class="py">.l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">dup</span> <span class="o">==</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.l</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="nf">Err</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">type</span> <span class="n">FindHandler</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="k">fn</span><span class="p">(</span>
+    <span class="o">&amp;</span><span class="n">FractionalCascading</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">N</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="o">&amp;</span><span class="n">T</span><span class="p">,</span>
+    <span class="nb">usize</span><span class="p">,</span>
+    <span class="nb">usize</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h4 id="快速查询">快速查询</h4>
+
+<p>如果不考虑对重复元素的插入顺序的情况，可以直接这样写：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="k">const</span> <span class="n">F</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">FractionalCascading</span><span class="o">&lt;</span><span class="nv">'a</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">F</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// Ignore duplicated case</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">quick_find</span><span class="o">&lt;</span><span class="n">Q</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.find_</span><span class="p">(</span><span class="n">k</span><span class="nf">.borrow</span><span class="p">(),</span> <span class="k">Self</span><span class="p">::</span><span class="n">quick_find_handle_approx_result</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nd">#[inline(always)]</span>
+    <span class="k">fn</span> <span class="nf">quick_find_handle_approx_result</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+        <span class="n">j</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span>
+    <span class="p">{</span>
+        <span class="k">match</span> <span class="n">k</span><span class="nf">.cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Less</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.1</span><span class="nf">.and_then</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="nf">Err</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="p">}</span>
+            <span class="n">Equal</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.1</span>
+            <span class="p">}</span>
+            <span class="n">Greater</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="na">.1</span><span class="nf">.and_then</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="nf">Err</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>   
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="后续">后续</h2>
+
+<h3 id="动态">动态</h3>
+
+<p>关于动态分片级联的问题，也就是目标数组被修改时的更新。</p>
+
+<p>这将完全抛弃数组结构而采用经典地采用树型结构，就像前文介绍过的在 B+ 树的数组实现明显区别于和 TreeMap 实现一样，实现的具体细节将完全不同。</p>
+
+<p>由于<a href="https://en.wikipedia.org/wiki/Fractional_cascading#Dynamic_fractional_cascading">介绍</a>的细节繁杂，也没有详细的示例，深入下去必然耗费大量时间，且已经偏离了主要介绍的内容，因此等需要的时候再来回顾吧。</p>
+
+<h3 id="应用">应用</h3>
+
+<p><a href="https://en.wikipedia.org/wiki/Fractional_cascading#Applications">计算几何方面的问题</a></p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>假设元素类型也是和索引位置一样的类型 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>总感觉分片级联就像斐波那契堆一样，对复杂度采取逐级抵抗的办法，应该进行可以一些类比 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>两两取样也就是分片的大小为 $2$ ，当然也可以选择其他的分片大小 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>因为分片大小是 $2$ ，所以比较两项，如果分片大小是 $4$ 那就比较 $4$ 项 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>可以视作对应分片 $f=1$ 的情况，虽然此时耗费多一半的空间 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>

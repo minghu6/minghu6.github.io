@@ -1178,9 +1178,9 @@ pub fn build_delta_2_table_naive(p: &amp;[impl PartialEq]) -&gt; Vec&lt;usize&gt
 
 <h4 id="delta_1">$delta_1$</h4>
 
-<p>首先考虑$delta_1$不起作用的情况，也就是发现失配字符在$pat$上重现的位置在已经匹配完的$m$个字符中，这种情况的概率$\textit{probdelta_1_worthless}$为：</p>
+<p>首先考虑$delta_1$不起作用的情况，也就是发现失配字符在$pat$上重现的位置在已经匹配完的$m$个字符中，这种情况的概率$\textit{probdelta1-worthless}$为：</p>
 
-\[\textit{probdelta1_worthless}(m) = 1 - (1-p)^m\]
+\[\textit{probdelta1-worthless}(m) = 1 - (1-p)^m\]
 
 <p>而对于$delta_1$起作用的情况，可以根据k的范围分为四种情况进行讨论：</p>
 
@@ -1244,15 +1244,15 @@ probpr(m,k)(1-\sum_{n=2}^{k-1}probdelta2'(m, n)) &amp; \text{for} &amp; 1 \leqsl
 <p>于是通过组合$delta_1$和$delta_2$起作用的情况，我们就得到了BoyerMoore算法的$skip$概率函数：</p>
 
 \[skip(m,k) = \left\{\begin{array}{lcl}
-probdelta1(m, 1) \times probdelta2(m, 1) &amp; \text{for} &amp; k = 1\\
+probdelta1(m, 1) \times probdelta2(m, 1) &amp; &amp; k = 1\\
 \\
 \\
 \\
-\textit{prodelta1_worthless}(m)\times probdelta2'(m, 1)\\
+\textit{prodelta1-worthless}(m)\times probdelta2'(m, 1)\\
 +\ probdelta1(m, k)\times \sum_{n=1}^{k-1}probdelta2(m, n)\\
 +\ probdelta2(m, k)\times \sum_{n=1}^{k-1}probdelta1(m,n)\\
 +\ probdelta1(m, k)\times probdelta2(m, k)
-&amp; \text{for} &amp; 1 &lt; k \leqslant patlen
+&amp; &amp; 1 &lt; k \leqslant patlen
 \end{array}\right.\]
 
 <h3 id="分析比较">分析比较</h3>
