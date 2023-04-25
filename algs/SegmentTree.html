@@ -162,7 +162,7 @@
 
 <p>作为树型结构自然就有数组和指针两种实现，而分段树可以很容易地使用数组实现<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，这让它看起来非常靠谱！</p>
 
-<p>接下来我们主要讨论的就是线段树的<a href="https://github.com/minghu6/rust-minghu6/tree/v0.1.3/coll/src/segment_tree">数组实现</a>。</p>
+<p>接下来我们主要讨论的就是线段树的<a href="https://github.com/minghu6/rust-minghu6/tree/v0.1.4/coll/src/segment_tree">数组实现</a>。</p>
 
 <h2 id="树的布局">树的布局</h2>
 
@@ -460,6 +460,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
         <span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">ops</span><span class="p">::</span><span class="nn">Bound</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
 
         <span class="k">let</span> <span class="n">range</span> <span class="o">=</span> <span class="nv">$range</span><span class="p">;</span>
+		<span class="k">let</span> <span class="n">root</span> <span class="o">=</span> <span class="nv">$root</span><span class="p">;</span>
 
         <span class="k">let</span> <span class="n">l</span><span class="p">;</span>
         <span class="k">let</span> <span class="n">r</span><span class="p">;</span>
@@ -467,7 +468,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
         <span class="k">match</span> <span class="n">range</span><span class="nf">.start_bound</span><span class="p">()</span> <span class="p">{</span>
             <span class="nf">Included</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span><span class="p">,</span>
             <span class="nf">Excluded</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="n">root</span><span class="py">.tl</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="k">match</span> <span class="n">range</span><span class="nf">.end_bound</span><span class="p">()</span> <span class="p">{</span>
@@ -476,7 +477,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
                 <span class="nd">assert!</span><span class="p">(</span><span class="o">*</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"range upper is invalid (=0)"</span><span class="p">);</span>
                 <span class="n">r</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="p">}</span>
-            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="nv">$root</span><span class="py">.tr</span><span class="p">,</span>
+            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="n">root</span><span class="py">.tr</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>

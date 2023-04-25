@@ -1,4 +1,368 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-04-22T10:40:08+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">分片级联（Fractional Cascading）</title><link href="/algs/FractionalCascading.html" rel="alternate" type="text/html" title="分片级联（Fractional Cascading）" /><published>2023-04-17T00:00:00+08:00</published><updated>2023-04-17T00:00:00+08:00</updated><id>/algs/FractionalCascading</id><content type="html" xml:base="/algs/FractionalCascading.html"><![CDATA[<p><em>本文主要参考 <a href="https://en.wikipedia.org/wiki/Fractional_cascading">wiki</a> ，对其中一些内容进行了拓展，对个别错误进行了修正。</em></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-04-25T16:55:46+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">树状数组</title><link href="/algs/FenwickTree.html" rel="alternate" type="text/html" title="树状数组" /><published>2023-04-24T00:00:00+08:00</published><updated>2023-04-24T00:00:00+08:00</updated><id>/algs/FenwickTree</id><content type="html" xml:base="/algs/FenwickTree.html"><![CDATA[<p><em>本文主要参考 <a href="https://oi-wiki.org/ds/fenwick">OI-wiki</a> 以及 <a href="https://cp-algorithms.com/data_structures/fenwick.html">cp-algorithms.com</a> 相关页面</em><sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+
+<p>树状数组（Binary Indexed Tree, Fenwick Tree）<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，以下简称 BIT，其命名是由于 <a href="https://en.wikipedia.org/w/index.php?title=Peter_Fenwick_(computer_scientist)&amp;action=edit&amp;redlink=1">Peter Fenwick</a> 在 1994 年发表的文章里描述了这一结构，<strong>它的本质是通过高效地计算数组的前缀和来解决相关的问题</strong>。</p>
+
+<h2 id="vs-分段树">VS 分段树</h2>
+
+<p>因此树状数组也能解决诸如给定区间的和之类的问题，<strong>只要这类问题可以转换为几个前缀和的运算</strong>。</p>
+
+<p>而前面介绍过的<a href="/algs/SegmentTree.html">分段树</a>也可以解决这类问题，区别是：</p>
+
+<p><strong>时间复杂度：</strong></p>
+
+<p>都是 $O(\text{log}n)$，但树状数组的性能远好于分段树，测算可能差了 10 倍</p>
+
+<p><strong>空间复杂度：</strong></p>
+
+<p>都是 $O(n)$ ，但树状数组空间和源数组大小相等，是 $1n$ ，而分段树 DFS 型需要 $2n$ ，BFS 型更是需要 $4n$</p>
+
+<p><strong>代码复杂度</strong></p>
+
+<p>树状数组的代码更简单</p>
+
+<p>因此只要能用树状数组解决的问题，都优先使用树状数组<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>。</p>
+
+<h2 id="概念">概念</h2>
+
+<p>可以通过一个图直接看一下树状数组的结构<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup>，下图是数组 $a[1..16]$ 的 BIT 结构：</p>
+
+<p><img src="/assets/img/bit/bit.svg" alt="" /></p>
+
+<p>图中每个节点都代表一段长度至少为 $1$ 的区间，比如 $2$ 包含区间 $[1..2]$ ，$4$ 包含区间 $[1..4]$ ，$6$ 包含区间 $[5..6]$ 。</p>
+
+<p>让我们省略掉重复的元素，会对结构看得更清晰：</p>
+
+<p><img src="/assets/img/bit/bit2.png" alt="" /></p>
+
+<p>我们发现 BIT 实际上就是由我们前面介绍<a href="/algs/FibHeap.html">斐波那契堆</a>时提过的二项树组成。</p>
+
+<p>比如 $8$ 是一棵 $\text{rank}=3$ 的二项树，$12$ 是一棵 $\text{rank}=2$ 的二项树。</p>
+
+<p>二项堆是说每个孩子都是 $\text{rank}$ 独特的二项树，同时满足小顶堆的性质，而 BIT 自然不需要满足堆的性质，但是也要求 $\text{rank}$ 独特，并且 rank 是连续的并且严格递减的，比如上述 BIT 分别是由 $\text{rank}= 3，2，1，0$ 的二项树组成。</p>
+
+<p>树状数组就是在每个位置存储所代表的区间的元素的和。</p>
+
+<h3 id="分片长度">分片长度</h3>
+
+<p><strong>那么如何计算某个索引位置代表的区间的长度呢？</strong></p>
+
+<p>观察发现，一个序号越是能被更大的 $2$ 的幂整除，代表的区间就越大 。</p>
+
+<p>实际上，区间长度，或者说区间的元素数，就是由序号的二进制的最低有效位<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>与后面 $0$ 构成的数字决定的。</p>
+
+<p>比如 $12 = (1100)_2$ ，最低有效位是 $3$ ，与后面的 $0$ 构成的数字是 $(100)_2=4$ ，代表 4 ；</p>
+
+<p>比如 $15 = (1111)_2$ ，最低有效位是 $1$ ，与后面的 $0$ 构成的数字是 $(1)_2=1$ ，代表 1</p>
+
+<p>那么如何求取一个序号的最低有效位构成的数字呢？</p>
+
+<p>假设序号为 x，那么对 x 按位取反再加 1 ，再按位与原值，就可以求出 x 的最低有效位的构成数字。</p>
+
+<p><strong>为什么是这样呢？</strong></p>
+
+<p>仔细考虑一下这个过程就清楚了：</p>
+
+<ol>
+  <li>根据定义，最低有效位是 $1$ ，后面更低位全都是 $0$ ，比如 $(100)_2$ ，$x$ 取反后，变为 $(011)_2$ ，加一后，又变回 $(100)_2$ ，因此按位与时最低有效位的 $1$ 以及后面的更低位的 $0$ 被原封不动地保留下来；</li>
+  <li>由于进位已经停在最低有效位上，因此更高的位只是取反，按位与后就被清除掉了</li>
+</ol>
+
+<p>这样就得到了最低有效位和后面的 $0$ 构成的数字。</p>
+
+<p>于是我们证明了 <code class="language-plaintext highlighter-rouge">x &amp; (!x+1)</code> 可以得到区间的长度。</p>
+
+<p><strong>但是这个书写形式还可以简化</strong></p>
+
+<p>因为整型数字在计算机中的存储形式是 2 的补码（two’s complement），按照定义，对于一个数取反加一就得到了它对应的负值。</p>
+
+<p>因此区间长度可以简化为 <code class="language-plaintext highlighter-rouge">x &amp; -x</code> 。</p>
+
+<h2 id="实现">实现</h2>
+
+<p>定义下结构，这里继续使用了前面分段树里定义的抽象组件：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span> <span class="o">=</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">_note</span><span class="p">:</span> <span class="n">PhantomData</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="建树">建树</h3>
+
+<p>首先我们可以进一步通过观察上述的图，发现两个 BIT 的性质：</p>
+
+<ol>
+  <li>每个位置，都可以由它自身和它的直接孩子求和得到，比如 $t[4] = a[4] + t[3] + t[2]$ ；</li>
+  <li>每个位置，它到直接父母的距离就是它所代表的区间的大小，比如 $4$ 到直接父母 $8$ 的距离就是 $4$ 所代表区间 $[1..4]$ 的大小，也就是 $4$</li>
+</ol>
+
+<p>利用上述性质，可以直接在 $O(n)$ 的时间复杂度内完成的树的构造：</p>
+
+<p>用 $0$ 初始化 BIT，遍历原数组 $a[..]$ ，把它的每个值加到 BIT 对应位置，然后再用 BIT 这个位置的数值每次更新它的直接父母。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">range_len</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$i:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">((</span><span class="nv">$i</span> <span class="k">as</span> <span class="nb">isize</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="nv">$i</span> <span class="k">as</span> <span class="nb">isize</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="k">as</span> <span class="nb">usize</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">new</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">U</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="n">C</span><span class="p">,</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="o">!</span><span class="n">raw</span><span class="nf">.is_empty</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">data</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">build</span><span class="p">(</span><span class="n">raw</span><span class="p">);</span>
+
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">_note</span><span class="p">:</span> <span class="nn">PhantomData</span><span class="p">::</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="n">build</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">U</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="n">C</span><span class="p">,</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span> <span class="n">raw</span><span class="nf">.len</span><span class="p">()];</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">raw</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">raw</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">()</span><span class="nf">.raw_into_stats</span><span class="p">());</span>
+
+            <span class="c1">// direct parent</span>
+            <span class="k">let</span> <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="nd">range_len!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">raw</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">data</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>计算区间长度的时候，如果是基于 $0$ 的数组，注意需要把索引位置加一，得到前面讨论的代表数量的编号。</p>
+
+<h3 id="前缀和">前缀和</h3>
+
+<p>计算前缀和也只需统计查询位置前面的区间，方法是每次向前跳索引代表的一个区间的长度：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>    
+	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">prefix</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="nf">min</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span>
+
+        <span class="k">loop</span> <span class="p">{</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">acc</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nd">range_len!</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">i</span> <span class="o">-=</span> <span class="nd">range_len!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">acc</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>计算两个端点的前缀和，就可以求出给定区间的区间和：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>        
+	<span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span>
+    <span class="k">where</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Sub</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span>
+    <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">());</span>
+
+        <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>宏 <code class="language-plaintext highlighter-rouge">parse_range</code> 来源于前面分段树里面定义的宏，给出 $[l, r]$ 的两个端点 $l$ 和 $r$ 。</p>
+
+<h2 id="批量更新">批量更新</h2>
+
+<p>除了查询区间和之类的问题，树状数组也可以处理对原数组的批量更新的问题。</p>
+
+<h3 id="单点查询">单点查询</h3>
+
+<p>最简单的情况是批量更新后，只要求对某一个点进行查询。</p>
+
+<p>这时，用一个 BIT 保存每个位置更新的累加值，初始化为 0 。</p>
+
+<p>当查询原数组某个点的值时，就是求取 BIT 上该点的前缀和，再加上原值 。</p>
+
+<p><strong>那么如何更新 BIT 的累加值？</strong></p>
+
+<p>当对给定区间 $[l, r]$ 累加 $x$ 时，就在 $l$ 点处增加 $x$ ，并在 $r+1$ 点处减少 $x$ ，来取消对后面点的前缀和的影响。</p>
+
+<p><em>为了省事儿，我们不再对此概念进行抽象，而是直接假定操作对象就是数字类型</em></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">range_add_for_origin</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">());</span>
+
+        <span class="k">self</span><span class="nf">.add</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">addend</span><span class="p">);</span>
+        <span class="k">self</span><span class="nf">.add</span><span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">addend</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>对 BIT 某点上进行更新的时候，需要连带更新它的所有父节点</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>            
+	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">addend</span><span class="p">);</span>
+
+            <span class="n">i</span> <span class="o">+=</span> <span class="nd">range_len!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="区间和查询">区间和查询</h3>
+
+<p>如果批量更新后还要查询区间和（的更新），那么前面（通过前缀和的方式）仅对某一个点的更新值的记录就不够了。</p>
+
+<p>怎么做呢？</p>
+
+<p>解决方法并不那么直观，不妨先一步一步地考虑：</p>
+
+<p>如果给定区间 $[l, r]$ 上批量加上 $x$ ，那么加值的前缀和应该是这样的：</p>
+
+\[\text{sum}[0,i]=
+\begin{cases}
+0 &amp; i &lt; l \\\\
+x \cdot (i-l+1) &amp; l \leqslant i \leqslant r \\\\
+x \cdot (r-l+1) &amp; r \lt i \\
+\end{cases}\]
+
+<p>这个前缀和可以拆分为两部分：</p>
+
+\[\text{sum}[0,i]=
+\begin{cases}
+0 \cdot i - 0 &amp; i &lt; l \\\\
+x\cdot i - x\cdot (l-1) &amp; l \leqslant i \leqslant r \\\\
+(x-x)\cdot i - (x \cdot (l-1) - x\cdot r) &amp; r \lt i \\
+\end{cases}\]
+
+<p>可以用前面区间更新后单点查询的思路，用一个树状数组 $\text{B}_1$ 表示前一部分的数值：</p>
+
+\[\text{sum}(\text{B}_1)[0,i]=
+\begin{cases}
+0&amp; i &lt; l \\\\
+x &amp; l \leqslant i \leqslant r \\\\
+x-x &amp; r \lt i \\
+\end{cases}\]
+
+<p>用另一个树状数组 $\text{B}_2$ ，表示后一部分的值：</p>
+
+\[\text{sum}(\text{B}_2)[0,i]=
+\begin{cases}
+0 &amp; i &lt; l \\\\
+x\cdot (l-1) &amp; l \leqslant i \leqslant r \\\\
+x \cdot (l-1) - x\cdot r &amp; r \lt i \\
+\end{cases}\]
+
+<p>计算 $\text{B}_1$：</p>
+
+\[\begin{array}{l}
+\text{add}(\text{B}_1,\ l,\ x)\\
+\text{add}(\text{B}_1,\ r+1,\ -x)
+\end{array}\]
+
+<p>计算 $\text{B}_2$：</p>
+
+\[\begin{array}{l}
+\text{add}(\text{B}_2,\ l,\ x\cdot(l-1))\\
+\text{add}(\text{B}_2,\ r+1,\ -x\cdot r)
+\end{array}\]
+
+<p>前缀和：</p>
+
+\[\text{sum}[0,i] = \text{sum}(\text{B}_1)\cdot i - \text{sum}(\text{B}_2)\]
+
+<p>给定区间 $[l, r]$ 的累积更新的和：</p>
+
+\[\text{sum}[l, r] = \text{sum}[0,r] - \text{sum}[0,l-1]\]
+
+<p>再加上原数组的区间和，就是更新后的数组的区间和。</p>
+
+<p><strong>实现</strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">RangeAddQuerySum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">)</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
+    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,;</span>
+
+<span class="k">impl</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">create_range_add_query_sum_aux</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span>
+    <span class="k">-&gt;</span> <span class="n">RangeAddQuerySum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span>
+    <span class="p">{</span>
+        <span class="nn">RangeAddQuerySum</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="k">self</span><span class="nf">.len</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span> <span class="n">RangeAddQuerySum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span><span class="p">(</span><span class="n">BIT</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">cap</span><span class="p">],</span>
+            <span class="n">_note</span><span class="p">:</span> <span class="n">PhantomData</span><span class="p">,</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">add</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="na">.0</span><span class="nf">.len</span><span class="p">());</span>
+
+        <span class="k">self</span><span class="na">.0</span><span class="nf">.add</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">addend</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="k">as</span> <span class="nb">i32</span> <span class="o">-</span> <span class="mi">1</span><span class="p">));</span>
+        <span class="k">self</span><span class="na">.0</span><span class="nf">.add</span><span class="p">(</span><span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">addend</span> <span class="o">*</span> <span class="n">r</span> <span class="k">as</span> <span class="nb">i32</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// Get update accumulation</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">bit1</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="na">.0</span><span class="nf">.len</span><span class="p">());</span>
+
+        <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">bit1</span><span class="p">)</span> <span class="o">-</span> <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">bit1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">prefix</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">bit1</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="n">bit1</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="k">as</span> <span class="nb">i32</span> <span class="o">-</span> <span class="k">self</span><span class="na">.0</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这种实现可以利用之前为批量更新单点查询建立的树状数组。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>没有找到讲得特别清楚又特别详细的资料，cp-algorithms.com 本篇的从风格到质量都有失水准，反而 OI-wiki 还比较详细，明明是早已有的概念，却有相当多的内容上是近期更新的 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>我喜欢这个命名，简单形象不故弄玄虚 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>但是分段树能通过拆分区间，处理很多树状数组处理不了的在连续区间上的查询问题 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>图片来源于 https://www.baeldung.com/cs/fenwick-tree <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>数字的二进制表示里最低的一个 $1$ 的位置 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[本文主要参考 OI-wiki 以及 cp-algorithms.com 相关页面1 没有找到讲得特别清楚又特别详细的资料，cp-algorithms.com 本篇的从风格到质量都有失水准，反而 OI-wiki 还比较详细，明明是早已有的概念，却有相当多的内容上是近期更新的 &#8617;]]></summary></entry><entry><title type="html">分片级联（Fractional Cascading）</title><link href="/algs/FractionalCascading.html" rel="alternate" type="text/html" title="分片级联（Fractional Cascading）" /><published>2023-04-17T00:00:00+08:00</published><updated>2023-04-17T00:00:00+08:00</updated><id>/algs/FractionalCascading</id><content type="html" xml:base="/algs/FractionalCascading.html"><![CDATA[<p><em>本文主要参考 <a href="https://en.wikipedia.org/wiki/Fractional_cascading">wiki</a> ，对其中一些内容进行了拓展，对个别错误进行了修正。</em></p>
 
 <p>分片级联是一种同时对多个有序列表进行二分查找的加速技术。</p>
 
@@ -645,7 +1009,7 @@
 
 <p>作为树型结构自然就有数组和指针两种实现，而分段树可以很容易地使用数组实现<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，这让它看起来非常靠谱！</p>
 
-<p>接下来我们主要讨论的就是线段树的<a href="https://github.com/minghu6/rust-minghu6/tree/v0.1.3/coll/src/segment_tree">数组实现</a>。</p>
+<p>接下来我们主要讨论的就是线段树的<a href="https://github.com/minghu6/rust-minghu6/tree/v0.1.4/coll/src/segment_tree">数组实现</a>。</p>
 
 <h2 id="树的布局">树的布局</h2>
 
@@ -943,6 +1307,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
         <span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">ops</span><span class="p">::</span><span class="nn">Bound</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
 
         <span class="k">let</span> <span class="n">range</span> <span class="o">=</span> <span class="nv">$range</span><span class="p">;</span>
+		<span class="k">let</span> <span class="n">root</span> <span class="o">=</span> <span class="nv">$root</span><span class="p">;</span>
 
         <span class="k">let</span> <span class="n">l</span><span class="p">;</span>
         <span class="k">let</span> <span class="n">r</span><span class="p">;</span>
@@ -950,7 +1315,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
         <span class="k">match</span> <span class="n">range</span><span class="nf">.start_bound</span><span class="p">()</span> <span class="p">{</span>
             <span class="nf">Included</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span><span class="p">,</span>
             <span class="nf">Excluded</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">l</span> <span class="o">=</span> <span class="n">root</span><span class="py">.tl</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="k">match</span> <span class="n">range</span><span class="nf">.end_bound</span><span class="p">()</span> <span class="p">{</span>
@@ -959,7 +1324,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
                 <span class="nd">assert!</span><span class="p">(</span><span class="o">*</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s">"range upper is invalid (=0)"</span><span class="p">);</span>
                 <span class="n">r</span> <span class="o">=</span> <span class="o">*</span><span class="n">v</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="p">}</span>
-            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="nv">$root</span><span class="py">.tr</span><span class="p">,</span>
+            <span class="n">Unbounded</span> <span class="k">=&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="n">root</span><span class="py">.tr</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
@@ -6615,428 +6980,4 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
       <p>反证法，如果那个左键与叶子节点上的不相等，那么那个左键就找不到对应的键值了 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[在前一篇的文章里介绍了 B 树，这里介绍它的变种 B+ 树的基本实现。]]></summary></entry><entry><title type="html">单词与短语</title><link href="/oth/WordAndPhase.html" rel="alternate" type="text/html" title="单词与短语" /><published>2023-02-27T00:00:00+08:00</published><updated>2023-02-27T00:00:00+08:00</updated><id>/oth/WordAndPhase</id><content type="html" xml:base="/oth/WordAndPhase.html"><![CDATA[<h2 id="a">A</h2>
-
-<h3 id="a-grinding-halt">a grinding halt</h3>
-
-<p>陷入停顿</p>
-
-<ol>
-  <li>Memory-hogging programs can deplete the system’s memory, bringing the whole system to <strong>a grinding halt</strong>.</li>
-</ol>
-
-<h2 id="b">B</h2>
-
-<h3 id="bimodal">Bimodal</h3>
-
-<p>Bi-Modal</p>
-
-<p>双峰</p>
-
-<ol>
-  <li>The distribution is <strong>bimodal</strong>, with the dark line at the bottom showing that many disk I/O completed with sub-millisecond latency: cache hits.</li>
-</ol>
-
-<h2 id="c">C</h2>
-
-<h3 id="contemporary">Contemporary</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/kənˈtempəˌrerē/</code></p>
-
-<p>当代的</p>
-
-<ol>
-  <li>Such devices are hard to find on <strong>contemporary</strong> computers.</li>
-</ol>
-
-<h3 id="consensus">Consensus</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/kənˈsensəs/</code></p>
-
-<p>noun</p>
-
-<p>共识</p>
-
-<ol>
-  <li>However, it may take some time to come to a <strong>consensus</strong> on a final control solution.</li>
-</ol>
-
-<h3 id="coincide">Coincide</h3>
-
-<p>` /ˌkoʊ.ɪnˈsaɪd/`</p>
-
-<p>v.</p>
-
-<p>吻合的</p>
-
-<ol>
-  <li>And the recursion ends, whenever the boundaries of the current query segment <strong>coincides</strong> with the boundaries of the segment of the current vertex.</li>
-</ol>
-
-<h3 id="coefficient">Coefficient</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ˌkoʊ.ɪˈfɪʃ.ənt/</code></p>
-
-<p>n.</p>
-
-<p>系数</p>
-
-<ol>
-  <li>Extended Euclidean algorithm also finds integer coefficients x and y such that: ax + by = gcd(a, b)</li>
-</ol>
-
-<h2 id="d">D</h2>
-
-<h3 id="deplete">Deplete</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/dəˈplēt/</code></p>
-
-<p>verb</p>
-
-<p>耗尽</p>
-
-<ol>
-  <li>Memory-hogging programs can <strong>deplete</strong> the system’s memory, bringing the whole system to a grinding halt.</li>
-</ol>
-
-<h3 id="dedicate">Dedicate</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ˈdedəˌkāt/</code></p>
-
-<p>v.</p>
-
-<p>奉献</p>
-
-<h3 id="dedicated">Dedicated</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ˈdedəˌkādəd/</code></p>
-
-<p>adj</p>
-
-<p>专用的</p>
-
-<p>This enables batch managers monitoring jobs running in <strong>dedicated</strong> cpusets to efficiently detect what level of memory pressure that job is causing.</p>
-
-<h3 id="deem">Deem</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/diːm/</code></p>
-
-<p>v.</p>
-
-<p>视为</p>
-
-<p>That BPF code is compiled to BPF byte code and then sent to the kernel, where a verifier may reject it if it is <strong>deemed</strong> unsafe.</p>
-
-<h2 id="e">E</h2>
-
-<h2 id="f">F</h2>
-
-<h2 id="g">G</h2>
-
-<h3 id="grity">Grity</h3>
-
-<p>adj. 粗糙的</p>
-
-<p>adj. 真实的（困难、不愉快）</p>
-
-<ol>
-  <li>This example is a little <strong>gritty</strong>, which is both good (realistic) and bad (intimidating).</li>
-</ol>
-
-<p>adj. 勇敢、坚韧的</p>
-
-<h2 id="h">H</h2>
-
-<h3 id="hog">Hog</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/hôɡ,häɡ/</code></p>
-
-<p>verb</p>
-
-<p>抢占</p>
-
-<ol>
-  <li><strong>Memory-hogging</strong> programs can deplete the system’s memory, bringing the whole system to a grinding halt.</li>
-</ol>
-
-<h3 id="hyposize">Hyposize</h3>
-
-<p>(UK, hyposise)</p>
-
-<p><code class="language-plaintext highlighter-rouge">/haɪˈpɑː.θə.saɪz/</code></p>
-
-<p>v.</p>
-
-<p>假设</p>
-
-<ol>
-  <li><strong>Hypothesize</strong> that the issue is with that component</li>
-</ol>
-
-<h2 id="i">I</h2>
-
-<h3 id="imminent">Imminent</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ˈimənənt/</code></p>
-
-<p>adj</p>
-
-<p>迫在眉睫的</p>
-
-<ol>
-  <li>This can include the cgroup oom notifier behavior when a collection of tasks is completely out of memory, but can also warn when such a condition may be <strong>imminent</strong>.</li>
-</ol>
-
-<h3 id="initiative">Initiative</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/iˈniSHədiv/</code></p>
-
-<p>n.</p>
-
-<p>积极性、倡议</p>
-
-<ol>
-  <li>these new <strong>initiatives</strong> of offering better control to the user in selecting the process to be the sacrificial lamb are steps to a robust design to give more control to the user.</li>
-</ol>
-
-<h3 id="intimidating">Intimidating</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ɪnˈtɪm.ɪ.deɪ.tɪŋ/</code></p>
-
-<p>adj.</p>
-
-<p>令人紧张的</p>
-
-<ol>
-  <li>This example is a little gritty, which is both good (realistic) and bad (<strong>intimidating</strong>).</li>
-</ol>
-
-<h3 id="involuntary">Involuntary</h3>
-
-<p>adj.</p>
-
-<p>被迫地</p>
-
-<p>vs voluntary（adj. 自愿地）</p>
-
-<p>vs volunteer（n. 志愿者）</p>
-
-<ol>
-  <li>Threads can leave CPU for a number of reasons, including I/O and locks, but also some that are unrelated to the current thread’s execution, including <strong>involuntary</strong> context switching due to high demand for CPU resources, and interrupts.</li>
-</ol>
-
-<h2 id="j">J</h2>
-
-<h2 id="k">K</h2>
-
-<h3 id="keep-account-of">keep account of</h3>
-
-<p>记录</p>
-
-<ol>
-  <li>This chapter describes the structures used to <strong>keep account of</strong> memory banks, pages and the flags that affect VM behaviour.</li>
-</ol>
-
-<h2 id="l">L</h2>
-
-<h3 id="laborious">Laborious</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ləˈbɔːr.i.əs/</code></p>
-
-<p>adj.</p>
-
-<p>费时的</p>
-
-<ol>
-  <li>Compared to bpftrace, bcc Python is far more verbose and <strong>laborious</strong> to code.</li>
-</ol>
-
-<h2 id="m">M</h2>
-
-<h3 id="metric">Metric</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ˈmetrik/</code></p>
-
-<p>adj</p>
-
-<p>noun</p>
-
-<p>（系统、标准）衡量</p>
-
-<ol>
-  <li>The memory_pressure of a cpuset provides a simple per-cpuset <strong>metric</strong> of the rate that the tasks in a cpuset are attempting to free up in use memory on the nodes of the cpuset to satisfy additional memory requests.</li>
-</ol>
-
-<h2 id="n">N</h2>
-
-<h2 id="o">O</h2>
-
-<h3 id="out-of-curiosity">out of curiosity</h3>
-
-<p>出于好奇</p>
-
-<ol>
-  <li><strong>Out of curiosity</strong> I compiled both versions and ran objdump on the binaries, to see how many bytes were saved.</li>
-</ol>
-
-<h3 id="overlook">Overlook</h3>
-
-<p>verb</p>
-
-<p>忽视</p>
-
-<ol>
-  <li>The primary reason is that they have been run passively, “fire and forget” style, with no additional analysis, and all problems were <strong>overlooked</strong>.</li>
-</ol>
-
-<p>从上面看</p>
-
-<h2 id="p">P</h2>
-
-<h3 id="put-simply">put simply</h3>
-
-<p>简单说</p>
-
-<ol>
-  <li><strong>Put simply</strong>, it costs less to balance between two smaller sched domains than one big one, but doing so means that overloads in one of the two domains won’t be load balanced to the other one.</li>
-</ol>
-
-<h3 id="proper">Proper</h3>
-
-<p>adj</p>
-
-<p>正确的</p>
-
-<p>合适的</p>
-
-<ol>
-  <li>Active benchmarking helps you accurately test the true target of the benchmark, and <strong>properly</strong> understand its results</li>
-</ol>
-
-<p>adv</p>
-
-<ol>
-  <li>令人满意地、正确地</li>
-</ol>
-
-<h3 id="properly">Properly</h3>
-
-<p>adv</p>
-
-<p>正确地</p>
-
-<p>properly understand vs understand proper</p>
-
-<h2 id="q">Q</h2>
-
-<h2 id="r">R</h2>
-
-<h3 id="rule-out">rule out</h3>
-
-<p>排除</p>
-
-<ol>
-  <li>This approach can specify only one name at a time, <strong>ruling out</strong> the possibility of a hierarchy</li>
-</ol>
-
-<h2 id="s">S</h2>
-
-<h3 id="substantial">Substantial</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ˌsəbˈstan(t)SHəl/</code></p>
-
-<p>adj</p>
-
-<ol>
-  <li>
-    <p>相当数量的</p>
-  </li>
-  <li>
-    <p>实质性的</p>
-  </li>
-  <li>
-    <p>This policy can provide <strong>substantial</strong> improvements for jobs that need to place thread local data on the corresponding node</p>
-  </li>
-</ol>
-
-<h3 id="stall">Stall</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/stôl/</code></p>
-
-<p>n.</p>
-
-<p>（市场）摊位、隔间</p>
-
-<p>（马厩、谷仓中动物的）隔间</p>
-
-<p>verb</p>
-
-<p>（引擎）停止运行</p>
-
-<ol>
-  <li>It’s intended to be simple, minimizing variation caused by cache misses, <strong>stall cycles</strong>, and branch misprediction.</li>
-</ol>
-
-<p>停滞（取得进展）</p>
-
-<h3 id="saturation">Saturation</h3>
-
-<p>` /ˌsætʃ.əˈreɪ.ʃən/`</p>
-
-<p>n.</p>
-
-<p>饱和度</p>
-
-<p>check for the degree of <strong>saturation</strong> using the “r” column.</p>
-
-<h2 id="t">T</h2>
-
-<h3 id="tame">Tame</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/tām/</code></p>
-
-<p>adj 温顺的</p>
-
-<p>verb 驯服</p>
-
-<ol>
-  <li>This calls for a different design to <strong>tame</strong> the OOM killer.</li>
-</ol>
-
-<h2 id="u">U</h2>
-
-<h3 id="utilize">Utilize</h3>
-
-<p><code class="language-plaintext highlighter-rouge">/ˈyo͞odlˌīz/</code></p>
-
-<p>v.</p>
-
-<p>利用</p>
-
-<p>underutilize 未利用</p>
-
-<ol>
-  <li>If one CPU is <strong>underutilized</strong>, kernel code running on that CPU will look for tasks on other more overloaded CPUs and move those tasks to itself,</li>
-</ol>
-
-<h3 id="underearth">UnderEarth</h3>
-
-<p>` /ʌnˈɜːθ/`</p>
-
-<p>v.</p>
-
-<p>发掘</p>
-
-<ol>
-  <li>It tours various bcc tools to analyze different targets, which may <strong>unearth</strong> activity you were previously unaware of.</li>
-</ol>
-
-<h2 id="v">V</h2>
-
-<h2 id="w">W</h2>
-
-<h2 id="x">X</h2>
-
-<h2 id="y">Y</h2>
-
-<h2 id="z">Z</h2>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[A]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[在前一篇的文章里介绍了 B 树，这里介绍它的变种 B+ 树的基本实现。]]></summary></entry></feed>
