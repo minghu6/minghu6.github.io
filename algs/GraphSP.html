@@ -131,7 +131,7 @@
 
 <h2 id="前言">前言</h2>
 
-<p>值得强调在前面得是，一般比如从构造实现上，会假定最基础的情况无向图，但最短路径是以<strong>有向图（强连通）</strong>为基础。所有下列介绍的算法的都假定一个有向图，而在无向图上，部分结论会有所不同。</p>
+<p>介绍的最短路径的算法以<strong>有向图（强连通）</strong>为基础，但也适用于无向图的情况，只是在涉及负环时情况略有不同<sup id="fnref:undir-graph" role="doc-noteref"><a href="#fn:undir-graph" class="footnote" rel="footnote">1</a></sup>。</p>
 
 <p>遵循依赖关系，将依次介绍：</p>
 
@@ -483,7 +483,7 @@ p \gets y \\
 
 <h2 id="so-called-spfa-算法">so-called ‘SPFA’ 算法</h2>
 
-<p>这个 Bellman-Ford 的改进算法在 OI 界可谓大名鼎鼎，对于随机图的实际运行很快，而且实现方便。它是中国的研究员提出的，被认为本质上是 Tarjan 的图上广度优先遍历的一般化版本<sup id="fnref:wiki-spfa" role="doc-noteref"><a href="#fn:wiki-spfa" class="footnote" rel="footnote">1</a></sup> ，虽然从算法思想上的没有什么直接的关系。</p>
+<p>这个 Bellman-Ford 的改进算法在 OI 界可谓大名鼎鼎，对于随机图的实际运行很快，而且实现方便。它是中国的研究员提出的，被认为本质上是 Tarjan 的图上广度优先遍历的一般化版本<sup id="fnref:wiki-spfa" role="doc-noteref"><a href="#fn:wiki-spfa" class="footnote" rel="footnote">2</a></sup> ，虽然从算法思想上的没有什么直接的关系。</p>
 
 <h3 id="算法思想-2">算法思想</h3>
 
@@ -524,7 +524,7 @@ R \gets \lbrace s \rbrace\\
   <li>每迭代完 $n$ 个点，就检查一下pre数组，是否展开后超过 $n-1$ 条路径</li>
 </ol>
 
-<p>第二种方法虽然最坏时间复杂度和第一种相同，但<sup id="fnref:spfa-early-termination" role="doc-noteref"><a href="#fn:spfa-early-termination" class="footnote" rel="footnote">2</a></sup>在稀疏图和随机图情况下，可以天差地别般更快地检测到负环 。</p>
+<p>第二种方法虽然最坏时间复杂度和第一种相同，但<sup id="fnref:spfa-early-termination" role="doc-noteref"><a href="#fn:spfa-early-termination" class="footnote" rel="footnote">3</a></sup>在稀疏图和随机图情况下，可以天差地别般更快地检测到负环 。</p>
 
 <p>另外对于第一种方法，使用 FILO 的栈结构显然有助于更快地找到负环。</p>
 
@@ -618,7 +618,7 @@ R \gets \lbrace s \rbrace\\
 
 <h3 id="算法思想-3">算法思想</h3>
 
-<p>说是 Dijkstra 和妻子逛商场的时候花20分钟想出来的寻找到几个不同商场的最短路的方法<sup id="fnref:wiki-dijkstra" role="doc-noteref"><a href="#fn:wiki-dijkstra" class="footnote" rel="footnote">3</a></sup> ，是一种自然想到的利用非负权边的缩放性质进行快速查找的方法。</p>
+<p>说是 Dijkstra 和妻子逛商场的时候花 20 分钟想出来的寻找到几个不同商场的最短路的方法<sup id="fnref:wiki-dijkstra" role="doc-noteref"><a href="#fn:wiki-dijkstra" class="footnote" rel="footnote">4</a></sup> ，是一种自然想到的利用非负权边的缩放性质进行快速查找的方法。</p>
 
 <p>回顾前面的两个算法：</p>
 
@@ -769,11 +769,11 @@ T \gets |V|\\
 <p>这样同时满足了两个要求：</p>
 
 <ol>
-  <li>对于G上任意两点x、y，G上每条从x到y的路径，不管中间经过了多少个点，它们的最终权重和都增加了一个固定值，也就是 h(x) -h(y)，也就是这种调整不会影响任意点对的最短路径的判定；</li>
+  <li>对于G上任意两点 $x$ , $y$ ，$G$ 上每条从 $x$ 到 $y$ 的路径，不管中间经过了多少个点，它们的最终权重和都增加了一个固定值，也就是 $h(x) -h(y)$ ，也就是这种调整不会影响任意点对的最短路径的判定；</li>
   <li>并且由于最短路径的性质 $h[v] \leqslant h[u]  + w_{uv}$ 也就是 $w_{uv} + h[u] - h[v] \geqslant 0$</li>
 </ol>
 
-<p>这样直接在重新平衡权重的图上做 $n$ 次Dijkstra 算法，就得到了全源的最短路径。当然查询最短路径的权重和时，要把加上的权重减去，也就是 $-(h[u]-h[v])$</p>
+<p>这样直接在重新平衡权重的图上做 $n$ 次 Dijkstra 算法，就得到了全源的最短路径。当然查询最短路径的权重和时，要把加上的权重减去，也就是 $-(h[u]-h[v])$</p>
 
 <h3 id="实现-4">实现</h3>
 
@@ -824,11 +824,6 @@ T \gets |V|\\
     <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">vertexs</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
         <span class="nd">set!</span><span class="p">(</span><span class="n">g2</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">);</span>
         <span class="nd">apush!</span><span class="p">(</span><span class="n">g2</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">q</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">);</span>
-
-        <span class="k">if</span> <span class="o">!</span><span class="n">g</span><span class="py">.dir</span> <span class="p">{</span>
-            <span class="nd">set!</span><span class="p">(</span><span class="n">g2</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="mi">0</span><span class="p">);</span>
-            <span class="nd">apush!</span><span class="p">(</span><span class="n">g2</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">v</span> <span class="k">=&gt;</span> <span class="n">q</span><span class="p">);</span>
-        <span class="p">}</span>
     <span class="p">}</span>
 
     <span class="cm">/* Using SPFA dst calc h((q, v)) */</span>
@@ -858,6 +853,10 @@ T \gets |V|\\
 <span class="p">}</span>
 </code></pre></div></div>
 
+<p>以上算法也可以直接适用于无向图的情况。</p>
+
+<p>值得说明的是，一般来说，对于邻接矩阵的实现，无向图是一条边的两端各保存一次，比如边 $a - b$ 保存为 $(a,b)$ 和 $(b,a)$ 。但这里特殊地在于，即使是无向图，虚点 $q$ 到源图所有点的路径也是单向的而不是双向的，因为不会有以 $q$ 为起点的查询；反过来，如果为无向图设置了从其他点到 $q$ 的反向边，就会在查询的时候引入实际不存在的边，导致错误的结果。</p>
+
 <h3 id="时间复杂度-2">时间复杂度</h3>
 
 <p>$O(nm) + O(nm) = O(nm)$ ，这样在负权图上也实现了最坏时间复杂度为 $O(nm)$ 的最短路径算法！</p>
@@ -872,6 +871,9 @@ T \gets |V|\\
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
+    <li id="fn:undir-graph" role="doc-endnote">
+      <p>对于简单图来说，无向图不存在两点间的负环，而有向图存在这种情况 <a href="#fnref:undir-graph" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
     <li id="fn:wiki-spfa" role="doc-endnote">
       <p>https://en.wikipedia.org/wiki/Shortest_Path_Faster_Algorithm <a href="#fnref:wiki-spfa" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
