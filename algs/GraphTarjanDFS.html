@@ -409,7 +409,7 @@
 
 <h4 id="整体过程-1">整体过程</h4>
 
-<p>和划分 BCC 时一样，区别只在于，使用了点集取代边集，这是因为 SCC 上的点是不相交的，所以直接用更方便也更节省地点集表示。</p>
+<p>和划分 BCC 时一样，区别只在于，使用了点集取代边集，这是因为只需要寻找从 SCC 而不是对图进行划分。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">scc_tarjan</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">comps</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
