@@ -170,7 +170,7 @@
 
 <h3 id="bfs-型">BFS 型</h3>
 
-<p>BFS 型有一个很好的性质就是计算节点的左右孩子的位置非常简单，如果我们的数组编号从 $1$ 开始，那么根据完全二叉树的性质， $t[i]$ 节点的左孩子和右孩子分别为 $t[2i]$ 和 $t[2i+1]$ 。</p>
+<p>BFS 型有一个很好的性质就是计算节点的左右孩子的位置非常简单，如果我们的数组编号从 $1$ 开始，那么根据完全二叉树的性质， $t[i]$ 节点的左孩子和右孩子分别为 $t[2\cdot i]$ 和 $t[2\cdot i+1]$ 。</p>
 
 <p>可以很容易地证明这一点：</p>
 
@@ -198,9 +198,9 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
 
 <h3 id="dfs-型">DFS 型</h3>
 
-<p>仔细考虑一下分段树的形状，发现它准确说应该是一棵<a href="https://en.wikipedia.org/wiki/Binary_tree#Types_of_binary_trees">满二叉树（full binary tree）</a>，而满二叉树有这样的性质，就是如果叶子节点数为 $i$ ，那么中间节点数就是 $i-1$ ，整棵树的节点数就是 $2i-1$ 。</p>
+<p>仔细考虑一下分段树的形状，发现它准确说应该是一棵<a href="https://en.wikipedia.org/wiki/Binary_tree#Types_of_binary_trees">满二叉树（full binary tree）</a>，而满二叉树有这样的性质，就是如果叶子节点数为 $i$ ，那么中间节点数就是 $i-1$ ，整棵树的节点数就是 $2\cdot i-1$ 。</p>
 
-<p>这个性质不需要特别证明，它直接就是定义给出的，满二叉树的直接定义是节点要么没有孩子，要么有两个孩子。但它还有一个递归定义：</p>
+<p>这个性质不需要特别证明，它直接就是定义给出的：满二叉树的直接定义是节点要么没有孩子，要么有两个孩子，但它还有一个递归定义：</p>
 
 <ol>
   <li>单节点是满二叉树；</li>
@@ -220,7 +220,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
 
 <p>DFS 顾名思义是垂直布局，放置根节点后，先放置整棵左树，再放置整棵右树。不过单纯地垂直布局并不会节省空间，真正关键的是在垂直分布中，我们使用了满二叉树的布局而不是完全二叉树的布局，这是因为在树上遍历的过程中，我们知道节点所代表的范围区间，也就是节点所代表的子树的叶子节点数，因此我们可以计算出整棵子树的大小。</p>
 
-<p>这样我们就可以直接计算出左右孩子的位置，对节点 $t[i]$ ，设左孩子对应区间长度为 $l$ ，则它的左右孩子分别为 $t[i+1]$ 和 $t[i+2l-1 + 1]=t[i+2l]$ 。</p>
+<p>这样我们就可以直接计算出左右孩子的位置，对节点 $t[i]$ ，设左孩子对应区间长度为 $l$ ，则它的左右孩子分别为 $t[i+1]$ 和 $t[i+2\cdot l-1 + 1]=t[i+2\cdot l]$ 。</p>
 
 <p>这样即使仍然基 $1$ ，也只需要申请 $2n$ 大小的空间，比起 BFS 型整整节省了一半的空间！</p>
 
@@ -236,7 +236,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
 
 <h2 id="范式的描述">范式的描述</h2>
 
-<p>我们尝试尽量用 Rust 的抽象机制勉强算是强大的伸缩性，把本篇涉及的所有概念这些可选项揉到一起。</p>
+<p>我们尝试尽量用 Rust 的抽象机制把本篇涉及的所有概念这些可选项揉到一起。</p>
 
 <h3 id="布局和游标">布局和游标</h3>
 
@@ -295,8 +295,8 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
 
     <span class="nd">#[inline(always)]</span>
     <span class="k">fn</span> <span class="nf">right_i</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">Cursor</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
-        <span class="c1">// left_i + 2(n(left)) - 1</span>
-        <span class="k">Self</span><span class="p">::</span><span class="nf">left_i</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="nd">tm!</span><span class="p">(</span><span class="n">c</span><span class="py">.tl</span><span class="p">,</span> <span class="n">c</span><span class="py">.tr</span><span class="p">)</span> <span class="o">-</span> <span class="n">c</span><span class="py">.tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="c1">// i + 2(n(left))</span>
+        <span class="n">c</span><span class="py">.i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="nd">tm!</span><span class="p">(</span><span class="n">c</span><span class="py">.tl</span><span class="p">,</span> <span class="n">c</span><span class="py">.tr</span><span class="p">)</span> <span class="o">-</span> <span class="n">c</span><span class="py">.tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="p">}</span>
 
     <span class="k">fn</span> <span class="nf">size</span><span class="p">(</span><span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
@@ -1153,7 +1153,7 @@ t[0..7] &amp; \rightarrow [0..3] \rightarrow [2..3] \rightarrow [3]\\
 
 <h3 id="其他更新">其他更新</h3>
 
-<p>对于给定区间的批量赋值，更加简单，只需要每个需要更新的区间存储一个标记位。</p>
+<p>对于给定区间的批量赋值，更加简单，只需要每个需要更新的区间存储一个标记位。当然如果是多个批量赋值，还是要一个完整的值的辅助数组。</p>
 
 <h2 id="推广到更高维度">推广到更高维度<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">11</a></sup></h2>
 
