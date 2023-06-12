@@ -1,4 +1,230 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-06-08T23:33:26+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0391 - Perfect Rectangle</title><link href="/oth/LeetCode0391.html" rel="alternate" type="text/html" title="0391 - Perfect Rectangle" /><published>2023-06-08T00:00:00+08:00</published><updated>2023-06-08T00:00:00+08:00</updated><id>/oth/LeetCode0391</id><content type="html" xml:base="/oth/LeetCode0391.html"><![CDATA[<h2 id="题干">题干</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-06-12T17:36:32+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0850 - Rectangle Area II</title><link href="/oth/LeetCode0850.html" rel="alternate" type="text/html" title="0850 - Rectangle Area II" /><published>2023-06-11T00:00:00+08:00</published><updated>2023-06-11T00:00:00+08:00</updated><id>/oth/LeetCode0850</id><content type="html" xml:base="/oth/LeetCode0850.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/rectangle-area-ii/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p>要求矩形覆盖的面积，在做了<a href="/oth/LeetCode0218.html">天际线问题</a>和<a href="/oth/LeetCode0391.html">完美矩形问题</a>后，这个问题的思路就看得非常清楚了，只需要沿着某一轴扫描，计算在另一轴上覆盖的长度，计算的时机是遇到每个矩形的入边或者出边的（重复的不算），这样拆分成一个个小矩形，就得到了覆盖的面积和。</p>
+
+<p>于是问题的关键，不妨以 $x$ 轴为扫描方向，就在于如何动态地计算 $y$ 轴上的覆盖长度。</p>
+
+<p>由于本题的限制相当宽松，建筑的数量最多只到 $200$ ，因此可以允许其他非最优解的多种复杂度的方法。</p>
+
+<h2 id="解">解①：</h2>
+
+<p>在 $y$ 轴，对每个矩形竖直的边，$[y_1, y_2]$ ，把边的开始位置 $y_1$，标记 $1$ ，它的结束位置标记 $-1$ ，把这些标记按照 $y$ 轴上的坐标进行排序，对这些标记进行累加，最后的和一定是 $0$ ，它的变化过程一定是从 $0$ 到正值再到 $0$ ，每一次归 $0$ 就意味着一条线段的结束，把这些分离的线段累加起来，这就得到了此时的 $y$ 轴上的线段和。</p>
+
+<p>由于每次扫描都需要排序并重新装填 $y$ 坐标，因此总的时间复杂度为 $O(n\cdot (n\text{log}n + n)) = O(n^2\text{log}n)$ 。</p>
+
+<p>这有可以优化的地方，如果提前把 $y$ 轴离散化，就可以直接做坐标-排名的映射，就不需要每次都排序 $y$ 坐标，于是就只剩下装填所有的 $y$ 坐标的成本，时间复杂度就可以降低为 $O(n^2)$ 。</p>
+
+<h2 id="解-1">解②：</h2>
+
+<p>更直接地，把 $x$ 轴坐标也离散化，与离散化地 $y$ 轴坐标构成二维数组，每个矩形（的 $4$ 个顶点）在这个二维数组上映射，然后扫描这个二维数组计算面积。</p>
+
+<p>时间复杂度是离散化+矩形映射+统计： $O(n\text{log}n + n + n^2)$  = $O(n^2)$</p>
+
+<h2 id="解-2">解③：</h2>
+
+<p>上述地算法之所以不够优，关键在于每扫描到一个位置，就要用至少 $O(n)$ 的时间复杂度装填 $y$ 坐标，而拿到这道题目后，第一眼可以看出，我们应该可以用前面的分段树或者树状数组来在 $O(\text{log}n)$ 的时间内装填 $y$ 坐标。</p>
+
+<p>这看起来非常简单，但是，但是，在开始写的时候，才发现这道题并不如想象中那么简单，它有别于<a href="/oth/LeetCode0218.html">天际线那道题</a>的关键是建筑都是连续的，不存在从半空中开始涨起，而矩形没有这个性质，它在 $y$ 轴上的排列可能是不连续的。</p>
+
+<h3 id="线段的取消">线段的取消</h3>
+
+<p>这样的话似乎只能在 y 轴空间上存储整个线段，但是如何在矩形结束的时候准确撤销它所属的线段呢？ 但是分段树可以按照区间<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 额外存储该区间边的数量，这样在新的边加入时，更新的时候把它覆盖的区间的边的数量增 $1$ ，取消边的时候就把区间的边的数量减 $1$ ，在二分区间向下更新的时候，如果某个区间的边数不为零，那么这个区间的值就是它代表的整个线段的长度，否则，就要由子区间的值求和得到。</p>
+
+<p>这样分段树全区间的值，就是 $y$ 轴上线段的总长度。</p>
+
+<h3 id="区间的表示">区间的表示</h3>
+
+<p>以为解决了边的添加和取消就完事大吉了吗？，不，还有很大的问题：如果分段树上每个点对应某个坐标，就像习惯得那样，这就面临坐标划分与区间划分二者不一致的问题，对于用坐标表示的边来说，坐标是可重叠的，而分段树的区间划分两端是不可重叠的。举例说，对于 [0, 2] 的边的划分，按照坐标来说就是 $[0, 1]$ 和 $[1, 2]$ ，而按照区间划分则为 $[0,1]$ 和 $[2, 2]$ 。</p>
+
+<p>这实在是不好解决，因为分段树上 $[a, b]$ 的区间不能表示为坐标上 $[a, b]$ 的边，必须寻找一个新的与分段树区间划分一致地表示。于是我们可以考虑坐标可以重叠，但是区间不会重叠，可以定义标号 $i$ 表示坐标从 $[i, i+1]$ 的区间，这样分段树上的 $[a, b]$ 就不再表示坐标 $[a, b]$ 的边，而是标号 $a$~$b$ ，一共 $b-a+1$ 个单位区间的和，这样问题就解决了！</p>
+
+<h3 id="取模与数据类型">取模与数据类型</h3>
+
+<p>最后由于计算结果过大，需要对结果取模，其中模数给得是 $10^9+7$ ，是个质数，这有什么说法吗？</p>
+
+<p>质数取模得可以想到的是中国剩余定理，如果一个一元线性同余<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>方程的模数两两互质，那么这个方程是有解的而且可以构造出来，但它显然和我们这里没什么关系，事实上可以取任何一个大小符合条件的数，至于质不质地也没什么关系。</p>
+
+<p>至于取模运算本身倒是（对我们有用的）运算性质：</p>
+
+\[\begin{array}{l}
+&amp;a \cdot b\pmod{N} &amp;\equiv (a\pmod{N} \cdot b\pmod{N})\pmod{N}\\
+&amp;(a+b) \pmod{N} &amp;\equiv (a\pmod{N} + b\pmod{N})\pmod{N}
+\end{array}{}\]
+
+<p>另外需要吐槽得是本题 LeetCode 习惯性地给出的 <code class="language-plaintext highlighter-rouge">i32</code> 类型就不适当，它在例题上，在对结果取模前就数值溢出了，你必须手动把它提到更大的整数类型上。</p>
+
+<h3 id="统一排序">统一排序</h3>
+
+<p>由于在每个不同坐标的矩形的进入或离开时都要计算面积，因此像之前把入边和出边分开保存排序的做法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>会让代码显得很冗余吗，于是直接把 $x$ 坐标、入边出边的类型标记和 $y$ 轴两坐标，构成一个 $4$ 元组，统一排序。</p>
+
+<h3 id="rust-实现">Rust 实现<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></h3>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.3/0850_rectangle_area_2">源代码</a></p>
+
+<h4 id="分段树">分段树</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">SegmentTree</span> <span class="p">{</span>
+    <span class="cd">/// (coverd edges number, range_sum)</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">y_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">y_data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="cd">/// DFS 型</span>
+<span class="k">impl</span> <span class="n">SegmentTree</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">y_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="n">SegmentTree</span> <span class="p">{</span>
+            <span class="c1">// numbers of interval units</span>
+            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span> <span class="p">(</span><span class="n">y_end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="n">y_end</span><span class="p">,</span>
+            <span class="n">y_data</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">update</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">mark</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.y_end</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mark</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">update_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">mark</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">sub_len</span> <span class="o">=</span> <span class="p">(</span><span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">i_lf</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">i_rh</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sub_len</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">mark</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i_lf</span><span class="p">,</span> <span class="n">mark</span><span class="p">);</span>
+            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i_rh</span><span class="p">,</span> <span class="n">mark</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="py">.y_data</span><span class="p">[</span><span class="n">tr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="k">self</span><span class="py">.y_data</span><span class="p">[</span><span class="n">tl</span><span class="p">])</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="n">tl</span> <span class="o">!=</span> <span class="n">tr</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_lf</span><span class="p">]</span><span class="na">.1</span> <span class="o">+</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_rh</span><span class="p">]</span><span class="na">.1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">sum</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="na">.1</span> <span class="k">as</span> <span class="nb">i32</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>其中 <code class="language-plaintext highlighter-rouge">y_end</code> 指得是原坐标的排名，加一后的值，表示总共排名的数量或者总的不同 $y$ 坐标的数量。内部构成的区间数应该比总的不同 $y$ 坐标数少一。</p>
+
+<h4 id="完整过程">完整过程</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::{</span>
+    <span class="nn">cmp</span><span class="p">::{</span><span class="n">max</span><span class="p">,</span> <span class="n">min</span><span class="p">},</span>
+    <span class="nn">collections</span><span class="p">::{</span><span class="n">BTreeSet</span><span class="p">,</span> <span class="n">HashMap</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">u64</span> <span class="o">=</span> <span class="mi">1_000_000_000</span> <span class="o">+</span> <span class="mi">7</span><span class="p">;</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">y_map</span><span class="p">)</span> <span class="o">=</span> <span class="nf">build_y_discrezation</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rectangles</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">lines</span> <span class="o">=</span> <span class="nf">build_x_lines</span><span class="p">(</span><span class="n">rectangles</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">y_map</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">tree</span> <span class="o">=</span> <span class="nn">SegmentTree</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">y_map</span><span class="nf">.len</span><span class="p">());</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">x0</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="na">.0</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ty</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="k">in</span> <span class="n">lines</span> <span class="p">{</span>
+
+        <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">x0</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">h</span> <span class="o">=</span> <span class="n">tree</span><span class="nf">.sum</span><span class="p">();</span>
+
+            <span class="n">acc</span> <span class="o">+=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">*</span> <span class="n">h</span> <span class="k">as</span> <span class="nb">u64</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">;</span>
+
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">tree</span><span class="nf">.update</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ty</span><span class="p">);</span>
+
+    <span class="p">}</span>
+
+    <span class="p">(</span><span class="n">acc</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">%</span> <span class="n">M</span><span class="p">)</span> <span class="k">as</span> <span class="nb">i32</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">build_y_discrezation</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">set</span> <span class="o">=</span> <span class="nn">BTreeSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="n">rec</span> <span class="k">in</span> <span class="n">rectangles</span> <span class="p">{</span>
+        <span class="n">set</span><span class="nf">.insert</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">set</span><span class="nf">.insert</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span>
+        <span class="n">set</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span><span class="nf">.collect</span><span class="p">(),</span>
+        <span class="n">set</span><span class="nf">.into_iter</span><span class="p">()</span>
+            <span class="nf">.enumerate</span><span class="p">()</span>
+            <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">))</span>
+            <span class="nf">.collect</span><span class="p">(),</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">build_x_lines</span><span class="p">(</span>
+    <span class="n">rectangles</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="n">y_map</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">lines</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">rectangles</span><span class="nf">.len</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="n">rec</span> <span class="k">in</span> <span class="n">rectangles</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">y1</span> <span class="o">=</span> <span class="o">*</span><span class="n">y_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="nf">.unwrap</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">y2</span> <span class="o">=</span> <span class="o">*</span><span class="n">y_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="n">lines</span><span class="nf">.push</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="k">true</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">));</span>  <span class="c1">// 0  true for enter</span>
+        <span class="n">lines</span><span class="nf">.push</span><span class="p">((</span><span class="n">x2</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">));</span> <span class="c1">// 1  false for exit</span>
+    <span class="p">}</span>
+
+    <span class="n">lines</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+
+    <span class="n">lines</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>用树状数组好像也不好解决这个问题 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>同余就是余数相同的意思 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>为了理论上减少排序的负担 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>就像前面吐槽用 Python 主要是因为它足够慢，足够缺少优化，这个 Rust 实现运行基本在 0-2 ms，内存 2.x MB，很难说有测量比较的意义 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0391 - Perfect Rectangle</title><link href="/oth/LeetCode0391.html" rel="alternate" type="text/html" title="0391 - Perfect Rectangle" /><published>2023-06-08T00:00:00+08:00</published><updated>2023-06-08T00:00:00+08:00</updated><id>/oth/LeetCode0391</id><content type="html" xml:base="/oth/LeetCode0391.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/perfect-rectangle/description/">问题描述</a></p>
 
@@ -10,7 +236,7 @@
 
 <p>在面积相等的情况下，如果小矩形之间有空隙，则必然还存在重叠，反之有重叠必然也有空隙，因此只要能检查任意空隙或者重叠任意一项即可。</p>
 
-<h2 id="扫描线思路">扫描线思路</h2>
+<h2 id="解扫描线">解①：扫描线</h2>
 
 <p>说到重叠，就可以回到经典的扫描线+分段树/树状数组的解决方案：可以扫描一个维度然后在另一个维度上建树，利用数据结构做区间更新后的区间查询，以观察是否有重叠的边。</p>
 
@@ -86,7 +312,7 @@
     <span class="c1"># ...
 </span></code></pre></div></div>
 
-<h3 id="分段树">分段树</h3>
+<h3 id="解分段树">解⒈⒈：分段树</h3>
 
 <p>分段树的如何赋值来表示一个区间的覆盖，这需要考虑。乍一看，好像只需要一个布尔类型的标记，赋值在对应的区间上就可以了，但是这样不能精确表示区间的覆盖程度，比如如果一个父区间下的某个子区间被覆盖了，那么这个父区间是被覆盖了还是没被覆盖？</p>
 
@@ -154,7 +380,7 @@
             <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">]</span>
 </code></pre></div></div>
 
-<h3 id="树状数组">树状数组</h3>
+<h3 id="解树状数组">解⒈⒉：树状数组</h3>
 
 <p>是对树状数组做区间更新后的区间查询，标记区间就是区间里的每个位置的值加一，区间取消标记就是区间里每个位置的值加负一，于是可以通过查询区间和是否为零来测试区间是否有覆盖的情况。</p>
 
@@ -218,7 +444,7 @@
         <span class="k">return</span> <span class="n">acc</span>
 </code></pre></div></div>
 
-<h2 id="tricky-思路">Tricky 思路</h2>
+<h2 id="解顶点计数">解②：顶点计数</h2>
 
 <p>扫描线思路是常规做法，但是回到前面埋下的伏笔：给出的小矩形列表没有按照任何一个轴的方向排序，实际上存在着不需要扫描线加区间查询的数据结构的更Tricky的做法。</p>
 
@@ -275,7 +501,9 @@
     <span class="k">return</span> <span class="bp">True</span>
 </code></pre></div></div>
 
-<h2 id="微积分思路">微积分思路</h2>
+<p>这里面 <code class="language-plaintext highlighter-rouge">Counter</code> 这个类比较甜，它实际上起到了一个提供默认值的默认数组的功能<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">4</a></sup>。</p>
+
+<h2 id="解微积分">解③：微积分</h2>
 
 <p>可以用曲面积分相关知识简化求解过程，事实上所有计算几何相关的问题总有数学上的解决思路，但由于这并不是我们专注的领域，就不介绍了。</p>
 
@@ -292,6 +520,9 @@
     <li id="fn:4" role="doc-endnote">
       <p>用 <code class="language-plaintext highlighter-rouge">ex</code> 而不是 <code class="language-plaintext highlighter-rouge">exit</code> 主要是为了避免和 Python 关键字冲突，（这个冲突）会造成代码高亮上的问题 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>我是真的服了，在习惯了 Rust 风格库的事无巨细，我从来发现 Python 的库提供的 API 如此匮乏，<code class="language-plaintext highlighter-rouge">DefaultDict</code> 居然只提供c传默认值构造方法的参数而没有提供传一个固定默认值的参数 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
   </ol>
 </div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0218 - The Skyline Problem</title><link href="/oth/LeetCode0218.html" rel="alternate" type="text/html" title="0218 - The Skyline Problem" /><published>2023-06-01T00:00:00+08:00</published><updated>2023-06-01T00:00:00+08:00</updated><id>/oth/LeetCode0218</id><content type="html" xml:base="/oth/LeetCode0218.html"><![CDATA[<h2 id="题干">题干</h2>
 
@@ -305,7 +536,7 @@
 
 <p>这样，如果能确定每个 $x$ 坐标对应的建筑物的最大高度，就能求出关键点。</p>
 
-<h2 id="分段树思路">分段树思路</h2>
+<h2 id="解分段树">解①：分段树</h2>
 
 <p>最直接的一个思路是把建筑列表里的每栋建筑的高度在它所属区间上标识出，这样就可以查询每个 $x$ 坐标的最大高度。</p>
 
@@ -448,7 +679,7 @@
 <span class="c1"># 分段树定义如上
 </span></code></pre></div></div>
 
-<h2 id="树状数组思路">树状数组思路</h2>
+<h2 id="解树状数组">解②：树状数组</h2>
 
 <p>如果说前面对分段树的改动还比较小<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，那么<a href="/algs/FenwickTree.html">树状数组</a>的思路里面对树状数组的改动就比较tricky了，因为普通的树状数组，以下简称 BIT（Binary Indexed Tree）， 用某个点的前缀和表示该点的高度，那么任何 $x$ 轴靠前坐标上的高度更新都会影响后面位置的高度的计算。</p>
 
@@ -582,7 +813,7 @@
 
 <p>总体过程和反向树状数组一样，只需要把 <code class="language-plaintext highlighter-rouge">bit = RevBIT(len(x_data))</code> 替换为 `    bit = FakeBIT(len(x_data))`</p>
 
-<h2 id="优先级队列思路">优先级队列思路</h2>
+<h2 id="解优先级队列">解③：优先级队列</h2>
 
 <p>借着上文，我们从反向树状数组推到假树状数组，于是可以想到，为什么不干脆用优先级队列取代上面树状数组的作用？每次扫描的时候把把建筑更新到优先级队列里，保存一个右边缘坐标和高度，查询的时候就从对队首弹出所有右边缘不符合条件的元素，然后新的队首的元素的高度就是我们需要的该位置的最大高度，当然如果队列为空，就是高度为 $0$ 。</p>
 
@@ -3342,7 +3573,7 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
 
 <p>双头节点容易检测出来，循环也可以检测出来，但是如何选择删除的边值得考虑：前两种情况都是删除最后的边即可，但第三种情况必须删除双头节点在环上的边，而不管它的顺序，这样才能同时消除环和双头节点。这是本题繁琐的地方。</p>
 
-<h2 id="解1-一般图">解1： 一般图</h2>
+<h2 id="解-一般图">解 ①：一般图</h2>
 
 <h3 id="思路">思路</h3>
 
@@ -3457,7 +3688,7 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
     <span class="n">findRedundantDirectedConnection</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span>
 </code></pre></div></div>
 
-<h2 id="解2-并查集反引用表">解2： 并查集<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>+反引用表</h2>
+<h2 id="解-并查集反引用表">解②： 并查集<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>+反引用表</h2>
 
 <h3 id="思路-1">思路</h3>
 
@@ -3637,16 +3868,4 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
       <p>相当于原来一半的空间花费 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">加速 Rust 构建</title><link href="/lang/SpeedupRustBuilding.html" rel="alternate" type="text/html" title="加速 Rust 构建" /><published>2023-03-22T00:00:00+08:00</published><updated>2023-03-22T00:00:00+08:00</updated><id>/lang/SpeedupRustBuilding</id><content type="html" xml:base="/lang/SpeedupRustBuilding.html"><![CDATA[<p>阅读了 https://fasterthanli.me/articles/why-is-my-rust-build-so-slow</p>
-
-<p>总结了加速的注意事项：</p>
-
-<ol>
-  <li>拆分过大的 crate ，一个基本编译单元至少是一个 crate，拆分 crate 可以利用多核优势</li>
-  <li>检查不必要的依赖，某些依赖可能会大幅拖慢编译时间</li>
-  <li>避免不必要的多态，缩减编译时间</li>
-  <li>为 release 也开启增量编译 <code class="language-plaintext highlighter-rouge">incremental = true</code> ，这会让cold build 慢一点，但是大幅加速 hot build，</li>
-  <li>是对于被工具压缩的 crate，debug 策略会非常慢，需要对这些包<a href="https://doc.rust-lang.org/cargo/reference/profiles.html#overrides">单独设置 debug 策略</a></li>
-</ol>
-
-<p>​</p>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[阅读了 https://fasterthanli.me/articles/why-is-my-rust-build-so-slow]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry></feed>

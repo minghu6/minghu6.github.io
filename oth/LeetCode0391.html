@@ -139,7 +139,7 @@
 
 <p>在面积相等的情况下，如果小矩形之间有空隙，则必然还存在重叠，反之有重叠必然也有空隙，因此只要能检查任意空隙或者重叠任意一项即可。</p>
 
-<h2 id="扫描线思路">扫描线思路</h2>
+<h2 id="解扫描线">解①：扫描线</h2>
 
 <p>说到重叠，就可以回到经典的扫描线+分段树/树状数组的解决方案：可以扫描一个维度然后在另一个维度上建树，利用数据结构做区间更新后的区间查询，以观察是否有重叠的边。</p>
 
@@ -215,7 +215,7 @@
     <span class="c1"># ...
 </span></code></pre></div></div>
 
-<h3 id="分段树">分段树</h3>
+<h3 id="解分段树">解⒈⒈：分段树</h3>
 
 <p>分段树的如何赋值来表示一个区间的覆盖，这需要考虑。乍一看，好像只需要一个布尔类型的标记，赋值在对应的区间上就可以了，但是这样不能精确表示区间的覆盖程度，比如如果一个父区间下的某个子区间被覆盖了，那么这个父区间是被覆盖了还是没被覆盖？</p>
 
@@ -283,7 +283,7 @@
             <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">]</span>
 </code></pre></div></div>
 
-<h3 id="树状数组">树状数组</h3>
+<h3 id="解树状数组">解⒈⒉：树状数组</h3>
 
 <p>是对树状数组做区间更新后的区间查询，标记区间就是区间里的每个位置的值加一，区间取消标记就是区间里每个位置的值加负一，于是可以通过查询区间和是否为零来测试区间是否有覆盖的情况。</p>
 
@@ -347,7 +347,7 @@
         <span class="k">return</span> <span class="n">acc</span>
 </code></pre></div></div>
 
-<h2 id="tricky-思路">Tricky 思路</h2>
+<h2 id="解顶点计数">解②：顶点计数</h2>
 
 <p>扫描线思路是常规做法，但是回到前面埋下的伏笔：给出的小矩形列表没有按照任何一个轴的方向排序，实际上存在着不需要扫描线加区间查询的数据结构的更Tricky的做法。</p>
 
@@ -404,7 +404,9 @@
     <span class="k">return</span> <span class="bp">True</span>
 </code></pre></div></div>
 
-<h2 id="微积分思路">微积分思路</h2>
+<p>这里面 <code class="language-plaintext highlighter-rouge">Counter</code> 这个类比较甜，它实际上起到了一个提供默认值的默认数组的功能<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">4</a></sup>。</p>
+
+<h2 id="解微积分">解③：微积分</h2>
 
 <p>可以用曲面积分相关知识简化求解过程，事实上所有计算几何相关的问题总有数学上的解决思路，但由于这并不是我们专注的领域，就不介绍了。</p>
 
@@ -420,6 +422,9 @@
     </li>
     <li id="fn:4" role="doc-endnote">
       <p>用 <code class="language-plaintext highlighter-rouge">ex</code> 而不是 <code class="language-plaintext highlighter-rouge">exit</code> 主要是为了避免和 Python 关键字冲突，（这个冲突）会造成代码高亮上的问题 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>我是真的服了，在习惯了 Rust 风格库的事无巨细，我从来发现 Python 的库提供的 API 如此匮乏，<code class="language-plaintext highlighter-rouge">DefaultDict</code> 居然只提供c传默认值构造方法的参数而没有提供传一个固定默认值的参数 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>

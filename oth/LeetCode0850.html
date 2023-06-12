@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            0850 - Rectangle Area II
+        
+    "
+/>
+
+<meta property="og:url" content="//oth/LeetCode0850.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        0850 - Rectangle Area II
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">0850 - Rectangle Area II</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/oth.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
+            Other
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      June 11, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/rectangle-area-ii/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p>要求矩形覆盖的面积，在做了<a href="/oth/LeetCode0218.html">天际线问题</a>和<a href="/oth/LeetCode0391.html">完美矩形问题</a>后，这个问题的思路就看得非常清楚了，只需要沿着某一轴扫描，计算在另一轴上覆盖的长度，计算的时机是遇到每个矩形的入边或者出边的（重复的不算），这样拆分成一个个小矩形，就得到了覆盖的面积和。</p>
+
+<p>于是问题的关键，不妨以 $x$ 轴为扫描方向，就在于如何动态地计算 $y$ 轴上的覆盖长度。</p>
+
+<p>由于本题的限制相当宽松，建筑的数量最多只到 $200$ ，因此可以允许其他非最优解的多种复杂度的方法。</p>
+
+<h2 id="解">解①：</h2>
+
+<p>在 $y$ 轴，对每个矩形竖直的边，$[y_1, y_2]$ ，把边的开始位置 $y_1$，标记 $1$ ，它的结束位置标记 $-1$ ，把这些标记按照 $y$ 轴上的坐标进行排序，对这些标记进行累加，最后的和一定是 $0$ ，它的变化过程一定是从 $0$ 到正值再到 $0$ ，每一次归 $0$ 就意味着一条线段的结束，把这些分离的线段累加起来，这就得到了此时的 $y$ 轴上的线段和。</p>
+
+<p>由于每次扫描都需要排序并重新装填 $y$ 坐标，因此总的时间复杂度为 $O(n\cdot (n\text{log}n + n)) = O(n^2\text{log}n)$ 。</p>
+
+<p>这有可以优化的地方，如果提前把 $y$ 轴离散化，就可以直接做坐标-排名的映射，就不需要每次都排序 $y$ 坐标，于是就只剩下装填所有的 $y$ 坐标的成本，时间复杂度就可以降低为 $O(n^2)$ 。</p>
+
+<h2 id="解-1">解②：</h2>
+
+<p>更直接地，把 $x$ 轴坐标也离散化，与离散化地 $y$ 轴坐标构成二维数组，每个矩形（的 $4$ 个顶点）在这个二维数组上映射，然后扫描这个二维数组计算面积。</p>
+
+<p>时间复杂度是离散化+矩形映射+统计： $O(n\text{log}n + n + n^2)$  = $O(n^2)$</p>
+
+<h2 id="解-2">解③：</h2>
+
+<p>上述地算法之所以不够优，关键在于每扫描到一个位置，就要用至少 $O(n)$ 的时间复杂度装填 $y$ 坐标，而拿到这道题目后，第一眼可以看出，我们应该可以用前面的分段树或者树状数组来在 $O(\text{log}n)$ 的时间内装填 $y$ 坐标。</p>
+
+<p>这看起来非常简单，但是，但是，在开始写的时候，才发现这道题并不如想象中那么简单，它有别于<a href="/oth/LeetCode0218.html">天际线那道题</a>的关键是建筑都是连续的，不存在从半空中开始涨起，而矩形没有这个性质，它在 $y$ 轴上的排列可能是不连续的。</p>
+
+<h3 id="线段的取消">线段的取消</h3>
+
+<p>这样的话似乎只能在 y 轴空间上存储整个线段，但是如何在矩形结束的时候准确撤销它所属的线段呢？ 但是分段树可以按照区间<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 额外存储该区间边的数量，这样在新的边加入时，更新的时候把它覆盖的区间的边的数量增 $1$ ，取消边的时候就把区间的边的数量减 $1$ ，在二分区间向下更新的时候，如果某个区间的边数不为零，那么这个区间的值就是它代表的整个线段的长度，否则，就要由子区间的值求和得到。</p>
+
+<p>这样分段树全区间的值，就是 $y$ 轴上线段的总长度。</p>
+
+<h3 id="区间的表示">区间的表示</h3>
+
+<p>以为解决了边的添加和取消就完事大吉了吗？，不，还有很大的问题：如果分段树上每个点对应某个坐标，就像习惯得那样，这就面临坐标划分与区间划分二者不一致的问题，对于用坐标表示的边来说，坐标是可重叠的，而分段树的区间划分两端是不可重叠的。举例说，对于 [0, 2] 的边的划分，按照坐标来说就是 $[0, 1]$ 和 $[1, 2]$ ，而按照区间划分则为 $[0,1]$ 和 $[2, 2]$ 。</p>
+
+<p>这实在是不好解决，因为分段树上 $[a, b]$ 的区间不能表示为坐标上 $[a, b]$ 的边，必须寻找一个新的与分段树区间划分一致地表示。于是我们可以考虑坐标可以重叠，但是区间不会重叠，可以定义标号 $i$ 表示坐标从 $[i, i+1]$ 的区间，这样分段树上的 $[a, b]$ 就不再表示坐标 $[a, b]$ 的边，而是标号 $a$~$b$ ，一共 $b-a+1$ 个单位区间的和，这样问题就解决了！</p>
+
+<h3 id="取模与数据类型">取模与数据类型</h3>
+
+<p>最后由于计算结果过大，需要对结果取模，其中模数给得是 $10^9+7$ ，是个质数，这有什么说法吗？</p>
+
+<p>质数取模得可以想到的是中国剩余定理，如果一个一元线性同余<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>方程的模数两两互质，那么这个方程是有解的而且可以构造出来，但它显然和我们这里没什么关系，事实上可以取任何一个大小符合条件的数，至于质不质地也没什么关系。</p>
+
+<p>至于取模运算本身倒是（对我们有用的）运算性质：</p>
+
+\[\begin{array}{l}
+&amp;a \cdot b\pmod{N} &amp;\equiv (a\pmod{N} \cdot b\pmod{N})\pmod{N}\\
+&amp;(a+b) \pmod{N} &amp;\equiv (a\pmod{N} + b\pmod{N})\pmod{N}
+\end{array}{}\]
+
+<p>另外需要吐槽得是本题 LeetCode 习惯性地给出的 <code class="language-plaintext highlighter-rouge">i32</code> 类型就不适当，它在例题上，在对结果取模前就数值溢出了，你必须手动把它提到更大的整数类型上。</p>
+
+<h3 id="统一排序">统一排序</h3>
+
+<p>由于在每个不同坐标的矩形的进入或离开时都要计算面积，因此像之前把入边和出边分开保存排序的做法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>会让代码显得很冗余吗，于是直接把 $x$ 坐标、入边出边的类型标记和 $y$ 轴两坐标，构成一个 $4$ 元组，统一排序。</p>
+
+<h3 id="rust-实现">Rust 实现<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></h3>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.3/0850_rectangle_area_2">源代码</a></p>
+
+<h4 id="分段树">分段树</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">SegmentTree</span> <span class="p">{</span>
+    <span class="cd">/// (coverd edges number, range_sum)</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">y_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">y_data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="cd">/// DFS 型</span>
+<span class="k">impl</span> <span class="n">SegmentTree</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">y_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="n">SegmentTree</span> <span class="p">{</span>
+            <span class="c1">// numbers of interval units</span>
+            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span> <span class="p">(</span><span class="n">y_end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="n">y_end</span><span class="p">,</span>
+            <span class="n">y_data</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">update</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">mark</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.y_end</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mark</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">update_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">mark</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">sub_len</span> <span class="o">=</span> <span class="p">(</span><span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="n">i_lf</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">i_rh</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sub_len</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">mark</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i_lf</span><span class="p">,</span> <span class="n">mark</span><span class="p">);</span>
+            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i_rh</span><span class="p">,</span> <span class="n">mark</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="py">.y_data</span><span class="p">[</span><span class="n">tr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="k">self</span><span class="py">.y_data</span><span class="p">[</span><span class="n">tl</span><span class="p">])</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="n">tl</span> <span class="o">!=</span> <span class="n">tr</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_lf</span><span class="p">]</span><span class="na">.1</span> <span class="o">+</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_rh</span><span class="p">]</span><span class="na">.1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">sum</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="na">.1</span> <span class="k">as</span> <span class="nb">i32</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>其中 <code class="language-plaintext highlighter-rouge">y_end</code> 指得是原坐标的排名，加一后的值，表示总共排名的数量或者总的不同 $y$ 坐标的数量。内部构成的区间数应该比总的不同 $y$ 坐标数少一。</p>
+
+<h4 id="完整过程">完整过程</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::{</span>
+    <span class="nn">cmp</span><span class="p">::{</span><span class="n">max</span><span class="p">,</span> <span class="n">min</span><span class="p">},</span>
+    <span class="nn">collections</span><span class="p">::{</span><span class="n">BTreeSet</span><span class="p">,</span> <span class="n">HashMap</span><span class="p">},</span>
+<span class="p">};</span>
+
+<span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">u64</span> <span class="o">=</span> <span class="mi">1_000_000_000</span> <span class="o">+</span> <span class="mi">7</span><span class="p">;</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">y_map</span><span class="p">)</span> <span class="o">=</span> <span class="nf">build_y_discrezation</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rectangles</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="n">lines</span> <span class="o">=</span> <span class="nf">build_x_lines</span><span class="p">(</span><span class="n">rectangles</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">y_map</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">tree</span> <span class="o">=</span> <span class="nn">SegmentTree</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">y_map</span><span class="nf">.len</span><span class="p">());</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">x0</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="na">.0</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ty</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="k">in</span> <span class="n">lines</span> <span class="p">{</span>
+
+        <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">x0</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">h</span> <span class="o">=</span> <span class="n">tree</span><span class="nf">.sum</span><span class="p">();</span>
+
+            <span class="n">acc</span> <span class="o">+=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">*</span> <span class="n">h</span> <span class="k">as</span> <span class="nb">u64</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">;</span>
+
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">tree</span><span class="nf">.update</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ty</span><span class="p">);</span>
+
+    <span class="p">}</span>
+
+    <span class="p">(</span><span class="n">acc</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">%</span> <span class="n">M</span><span class="p">)</span> <span class="k">as</span> <span class="nb">i32</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">build_y_discrezation</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">set</span> <span class="o">=</span> <span class="nn">BTreeSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="n">rec</span> <span class="k">in</span> <span class="n">rectangles</span> <span class="p">{</span>
+        <span class="n">set</span><span class="nf">.insert</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">set</span><span class="nf">.insert</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span>
+        <span class="n">set</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span><span class="nf">.collect</span><span class="p">(),</span>
+        <span class="n">set</span><span class="nf">.into_iter</span><span class="p">()</span>
+            <span class="nf">.enumerate</span><span class="p">()</span>
+            <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">))</span>
+            <span class="nf">.collect</span><span class="p">(),</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">build_x_lines</span><span class="p">(</span>
+    <span class="n">rectangles</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="n">y_map</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">lines</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">rectangles</span><span class="nf">.len</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="n">rec</span> <span class="k">in</span> <span class="n">rectangles</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">y1</span> <span class="o">=</span> <span class="o">*</span><span class="n">y_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="nf">.unwrap</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">y2</span> <span class="o">=</span> <span class="o">*</span><span class="n">y_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="n">lines</span><span class="nf">.push</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="k">true</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">));</span>  <span class="c1">// 0  true for enter</span>
+        <span class="n">lines</span><span class="nf">.push</span><span class="p">((</span><span class="n">x2</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">));</span> <span class="c1">// 1  false for exit</span>
+    <span class="p">}</span>
+
+    <span class="n">lines</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+
+    <span class="n">lines</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>用树状数组好像也不好解决这个问题 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>同余就是余数相同的意思 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>为了理论上减少排序的负担 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>就像前面吐槽用 Python 主要是因为它足够慢，足够缺少优化，这个 Rust 实现运行基本在 0-2 ms，内存 2.x MB，很难说有测量比较的意义 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
