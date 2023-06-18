@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-06-12T17:36:32+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0850 - Rectangle Area II</title><link href="/oth/LeetCode0850.html" rel="alternate" type="text/html" title="0850 - Rectangle Area II" /><published>2023-06-11T00:00:00+08:00</published><updated>2023-06-11T00:00:00+08:00</updated><id>/oth/LeetCode0850</id><content type="html" xml:base="/oth/LeetCode0850.html"><![CDATA[<h2 id="题干">题干</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-06-18T12:16:54+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0850 - Rectangle Area II</title><link href="/oth/LeetCode0850.html" rel="alternate" type="text/html" title="0850 - Rectangle Area II" /><published>2023-06-11T00:00:00+08:00</published><updated>2023-06-11T00:00:00+08:00</updated><id>/oth/LeetCode0850</id><content type="html" xml:base="/oth/LeetCode0850.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/rectangle-area-ii/description/">问题描述</a></p>
 
@@ -224,7 +224,393 @@
       <p>就像前面吐槽用 Python 主要是因为它足够慢，足够缺少优化，这个 Rust 实现运行基本在 0-2 ms，内存 2.x MB，很难说有测量比较的意义 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0391 - Perfect Rectangle</title><link href="/oth/LeetCode0391.html" rel="alternate" type="text/html" title="0391 - Perfect Rectangle" /><published>2023-06-08T00:00:00+08:00</published><updated>2023-06-08T00:00:00+08:00</updated><id>/oth/LeetCode0391</id><content type="html" xml:base="/oth/LeetCode0391.html"><![CDATA[<h2 id="题干">题干</h2>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">1851 - Minimum Level to Include</title><link href="/oth/LeetCode1851.html" rel="alternate" type="text/html" title="1851 - Minimum Level to Include" /><published>2023-06-11T00:00:00+08:00</published><updated>2023-06-11T00:00:00+08:00</updated><id>/oth/LeetCode1851</id><content type="html" xml:base="/oth/LeetCode1851.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/minimum-interval-to-include-each-query/description/">问题描述</a></p>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.4/1851_minimum_interval/rs1851">源代码</a></p>
+
+<h2 id="破题">破题</h2>
+
+<h3 id="一般性思路">一般性思路</h3>
+
+<p>看起来像是区间上的查询问题，而分段树总是可以解决这样的问题。</p>
+
+<p>用区间的长度表示一个区间的值，重叠部分取最小值，离散化区间坐标后建树，这些都是容易的，但问题是，对每次查询的值又要对它使用哪个或哪些离散化的坐标的查询结果进行表示？</p>
+
+<h4 id="不可能的在线查询">不可能的在线查询</h4>
+
+<p>一开始我的考虑是如果对查询的值在区间坐标上做二分查找，如果成功的话就用那个找到的坐标在树上查询，如果失败的话就比较左右两个临近坐标的是区间的结束还是开始，但是这样也无法正确解决问题，因为左右两个坐标是区间取得到的，它的结果可能是多个区间重叠得到的，而在查询值的位置其中决定最小值的区间可能已经结束了，此时查询值就取到了错误的值。</p>
+
+<p>只能把区间值和查询值一并离散化，然后直接查询，详见解①。</p>
+
+<h3 id="离线思路">离线思路</h3>
+
+<p>在实现完分段树版本后就在考虑，有没有树状数组的实现？ 按照一般思路这是难以想象的，但是这个过程中意识到既然所有的查询都是提前已知的，那么完全可以做离线查询，如果把查询值进行排序，按照顺序进行扫描，<strong>这不就完全回到了<a href="/oth/LeetCode0218.html">天际线问题</a> ?！</strong> 而这个思路也就是扫描线的思路。</p>
+
+<p>对应有树状数组的解② 和 优先级队列的解③</p>
+
+<h2 id="解">解①：</h2>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::{</span>
+    <span class="nn">cmp</span><span class="p">::{</span><span class="n">max</span><span class="p">,</span> <span class="n">min</span><span class="p">},</span>
+    <span class="nn">collections</span><span class="p">::</span><span class="n">HashMap</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="n">intervals</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">intervals</span>
+        <span class="nf">.iter</span><span class="p">()</span>
+        <span class="nf">.cloned</span><span class="p">()</span>
+        <span class="nf">.flatten</span><span class="p">()</span>
+        <span class="nf">.chain</span><span class="p">(</span><span class="n">queries</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">())</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="n">data</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+    <span class="n">data</span><span class="nf">.dedup</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">data_map</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="nf">.iter</span><span class="p">()</span>
+        <span class="nf">.cloned</span><span class="p">()</span>
+        <span class="nf">.enumerate</span><span class="p">()</span>
+        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">tree</span> <span class="o">=</span> <span class="nn">SegmentTree</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">data_map</span><span class="nf">.len</span><span class="p">());</span>
+
+    <span class="k">for</span> <span class="n">interval</span> <span class="k">in</span> <span class="n">intervals</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+
+        <span class="k">let</span> <span class="n">val</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">r</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="n">tree</span><span class="nf">.update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ans</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">queries</span><span class="nf">.len</span><span class="p">());</span>
+
+    <span class="k">for</span> <span class="n">q</span> <span class="k">in</span> <span class="n">queries</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">i</span> <span class="o">=</span> <span class="n">data</span><span class="nf">.binary_search</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="n">tree</span><span class="nf">.query</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="n">ans</span><span class="nf">.push</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">ans</span><span class="nf">.push</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">ans</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">combine</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$inplace</span><span class="p">:</span> <span class="n">expr</span><span class="p">,</span> <span class="nv">$val:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nv">$val</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">*</span><span class="nv">$inplace</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="nv">$val</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nv">$inplace</span><span class="p">)</span> <span class="p">{</span>
+            <span class="o">*</span><span class="nv">$inplace</span> <span class="o">=</span> <span class="nv">$val</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="cd">/// DFS 型</span>
+<span class="k">struct</span> <span class="n">SegmentTree</span> <span class="p">{</span>
+    <span class="cd">/// range update</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">range_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span> <span class="n">SegmentTree</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">range_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">range_end</span> <span class="o">*</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="n">range_end</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">update</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.range_end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">update_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span> <span class="p">{</span>
+            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">val</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">sub_len</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="n">i_lf</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">i_rh</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sub_len</span><span class="p">;</span>
+
+            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_lf</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_rh</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+
+            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i_lf</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i_rh</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">query</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.range_end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">query_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">sub_len</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="n">i_lf</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">i_rh</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sub_len</span><span class="p">;</span>
+
+            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_lf</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_rh</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+
+            <span class="k">let</span> <span class="n">lv</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i_lf</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">rv</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i_rh</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="n">rv</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="n">lv</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nf">min</span><span class="p">(</span><span class="n">lv</span><span class="p">,</span> <span class="n">rv</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这道题的输入数据和查询数据都有相当的规模，区间数量有 $10^5$ ，查询数量有 $10^7$，这对性能还是有一定要求的，</p>
+
+<p>运行时间： $250$ ms</p>
+
+<h2 id="解-1">解②：</h2>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">collections</span><span class="p">::</span><span class="n">HashMap</span><span class="p">;</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="k">mut</span> <span class="n">intervals</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">intervals</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">queries</span>
+        <span class="nf">.into_iter</span><span class="p">()</span>
+        <span class="nf">.enumerate</span><span class="p">()</span>
+        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="n">queries</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">queries</span>
+        <span class="nf">.iter</span><span class="p">()</span>
+        <span class="nf">.map</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="na">.0</span><span class="p">)</span>
+        <span class="nf">.chain</span><span class="p">(</span><span class="n">intervals</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="n">data</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+    <span class="n">data</span><span class="nf">.dedup</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">data_map</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="nf">.iter</span><span class="p">()</span>
+        <span class="nf">.cloned</span><span class="p">()</span>
+        <span class="nf">.enumerate</span><span class="p">()</span>
+        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bit</span> <span class="o">=</span> <span class="nn">FakeBIT</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">data_map</span><span class="nf">.len</span><span class="p">());</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ans</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">queries</span><span class="nf">.len</span><span class="p">()];</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_ans</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">q_raw</span><span class="p">,</span> <span class="n">q_idx</span><span class="p">)</span> <span class="k">in</span> <span class="n">queries</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">prev_q_raw</span> <span class="o">==</span> <span class="n">q_raw</span> <span class="p">{</span>
+            <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_ans</span><span class="p">;</span>
+
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">q</span> <span class="o">=</span> <span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q_raw</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">intervals</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+            <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+
+            <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">q_raw</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="n">q_raw</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">bit</span><span class="nf">.add</span><span class="p">(</span><span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">r</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">(),</span> <span class="n">q</span><span class="p">,</span> <span class="n">r</span> <span class="o">-</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">bit</span><span class="nf">.suffix</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="k">if</span> <span class="n">suffix</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="n">suffix</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="o">-</span><span class="mi">1</span> <span class="p">};</span>
+
+        <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
+
+        <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="n">q_raw</span><span class="p">;</span>
+        <span class="n">prev_ans</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">ans</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">combine</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$inplace</span><span class="p">:</span> <span class="n">expr</span><span class="p">,</span> <span class="nv">$val:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nv">$val</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">*</span><span class="nv">$inplace</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="nv">$val</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nv">$inplace</span><span class="p">)</span> <span class="p">{</span>
+            <span class="o">*</span><span class="nv">$inplace</span> <span class="o">=</span> <span class="nv">$val</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">range</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$i:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">(((</span><span class="nv">$i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">((</span><span class="nv">$i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">))</span> <span class="k">as</span> <span class="nb">usize</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">FakeBIT</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span> <span class="n">FakeBIT</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">range_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">range_end</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">loop</span> <span class="p">{</span>
+            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">addend</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nd">range!</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">||</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">end</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">i</span> <span class="o">-=</span> <span class="nd">range!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// query i</span>
+    <span class="k">fn</span> <span class="nf">suffix</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">acc</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+
+            <span class="n">i</span> <span class="o">+=</span> <span class="nd">range!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">acc</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>本实现对树状数组的活用的具体解释在<a href="/oth/LeetCode0218.html">天际线问题</a>的相关章节里。</p>
+
+<p>运行时间：$115$ ms</p>
+
+<h2 id="解-2">解③：</h2>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::{</span><span class="nn">collections</span><span class="p">::</span><span class="n">BinaryHeap</span><span class="p">,</span> <span class="nn">cmp</span><span class="p">::</span><span class="n">Reverse</span><span class="p">};</span>
+
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="k">mut</span> <span class="n">intervals</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">intervals</span><span class="nf">.sort_unstable_by_key</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">queries</span>
+        <span class="nf">.into_iter</span><span class="p">()</span>
+        <span class="nf">.enumerate</span><span class="p">()</span>
+        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="n">queries</span><span class="nf">.sort_unstable</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ans</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">queries</span><span class="nf">.len</span><span class="p">()];</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_ans</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">heap</span> <span class="o">=</span> <span class="nn">BinaryHeap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">q_raw</span><span class="p">,</span> <span class="n">q_idx</span><span class="p">)</span> <span class="k">in</span> <span class="n">queries</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">prev_q_raw</span> <span class="o">==</span> <span class="n">q_raw</span> <span class="p">{</span>
+            <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_ans</span><span class="p">;</span>
+
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">intervals</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+            <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+
+            <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">q_raw</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="n">q_raw</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">heap</span><span class="nf">.push</span><span class="p">(</span><span class="nf">PQE</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nf">Reverse</span><span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)));</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="nf">PQE</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">heap</span><span class="nf">.peek</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="o">*</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">q_raw</span> <span class="p">{</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">v</span><span class="na">.0</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">heap</span><span class="nf">.pop</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
+
+        <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="n">q_raw</span><span class="p">;</span>
+        <span class="n">prev_ans</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">ans</span>
+<span class="p">}</span>
+
+
+<span class="nd">#[derive(PartialEq,</span> <span class="nd">Eq,</span> <span class="nd">Ord)]</span>
+<span class="k">struct</span> <span class="nf">PQE</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="n">Reverse</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">);</span>
+
+<span class="k">impl</span> <span class="nb">PartialOrd</span> <span class="k">for</span> <span class="n">PQE</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="n">Ordering</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="na">.1</span><span class="nf">.partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">other</span><span class="na">.1</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>运行时间：$60$ ms ，beats 100%</p>
+
+<h2 id="注解">注解</h2>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0391 - Perfect Rectangle</title><link href="/oth/LeetCode0391.html" rel="alternate" type="text/html" title="0391 - Perfect Rectangle" /><published>2023-06-08T00:00:00+08:00</published><updated>2023-06-08T00:00:00+08:00</updated><id>/oth/LeetCode0391</id><content type="html" xml:base="/oth/LeetCode0391.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/perfect-rectangle/description/">问题描述</a></p>
 
@@ -3555,317 +3941,4 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
       <p>显然对于非零的$a,b$，$x, y$ 应该是一正一负两个整数 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[假设对于非负整数，$a$ , $b$ ，求它们的最大公约数 $\text{gcd}(a, b)$ ，以下简写作 $g$ 。]]></summary></entry><entry><title type="html">0685 - Redundant Connection II</title><link href="/algs/LeetCode0685.html" rel="alternate" type="text/html" title="0685 - Redundant Connection II" /><published>2023-03-31T00:00:00+08:00</published><updated>2023-03-31T00:00:00+08:00</updated><id>/algs/LeetCode0685</id><content type="html" xml:base="/algs/LeetCode0685.html"><![CDATA[<h2 id="题干">题干</h2>
-
-<p><a href="https://leetcode.com/problems/redundant-connection-ii/description/">问题描述</a></p>
-
-<h2 id="破题">破题</h2>
-
-<p>这题说难不难，没有复杂的数据结构和算法，但是情况比较繁琐细致，可以说非常贴近实际情况了。</p>
-
-<p>具体来说，这个题的破题的关键在于搞清楚一棵有向树，多了一条边后，会形成什么样的情况。这不是一次就能全想清楚的 ，在代码失败了几次后，我们总结出三种情况：</p>
-
-<ol>
-  <li>形成双头节点（a-&gt;b, c-&gt;b, b就是双头节点）</li>
-  <li>形成循环（a-&gt;b, b-&gt;c, c-&gt;a）</li>
-  <li>形成带双头节点的环（a-&gt;b, b-&gt;c, c-&gt;a, d-&gt;b）</li>
-</ol>
-
-<p>双头节点容易检测出来，循环也可以检测出来，但是如何选择删除的边值得考虑：前两种情况都是删除最后的边即可，但第三种情况必须删除双头节点在环上的边，而不管它的顺序，这样才能同时消除环和双头节点。这是本题繁琐的地方。</p>
-
-<h2 id="解-一般图">解 ①：一般图</h2>
-
-<h3 id="思路">思路</h3>
-
-<p>按照一般图的做法，不管三七二十一，先根据输入建立邻接表，以及反向引用的表。</p>
-
-<p>这样的话，首先在反向引用表建立的过程，就能检出双头节点，如果它存在的话；</p>
-
-<p>然后可以根据出度与入度，判断双头节点是否有在环上的边，在检测出度入度的时候要单独考虑两个点的环的情况；</p>
-
-<p>最后检出环上边，返回最后一条。</p>
-
-<h3 id="python-实现">Python 实现</h3>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-
-<span class="c1"># O(n)
-</span><span class="k">def</span> <span class="nf">findRedundantDirectedConnection</span><span class="p">(</span><span class="n">edges</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-    <span class="n">vmap</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># vertice map
-</span>    <span class="n">rvmap</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># recersed vertice map
-</span>
-    <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-    <span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-        <span class="n">Ein1</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">Ein2</span> <span class="o">=</span> <span class="mi">2</span>
-
-    <span class="n">mode</span> <span class="o">=</span> <span class="n">Mode</span><span class="p">.</span><span class="n">Ein1</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="bp">None</span>
-
-    <span class="c1"># O(E)
-</span>    <span class="k">for</span> <span class="n">u</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="n">l</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-        <span class="n">vmap</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span>
-
-        <span class="k">if</span> <span class="n">rvmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="n">mode</span> <span class="o">=</span> <span class="n">Mode</span><span class="p">.</span><span class="n">Ein2</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="n">u</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="n">v</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">rvmap</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span>
-
-    <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="n">Mode</span><span class="p">.</span><span class="n">Ein2</span><span class="p">:</span>
-        <span class="k">def</span> <span class="nf">outd</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">[]))</span>
-        <span class="k">def</span> <span class="nf">ind</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">rvmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="mi">1</span>
-
-        <span class="n">start2</span> <span class="o">=</span> <span class="n">rvmap</span><span class="p">[</span><span class="n">end</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">start</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="p">[]):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">start2</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="p">[]):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">start2</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">ind</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">outd</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">start2</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">ind</span><span class="p">(</span><span class="n">start2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">outd</span><span class="p">(</span><span class="n">start2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
-
-        <span class="c1"># then anyway, use the latter (no cycle)
-</span>        <span class="k">return</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
-
-    <span class="c1"># Exact one circle structure
-</span>    <span class="n">cirset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">is_circle_v</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">visset</span><span class="p">):</span>
-        <span class="k">nonlocal</span> <span class="n">cirset</span>
-
-        <span class="n">visset</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="p">[])</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Noncircle
-</span>            <span class="k">return</span> <span class="bp">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">visset</span><span class="p">:</span>
-                    <span class="n">cirset</span> <span class="o">=</span> <span class="n">visset</span>
-                    <span class="k">return</span> <span class="bp">True</span>
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">is_circle_v</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">visset</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="bp">True</span>
-
-            <span class="k">return</span> <span class="bp">False</span>
-
-    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">is_circle_v</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">set</span><span class="p">()):</span>
-            <span class="k">break</span>
-
-    <span class="k">for</span> <span class="n">u</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">edges</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">cirset</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cirset</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span>
-
-
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]]),</span>
-        <span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">]]),</span>
-        <span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">]]),</span>
-        <span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
-    <span class="p">]</span>
-
-    <span class="k">for</span> <span class="n">output</span><span class="p">,</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">findRedundantDirectedConnection</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">res</span> <span class="o">!=</span> <span class="n">output</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="sa">f</span><span class="s">'expect </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s"> found </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s">'</span>
-
-    <span class="n">findRedundantDirectedConnection</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span>
-</code></pre></div></div>
-
-<h2 id="解-并查集反引用表">解②： 并查集<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>+反引用表</h2>
-
-<h3 id="思路-1">思路</h3>
-
-<p>使用并查集辅助是一个更普遍的，更规整化的思路，但对于有向树来说，单靠并查集也不能直接找到环，而并查集的路径压缩也会干扰对双头节点的判断，因此我们还需要一个单独的反向引用的表来维护直接父节点的信息。</p>
-
-<p>除此之外，我们通过一个巧妙的构思，可以 One Pass 地求出需要的双头节点和环的信息：</p>
-
-<ol>
-  <li>
-    <p>只需要当发现双头节点的时候，跳过去，不进行 Union ，相当于删除双头节点<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的两条边里顺序靠后的那一条，在这种情况下如果仍然发现有一条边的两个点在并查集里有一样的根，那么这条边就是环上的一条边，而且是环上顺序最后的一条边<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>；</p>
-  </li>
-  <li>
-    <p>这样当我们通过反引用表找到了双头节点，并通过反引用表与并查集的配合找到了环上最后的边的时候，甚至可以提前退出循环，都不需要读完全部的边</p>
-  </li>
-</ol>
-
-<p>根据双头节点和环的信息最后输出：</p>
-
-<ol>
-  <li>没发现双头节点。那必然只有环，直接输出环上最后一条边即可；</li>
-  <li>没发现环。可能有两种，都是输出我们保存的双头节点顺序靠后的边即可：
-    <ol>
-      <li>有一个环，但是也是双头节点顺序靠后的一条边，因为跳过，所以没发现</li>
-      <li>根本没有环</li>
-    </ol>
-  </li>
-  <li>有双头节点但也发现了环。这说明双头节点顺序靠后的边不在环上，因此我们从反引用表里就可以得到双头节点在环上的边。</li>
-</ol>
-
-<h3 id="rust-实现">Rust 实现</h3>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// improved edition after read other solutions</span>
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">resolve_better</span><span class="p">(</span><span class="n">edges</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">struct</span> <span class="n">Aux</span> <span class="p">{</span>
-        <span class="n">ds</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="n">p</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span>
-    <span class="p">}</span>
-
-    <span class="k">impl</span> <span class="n">Aux</span> <span class="p">{</span>
-        <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
-            <span class="k">Self</span> <span class="p">{</span>
-                <span class="n">ds</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">cap</span><span class="p">],</span>
-                <span class="n">p</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">cap</span><span class="p">]</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-
-        <span class="k">fn</span> <span class="nf">find</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="k">self</span><span class="py">.ds</span><span class="p">[</span><span class="n">v</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">];</span>
-
-            <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-                <span class="n">v</span>
-            <span class="p">}</span>
-            <span class="k">else</span> <span class="p">{</span>
-                <span class="k">self</span><span class="py">.ds</span><span class="p">[</span><span class="n">v</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.find</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
-
-                <span class="k">self</span><span class="py">.ds</span><span class="p">[</span><span class="n">v</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-
-        <span class="cd">/// Ignore rank/height compare to save space as we have compressed the path.</span>
-        <span class="nd">#[inline(always)]</span>
-        <span class="k">fn</span> <span class="k">union</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="nb">i32</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="p">()</span><span class="o">&gt;</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">u_root</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.find</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>
-            <span class="k">let</span> <span class="n">v_root</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.find</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
-
-            <span class="k">if</span> <span class="n">u_root</span> <span class="o">==</span> <span class="n">v_root</span> <span class="p">{</span>
-                <span class="k">return</span> <span class="nf">Err</span><span class="p">(());</span>
-            <span class="p">}</span>
-
-            <span class="k">self</span><span class="py">.ds</span><span class="p">[</span><span class="n">v_root</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_root</span><span class="p">;</span>
-            <span class="nf">Ok</span><span class="p">(())</span>
-        <span class="p">}</span>
-
-        <span class="nd">#[inline(always)]</span>
-        <span class="k">fn</span> <span class="nf">direct_find</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-            <span class="k">self</span><span class="py">.p</span><span class="p">[</span><span class="n">v</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span>
-        <span class="p">}</span>
-
-        <span class="nd">#[inline(always)]</span>
-        <span class="k">fn</span> <span class="nf">direct_union</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="nb">i32</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">self</span><span class="py">.p</span><span class="p">[</span><span class="n">v</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">aux</span> <span class="o">=</span> <span class="nn">Aux</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">edges</span><span class="nf">.len</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">double_head_cand</span> <span class="o">=</span> <span class="nb">None</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">cycle_cand</span> <span class="o">=</span> <span class="nb">None</span><span class="p">;</span>
-
-    <span class="k">for</span> <span class="n">e</span> <span class="k">in</span> <span class="n">edges</span><span class="nf">.iter</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">u</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-        <span class="k">let</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-
-        <span class="c1">// found double head</span>
-        <span class="k">if</span> <span class="n">aux</span><span class="nf">.direct_find</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
-            <span class="n">double_head_cand</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
-            <span class="k">continue</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="n">aux</span><span class="nf">.direct_union</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
-
-        <span class="c1">// found cycle (double head case has been excluded)</span>
-        <span class="k">if</span> <span class="n">aux</span><span class="nf">.union</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="nf">.is_err</span><span class="p">()</span> <span class="p">{</span>
-            <span class="n">cycle_cand</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
-        <span class="p">}</span>
-
-        <span class="k">if</span> <span class="n">double_head_cand</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">cycle_cand</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span> <span class="k">break</span> <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="n">double_head_cand</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">cycle_cand</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">];</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="c1">// 1. the last double head edge cover the cycle edge.</span>
-    <span class="c1">// 2. no cycle edge.</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="n">cycle_cand</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">double_head_cand</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">];</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">else</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">_u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">double_head_cand</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nd">vec!</span><span class="p">[</span><span class="n">aux</span><span class="nf">.direct_find</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">v</span><span class="p">];</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="nd">unreachable!</span><span class="p">()</span>
-<span class="p">}</span>
-
-
-<span class="k">fn</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="n">sample</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span>
-        <span class="p">(</span><span class="nd">vec!</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
-        <span class="p">(</span><span class="nd">vec!</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
-        <span class="p">(</span><span class="nd">vec!</span><span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">]],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
-        <span class="p">(</span><span class="nd">vec!</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-        <span class="p">];</span>
-
-    <span class="k">let</span> <span class="n">norm_sample</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">from_iter</span><span class="p">(</span><span class="n">sample</span>
-    <span class="nf">.into_iter</span><span class="p">()</span>
-    <span class="nf">.map</span><span class="p">(|(</span><span class="n">input</span><span class="p">,</span> <span class="n">expect</span><span class="p">)|</span>
-        <span class="p">(</span>
-            <span class="n">input</span>
-            <span class="nf">.into_iter</span><span class="p">()</span>
-            <span class="nf">.map</span><span class="p">(|</span><span class="n">arr</span><span class="p">|</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">from_iter</span><span class="p">(</span><span class="n">arr</span><span class="nf">.into_iter</span><span class="p">()))</span>
-            <span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;&gt;</span><span class="p">(),</span>
-
-            <span class="nn">Vec</span><span class="p">::</span><span class="nf">from_iter</span><span class="p">(</span>
-                <span class="n">expect</span>
-                <span class="nf">.into_iter</span><span class="p">()</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-    <span class="p">));</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">expect</span><span class="p">)</span> <span class="k">in</span> <span class="n">norm_sample</span> <span class="p">{</span>
-        <span class="nd">assert_eq!</span><span class="p">(</span><span class="nf">resolve_better</span><span class="p">(</span><span class="n">edges</span><span class="nf">.clone</span><span class="p">()),</span> <span class="n">expect</span><span class="p">,);</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>这里对并查集的维护没有根据树的大小或者树高来选择合并的顺序，这主要是考虑到路径压缩已经足够优化，按照经验，再维护并查集树的平衡未必有明显的好处，相比花费额外的 $O(\text{n})$ 的空间<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup> ，并不值当。</p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>有很多别名：UnionFind, MergeFind, Disjoint Set, Disjoint Set Union … <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>如果有双头节点的话 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>排除了双头节点的情况，也就是环上最后一条边一定是符合有向环的顺序的 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>相当于原来一半的空间花费 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[假设对于非负整数，$a$ , $b$ ，求它们的最大公约数 $\text{gcd}(a, b)$ ，以下简写作 $g$ 。]]></summary></entry></feed>
