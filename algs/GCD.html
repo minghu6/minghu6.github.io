@@ -229,6 +229,12 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
     <span class="k">return</span> <span class="n">a1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
 </code></pre></div></div>
 
+<h3 id="模乘逆元">模乘逆元</h3>
+
+<p>计算正整数 $a$ 关于 $m$ 的模乘逆元 $x$ ，也即 $a\cdot x \equiv 1 \mod m$</p>
+
+<p>利用拓展公约数算法，<code class="language-plaintext highlighter-rouge">let (_, x, y) = ext_gcd(a, m)</code> ，这样有 $a\cdot x + m\cdot y = 1$ ，两边取余得到 $a\cdot x + 0 \equiv 1 \pmod m$ ，也就是拓展公约数可以直接求出模乘逆元。</p>
+
 <h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">

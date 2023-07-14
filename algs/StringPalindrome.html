@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            回文串基础
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/StringPalindrome.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        回文串基础
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">回文串基础</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      July 03, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="前言">前言</h2>
+
+<p>讨论回文串的相关基础问题以及收集寻找本质不同回文串或最长回文串的各种算法。</p>
+
+<h2 id="概念基础">概念基础</h2>
+
+<p>回文串（Palindrome），就是一个符号序列，它正着读和反着读都是相同的。</p>
+
+<p>也就是说回文串总是对称的，奇数长度的回文串在中间的字母上对称，而偶数长度的回文串在两个字母的空儿上对称。</p>
+
+<p>对称是回文最主要的性质，求解过程通常都要分奇数轴和偶数轴分别讨论。</p>
+
+<h2 id="本质不同回文串">本质不同回文串</h2>
+
+<p>它的一个子问题是，寻找最长回文串。</p>
+
+<h3 id="朴素算法">朴素算法</h3>
+
+<p>以考虑模式串上的每个位置作为对称轴，对两边的字符进行比对，分奇数轴和偶数轴两种情况。</p>
+
+<p>时间复杂度为 $O(n)$ 。</p>
+
+<h4 id="rust-实现">Rust 实现</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// O(n^2) -&gt; (Odd, Even)</span>
+<span class="cd">///</span>
+<span class="cd">/// for odd length palindrome: "aba", r=2</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_sub_palindromes_brute_force</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">char</span><span class="p">],</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">();</span>
+
+    <span class="c1">// Odd Symmetry</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">d1</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">1</span><span class="p">;</span> <span class="n">n</span><span class="p">];</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">matched_r</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">r</span> <span class="k">in</span> <span class="mi">2</span><span class="o">..=</span><span class="n">matched_r</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="p">{</span>
+                <span class="n">matched_r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">d1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">matched_r</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Even Symmetry</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">d2</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">n</span><span class="p">];</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">matched_r</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">r</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">matched_r</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">]</span> <span class="o">!=</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">r</span><span class="p">]</span> <span class="p">{</span>
+                <span class="n">matched_r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">d2</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">matched_r</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="串哈希算法">串哈希算法</h3>
+
+<p>如果只考虑求取最长回文串，可以使用<a href="/algs/StringHash.html">串哈希</a>的方法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>，分别预处理正向的串的哈希和反向串的哈希，实现 $O(1)$ 复杂度的回文串检查，这样对于模式串上的每个位置采用<a href="/algs/BinaryLifting.html">二进制提升（Binary Lifting）</a>的方法，测试出每个位置上的<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>最长回文串，当然这需要分奇数轴和偶数轴分别求解。</p>
+
+<p>注意当检查子串 $s[i..i+d-1]$ 是否是回文时：</p>
+
+<ol>
+  <li>
+    <p>正向的串当然是查询 $i..i+d$  ；</p>
+  </li>
+  <li>
+    <p>反向串，查询的则是 $n-(i+d)..n-i$</p>
+  </li>
+</ol>
+
+<p>二进制提升的基础是：</p>
+
+<ol>
+  <li>对奇数对称的回文，如果有一个半径 $r &gt; 0$ 的回文存在，那么同一个对称轴上必然有一个半径为 $r-1$ 的奇数回文；</li>
+  <li>对偶数对称的回文，如果有一个半径 $r &gt; 1$ 的回文存在，那么同一个对称轴上必然有一个半径为 $r-1$ 的偶数回；</li>
+  <li>以上两个定义显然都是递归的</li>
+</ol>
+
+<p>因此假定对每个对称轴上都有一个最大的回文半径，在它范围内的也都是回文，这有有了做二进制提升的条件，这个最大回文半径就是目标，只要仍然构成一个合法回文就是没超过，否则就是超过。</p>
+
+<h4 id="rust-实现-1">Rust 实现</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// O(nlogn)</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">find_longest_palindromes_hash_native</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">char</span><span class="p">],</span>
+    <span class="n">alphabet</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">dyn</span> <span class="n">AlphaBet</span><span class="p">,</span>
+    <span class="n">npows</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">]],</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">alphabet</span><span class="nf">.prime</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">char_ranks</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="n">chars</span> <span class="p">{</span>
+        <span class="n">char_ranks</span><span class="nf">.push</span><span class="p">(</span><span class="n">alphabet</span><span class="nf">.rank</span><span class="p">(</span><span class="o">*</span><span class="n">c</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">forward_hash</span> <span class="o">=</span>
+        <span class="nn">PrefixRollingHash</span><span class="p">::</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">char_ranks</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">(),</span> <span class="n">p</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">backward_hash</span> <span class="o">=</span>
+        <span class="nn">PrefixRollingHash</span><span class="p">::</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">char_ranks</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.rev</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">(),</span> <span class="n">p</span><span class="p">);</span>
+
+    <span class="c1">// Odd Symmetry</span>
+
+    <span class="k">let</span> <span class="n">max_odd_r</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">odd_r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">odd_i</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">if</span> <span class="n">max_odd_r</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="k">in</span> <span class="p">(</span><span class="mi">0</span><span class="o">..=</span><span class="n">max_odd_r</span><span class="nf">.ilog2</span><span class="p">())</span><span class="nf">.rev</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">odd_r</span> <span class="o">+</span> <span class="mi">2_usize</span><span class="nf">.pow</span><span class="p">(</span><span class="n">k</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="n">max_odd_r</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">d</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">found</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="o">-</span> <span class="n">d</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">h1</span> <span class="o">=</span> <span class="n">forward_hash</span><span class="nf">.query</span><span class="p">(</span><span class="n">i</span><span class="o">..</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">npows</span><span class="p">);</span>
+                <span class="k">let</span> <span class="n">h2</span> <span class="o">=</span> <span class="n">backward_hash</span><span class="nf">.query</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span><span class="o">..</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">npows</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="n">h1</span> <span class="o">==</span> <span class="n">h2</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="o">!</span><span class="n">found</span> <span class="p">{</span>
+                        <span class="n">found</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+                        <span class="n">odd_r</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span>
+                        <span class="n">odd_i</span><span class="nf">.clear</span><span class="p">();</span>
+                    <span class="p">}</span>
+
+                    <span class="n">odd_i</span><span class="nf">.push</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Even Symmetry</span>
+
+    <span class="k">let</span> <span class="n">max_even_r</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">even_r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">even_i</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">if</span> <span class="n">max_even_r</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="k">in</span> <span class="p">(</span><span class="mi">0</span><span class="o">..=</span><span class="n">max_even_r</span><span class="nf">.ilog2</span><span class="p">())</span><span class="nf">.rev</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">even_r</span> <span class="o">+</span> <span class="mi">2_usize</span><span class="nf">.pow</span><span class="p">(</span><span class="n">k</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="n">max_even_r</span> <span class="p">{</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">d</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="mi">2</span><span class="p">;</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">found</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">n</span> <span class="o">-</span> <span class="n">d</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">h1</span> <span class="o">=</span> <span class="n">forward_hash</span><span class="nf">.query</span><span class="p">(</span><span class="n">i</span><span class="o">..</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">npows</span><span class="p">);</span>
+                <span class="k">let</span> <span class="n">h2</span> <span class="o">=</span> <span class="n">backward_hash</span><span class="nf">.query</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span><span class="o">..</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">npows</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="n">h1</span> <span class="o">==</span> <span class="n">h2</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="o">!</span><span class="n">found</span> <span class="p">{</span>
+                        <span class="n">found</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+                        <span class="n">even_r</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span>
+                        <span class="n">even_i</span><span class="nf">.clear</span><span class="p">();</span>
+                    <span class="p">}</span>
+
+                    <span class="n">even_i</span><span class="nf">.push</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">odd_r</span> <span class="o">&gt;=</span> <span class="n">even_r</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">odd_r</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="n">n</span><span class="p">)</span><span class="nf">.collect</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="p">(</span><span class="n">odd_r</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">odd_i</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="p">(</span><span class="n">even_r</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">even_i</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="串哈希-dp">串哈希 DP<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">3</a></sup></h3>
+
+<p>介绍参考<a href="/algs/StringDP.html">串上DP</a>的相关章节</p>
+
+<h4 id="rust-实现-2">Rust 实现</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// O(n)</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">find_longest_palindromes_hash_dp</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">char</span><span class="p">],</span>
+    <span class="n">alphabet</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">dyn</span> <span class="n">AlphaBet</span><span class="p">,</span>
+    <span class="n">npows</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">]],</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">alphabet</span><span class="nf">.prime</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">char_ranks</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="n">chars</span> <span class="p">{</span>
+        <span class="n">char_ranks</span><span class="nf">.push</span><span class="p">(</span><span class="n">alphabet</span><span class="nf">.rank</span><span class="p">(</span><span class="o">*</span><span class="n">c</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">forward_hash</span> <span class="o">=</span>
+        <span class="nn">PrefixRollingHash</span><span class="p">::</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">char_ranks</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">(),</span> <span class="n">p</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">backward_hash</span> <span class="o">=</span>
+        <span class="nn">PrefixRollingHash</span><span class="p">::</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">char_ranks</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.rev</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">(),</span> <span class="n">p</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">r</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">n</span><span class="p">];</span>
+    <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">max_d</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="k">in</span> <span class="p">(</span><span class="mi">1</span><span class="o">..=</span><span class="nf">min</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span><span class="nf">.rev</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">h1</span> <span class="o">=</span> <span class="n">forward_hash</span><span class="nf">.query</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">d</span><span class="o">..=</span><span class="n">i</span><span class="p">,</span> <span class="n">npows</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">h2</span> <span class="o">=</span> <span class="n">backward_hash</span><span class="nf">.query</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">..</span><span class="n">n</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">npows</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">h1</span> <span class="o">==</span> <span class="n">h2</span> <span class="p">{</span>
+                <span class="n">max_d</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">max_d</span><span class="p">,</span> <span class="n">d</span><span class="p">);</span>
+                <span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span>
+        <span class="n">max_d</span><span class="p">,</span>
+        <span class="n">r</span><span class="nf">.into_iter</span><span class="p">()</span>
+            <span class="nf">.enumerate</span><span class="p">()</span>
+            <span class="nf">.filter</span><span class="p">(|(</span><span class="n">_</span><span class="p">,</span> <span class="n">d</span><span class="p">)|</span> <span class="o">*</span><span class="n">d</span> <span class="o">==</span> <span class="n">max_d</span><span class="p">)</span>
+            <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">)|</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">max_d</span><span class="p">)</span>
+            <span class="nf">.collect</span><span class="p">(),</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="manacher-算法">Manacher 算法</h3>
+
+<p>同样介绍参考<a href="/algs/StringDP.html">串上DP</a>的相关章节</p>
+
+<h4 id="rust-实现-3">Rust 实现</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// return d1</span>
+<span class="k">fn</span> <span class="nf">find_sub_palindromes_manacher_odd</span><span class="p">(</span><span class="n">chars</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">char</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">d1</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">1</span><span class="p">;</span> <span class="n">n</span><span class="p">];</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pl</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">pr</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">j</span> <span class="o">=</span> <span class="n">pl</span> <span class="o">+</span> <span class="n">pr</span> <span class="o">-</span> <span class="n">i</span><span class="p">;</span>
+
+            <span class="n">r</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">d1</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">pr</span> <span class="o">-</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">+</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">-</span> <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="o">&amp;&amp;</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">r</span><span class="p">]</span> <span class="o">==</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">r</span><span class="p">]</span>
+        <span class="p">{</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">d1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">pr</span> <span class="p">{</span>
+            <span class="n">pr</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="n">pl</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">d1</span>
+<span class="p">}</span>
+
+<span class="cd">/// return d2</span>
+<span class="k">fn</span> <span class="nf">find_sub_palindromes_manacher_even</span><span class="p">(</span><span class="n">chars</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">char</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">d2</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">n</span><span class="p">];</span> <span class="c1">// actual value from 1..n-1</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pl</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">n</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">pr</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">j</span> <span class="o">=</span> <span class="n">pl</span> <span class="o">+</span> <span class="n">pr</span> <span class="o">-</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="n">r</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">pr</span> <span class="o">-</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">+</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">-</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="o">&amp;&amp;</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">r</span><span class="p">]</span> <span class="o">==</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">{</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">d2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">pr</span> <span class="p">{</span>
+            <span class="n">pr</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="n">pl</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">r</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">d2</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_sub_palindromes_manacher</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">char</span><span class="p">],</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">d1</span> <span class="o">=</span> <span class="nf">find_sub_palindromes_manacher_odd</span><span class="p">(</span><span class="n">chars</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">d2</span> <span class="o">=</span> <span class="nf">find_sub_palindromes_manacher_even</span><span class="p">(</span><span class="n">chars</span><span class="p">);</span>
+
+    <span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="统一实现">统一实现<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup><sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></h4>
+
+<p>另外有一种借助字符串构造，利用求奇数轴的单个函数求 $d_1$ 和 $d_2$ 的方法。</p>
+
+<p>这种方法可以这么理解，把原字符串 $s$ 的每个空隙都替换成一个固定字母，比如 <code class="language-plaintext highlighter-rouge">'#'</code> ，这样偶数轴的情况就可以由 <code class="language-plaintext highlighter-rouge">'#'</code> 字符为对称轴的奇数轴回文得到。</p>
+
+<p><strong>举例：</strong></p>
+
+<p>对于原串 <code class="language-plaintext highlighter-rouge">s='abaabaa'</code> ，长度 $n=7$ 。</p>
+
+<p>将空隙替换为字符 <code class="language-plaintext highlighter-rouge">'#'</code> 后，得到 <code class="language-plaintext highlighter-rouge">s1='a#b#a#a#b#a#a'</code> 长度变为 $2n-1 = 13$ 。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">VALUE\ID</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>10</th>
+      <th>11</th>
+      <th>12</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">$s$</td>
+      <td>a</td>
+      <td>b</td>
+      <td>a</td>
+      <td>a</td>
+      <td>b</td>
+      <td>a</td>
+      <td>a</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td style="text-align: center">$s’$</td>
+      <td>a</td>
+      <td>#</td>
+      <td>b</td>
+      <td>#</td>
+      <td>a</td>
+      <td>#</td>
+      <td>a</td>
+      <td>#</td>
+      <td>b</td>
+      <td>#</td>
+      <td>a</td>
+      <td>#</td>
+      <td>a</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">$d_1’$</td>
+      <td>1</td>
+      <td>1</td>
+      <td>3</td>
+      <td>1</td>
+      <td>2</td>
+      <td>6</td>
+      <td>2</td>
+      <td>1</td>
+      <td>5</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">$d_1$</td>
+      <td>1</td>
+      <td> </td>
+      <td>2</td>
+      <td> </td>
+      <td>1</td>
+      <td> </td>
+      <td>1</td>
+      <td> </td>
+      <td>2</td>
+      <td> </td>
+      <td>1</td>
+      <td> </td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">$d_2$</td>
+      <td>-</td>
+      <td>0</td>
+      <td> </td>
+      <td>0</td>
+      <td> </td>
+      <td>3</td>
+      <td> </td>
+      <td>0</td>
+      <td> </td>
+      <td>0</td>
+      <td> </td>
+      <td>1</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>我们可以发现 $d_1’$ 与 $d_1$ 、$d_2$ 有这样的对应关系：</p>
+
+<p>$d_1$ 上的字符对应着 $s’$ 上那些本就属于 $s$ 的字符，分别在 $0,\ 2,\ 4,\ \dots,\ 2i$ ，它的值相比于原来，除了作为轴的那个点外，每额外有一个对称的点，也就额外增加一个插入符 <code class="language-plaintext highlighter-rouge">'#'</code> ，因此可以得到：</p>
+
+\[d_1[i] = \lfloor {(d_1'[2i] + 1)}/ {2} \rfloor\]
+
+<p>$d_2$ 上的字符对应着 s’ 上的 <code class="language-plaintext highlighter-rouge">'#'</code> ，表示它本来应该是 $s$ 上的字符的空隙，分别在 $1,\ 3,\ 5,\ \dots,\ 2i-1$ <sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>，而 $s’$ 上的值恰好就应该是原来 $s$ 上的两倍，因此可以得到：</p>
+
+\[d_2[i] = d_1'[2i-1] / 2\]
+
+<h4 id="rust-实现-4">Rust 实现</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">find_sub_palindromes_manacher_unify</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">char</span><span class="p">],</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="n">n2</span> <span class="o">=</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">chars2</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="sc">'#'</span><span class="p">;</span> <span class="n">n2</span><span class="p">];</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">in</span> <span class="n">chars</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">chars2</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">*</span><span class="n">c</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">d21</span> <span class="o">=</span> <span class="nf">find_sub_palindromes_manacher_odd</span><span class="p">(</span><span class="o">&amp;</span><span class="n">chars2</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">d1</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">1</span><span class="p">;</span> <span class="n">n</span><span class="p">];</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">d2</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">n</span><span class="p">];</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">in</span> <span class="n">d21</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="n">d1</span><span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">d2</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="补充为回文串">补充为回文串</h2>
+
+<p>给定一个串，增加一个最小的前缀，使其变为一个回文。</p>
+
+<p><a href="https://leetcode.com/problems/shortest-palindrome/description/">题目</a></p>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.6/0214_shortest_palindrome/py0214">源代码</a></p>
+
+<h3 id="破题">破题</h3>
+
+<p>考虑构建后作为回文的新串与原串的关系，由于要求最小的前缀，那么原串肯定应该至少占据这个回文的右半部分还多一个点，最多占据全部，也就是原串本身就是回文串，这时不需要添加任何前缀。</p>
+
+<p>然后我们可以发现，原串某个前缀因此也应该是一个回文，至少说第一个字符肯定构成长度为 $1$ 的奇数轴回文，此时就是原串占据构造后的回文串部分最少的情况，如果能找到原串属于回文的前缀里最长的那一个，那么显然把那个前缀后面的字符取反后加到前缀上，就能得到一个最小的构造回文。</p>
+
+<h3 id="一般性方法">一般性方法</h3>
+
+<p>可以采用朴素地 $O(n^2)$ 的算法，或者前面介绍的 $O(n)$ 地求取所有本质不同子串的方法，然后寻找同时是前缀的最长回文子串，除此之外这里特别介绍一个利用回文反转相同的性质，通过构造字符串利用 KMP 前缀函数求解的方法。<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup></p>
+
+<h3 id="构造串kmp">构造串+KMP</h3>
+
+<p>回文就是反转后仍然等于原串，那么如果把原串和原串的反转拼接在一起，那么原来是前缀里最长回文的那部分，就会构新串成前后缀相等的情况，长度就是也就是 KMP 前缀数组里 $\pi[n-1]$ 标识的。</p>
+
+<p>有一点需要注意，这里假设得是原串的真前缀是回文，而原串本身不能是回文，否则求解前缀数组的时候就会出现前后缀重叠的情况，可以在构造连接原串和原串的反串时，在中间加一个字母表外的字符，确保不会出现前后缀重叠的情况，比如给定的字母表是小写字母，那就可以加一个 <code class="language-plaintext highlighter-rouge">'#'</code> 。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:3" role="doc-endnote">
+      <p>对于朴素串哈希来说，也可以求解本质不同回文串，这里缩小问题是为了方便引出下面的 DP 版串哈希算法 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>以该位置为对称轴 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:1" role="doc-endnote">
+      <p>https://oi-wiki.org/string/hash/#%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>https://cp-algorithms.com/string/manacher.html#working-with-parities <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>https://oi-wiki.org/string/manacher/#%E7%BB%9F%E4%B8%80%E5%A4%84%E7%90%86 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>注意，按照我们前面的规定， $d_2$ 采取得是插入序，它的有效值是从 $1$ 开始取的 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>但是这道题的测试数据非常宽松，反而是朴素算法的性能最好 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>

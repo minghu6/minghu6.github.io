@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            串哈希
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/StringHash.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        串哈希
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">串哈希</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      June 26, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="概念基础">概念基础</h2>
+
+<p>字符串哈希是从 <a href="https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm">Rabin-Karp 算法 (1987)</a> 衍生出来的，用于解决基于字符串子串比较问题的一种思路。</p>
+
+<p>RK 算法使用了一个简单的多项式滚动哈希算法<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，对于任意子串 $\text{substr}[l..r]$ ，它的哈希值可以由两端对应的前缀字符串       $\text{substr}[0..l-1]$ 和 $\text{substr}[0..r]$ 的哈希值计算得到，也就是说如果提前计算了字符串所有前缀的哈希，那么它的任意子串的哈希都可以在常量时间计算得到。</p>
+
+<p>同时作为滚动哈希，每个前缀 $\text{substr}[0..i]$ 的哈希也可以由子前缀 $\text{substr}[0..i-1]$ 直接计算得出，这样就可以在 $O(n)$ 的时间计算出所有前缀的哈希，并用 $O(1)$ 的时间做子串的比较。</p>
+
+<p>下面介绍这个哈希算法：</p>
+
+<h3 id="哈希算法">哈希算法<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup><sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></h3>
+
+<p>对于串 $s$</p>
+
+\[\begin{array}{l}
+\text{hash}(s) &amp;= s[0]\cdot p^0 + s[1] \cdot p^1 + s[2] \cdot p^2 + ... + s[n-1] \cdot p^{n-1} \pmod m \\
+&amp;= \displaystyle\sum_{i=0}^{n-1} s[i] \cdot p^i \pmod m
+\end{array}\]
+
+<p>其中， $n$ 为串的长度，$m$ 和 $p$ 是根据需要挑选的一个正整数。</p>
+
+<p>一般可以令 $p$ 为字母表（alphabet）大小的质数，比如对于只包含小写字母的串，$p=31$；对于大小写字母，$p=53$ 。</p>
+
+<p>$m$ 作为模除运算的除数，需要是一个很大的整数，因为两个随机字符串发生哈希碰撞的概率 $\approx \frac{1}{m}$，可以取 $2^{64}$ ，这样做的好处是用 <code class="language-plaintext highlighter-rouge">u64</code> 保存数值时不需要显式地进行取模运算，等待数值自然溢出即可，但这样必然存在方法，用来构造无关于 $p$ 的产生哈希碰撞的字符串，更好的方法是选取一个大素数，比如 $10^9 + 9$ ，这个大小的素数有一个好处，就是确保 <code class="language-plaintext highlighter-rouge">u64</code> 类型足以容纳计算结果而不会溢出<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+
+<p>$s[i]$ 是在位置 $i$ 处字符的值，这个值是字符在字母表里的排名，而一般空串的哈希值为 $0$ ，因此字符的排名最好从 $1$ 开始，来避免字母表里最小字符与与空串的值相同。</p>
+
+<p>这样串 $s$ 的前缀可以通过 $\text{hash}(s[0..i]) = \text{hash}(s[0..i-1]) \cdot p + s[i] \mod m$ 计算得到，而任意子串的哈希值则有如下的关系：</p>
+
+\[p^{l}\cdot \text{hash}(s[l..r]) \pmod m =\text{hash}(s[0..r]) - \text{hash}(s[0..l-1]) \pmod m\]
+
+<p>这样需要再额外计算一步 $p^l$ 的<a href="https://cp-algorithms.com/algebra/module-inverse.html">模乘逆元</a>，可以通过<a href="/algs/GCD.html">拓展欧几里得算法</a>，以 $p^l$ 和 $m$ 为参数直接求解模乘逆元。</p>
+
+<p>可以通过换一下多项式滚动哈希的计算方向，来避免求解模乘逆元这一步操作。</p>
+
+<h4 id="msb-型算法">MSB 型算法</h4>
+
+<p>可以认为串 $s$ 的哈希是一个由串上每个字符组成的 $p$ 进制的数字，前面的计算方法是小端序（LSB，Least Significant Bit)</p>
+
+<p>而我们更改为大端序（MSB，Most Significant Bit）：</p>
+
+\[\begin{array}{l}
+\text{hash}(s) &amp;= s[0]\cdot p^{n-1} + s[1] \cdot p^{n-2} + ... + s[n-1] \cdot p^{0} \pmod m \\
+&amp;= \displaystyle\sum_{i=0}^{n-1} s[i] \cdot p^{n-1-i} \pmod m
+\end{array}\]
+
+<p>这样子串哈希与前缀哈希就有如下的关系：</p>
+
+\[\text{hash}(s[l..r]) =\text{hash}(s[0..r]) - \text{hash}(s[0..l-1]) \cdot p^{r-(l-1)} \pmod m\]
+
+<p>另外在计算前缀时，MSB 需要从后开始遍历串。</p>
+
+<p><em>对子串哈希的查询总让人想起树状数组（BIT）里面用前缀来计算区间的类似操作</em></p>
+
+<h3 id="哈希碰撞">哈希碰撞</h3>
+
+<p>用哈希来做串的映射时总要考虑哈希碰撞，也就是串不同但哈希值相同的情况，在广泛地基于概率的算法与数据结构<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>中也习惯用假阳性（False Positive）来表示这种情况。</p>
+
+<h4 id="大量比较">大量比较</h4>
+
+<p>在考虑到串的比较次数较多时，比如 $10^6$ 个不同字符串的两两比较，会有 $10^{6+6} = 10^{12}$ 个情况，这时 $10^9$ 的碰撞空间就不够用了，这时总是会发生碰撞。</p>
+
+<p>这时就必须扩大碰撞空间，而单一地增大 $m$ ，然后对应地把计算的数据类型从 <code class="language-plaintext highlighter-rouge">u64</code> 提升到 <code class="language-plaintext highlighter-rouge">u128</code> 乃至专门的 Big Int 类型，实在不怎么可取，不如独立计算几组哈希值，采用不同的 $p$ 或者 $m$ ，比如两组，就可以让碰撞空间扩大到 $(10^9)^2=10^{18}$ 从而满足前面的情况，当然还可以有更多的组数来得到更大的哈希空间。</p>
+
+<h4 id="绝对正确">绝对正确</h4>
+
+<p>如果对判断的结果要求绝对正确，可以在哈希判等的情况下再用原始的文本串进行比较。</p>
+
+<h2 id="实现">实现</h2>
+
+<p>将用 Rust 来实现字符串哈希，并在此基础上实现 Rabin-Karp 算法。</p>
+
+<h3 id="字母表">字母表</h3>
+
+<p>在计算串哈希的时候，首先要考虑串的构成字符的字母表，这涉及字符值的计算与 $p$ 的选取。</p>
+
+<p>于是我们可以把字母表抽象出来，规定它应该有：</p>
+
+<ol>
+  <li>查询给定字符的排名，<code class="language-plaintext highlighter-rouge">rank</code> ，排名用作计算哈希时字符的值，从 $1$ 开始；</li>
+  <li>给出字母表的大小，<code class="language-plaintext highlighter-rouge">len</code>；</li>
+  <li>给出字母表大小对应的 $p$ ，<code class="language-plaintext highlighter-rouge">prime</code></li>
+</ol>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">trait</span> <span class="n">AlphaBet</span> <span class="p">{</span>
+    <span class="cd">/// None for char out of scope of the alphabet</span>
+    <span class="k">fn</span> <span class="nf">rank</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span><span class="p">;</span>
+    <span class="k">fn</span> <span class="nf">prime</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">u64</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>定义几个字母表实例作为示范：</p>
+
+<p>不得不称赞 Rust 原生的模式匹配语法让代码干净简洁许多！</p>
+
+<h4 id="数字字母">数字字母</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">DigitsLetters</span><span class="p">;</span>
+
+<span class="k">impl</span> <span class="n">AlphaBet</span> <span class="k">for</span> <span class="n">DigitsLetters</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">rank</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nf">Some</span><span class="p">(</span><span class="k">match</span> <span class="n">c</span> <span class="p">{</span>
+            <span class="sc">'0'</span><span class="o">..=</span><span class="sc">'9'</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">-</span> <span class="sc">'0'</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="sc">'A'</span><span class="o">..=</span><span class="sc">'Z'</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">-</span> <span class="sc">'A'</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span>
+            <span class="sc">'a'</span><span class="o">..=</span><span class="sc">'z'</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">-</span> <span class="sc">'a'</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">26</span><span class="p">,</span>
+            <span class="n">_</span> <span class="k">=&gt;</span> <span class="k">return</span> <span class="nb">None</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="mi">26</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">10</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">prime</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">u64</span> <span class="p">{</span>
+        <span class="mi">79</span> <span class="c1">// 0x4F</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="常见中文">常见中文</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Common CJK + CJK Symbols and Punctuation + ASCII</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">CommonChinese</span><span class="p">;</span>
+
+<span class="k">impl</span> <span class="n">AlphaBet</span> <span class="k">for</span> <span class="n">CommonChinese</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">rank</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span><span class="p">;</span>
+
+        <span class="nf">Some</span><span class="p">(</span><span class="k">match</span> <span class="n">c</span> <span class="p">{</span>
+            <span class="mi">0</span><span class="o">..=</span><span class="mi">127</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1">// ASCII</span>
+            <span class="mi">0x3000</span><span class="o">..=</span><span class="mi">0x303F</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="o">-</span> <span class="mi">0x3000</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">128</span><span class="p">,</span>  <span class="c1">// CJK Symbols and Punctuation</span>
+            <span class="mi">0x4E00</span><span class="o">..=</span><span class="mi">0x9FFF</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="o">-</span> <span class="mi">0x4E00</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">128</span> <span class="o">+</span> <span class="mi">0x40</span><span class="p">,</span>  <span class="c1">// Common CJK</span>
+            <span class="n">_</span> <span class="k">=&gt;</span> <span class="k">return</span> <span class="nb">None</span><span class="p">,</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="cd">/// 21184</span>
+    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="p">(</span><span class="mi">0x9FFF</span> <span class="o">-</span> <span class="mi">0x4E00</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">127</span> <span class="o">-</span> <span class="mi">0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0x303F</span> <span class="o">-</span> <span class="mi">0x3000</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">prime</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">u64</span> <span class="p">{</span>
+        <span class="mi">21187</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="计算哈希">计算哈希</h3>
+
+<h4 id="多组哈希">多组哈希</h4>
+
+<p>$p$ 与字母表的大小是绑定的，选择用一组不同的 $m$ 来独立计算多组哈希。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="p">[</span><span class="nb">u64</span><span class="p">;</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mi">1_000_000_000</span> <span class="o">+</span> <span class="mi">9</span><span class="p">,</span>
+    <span class="mi">1_000_000_000</span> <span class="o">+</span> <span class="mi">7</span>
+<span class="p">];</span>
+
+
+<span class="nd">macro_rules!</span> <span class="n">check_n</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">{</span>
+            <span class="nd">unimplemented!</span><span class="p">(</span><span class="s">"N should be in [1, 2], however {N} found"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="一次性计算">一次性计算</h4>
+
+<p>比如用在模式串的计算上</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">check_n</span> <span class="p">{</span>
+    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">{</span>
+            <span class="nd">unimplemented!</span><span class="p">(</span><span class="s">"N should be in [1, 2], however {N} found"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="n">rolling_hash</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">s</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">,</span>
+    <span class="n">alphabet</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">dyn</span> <span class="n">AlphaBet</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">],</span> <span class="n">ComputeRollingHashError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">check_n!</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">nacc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">N</span><span class="p">];</span>
+
+    <span class="k">if</span> <span class="n">s</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">nacc</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">alphabet</span><span class="nf">.prime</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="n">s</span><span class="nf">.chars</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="n">alphabet</span>
+            <span class="nf">.rank</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="nf">.ok_or</span><span class="p">(</span><span class="nn">ComputeRollingHashError</span><span class="p">::</span><span class="nf">CharOutOfScope</span><span class="p">(</span><span class="n">c</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">nacc</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="前缀计算">前缀计算</h4>
+
+<p>比如用在文本串的计算上</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// [msb] polynomial rolling computing</span>
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">PrefixRollingHash</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">1</span><span class="o">&gt;</span>
+<span class="p">{</span>
+    <span class="n">nprefix</span><span class="p">:</span> <span class="p">[</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">N</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="cd">/// String Prefix (MSB) Plynomial Rolling Hash</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">PrefixRollingHash</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span>
+        <span class="n">s</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">alphabet</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">dyn</span> <span class="n">AlphaBet</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="n">ComputeRollingHashError</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nd">check_n!</span><span class="p">();</span>
+
+        <span class="c1">// Create chars</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">chars</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+        <span class="c1">// Init chars</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="n">s</span><span class="nf">.chars</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">chars</span><span class="nf">.push</span><span class="p">(</span>
+                <span class="n">alphabet</span>
+                    <span class="nf">.rank</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                    <span class="nf">.ok_or</span><span class="p">(</span><span class="nn">ComputeRollingHashError</span><span class="p">::</span><span class="nf">CharOutOfScope</span><span class="p">(</span><span class="n">c</span><span class="p">))</span><span class="o">?</span><span class="p">,</span>
+            <span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Create nprefix</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">nprefix</span><span class="p">:</span> <span class="p">[</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="nf">zeroed</span><span class="p">()</span> <span class="p">};</span>
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">alphabet</span><span class="nf">.prime</span><span class="p">();</span>
+
+        <span class="c1">// Init nprefix</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">prefix</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">()];</span>
+
+            <span class="k">if</span> <span class="o">!</span><span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">prefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chars</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">chars</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="n">prefix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">prefix</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="n">nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefix</span><span class="p">;</span>
+        <span class="p">}</span>
+
+
+        <span class="nf">Ok</span><span class="p">(</span><span class="k">Self</span> <span class="p">{</span> <span class="n">nprefix</span> <span class="p">})</span>
+    <span class="p">}</span>
+
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="子串查询">子串查询</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">PrefixRollingHash</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">npows</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">]])</span> <span class="k">-&gt;</span> <span class="p">[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">]</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="nf">.len</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">N</span><span class="p">];</span>
+
+        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">r</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
+                <span class="c1">// coefficent</span>
+                <span class="k">let</span> <span class="n">coeff</span> <span class="o">=</span> <span class="n">npows</span><span class="p">[</span><span class="n">r</span> <span class="o">-</span> <span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span><span class="n">n</span><span class="p">];</span>
+
+                <span class="k">let</span> <span class="n">a</span> <span class="o">=</span> <span class="k">self</span><span class="py">.nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">r</span><span class="p">];</span>
+                <span class="k">let</span> <span class="n">b</span> <span class="o">=</span> <span class="k">self</span><span class="py">.nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="o">*</span> <span class="n">coeff</span>
+                <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+
+                <span class="n">res</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span> <span class="p">{</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="p">};</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+
+        <span class="n">res</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="应用">应用</h2>
+
+<h3 id="查询回文串">查询回文串</h3>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>注意区别于同作者的另一个更正式的多项式滚动哈希算法，<a href="https://en.wikipedia.org/wiki/Rabin_fingerprint">Rabin fingerprint</a> ，据说有一些 RK 算法的实现在内部使用了这个算法而不是原始提出的更简单的那一个。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>https://cp-algorithms.com/string/string-hashing.html <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>https://oi-wiki.org/string/hash/ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>$2^{64} \approx 2^4 \cdot (10^3)^6 = 16 \cdot 10^{18} $ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>比如前面<a href="/algs/BM.html">Boyer-Moore算法</a>里介绍过的Bloom Filter <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
