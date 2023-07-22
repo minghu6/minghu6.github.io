@@ -1,4 +1,541 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-07-14T15:08:06+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0336 - Palindrome Pairs</title><link href="/algs/LeetCode0336.html" rel="alternate" type="text/html" title="0336 - Palindrome Pairs" /><published>2023-07-12T00:00:00+08:00</published><updated>2023-07-12T00:00:00+08:00</updated><id>/algs/LeetCode0336</id><content type="html" xml:base="/algs/LeetCode0336.html"><![CDATA[<p><em>通常为了分类页面的干净，不将LeetCode题解的文章放到算法分类里，但这一篇实在精彩，涉及了其他算法没有介绍过的，关于大量子串比较的通解性思路</em></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-07-22T18:28:00+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0010 - Regular Expression Matching</title><link href="/oth/LeetCode0010.html" rel="alternate" type="text/html" title="0010 - Regular Expression Matching" /><published>2023-07-21T00:00:00+08:00</published><updated>2023-07-21T00:00:00+08:00</updated><id>/oth/LeetCode0010</id><content type="html" xml:base="/oth/LeetCode0010.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/regular-expression-matching/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.8/0010_regular_expr_matching/rs0010">源代码</a></p>
+
+<p>这道题令人有些五味杂陈，说它是一道不好的题有它不好的理由，说它是一道好的题有好的理由，它好还是不好可能取决于你做题的流程。</p>
+
+<p>不好的说，这道题并不是那种抽象得非常干净的题目，它更像是现实中的问题，有开放式的解决方法，可能涉及多方面知识，主要时间需要用在考虑核心算法无关的处理细节。作为那种习惯性地先成功提交，然后才回去看解析和答案的人来说这种题是非常煎熬的而且花费时间的，除非你已经很熟悉了这个套路<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup><sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>。</p>
+
+<p>好的说，如果你实现就清楚这个套路，做过类似的题目，那么标准答案至少在形式上也是很简洁的<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></p>
+
+<p>另外，当看到文本串与模式串的长度都不超过 $20$ 的条件时，就可以想到，不管这道题的本意如何，标准解法是什么，几乎一定存在一种自然解法，性能不劣于标准解法。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+
+<p><strong>Tips：</strong></p>
+
+<p>题目保证了 <code class="language-plaintext highlighter-rouge">*</code> 字符前面一定会有一个合法的字符，否则我们还需要检查下模式串的合法性。</p>
+
+<h2 id="解固定串匹配">解①固定串匹配：</h2>
+
+<p><strong>基于固定串匹配的自然解法</strong></p>
+
+<p>这是我的自然解法，考虑得并不是标准解法里的字符匹配的模型<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，而是考虑模式匹配或者子串匹配的思路，这也应该是初学者自然的思路。</p>
+
+<p><strong>模式串</strong>里有两种模式匹配，一种是长度固定的串，就是所有普通字符加上 <code class="language-plaintext highlighter-rouge">.</code> 符号，匹配这种长度固定的串是很容易的，可以用如下的方法：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[inline]</span>
+<span class="k">fn</span> <span class="nf">match_pat</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">],</span> <span class="n">pat</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+    <span class="n">s</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="n">pat</span><span class="nf">.len</span><span class="p">()</span>
+        <span class="o">&amp;&amp;</span> <span class="n">s</span><span class="nf">.iter</span><span class="p">()</span>
+            <span class="nf">.zip</span><span class="p">(</span><span class="n">pat</span><span class="nf">.iter</span><span class="p">())</span>
+            <span class="nf">.all</span><span class="p">(|(</span><span class="o">&amp;</span><span class="n">c1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">c2</span><span class="p">)|</span> <span class="n">c2</span> <span class="o">==</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">||</span> <span class="n">c2</span> <span class="o">==</span> <span class="n">c1</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>另一种是长度不定的串，就是后面带 <code class="language-plaintext highlighter-rouge">*</code> 字符的双字符串，像 <code class="language-plaintext highlighter-rouge">.*</code> ,  <code class="language-plaintext highlighter-rouge">a*</code> 等等，长度不定的串的匹配是问题的难度所在，或者也是时间复杂度飙升的地方。</p>
+
+<p>于是我们的思路就很清楚，首先匹配掉固定串，然后再用回溯剪枝的方法检查不定串。</p>
+
+<p>给定文本串 <code class="language-plaintext highlighter-rouge">s: String</code> 和模式串 <code class="language-plaintext highlighter-rouge">p: String</code></p>
+
+<h3 id="step-1搜索不定串">Step-1：搜索不定串</h3>
+
+<p><strong>在模式串上搜索所有不定串的位置</strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">p_bytes</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.as_bytes</span><span class="p">();</span>
+<span class="k">let</span> <span class="n">s_bytes</span> <span class="o">=</span> <span class="n">s</span><span class="nf">.as_bytes</span><span class="p">();</span>
+
+<span class="k">let</span> <span class="n">random_pats</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">p</span>
+	<span class="nf">.match_indices</span><span class="p">(</span><span class="sc">'*'</span><span class="p">)</span>
+	<span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">)|</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+	<span class="nf">.collect</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="step-2划分固定串">Step-2：划分固定串</h3>
+
+<p><strong>划分出模式串中中间的固定串</strong></p>
+
+<p>我们真正关心得应该是夹在不定串之间的那些固定串，因为模式串两端的固定串是可以简单匹配确定的<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup></p>
+
+<p>在搜索固定串的位置之前，需要先检查所有其他的情况：有零个不定串或者一个不定串</p>
+
+<h4 id="零个不定串">零个不定串：</h4>
+
+<p>最简单的情况，直接使用固定串的匹配方法即可。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">random_pats</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nf">match_pat</span><span class="p">(</span><span class="n">s_bytes</span><span class="p">,</span> <span class="n">p_bytes</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="一个不定串">一个不定串：</h4>
+
+<p>这种情况下，需要做两端固定串的匹配，然后比较文本串两端中间的部分是否匹配这个唯一地不定串。</p>
+
+<p>在做两端固定串的匹配时，首先要检查长度是否匹配，来防止计算头尾固定串时发生算术溢出问题。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1">// s_bytes head i inclusive</span>
+<span class="k">let</span> <span class="n">head</span> <span class="o">=</span> <span class="n">random_pats</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="k">let</span> <span class="n">tail_slice</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">p_bytes</span><span class="p">[</span><span class="n">random_pats</span><span class="nf">.last</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.clone</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="o">..</span><span class="p">];</span>
+
+<span class="k">if</span> <span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">random_pats</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// s_bytes tail i exclusive</span>
+<span class="k">let</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="n">tail_slice</span><span class="nf">.len</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">head</code> 表示头部固定串的长度，也是其余部分的起始位置，<code class="language-plaintext highlighter-rouge">tail</code> 表示尾部固定串的起始位置，因此 <code class="language-plaintext highlighter-rouge">s_bytes[head..tail]</code> 才是我们真正要做模式匹配的地方。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="o">!</span><span class="nf">match_pat</span><span class="p">(</span><span class="o">&amp;</span><span class="n">s_bytes</span><span class="p">[</span><span class="o">..</span><span class="n">head</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">p_bytes</span><span class="p">[</span><span class="o">..</span><span class="n">head</span><span class="p">])</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="o">!</span><span class="nf">match_pat</span><span class="p">(</span><span class="o">&amp;</span><span class="n">s_bytes</span><span class="p">[</span><span class="n">tail</span><span class="o">..</span><span class="p">],</span> <span class="n">tail_slice</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/* ONE '*' */</span>
+
+<span class="k">if</span> <span class="n">random_pats</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">random_pats</span><span class="p">[</span><span class="mi">0</span><span class="p">]];</span>
+
+    <span class="k">return</span> <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+        <span class="k">true</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">s_bytes</span><span class="p">[</span><span class="n">head</span><span class="o">..</span><span class="n">tail</span><span class="p">]</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.all</span><span class="p">(|</span><span class="o">&amp;</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span> <span class="o">==</span> <span class="n">c</span><span class="p">)</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="至少两个不定串">至少两个不定串：</h4>
+
+<p>固定串划分就是：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">fixed_pats</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">]</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">random_pats</span>
+    <span class="nf">.iter</span><span class="p">()</span>
+    <span class="nf">.skip</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nf">.scan</span><span class="p">(</span><span class="n">random_pats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="p">|</span><span class="n">last_i</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">|</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">slice</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">p_bytes</span><span class="p">[</span><span class="o">*</span><span class="n">last_i</span><span class="o">..</span><span class="n">i</span><span class="p">];</span>
+        <span class="o">*</span><span class="n">last_i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="nf">Some</span><span class="p">(</span><span class="n">slice</span><span class="p">)</span>
+    <span class="p">})</span>
+    <span class="nf">.collect</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="step-3搜索固定串">Step-3：搜索固定串</h3>
+
+<p><strong>在文本串上预搜索所有固定串的位置</strong></p>
+
+<p>比起在文本匹配时动态地搜索每个固定串的位置，不如预先地搜索完所有固定串可能在文本串上出现的位置。</p>
+
+<p>这里还有一个限制，可以用来减少可能性地空间，就是固定串的先后顺序和它们自身的长度，不过在此之前需要先确保整个文本串的空余长度足以容纳所有固定串：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">fixed_pats_tot</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">fixed_pats</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|</span><span class="n">s</span><span class="p">|</span> <span class="n">s</span><span class="nf">.len</span><span class="p">())</span><span class="nf">.sum</span><span class="p">();</span>
+
+<span class="k">if</span> <span class="n">fixed_pats_tot</span> <span class="o">&gt;</span> <span class="n">tail</span> <span class="o">-</span> <span class="n">head</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>用一个嵌套的数组 <code class="language-plaintext highlighter-rouge">fixed_pats_pos</code> 来依次保存每个固定串的可能在文本串上的可能位置<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup><sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>，如果发现有个固定串没有合适的位置，那就可以提前返回失败了：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">start</span> <span class="o">=</span> <span class="n">head</span><span class="p">;</span>
+<span class="k">let</span> <span class="k">mut</span> <span class="n">end</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">tail</span> <span class="o">-</span> <span class="n">fixed_pats_tot</span><span class="p">;</span>
+
+<span class="k">let</span> <span class="k">mut</span> <span class="n">fixed_pats_pos</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+<span class="k">for</span> <span class="n">pat</span> <span class="k">in</span> <span class="n">fixed_pats</span><span class="nf">.iter</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="o">..=</span><span class="n">end</span><span class="p">)</span>
+    	<span class="nf">.filter</span><span class="p">(|</span><span class="o">&amp;</span><span class="n">j</span><span class="p">|</span> <span class="nf">match_pat</span><span class="p">(</span><span class="o">&amp;</span><span class="n">s_bytes</span><span class="p">[</span><span class="n">j</span><span class="o">..</span><span class="n">j</span> <span class="o">+</span> <span class="n">pat</span><span class="nf">.len</span><span class="p">()],</span> <span class="n">pat</span><span class="p">))</span>
+    	<span class="nf">.collect</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="n">pos</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">fixed_pats_pos</span><span class="nf">.push</span><span class="p">(</span><span class="n">pos</span><span class="p">);</span>
+
+    <span class="n">start</span> <span class="o">+=</span> <span class="n">pat</span><span class="nf">.len</span><span class="p">();</span>
+    <span class="n">end</span> <span class="o">+=</span> <span class="n">pat</span><span class="nf">.len</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里使用了简单地匹配搜索，因为模式和文本都非常地短，如果是其他的情况在串上地多模式搜索，就有 AC 自动机，或者简单高效地 Sunday 算法。</p>
+
+<h3 id="step-4回溯剪枝">Step-4：回溯剪枝</h3>
+
+<p>一般来说回溯剪枝比较简洁的实现形式是递归，不过我习惯性地写非递归的版本，它在 Debug 的时候看得更清楚。</p>
+
+<p>根据不定模式与文本的匹配情况，确定一个对应固定模式的起始范围，遍历这个起始范围，分别收集固定模式的可能位置，然后来到下一级。</p>
+
+<p>让我们澄清一下这个比较方法：首先是前面的不定串，然后是后面的固定串，这样不定串与它后面的固定串两两划分，直到最后一个不定串，对应得是尾部的固定串。</p>
+
+<p>这样一直到尾部的固定串都匹配时，就匹配成功，否则返回上一级，选取下一个可能位置，如果上一级为空，就继续向上返回。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">search_stack</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nd">vec!</span><span class="p">[</span><span class="n">head</span><span class="p">]];</span>
+<span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="k">loop</span> <span class="p">{</span>
+    <span class="c1">// check fail condition</span>
+    <span class="k">while</span> <span class="n">search_stack</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">search_stack</span><span class="nf">.pop</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">search_stack</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">i</span> <span class="o">=</span> <span class="n">search_stack</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">random_pats</span><span class="p">[</span><span class="n">lv</span><span class="p">]];</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">scale</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="o">&amp;</span><span class="n">s_c</span> <span class="k">in</span> <span class="o">&amp;</span><span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span><span class="o">..</span><span class="p">]</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">s_c</span> <span class="o">!=</span> <span class="n">c</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">scale</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// big enough</span>
+    <span class="p">}</span>
+
+    <span class="c1">// check succeed condition</span>
+    <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="n">fixed_pats_pos</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">tail</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">+</span> <span class="n">scale</span> <span class="o">&gt;=</span> <span class="n">tail</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">fixed_pats_pos</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span>
+        <span class="nf">.iter</span><span class="p">()</span>
+        <span class="nf">.filter</span><span class="p">(|</span><span class="o">&amp;&amp;</span><span class="n">j</span><span class="p">|</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">i</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="nf">.map</span><span class="p">(|</span><span class="o">&amp;</span><span class="n">j</span><span class="p">|</span> <span class="n">j</span> <span class="o">+</span> <span class="n">fixed_pats</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span><span class="nf">.len</span><span class="p">())</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="n">pos</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">search_stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">pos</span><span class="p">);</span>
+            <span class="n">lv</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>至此为止就是原始版本的匹配算法，它的运行时间在 273 ms (beats 10.49%)，可以通过，但还不够好，可以通过一点点改进显著地提高性能。</p>
+
+<h3 id="step-5记录失败">Step-5：记录失败</h3>
+
+<p>可以直观地发现，有大量可以简单避免的无效匹配，如果某级从某个位置开始的后面所有可能匹配都失败了，那么下次再有从这一级的该位置开始的搜索就可以直接跳过。</p>
+
+<p>可以直接用一个全局数组<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup>记录失败情况，并用栈追踪级别和位置，以在全局数组上更新：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">MAX_S_LEN</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">MAX_LV</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">MAX_S_LEN</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="k">mut</span> <span class="n">FAILED</span><span class="p">:</span> <span class="p">[</span><span class="nb">bool</span><span class="p">;</span> <span class="n">MAX_LV</span> <span class="o">*</span> <span class="n">MAX_S_LEN</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span> <span class="n">MAX_LV</span> <span class="o">*</span> <span class="n">MAX_S_LEN</span><span class="p">];</span>
+
+<span class="c1">// ...</span>
+
+<span class="c1">// i, scale</span>
+<span class="k">let</span> <span class="k">mut</span> <span class="n">bak_range</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)];</span>
+</code></pre></div></div>
+
+<p>修改后的回溯版本：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">search_stack</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nd">vec!</span><span class="p">[</span><span class="n">head</span><span class="p">]];</span>
+<span class="k">let</span> <span class="k">mut</span> <span class="n">lv</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="c1">// i, scale</span>
+<span class="k">let</span> <span class="k">mut</span> <span class="n">bak_range</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)];</span>
+
+<span class="k">unsafe</span> <span class="p">{</span> <span class="n">FAILED</span><span class="nf">.fill</span><span class="p">(</span><span class="k">false</span><span class="p">)</span> <span class="p">};</span>
+
+<span class="k">loop</span> <span class="p">{</span>
+    <span class="c1">// check fail condition</span>
+    <span class="k">while</span> <span class="n">search_stack</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">search_stack</span><span class="nf">.pop</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">search_stack</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">lv</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">let</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span> <span class="o">=</span> <span class="n">bak_range</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+        <span class="k">let</span> <span class="n">base</span> <span class="o">=</span> <span class="n">lv</span><span class="o">*</span><span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="n">i</span><span class="p">;</span>
+        <span class="k">unsafe</span> <span class="p">{</span> <span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">FAILED</span><span class="p">[</span><span class="n">base</span><span class="o">..=</span><span class="n">base</span><span class="o">+</span><span class="n">scale</span><span class="p">])</span><span class="nf">.fill</span><span class="p">(</span><span class="k">true</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">i</span> <span class="o">=</span> <span class="n">search_stack</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="n">FAILED</span><span class="p">[</span><span class="n">lv</span><span class="o">*</span><span class="n">MAX_S_LEN</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="p">}</span> <span class="p">{</span>
+        <span class="k">continue</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">random_pats</span><span class="p">[</span><span class="n">lv</span><span class="p">]];</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">scale</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="o">&amp;</span><span class="n">s_c</span> <span class="k">in</span> <span class="o">&amp;</span><span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span><span class="o">..</span><span class="p">]</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">s_c</span> <span class="o">!=</span> <span class="n">c</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">scale</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// big enough</span>
+    <span class="p">}</span>
+
+    <span class="c1">// check succeed condition</span>
+    <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="n">fixed_pats_pos</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">tail</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">+</span> <span class="n">scale</span> <span class="o">&gt;=</span> <span class="n">tail</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">fixed_pats_pos</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span>
+        <span class="nf">.iter</span><span class="p">()</span>
+        <span class="nf">.filter</span><span class="p">(|</span><span class="o">&amp;&amp;</span><span class="n">j</span><span class="p">|</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">i</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="nf">.map</span><span class="p">(|</span><span class="o">&amp;</span><span class="n">j</span><span class="p">|</span> <span class="n">j</span> <span class="o">+</span> <span class="n">fixed_pats</span><span class="p">[</span><span class="n">lv</span><span class="p">]</span><span class="nf">.len</span><span class="p">())</span>
+        <span class="nf">.collect</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="o">!</span><span class="n">pos</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">search_stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">pos</span><span class="p">);</span>
+            <span class="n">bak_range</span><span class="nf">.push</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">scale</span><span class="p">));</span>
+            <span class="n">lv</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>如果不计预先搜索固定串的开销<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">10</a></sup>，那么有失败记录的实现的时间复杂度就是 $O(nm)$ ，与标准实现的一样。</p>
+
+<p>它的运行时间稳定在 $0$ ms，还要优于简单形式的标准实现。</p>
+
+<h2 id="解dp">解②DP：</h2>
+
+<p>标准实现，不细究地话形式还是很简洁的。</p>
+
+<p>把文本串与模式串逐字符比较，模式串中的不定串前面的字符当做普通字符处理，后面的星号才当做不定串特别处理。</p>
+
+<p>分别用 $i$ 和 $j$ 表示文本串和模式串的匹配的前缀，二维地布尔数组 $\texttt{dp}[i][j]$ 表示 $s[0..i-1]$ 和 $p[0..j-1]$ 是否匹配。</p>
+
+<p>当 $s[i-1] \neq *$ 时，如果 $\texttt{dp}[i-1][j-1]$ 匹配，并且 $s[i-1] = p[i-1]$ ，那么 $\texttt{dp}[i][j]$ 就是匹配的；</p>
+
+<p>当$s[i-1] = *$ 时：</p>
+
+<ul>
+  <li>假设这个不定串匹配了零次，此时 $\texttt{dp}[i][j]=\texttt{dp}[i][j-2]$；</li>
+  <li>假设这个不定串至少匹配了一次，此时 $\texttt{dp}[i][j]=\texttt{dp}[i-1][j] \land s[i-1] = p[i-2]$</li>
+</ul>
+
+<p>最后匹配了整个文本串和模式串的 $i$， $j$ 的 $\texttt{dp}[i][j]$ 就是需要的匹配结果。</p>
+
+<p>另外需要考虑的一点是状态数组的初始状态：</p>
+
+<ul>
+  <li>当两个串都是空串时，状态是匹配的；</li>
+  <li>当其中一个串为空，另一个不为空时，应该是不匹配的，除了一个特殊情况；</li>
+  <li>特殊情况是，当文本串为空，模式串不为空，但全都是不定串时，比如 <code class="language-plaintext highlighter-rouge">a*b*.*</code> 时，也是匹配的</li>
+</ul>
+
+<h3 id="基本实现">基本实现</h3>
+
+<p>假如用文本串作为外循环：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">dp</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nd">vec!</span><span class="p">[</span><span class="kc">false</span><span class="p">;</span> <span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()];</span> <span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]</span>
+
+<span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="k">as</span> <span class="n">_</span> <span class="p">{</span>
+            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> 
+            <span class="p">||</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nd">char_match!</span><span class="p">(</span><span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">],</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span>
+            <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nd">char_match!</span><span class="p">(</span><span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// ...</span>
+
+<span class="nd">macro_rules!</span> <span class="n">char_match</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$p:expr</span><span class="p">,</span> <span class="nv">$s:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">(</span><span class="nv">$p</span> <span class="o">==</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="n">_</span> <span class="p">||</span> <span class="nv">$p</span> <span class="o">==</span> <span class="nv">$s</span><span class="p">)</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这是形式上最简洁的实现，但运行时间稳定在 $2$ ms，明显不如上面的自然实现，而 $O(nm)$ 的空间复杂度虽然在本题上可以忽略不计，但也有进一步优化的可能。</p>
+
+<h3 id="外分组实现">外分组实现</h3>
+
+<p>像上面一样在内循环里做模式串的字符检查： <code class="language-plaintext highlighter-rouge">p_bytes[j-1]</code> 是否为 <code class="language-plaintext highlighter-rouge">*</code> 符号的检查，以及 <code class="language-plaintext highlighter-rouge">p_bytes[j-2]</code> 和 <code class="language-plaintext highlighter-rouge">p_bytes[j-2]</code> 是否为 <code class="language-plaintext highlighter-rouge">.</code> 符号的检查，主要是为了代码简洁，其实不太合适，应当放到外循环里，而从实际测试看，这两者也是有可观地性能差距。</p>
+
+<p>把模式串的字符检查放在外循环也就是把模式串作为主迭代，使用 $\texttt{dp}[j][i]$，在这种情况下观察 $\texttt{dp}$ 数组的使用，可以发现实际上每轮都只会使用最近三行的数据：$\texttt{dp}[j][..]$ , $\texttt{dp}[j-1][i]$ ,  $\texttt{dp}[j-2][i]$ ，于是我们可以只用三个数组保存数据，每次循环结束就依次交换。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve_time_saving</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">p_bytes</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.as_bytes</span><span class="p">();</span>
+    <span class="k">let</span> <span class="n">s_bytes</span> <span class="o">=</span> <span class="n">s</span><span class="nf">.as_bytes</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pre2</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pre1</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cur</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+
+    <span class="n">pre1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+            <span class="c1">// The valid pattern has guaranteed that j &gt;= 2</span>
+            <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">||</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="p">||</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                            <span class="o">&amp;&amp;</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                            <span class="o">&amp;&amp;</span> <span class="n">cur</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+            <span class="n">cur</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">cur</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">cur</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">pre1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="nn">std</span><span class="p">::</span><span class="nn">mem</span><span class="p">::</span><span class="nf">swap</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">pre2</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">pre1</span><span class="p">);</span>
+        <span class="nn">std</span><span class="p">::</span><span class="nn">mem</span><span class="p">::</span><span class="nf">swap</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">pre1</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">cur</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">pre1</span><span class="p">[</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>注意最后 <code class="language-plaintext highlighter-rouge">pre1</code> 代表得才是 <code class="language-plaintext highlighter-rouge">cur</code> 。</p>
+
+<p>本实现的运行时间稳定在 $0$ ms ，堪比前面自然实现。</p>
+
+<h3 id="最省内存实现">最省内存实现</h3>
+
+<p>如果仍然将文本串作为外循环的实现，$\texttt{dp}[i][j]$ 数组可以进一步压缩，因为此时只会使用三种数据： $\texttt{dp}[i-1][j-1]$ , $\texttt{dp}[i-1][j]$ ,  $\texttt{dp}[i][j-2]$ ，也就是本行的数据以及上一行本列和上一行前一列的数据。</p>
+
+<p>因此只需要在迭代时复用一行的数据，某个位置数据在计算新的之前，保存的就是上一行的数据，可以用两个变量动态保存需要的上一行本列 $\texttt{dp}[i-1][j]$ ，和上一行前一列 $\texttt{dp}[i-1][j-1]$ 。</p>
+
+<p>不过因此初始状态 $\texttt{dp}[0]$ 需要分情况处理，第一行的初始状态是 $1$ ，而其余行的初始位置是 $0$ 。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">mut</span> <span class="n">DP</span><span class="p">:</span> <span class="p">[</span><span class="nb">bool</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve_mem_saving</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+    <span class="k">unsafe</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">p_bytes</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">s_bytes</span> <span class="o">=</span> <span class="n">s</span><span class="nf">.as_bytes</span><span class="p">();</span>
+
+        <span class="n">DP</span><span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="p">]</span><span class="nf">.fill</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+        <span class="n">DP</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="k">as</span> <span class="n">_</span> <span class="p">{</span>
+                <span class="n">DP</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">DP</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="c1">// ..i</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">pre_1</span> <span class="o">=</span> <span class="n">DP</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+            <span class="n">DP</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">pre_0</span> <span class="o">=</span> <span class="n">DP</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+
+                <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="k">as</span> <span class="n">_</span> <span class="p">{</span>
+                    <span class="n">DP</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">DP</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span>
+                        <span class="p">||</span> <span class="n">pre_0</span>
+                            <span class="o">&amp;&amp;</span> <span class="nd">char_match!</span><span class="p">(</span><span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">],</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]);</span>
+                <span class="p">}</span>
+                <span class="k">else</span> <span class="p">{</span>
+                    <span class="n">DP</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span>
+                        <span class="n">pre_1</span> <span class="o">&amp;&amp;</span> <span class="nd">char_match!</span><span class="p">(</span><span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]);</span>
+                <span class="p">}</span>
+
+                <span class="n">pre_1</span> <span class="o">=</span> <span class="n">pre_0</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">DP</span><span class="p">[</span><span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>由于本质上与基本实现一致，运行时间也是 $2$ ms 。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>或者用一个该题目下某用户的留言– “脑子充满了 DP” <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>这道题有 10k 的支持，但也有 1k 的反对 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>只有一种可能你会做得很利落，那就是你之前根本就做过类似的，这能称得上是好的题目吗？ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>这就更把人引到沟里去了，因为自然解法考虑的细节就更多了 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>因为事先我并不熟悉这个套路，应该说套路记得我，但我不记得它 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>不存在可以认为是空串的情况 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>显然它的长度比之前保存不定串位置的数组 <code class="language-plaintext highlighter-rouge">random_pats</code> 少 $1$ <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:8" role="doc-endnote">
+      <p>它至少应该在上一个固定串的后面，并且保证后面有足够的空间放置其他的固定串 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:9" role="doc-endnote">
+      <p>可以在多个测试用例里共享使用 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>这个开销显然很小 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0336 - Palindrome Pairs</title><link href="/algs/LeetCode0336.html" rel="alternate" type="text/html" title="0336 - Palindrome Pairs" /><published>2023-07-12T00:00:00+08:00</published><updated>2023-07-12T00:00:00+08:00</updated><id>/algs/LeetCode0336</id><content type="html" xml:base="/algs/LeetCode0336.html"><![CDATA[<p><em>通常为了分类页面的干净，不将LeetCode题解的文章放到算法分类里，但这一篇实在精彩，涉及了其他算法没有介绍过的，关于大量子串比较的通解性思路</em></p>
 
 <h2 id="题干">题干</h2>
 
@@ -3255,91 +3792,4 @@ s[6]=\text{a-a} &amp;aa &amp;d_2[6]=1\\
       <p>但是第三方地 <code class="language-plaintext highlighter-rouge">sortedcontainers.SortedList</code> 也令人不太满意，首先方法非常简单，只供最基本地使用，另外实在不知道它加一些 <code class="language-plaintext highlighter-rouge">not implemented，use xxx replace</code> 的方法到实现里有什么好处，调用不存在的方法本来就会报错，又不需要它来做警戒哨，这只是在混淆代码的静态分析程序，让智能提示里出现错误地选项，让每个第一次使用它的人浪费几十秒的时间，去发现正确的方法😡。 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">拓扑排序</title><link href="/algs/GraphTarjanDFS2.html" rel="alternate" type="text/html" title="拓扑排序" /><published>2023-05-25T00:00:00+08:00</published><updated>2023-05-25T00:00:00+08:00</updated><id>/algs/GraphTarjanDFS2</id><content type="html" xml:base="/algs/GraphTarjanDFS2.html"><![CDATA[<p>是解决有前置课程限制的课表安排之类的问题，用有向边代表一个事件和它的前置事件，那么这样构成的有向图的拓扑排序（结果并不唯一）就是一个规划方案。</p>
-
-<p>拓扑排序的对图的要求是有向无环图（Directed Acyclic Graph，DAG），可以使用一个基于 DFS 的拓扑排序的方法，可以在线性时间里进行拓扑排序，并且能够检查环的存在。</p>
-
-<p>这个基于 DFS 的线性的拓扑排序的算法很可能也是来源于 Tarjan<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，基本思路和前面介绍的<a href="/algs/GraphTarjanDFS.html">TarjanDFS</a>也是类似，关注边的回溯情况，非常简单，直接看实现。</p>
-
-<h2 id="思路">思路</h2>
-
-<p>区别于前面为每个点维护 $\text{index}$ 和 $\text{lowpt}$，来求解寻找强连通分量，拓扑排序只需要检测环是否存在，因此可以简化为一个三元值，指示点的未访问、访问中和访问结束三个状态，如果 DFS 过程中遇到了一个访问中的点，那么一定存在环。</p>
-
-<p>对于拓扑排序本身，按照 DFS 过程中，在所有出边访问结束后把当前点加入向量中，这就得到了一个拓扑排序的一个逆序结果，最后再把向量逆序回来，就得到了最终结果</p>
-
-<h2 id="实现">实现</h2>
-
-<p><a href="https://github.com/minghu6/rust-minghu6/blob/v0.1.7/coll_graph/src/toposort.rs">源代码</a></p>
-
-<h3 id="数据结构">数据结构</h3>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[repr(u8)]</span>
-<span class="nd">#[derive(Default,</span> <span class="nd">Clone,</span> <span class="nd">Copy,</span> <span class="nd">PartialEq,</span> <span class="nd">Eq)]</span>
-<span class="k">enum</span> <span class="n">DFSMeta</span> <span class="p">{</span>
-    <span class="nd">#[default]</span>
-    <span class="n">Green</span><span class="p">,</span>
-    <span class="n">Yellow</span><span class="p">,</span>
-    <span class="n">Red</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="k">use</span> <span class="nn">DFSMeta</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
-</code></pre></div></div>
-
-<h3 id="整体过程">整体过程</h3>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">toposort_tarjan</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">ans</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="n">max_v</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span><span class="nf">.max</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">vertexs</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nn">DFSMeta</span><span class="p">::</span><span class="nf">default</span><span class="p">();</span> <span class="n">max_v</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
-
-    <span class="k">for</span> <span class="n">u</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">==</span> <span class="n">Green</span> <span class="p">{</span>
-            <span class="nf">dfs</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">vertexs</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">ans</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="n">ans</span><span class="nf">.reverse</span><span class="p">();</span>
-
-    <span class="nf">Ok</span><span class="p">(</span><span class="n">ans</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h3 id="dfs子过程">DFS子过程</h3>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="nf">dfs</span><span class="p">(</span>
-    <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">,</span>
-    <span class="n">u</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
-    <span class="n">vertexs</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">DFSMeta</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="n">ans</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">Yellow</span><span class="p">;</span>
-
-    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">u</span> <span class="k">=&gt;</span> <span class="nd">vec!</span><span class="p">[])</span> <span class="p">{</span>
-        <span class="k">match</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="p">{</span>
-            <span class="n">Green</span> <span class="k">=&gt;</span> <span class="p">{</span>
-                <span class="nf">dfs</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">vertexs</span><span class="p">,</span> <span class="n">ans</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-            <span class="p">}</span>
-            <span class="n">Yellow</span> <span class="k">=&gt;</span> <span class="p">{</span>
-                <span class="k">return</span> <span class="nf">Err</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span> <span class="c1">// found edge on cycle</span>
-            <span class="p">}</span>
-            <span class="n">Red</span> <span class="k">=&gt;</span> <span class="p">(),</span> <span class="c1">// just skip</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">Red</span><span class="p">;</span>
-    <span class="n">ans</span><span class="nf">.push</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>
-
-    <span class="nf">Ok</span><span class="p">(())</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p><a href="https://scholar.google.com/citations?view_op=view_citation&amp;hl=en&amp;user=lazJixIAAAAJ&amp;cstart=20&amp;pagesize=80&amp;citation_for_view=lazJixIAAAAJ:p2g8aNsByqUC">Edge-disjoint spanning trees and depth-first search</a> RE Tarjan Acta Informatica 6 (2), 171-185 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[是解决有前置课程限制的课表安排之类的问题，用有向边代表一个事件和它的前置事件，那么这样构成的有向图的拓扑排序（结果并不唯一）就是一个规划方案。]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry></feed>
