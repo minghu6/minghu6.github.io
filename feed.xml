@@ -1,4 +1,315 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-07-22T18:28:00+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0010 - Regular Expression Matching</title><link href="/oth/LeetCode0010.html" rel="alternate" type="text/html" title="0010 - Regular Expression Matching" /><published>2023-07-21T00:00:00+08:00</published><updated>2023-07-21T00:00:00+08:00</updated><id>/oth/LeetCode0010</id><content type="html" xml:base="/oth/LeetCode0010.html"><![CDATA[<h2 id="题干">题干</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-07-26T18:04:45+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0032 - Longest Valid Parentheses</title><link href="/oth/LeetCode0032.html" rel="alternate" type="text/html" title="0032 - Longest Valid Parentheses" /><published>2023-07-25T00:00:00+08:00</published><updated>2023-07-25T00:00:00+08:00</updated><id>/oth/LeetCode0032</id><content type="html" xml:base="/oth/LeetCode0032.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/longest-valid-parentheses/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.10/0032_longest_valid_parans/py0032">源代码</a></p>
+
+<p>考虑合法的括号序列的性质：</p>
+
+<ul>
+  <li>开括号可以任意数量地出现，但是串结束的时候括号可能没有匹配完</li>
+  <li>闭括号不能超出开括号的数量</li>
+  <li>括号序列是对称的，从反方向来看，闭括号就是开括号，开括号就是闭括号</li>
+</ul>
+
+<p>给出一个 <strong>括号单元</strong> 的递归定义：<code class="language-plaintext highlighter-rouge">unit ::= () | (unit+)</code></p>
+
+<p>一个合法的括号串： <code class="language-plaintext highlighter-rouge">s=unit*</code></p>
+
+<h3 id="链接题目">链接题目</h3>
+
+<ul>
+  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
+</ul>
+
+<h2 id="解双向扫描">解①双向扫描：</h2>
+
+<p>一个只包含左右括号的串总是由三部分组成：括号单元、失配的闭括号、尾部的未完成的括号单元。</p>
+
+<ol>
+  <li>与前面出现的开括号数量匹配的闭括号属于括号单元；</li>
+  <li>其余的闭括号属于失配的闭括号；</li>
+  <li>而多余的开括号如果一直到最后都没有被匹配，就会形成未完成的括号单元</li>
+</ol>
+
+<p>对于括号单元和失配闭括号，一遍扫描就可以解决：统计开括号和闭括号，当数量相等时就是一个括号单元的结束，当遇到失配闭括号时就重置开括号闭括号数量。</p>
+
+<p>但是对于尾部可能存在的未完成的括号单元，用子串 $s_1$ 表示，因为需要统计未完成的括号单元内的最长括号序列，前面的算法处理不了<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，但是如果从反方向看<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>它尾部的未完成单元，它的尾部一定不存在未完成单元<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，因此可以一遍扫描计算得到这一部分的最长的合法括号序列。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="nb">open</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">close</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">open</span> <span class="o">==</span> <span class="n">close</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="nb">open</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">')'</span><span class="p">:</span>
+            <span class="n">close</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">close</span> <span class="o">&gt;</span> <span class="nb">open</span><span class="p">:</span>
+                <span class="c1"># reset
+</span>                <span class="nb">open</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">close</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="n">close</span> <span class="o">==</span> <span class="nb">open</span><span class="p">:</span>
+                <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="nb">open</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">open</span> <span class="o">&gt;</span> <span class="n">close</span><span class="p">:</span>
+        <span class="n">rev_open</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rev_close</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rev_ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">[</span><span class="n">start</span><span class="o">+</span><span class="mi">1</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">')'</span><span class="p">:</span>
+                <span class="n">rev_open</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
+                <span class="n">rev_close</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">if</span> <span class="n">rev_close</span> <span class="o">&gt;</span> <span class="n">rev_open</span><span class="p">:</span>
+                    <span class="c1"># reset
+</span>                    <span class="n">rev_open</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">rev_close</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">elif</span> <span class="n">rev_close</span> <span class="o">==</span> <span class="n">rev_open</span><span class="p">:</span>
+                    <span class="n">rev_ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rev_ans</span><span class="p">,</span> <span class="n">rev_open</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">rev_ans</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>时间复杂度 $O(n)$ ，空间复杂度 $O(1)$ ，是空间复杂度最优的解。</p>
+
+<h2 id="解dp">解②DP：</h2>
+
+<p>按照扫描方向看，用后缀数组 $\text{dp}[i]$ 表示结尾在 $i$ 处的最长合法括号序列的长度。</p>
+
+<ol>
+  <li>如果结尾字符是 <code class="language-plaintext highlighter-rouge">(</code> ，对应 $\text{dp}$ 一定为 $0$ ；</li>
+  <li>否则结尾字符是 <code class="language-plaintext highlighter-rouge">)</code> ，这时需要检查前一个字符对应的最长合法括号序列，如果在那个括号序列的前一个字符 $s[i-\text{dp}[i-1]-1]$ 又是 <code class="language-plaintext highlighter-rouge">(</code> ，则此时的 $\text{dp}[i] = 2+\text{dp}[i-1]$ ，如果此时 $i-\text{dp}[i-1]-1 \gt 0$ ，就再加上 $\text{dp}[i-\text{dp}[i-1]-2]$ ，否则没有匹配的开括号，对应 $\text{dp}$ 也为 $0$ 。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">dp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">')'</span> <span class="ow">and</span> <span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
+            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">2</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>时间复杂度 $O(n)$ ，空间复杂度 $O(n)$</p>
+
+<p>前面双向扫描也可以叫做两遍扫描，而 DP 方法只需要扫描一遍，时间性能更优。</p>
+
+<h2 id="解stack">解③Stack：</h2>
+
+<p>如果保存开括号的索引位置，那么当遇到闭括号弹出的时候，就可以计算这一对儿括号序列的长度，但有一个问题是<strong>如何计算顶层连续的括号单元？</strong></p>
+
+<p>这里使用了一个简单、但是 Tricky 的方法，保持第一个入栈的开括号前一个字符的位置在栈里，遇到闭括号时弹出开括号，当遇到失配的闭括号时，就弹出这个位置，如果栈为空，那就把当前位置入栈，如果下一个字符不是开括号就继续弹出并压入新的失配闭括号，直到遇到新的开括号，开启新的括号单元的序列。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># 保存两个信息，记录连续信息
+</span>    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
+            <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">stack</span><span class="p">:</span>
+                <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>时间复杂度 $O(n)$ ，空间复杂度 $O(n)$</p>
+
+<p>单位比较次数更少，时间性能最佳。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>可以对尾部的未完成匹配的部分的第二个字符开始再次应用算法，但这带来的了 $O(n^2)$ 的最坏时间复杂度。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>顺序从右到左，把右括号视为开括号，左括号视为闭括号 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>$s_1$ 至少开头的的那个开括号，从反向看是失配的闭括号，因此反向看尾部一定不存在未完成匹配 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">LeetCode Map</title><link href="/oth/LeetCodeMap.html" rel="alternate" type="text/html" title="LeetCode Map" /><published>2023-07-25T00:00:00+08:00</published><updated>2023-07-25T00:00:00+08:00</updated><id>/oth/LeetCodeMap</id><content type="html" xml:base="/oth/LeetCodeMap.html"><![CDATA[<h2 id="application-themes">Application Themes</h2>
+
+<h3 id="linesweep">LineSweep</h3>
+
+<ul>
+  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
+  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
+  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
+  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
+</ul>
+
+<h3 id="graph">Graph</h3>
+
+<ul>
+  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
+</ul>
+
+<h3 id="palindrome">Palindrome</h3>
+
+<ul>
+  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
+  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
+</ul>
+
+<h3 id="words-comparison">Words Comparison</h3>
+
+<ul>
+  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
+</ul>
+
+<h3 id="parentheses">Parentheses</h3>
+
+<ul>
+  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
+  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
+</ul>
+
+<h2 id="tech-themes">Tech Themes</h2>
+
+<h3 id="dp">DP</h3>
+
+<ul>
+  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
+  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
+  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
+</ul>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[Application Themes]]></summary></entry><entry><title type="html">0022 - Generate Parentheses</title><link href="/oth/LeetCode0022.html" rel="alternate" type="text/html" title="0022 - Generate Parentheses" /><published>2023-07-24T00:00:00+08:00</published><updated>2023-07-24T00:00:00+08:00</updated><id>/oth/LeetCode0022</id><content type="html" xml:base="/oth/LeetCode0022.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/generate-parentheses/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.9/0022_gen_paren/py0022">源代码</a></p>
+
+<p>额，测试用例就是题目限制的 $8$ 个。</p>
+
+<h2 id="解直接构造">解①直接构造：</h2>
+
+<p>直接构造所有可能的字符串，从空串开始逐个增加字符，<code class="language-plaintext highlighter-rouge">(</code> 和 <code class="language-plaintext highlighter-rouge">)</code>  ，直到字符串长度达到 $2n$ 。</p>
+
+<ul>
+  <li>左括号可以随意增加，只要总数不超过 $n$</li>
+  <li>右括号必须匹配一个左括号，不能随意增加，它的数量不能超过当前左括号的数量</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">open</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">close</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span><span class="n">n</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">ans</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">close</span> <span class="o">==</span> <span class="nb">open</span><span class="p">:</span>
+            <span class="n">build</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="s">'('</span><span class="p">,</span> <span class="nb">open</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">close</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">open</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+            <span class="n">build</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="s">')'</span><span class="p">,</span> <span class="nb">open</span><span class="p">,</span> <span class="n">close</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">build</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="s">'('</span><span class="p">,</span> <span class="nb">open</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">close</span><span class="p">)</span>
+            <span class="n">build</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="s">')'</span><span class="p">,</span> <span class="nb">open</span><span class="p">,</span> <span class="n">close</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">build</span><span class="p">(</span><span class="s">""</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>思路是本题最佳实现，$45$ ms ，虽然没有 beats 100% ，但和最快的例子没有区别</p>
+
+<h2 id="解树级构造">解②树级构造：</h2>
+
+<p>本题有一个 DP 的标签，从一开始考虑得是如果利用之前的构造进行构造。</p>
+
+<p>发现了这样一个办法：每个可能的串都由并列的几个括号单元组成，比如 <code class="language-plaintext highlighter-rouge">(()())(())</code> 就有两个括号单元 <code class="language-plaintext highlighter-rouge">(()())</code> 和 <code class="language-plaintext highlighter-rouge">(())</code> ，长度为 $n$ 的括号组合可以由长度为 $n-1$ 的括号组合按照每一个括号单元外面镶嵌一层括号，每两个括号单元外镶嵌括号，… ，每 $n$ 个括号单元外镶嵌括号，以及不镶嵌括号，增加一个新的并列括号单元。</p>
+
+<p>不过这种构造方法会构造出重复的情况，而且没法儿简单判断，最佳方法还是放入 <code class="language-plaintext highlighter-rouge">set</code> 里过滤一遍。</p>
+
+<h3 id="数据结构">数据结构：</h3>
+
+<p>考虑下括号单元的表示形式，最简单地是 <code class="language-plaintext highlighter-rouge">Leaf()</code> ，表示最基本的 <code class="language-plaintext highlighter-rouge">()</code>，直接使用单例模式（singleton）表示，而括号单元列表的括号嵌套就是 <code class="language-plaintext highlighter-rouge">Branch</code> ，为了用哈希集合过滤重复元素，特别定义了 <code class="language-plaintext highlighter-rouge">Branch</code> 的哈希方法 <code class="language-plaintext highlighter-rouge">__hash__</code> 和正确处理哈希冲突需要的判等方法 <code class="language-plaintext highlighter-rouge">__eq__</code> 。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Leaf</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">2</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">'()'</span>
+
+
+<span class="k">class</span> <span class="nc">Branch</span><span class="p">:</span> <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">Branch</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">children</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Leaf</span> <span class="o">|</span> <span class="n">Branch</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="bp">self</span><span class="p">.</span><span class="nb">repr</span> <span class="o">=</span> <span class="s">'({})'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span>
+            <span class="s">''</span><span class="p">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">children</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="nb">hash</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="nb">repr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="nb">repr</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="nb">hash</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">repr</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+
+<span class="n">leaf</span> <span class="o">=</span> <span class="n">Leaf</span><span class="p">()</span>
+<span class="n">parens</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{(</span><span class="n">leaf</span><span class="p">,)},</span> <span class="c1"># {()}
+</span>    <span class="p">{(</span><span class="n">Branch</span><span class="p">([</span><span class="n">leaf</span><span class="p">]),),</span> <span class="p">(</span><span class="n">leaf</span><span class="p">,</span> <span class="n">leaf</span><span class="p">)}</span>  <span class="c1"># {(()), ()()}
+</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="计算过程">计算过程：</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parens</span><span class="p">),</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">parens</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">gen_paren_comb</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="s">''</span><span class="p">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">])</span> <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">parens</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+
+
+<span class="k">def</span> <span class="nf">gen_paren_comb</span><span class="p">(</span><span class="n">prev_i</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="n">parens</span><span class="p">[</span><span class="n">prev_i</span><span class="p">]:</span>
+        <span class="c1"># nested on each parens units: 1~n
+</span>        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span><span class="o">-</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">parts</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">Branch</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="n">k</span><span class="p">]),)</span> <span class="o">+</span> <span class="n">parts</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="n">k</span><span class="p">:]</span>
+
+    <span class="k">yield</span> <span class="p">(</span><span class="n">leaf</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="n">prev_i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>在本题情况下不如直接递归地构造，运行时间 $59$ ms 。</p>
+
+<h2 id="注解">注解</h2>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0010 - Regular Expression Matching</title><link href="/oth/LeetCode0010.html" rel="alternate" type="text/html" title="0010 - Regular Expression Matching" /><published>2023-07-21T00:00:00+08:00</published><updated>2023-07-21T00:00:00+08:00</updated><id>/oth/LeetCode0010</id><content type="html" xml:base="/oth/LeetCode0010.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/regular-expression-matching/description/">问题描述</a></p>
 
@@ -2738,1058 +3049,6 @@ s[6]=\text{a-a} &amp;aa &amp;d_2[6]=1\\
     </li>
     <li id="fn:4" role="doc-endnote">
       <p>就像前面吐槽用 Python 主要是因为它足够慢，足够缺少优化，这个 Rust 实现运行基本在 0-2 ms，内存 2.x MB，很难说有测量比较的意义 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">1851 - Minimum Level to Include</title><link href="/oth/LeetCode1851.html" rel="alternate" type="text/html" title="1851 - Minimum Level to Include" /><published>2023-06-11T00:00:00+08:00</published><updated>2023-06-11T00:00:00+08:00</updated><id>/oth/LeetCode1851</id><content type="html" xml:base="/oth/LeetCode1851.html"><![CDATA[<h2 id="题干">题干</h2>
-
-<p><a href="https://leetcode.com/problems/minimum-interval-to-include-each-query/description/">问题描述</a></p>
-
-<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.4/1851_minimum_interval/rs1851">源代码</a></p>
-
-<h2 id="破题">破题</h2>
-
-<h3 id="一般性思路">一般性思路</h3>
-
-<p>看起来像是区间上的查询问题，而分段树总是可以解决这样的问题。</p>
-
-<p>用区间的长度表示一个区间的值，重叠部分取最小值，离散化区间坐标后建树，这些都是容易的，但问题是，对每次查询的值又要对它使用哪个或哪些离散化的坐标的查询结果进行表示？</p>
-
-<h4 id="不可能的在线查询">不可能的在线查询</h4>
-
-<p>一开始我的考虑是如果对查询的值在区间坐标上做二分查找，如果成功的话就用那个找到的坐标在树上查询，如果失败的话就比较左右两个临近坐标的是区间的结束还是开始，但是这样也无法正确解决问题，因为左右两个坐标是区间取得到的，它的结果可能是多个区间重叠得到的，而在查询值的位置其中决定最小值的区间可能已经结束了，此时查询值就取到了错误的值。</p>
-
-<p>只能把区间值和查询值一并离散化，然后直接查询，详见解①。</p>
-
-<h3 id="离线思路">离线思路</h3>
-
-<p>在实现完分段树版本后就在考虑，有没有树状数组的实现？ 按照一般思路这是难以想象的，但是这个过程中意识到既然所有的查询都是提前已知的，那么完全可以做离线查询，如果把查询值进行排序，按照顺序进行扫描，<strong>这不就完全回到了<a href="/oth/LeetCode0218.html">天际线问题</a> ?！</strong> 而这个思路也就是扫描线的思路。</p>
-
-<p>对应有树状数组的解② 和 优先级队列的解③</p>
-
-<h2 id="解">解①：</h2>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::{</span>
-    <span class="nn">cmp</span><span class="p">::{</span><span class="n">max</span><span class="p">,</span> <span class="n">min</span><span class="p">},</span>
-    <span class="nn">collections</span><span class="p">::</span><span class="n">HashMap</span><span class="p">,</span>
-<span class="p">};</span>
-
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="n">intervals</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">intervals</span>
-        <span class="nf">.iter</span><span class="p">()</span>
-        <span class="nf">.cloned</span><span class="p">()</span>
-        <span class="nf">.flatten</span><span class="p">()</span>
-        <span class="nf">.chain</span><span class="p">(</span><span class="n">queries</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">())</span>
-        <span class="nf">.collect</span><span class="p">();</span>
-
-    <span class="n">data</span><span class="nf">.sort_unstable</span><span class="p">();</span>
-    <span class="n">data</span><span class="nf">.dedup</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="n">data_map</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="nf">.iter</span><span class="p">()</span>
-        <span class="nf">.cloned</span><span class="p">()</span>
-        <span class="nf">.enumerate</span><span class="p">()</span>
-        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
-        <span class="nf">.collect</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">tree</span> <span class="o">=</span> <span class="nn">SegmentTree</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">data_map</span><span class="nf">.len</span><span class="p">());</span>
-
-    <span class="k">for</span> <span class="n">interval</span> <span class="k">in</span> <span class="n">intervals</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-        <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-
-        <span class="k">let</span> <span class="n">val</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-        <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
-        <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">r</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
-
-        <span class="n">tree</span><span class="nf">.update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">ans</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">queries</span><span class="nf">.len</span><span class="p">());</span>
-
-    <span class="k">for</span> <span class="n">q</span> <span class="k">in</span> <span class="n">queries</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">i</span> <span class="o">=</span> <span class="n">data</span><span class="nf">.binary_search</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
-
-        <span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="n">tree</span><span class="nf">.query</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
-
-        <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-            <span class="n">ans</span><span class="nf">.push</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="n">ans</span><span class="nf">.push</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="n">ans</span>
-<span class="p">}</span>
-
-<span class="nd">macro_rules!</span> <span class="n">combine</span> <span class="p">{</span>
-    <span class="p">(</span><span class="nv">$inplace</span><span class="p">:</span> <span class="n">expr</span><span class="p">,</span> <span class="nv">$val:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="nv">$val</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">*</span><span class="nv">$inplace</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="nv">$val</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nv">$inplace</span><span class="p">)</span> <span class="p">{</span>
-            <span class="o">*</span><span class="nv">$inplace</span> <span class="o">=</span> <span class="nv">$val</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">};</span>
-<span class="p">}</span>
-
-<span class="cd">/// DFS 型</span>
-<span class="k">struct</span> <span class="n">SegmentTree</span> <span class="p">{</span>
-    <span class="cd">/// range update</span>
-    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="n">range_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="k">impl</span> <span class="n">SegmentTree</span> <span class="p">{</span>
-    <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">range_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
-        <span class="k">Self</span> <span class="p">{</span>
-            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">range_end</span> <span class="o">*</span> <span class="mi">2</span><span class="p">],</span>
-            <span class="n">range_end</span><span class="p">,</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">update</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.range_end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">update_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
-            <span class="k">return</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span> <span class="p">{</span>
-            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">val</span><span class="p">);</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
-            <span class="k">let</span> <span class="n">sub_len</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-
-            <span class="k">let</span> <span class="n">i_lf</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-            <span class="k">let</span> <span class="n">i_rh</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sub_len</span><span class="p">;</span>
-
-            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_lf</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
-            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_rh</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
-
-            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i_lf</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
-            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i_rh</span><span class="p">,</span> <span class="n">val</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">query</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-        <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.range_end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">query_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span> <span class="p">{</span>
-            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
-            <span class="k">let</span> <span class="n">sub_len</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-
-            <span class="k">let</span> <span class="n">i_lf</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-            <span class="k">let</span> <span class="n">i_rh</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sub_len</span><span class="p">;</span>
-
-            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_lf</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
-            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_rh</span><span class="p">],</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
-
-            <span class="k">let</span> <span class="n">lv</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i_lf</span><span class="p">);</span>
-            <span class="k">let</span> <span class="n">rv</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.query_</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i_rh</span><span class="p">);</span>
-
-            <span class="k">if</span> <span class="n">lv</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-                <span class="n">rv</span>
-            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-                <span class="n">lv</span>
-            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-                <span class="nf">min</span><span class="p">(</span><span class="n">lv</span><span class="p">,</span> <span class="n">rv</span><span class="p">)</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-</code></pre></div></div>
-
-<p>这道题的输入数据和查询数据都有相当的规模，区间数量有 $10^5$ ，查询数量有 $10^7$，这对性能还是有一定要求的，</p>
-
-<p>运行时间： $250$ ms</p>
-
-<h2 id="解-1">解②：</h2>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">collections</span><span class="p">::</span><span class="n">HashMap</span><span class="p">;</span>
-
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="k">mut</span> <span class="n">intervals</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="n">intervals</span><span class="nf">.sort_unstable</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">queries</span>
-        <span class="nf">.into_iter</span><span class="p">()</span>
-        <span class="nf">.enumerate</span><span class="p">()</span>
-        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
-        <span class="nf">.collect</span><span class="p">();</span>
-
-    <span class="n">queries</span><span class="nf">.sort_unstable</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">queries</span>
-        <span class="nf">.iter</span><span class="p">()</span>
-        <span class="nf">.map</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="na">.0</span><span class="p">)</span>
-        <span class="nf">.chain</span><span class="p">(</span><span class="n">intervals</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="nf">.collect</span><span class="p">();</span>
-
-    <span class="n">data</span><span class="nf">.sort_unstable</span><span class="p">();</span>
-    <span class="n">data</span><span class="nf">.dedup</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="n">data_map</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="nf">.iter</span><span class="p">()</span>
-        <span class="nf">.cloned</span><span class="p">()</span>
-        <span class="nf">.enumerate</span><span class="p">()</span>
-        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
-        <span class="nf">.collect</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">bit</span> <span class="o">=</span> <span class="nn">FakeBIT</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">data_map</span><span class="nf">.len</span><span class="p">());</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">ans</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">queries</span><span class="nf">.len</span><span class="p">()];</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_ans</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">q_raw</span><span class="p">,</span> <span class="n">q_idx</span><span class="p">)</span> <span class="k">in</span> <span class="n">queries</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">prev_q_raw</span> <span class="o">==</span> <span class="n">q_raw</span> <span class="p">{</span>
-            <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_ans</span><span class="p">;</span>
-
-            <span class="k">continue</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="k">let</span> <span class="n">q</span> <span class="o">=</span> <span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">q_raw</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
-
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">intervals</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
-            <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
-
-            <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">q_raw</span> <span class="p">{</span>
-                <span class="k">break</span><span class="p">;</span>
-            <span class="p">}</span>
-
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
-
-            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="n">q_raw</span> <span class="p">{</span>
-                <span class="k">continue</span><span class="p">;</span>
-            <span class="p">}</span>
-
-            <span class="n">bit</span><span class="nf">.add</span><span class="p">(</span><span class="o">*</span><span class="n">data_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">r</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">(),</span> <span class="n">q</span><span class="p">,</span> <span class="n">r</span> <span class="o">-</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="k">let</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">bit</span><span class="nf">.suffix</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
-        <span class="k">let</span> <span class="n">res</span> <span class="o">=</span> <span class="k">if</span> <span class="n">suffix</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="n">suffix</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="o">-</span><span class="mi">1</span> <span class="p">};</span>
-
-        <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
-
-        <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="n">q_raw</span><span class="p">;</span>
-        <span class="n">prev_ans</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="n">ans</span>
-<span class="p">}</span>
-
-<span class="nd">macro_rules!</span> <span class="n">combine</span> <span class="p">{</span>
-    <span class="p">(</span><span class="nv">$inplace</span><span class="p">:</span> <span class="n">expr</span><span class="p">,</span> <span class="nv">$val:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="nv">$val</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">*</span><span class="nv">$inplace</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="nv">$val</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nv">$inplace</span><span class="p">)</span> <span class="p">{</span>
-            <span class="o">*</span><span class="nv">$inplace</span> <span class="o">=</span> <span class="nv">$val</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">};</span>
-<span class="p">}</span>
-
-<span class="nd">macro_rules!</span> <span class="n">range</span> <span class="p">{</span>
-    <span class="p">(</span><span class="nv">$i:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="p">(((</span><span class="nv">$i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">((</span><span class="nv">$i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">))</span> <span class="k">as</span> <span class="nb">usize</span>
-    <span class="p">};</span>
-<span class="p">}</span>
-
-<span class="k">struct</span> <span class="n">FakeBIT</span> <span class="p">{</span>
-    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="k">impl</span> <span class="n">FakeBIT</span> <span class="p">{</span>
-    <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">range_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
-        <span class="k">Self</span> <span class="p">{</span>
-            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">range_end</span><span class="p">],</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">loop</span> <span class="p">{</span>
-            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">addend</span><span class="p">);</span>
-
-            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nd">range!</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">||</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">end</span> <span class="p">{</span>
-                <span class="k">break</span><span class="p">;</span>
-            <span class="p">}</span>
-
-            <span class="n">i</span> <span class="o">-=</span> <span class="nd">range!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="cd">/// query i</span>
-    <span class="k">fn</span> <span class="nf">suffix</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-            <span class="nd">combine!</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">acc</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
-
-            <span class="n">i</span> <span class="o">+=</span> <span class="nd">range!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="n">acc</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>本实现对树状数组的活用的具体解释在<a href="/oth/LeetCode0218.html">天际线问题</a>的相关章节里。</p>
-
-<p>运行时间：$115$ ms</p>
-
-<h2 id="解-2">解③：</h2>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::{</span><span class="nn">collections</span><span class="p">::</span><span class="n">BinaryHeap</span><span class="p">,</span> <span class="nn">cmp</span><span class="p">::</span><span class="n">Reverse</span><span class="p">};</span>
-
-
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="k">mut</span> <span class="n">intervals</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="n">intervals</span><span class="nf">.sort_unstable_by_key</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">queries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">queries</span>
-        <span class="nf">.into_iter</span><span class="p">()</span>
-        <span class="nf">.enumerate</span><span class="p">()</span>
-        <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
-        <span class="nf">.collect</span><span class="p">();</span>
-
-    <span class="n">queries</span><span class="nf">.sort_unstable</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">ans</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">queries</span><span class="nf">.len</span><span class="p">()];</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">prev_ans</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">heap</span> <span class="o">=</span> <span class="nn">BinaryHeap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">q_raw</span><span class="p">,</span> <span class="n">q_idx</span><span class="p">)</span> <span class="k">in</span> <span class="n">queries</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">prev_q_raw</span> <span class="o">==</span> <span class="n">q_raw</span> <span class="p">{</span>
-            <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev_ans</span><span class="p">;</span>
-
-            <span class="k">continue</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">intervals</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
-            <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
-
-            <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">q_raw</span> <span class="p">{</span>
-                <span class="k">break</span><span class="p">;</span>
-            <span class="p">}</span>
-
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
-
-            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;</span> <span class="n">q_raw</span> <span class="p">{</span>
-                <span class="k">continue</span><span class="p">;</span>
-            <span class="p">}</span>
-
-            <span class="n">heap</span><span class="nf">.push</span><span class="p">(</span><span class="nf">PQE</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nf">Reverse</span><span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)));</span>
-        <span class="p">}</span>
-
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-
-        <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="nf">PQE</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">heap</span><span class="nf">.peek</span><span class="p">()</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="o">*</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">q_raw</span> <span class="p">{</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="n">v</span><span class="na">.0</span><span class="p">;</span>
-                <span class="k">break</span><span class="p">;</span>
-            <span class="p">}</span>
-
-            <span class="n">heap</span><span class="nf">.pop</span><span class="p">();</span>
-        <span class="p">}</span>
-
-        <span class="n">ans</span><span class="p">[</span><span class="n">q_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
-
-        <span class="n">prev_q_raw</span> <span class="o">=</span> <span class="n">q_raw</span><span class="p">;</span>
-        <span class="n">prev_ans</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="n">ans</span>
-<span class="p">}</span>
-
-
-<span class="nd">#[derive(PartialEq,</span> <span class="nd">Eq,</span> <span class="nd">Ord)]</span>
-<span class="k">struct</span> <span class="nf">PQE</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="n">Reverse</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">);</span>
-
-<span class="k">impl</span> <span class="nb">PartialOrd</span> <span class="k">for</span> <span class="n">PQE</span> <span class="p">{</span>
-    <span class="k">fn</span> <span class="nf">partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="n">Ordering</span><span class="o">&gt;</span> <span class="p">{</span>
-        <span class="k">self</span><span class="na">.1</span><span class="nf">.partial_cmp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">other</span><span class="na">.1</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-</code></pre></div></div>
-
-<p>运行时间：$60$ ms ，beats 100%</p>
-
-<h2 id="注解">注解</h2>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0391 - Perfect Rectangle</title><link href="/oth/LeetCode0391.html" rel="alternate" type="text/html" title="0391 - Perfect Rectangle" /><published>2023-06-08T00:00:00+08:00</published><updated>2023-06-08T00:00:00+08:00</updated><id>/oth/LeetCode0391</id><content type="html" xml:base="/oth/LeetCode0391.html"><![CDATA[<h2 id="题干">题干</h2>
-
-<p><a href="https://leetcode.com/problems/perfect-rectangle/description/">问题描述</a></p>
-
-<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.2/0391_perfect_rectangle">源代码</a></p>
-
-<h2 id="破题">破题</h2>
-
-<p>求一个完美覆盖的矩形，首先想到的就是通过面积比较进行判断，也就是所有矩形的最右、最上、最左、最下4个坐标构成的矩形的面积是否等于各小矩形的面积之和。但是只有面积的比较还不足以证明是“完美覆盖”，因为面积相等还包括空隙和重叠并存的情况，必须要确保小矩形之间没有空隙或者没有覆盖。</p>
-
-<p>在面积相等的情况下，如果小矩形之间有空隙，则必然还存在重叠，反之有重叠必然也有空隙，因此只要能检查任意空隙或者重叠任意一项即可。</p>
-
-<h2 id="解扫描线">解①：扫描线</h2>
-
-<p>说到重叠，就可以回到经典的扫描线+分段树/树状数组的解决方案：可以扫描一个维度然后在另一个维度上建树，利用数据结构做区间更新后的区间查询，以观察是否有重叠的边。</p>
-
-<p>比如可以扫描 $x$ 轴，在 $y$ 轴上建树，每扫描到一个小矩形 $[x, y, a, b]$，就把它在 $y$ 轴上的区间 $[y, b]$ 更新到树上，在这个过程中检查 $[y, b]$ 是否完全未被覆盖，如果未完全未覆盖，意思是当前扫描线位置存在重叠的边，直接返回 <code class="language-plaintext highlighter-rouge">false</code>；当这个小矩形结束时，再把 $[y, b]$ 的更新取消，就这样扫描到最后一个小矩形，如果都没问题，就说明不存在重叠的情况。</p>
-
-<h3 id="区间闭合性">区间闭合性</h3>
-
-<p>前面讲对于小矩形 $[x, y, a, b]$ 更新 $y$ 轴上的区间 $[y, b]$ ，但这是不准确的，因为对于完美矩形，小矩形紧挨着的情况是正确的<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">1</a></sup>而不是错误的，因此不能用两端闭合的区间表示，而需要用半闭半开区间，不妨用底部闭合顶部开放的区间<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>，这样就是更新区间 $[y, b-1]$ 。</p>
-
-<p>同样对于扫描线的 $x$ 轴来说，也需要半闭半开区间来容纳小矩形的边紧挨的情况。</p>
-
-<h3 id="数据离散化和排序">数据离散化和排序</h3>
-
-<p>照例，建树的那一轴，这里是 $y$ 轴，其上的数据需要离散化处理，但有点儿意外得是，给定的小矩形列表并没有按照任何一个轴来排序，这是什么用意呢，暗示了什么呢？暂且按下不表，我们这次要手动排序了。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">sortedcontainers</span> <span class="kn">import</span> <span class="n">SortedList</span><span class="p">,</span> <span class="n">SortedSet</span>
-
-
-<span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">isRectangleCover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="n">y_data</span> <span class="o">=</span> <span class="n">SortedSet</span><span class="p">()</span>
-
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rectangles</span><span class="p">:</span>
-        <span class="n">y_data</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-        <span class="n">y_data</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-
-    <span class="n">y_map</span> <span class="o">=</span> <span class="p">{</span> <span class="n">y</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">y_data</span><span class="p">)}</span>
-
-    <span class="c1"># ...
-</span></code></pre></div></div>
-
-<p>$x$ 轴也要排序，在计算小矩形面积之和的遍历过程中顺便进行在线地对矩形的竖边按照 $x$ 坐标排序，理论上应当比完整列表上的排序快，$x$ 坐标分为了小矩形的入边和出边，分别用 <code class="language-plaintext highlighter-rouge">ent</code> 和 <code class="language-plaintext highlighter-rouge">ex</code> 表示<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">3</a></sup>。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="c1"># ... def solve
-</span>    
-    <span class="n">area_sum</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">ent</span> <span class="o">=</span> <span class="n">SortedList</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">ex</span> <span class="o">=</span> <span class="n">SortedList</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rectangles</span><span class="p">:</span>
-        <span class="n">area_sum</span> <span class="o">+=</span> <span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">y</span><span class="p">)</span>
-
-        <span class="n">y</span> <span class="o">=</span> <span class="n">y_map</span><span class="p">[</span><span class="n">y</span><span class="p">]</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">y_map</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
-
-        <span class="n">ent</span><span class="p">.</span><span class="n">add</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
-        <span class="n">ex</span><span class="p">.</span><span class="n">add</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
-
-    <span class="k">del</span> <span class="n">y_map</span>
-    
-    <span class="c1"># ...
-</span></code></pre></div></div>
-
-<p>$x$ 轴和 $y$ 轴数据排序后就可以计算大矩形的面积，然后进行面积的比较</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="c1"># ... def solve
-</span>
-    <span class="n">min_x</span> <span class="o">=</span> <span class="n">ent</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">max_a</span> <span class="o">=</span> <span class="n">ex</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">min_y</span> <span class="o">=</span> <span class="n">y_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">max_b</span> <span class="o">=</span> <span class="n">y_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="n">cover_area</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_a</span> <span class="o">-</span> <span class="n">min_x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_b</span> <span class="o">-</span> <span class="n">min_y</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">area_sum</span> <span class="o">!=</span> <span class="n">cover_area</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">False</span>
-    
-    <span class="c1"># ...
-</span></code></pre></div></div>
-
-<h3 id="解分段树">解⒈⒈：分段树</h3>
-
-<p>分段树的如何赋值来表示一个区间的覆盖，这需要考虑。乍一看，好像只需要一个布尔类型的标记，赋值在对应的区间上就可以了，但是这样不能精确表示区间的覆盖程度，比如如果一个父区间下的某个子区间被覆盖了，那么这个父区间是被覆盖了还是没被覆盖？</p>
-
-<p>于是（在更新的时候）我们使用区间的长度来赋值所覆盖区间，这样递归完成后向上更新父区间，到时候只要检查区间的值是否等于区间长度就可以判断该区间是否完全被覆盖，或者是否等于零，表示区间完全未被覆盖。</p>
-
-<p>通过抛出异常传递区间存在重合的情况。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="c1"># ... def solve
-</span>
-    <span class="n">segtree</span> <span class="o">=</span> <span class="n">SegmentTree</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_data</span><span class="p">))</span>
-
-    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">j_end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">ent</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">j_end</span> <span class="ow">and</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">:</span>
-            <span class="n">segtree</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">segtree</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
-
-    <span class="k">return</span> <span class="bp">True</span>
-
-
-<span class="k">class</span> <span class="nc">SegmentTree</span><span class="p">:</span>
-    <span class="s">"""DFS型"""</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">range_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">marked</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">root</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">range_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-        <span class="s">"""It would raise when try to mark an occupied position"""</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">_update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">root</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="n">range_len</span> <span class="o">=</span> <span class="n">tr</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="ow">and</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># can't catch class don't inherrit from BaseException
-</span>                <span class="c1"># however so what we could use except to catch
-</span>                <span class="k">raise</span> <span class="s">"Occupied"</span>
-
-            <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
-                <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">range_len</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-            <span class="n">sub_l</span> <span class="o">=</span> <span class="p">(</span><span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">range_len</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="s">"Occupied"</span>
-
-            <span class="bp">self</span><span class="p">.</span><span class="n">_update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">mid</span><span class="p">),</span> <span class="n">val</span><span class="p">,</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">_update</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">]</span>
-</code></pre></div></div>
-
-<h3 id="解树状数组">解⒈⒉：树状数组</h3>
-
-<p>是对树状数组做区间更新后的区间查询，标记区间就是区间里的每个位置的值加一，区间取消标记就是区间里每个位置的值加负一，于是可以通过查询区间和是否为零来测试区间是否有覆盖的情况。</p>
-
-<p>具体算法的公式<a href="/algs/FenwickTree.html">这里</a>的有关章节已有详细介绍，就不再赘述。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="c1"># ... def solve
-</span>    <span class="n">cobit</span> <span class="o">=</span> <span class="n">CoBIT</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_data</span><span class="p">))</span>
-
-    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">j_end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">ent</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">j_end</span> <span class="ow">and</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">:</span>
-            <span class="n">cobit</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">cobit</span><span class="p">.</span><span class="n">query</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
-
-        <span class="n">cobit</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="bp">True</span>
-
-
-<span class="k">class</span> <span class="nc">CoBIT</span><span class="p">:</span>
-    <span class="s">"""Range Update &amp; Range Query"""</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">range_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">b1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">b2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span>
-
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="s">"""range add x for [l, r]"""</span>
-
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">prefix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">prefix</span><span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span> <span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">CoBIT</span><span class="p">.</span><span class="n">_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">-</span> <span class="n">CoBIT</span><span class="p">.</span><span class="n">_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-
-    <span class="o">@</span><span class="nb">staticmethod</span>
-    <span class="k">def</span> <span class="nf">_add</span><span class="p">(</span><span class="n">bit</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">bit</span><span class="p">):</span>
-            <span class="n">bit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="o">@</span><span class="nb">staticmethod</span>
-    <span class="k">def</span> <span class="nf">_prefix</span><span class="p">(</span><span class="n">bit</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">acc</span> <span class="o">+=</span> <span class="n">bit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">i</span> <span class="o">-=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">acc</span>
-</code></pre></div></div>
-
-<h2 id="解顶点计数">解②：顶点计数</h2>
-
-<p>扫描线思路是常规做法，但是回到前面埋下的伏笔：给出的小矩形列表没有按照任何一个轴的方向排序，实际上存在着不需要扫描线加区间查询的数据结构的更Tricky的做法。</p>
-
-<p>可以通过统计每个点的出现次数，判断是否存在小矩形重叠的情况。</p>
-
-<p>在面积相等情况下，重叠与否的充分必要条件是：如果点位于大矩形的四角，那么它们只能出现 $1$ 次；如果位于边上，只能出现 $2$ 次；如果位于其他位置，也就是大矩形内部，那么只能出现 $2$ 或 $4$ 次。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
-
-
-<span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">isRectangleCover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="n">vertexs</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
-    <span class="n">min_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">"inf"</span><span class="p">)</span>
-    <span class="n">min_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">"inf"</span><span class="p">)</span>
-    <span class="n">max_a</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">max_b</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">area_sum</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rectangles</span><span class="p">:</span>
-        <span class="n">min_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="n">min_y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="n">max_a</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_a</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-        <span class="n">max_b</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_b</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-
-        <span class="n">vertexs</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">vertexs</span><span class="p">[(</span><span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">vertexs</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">vertexs</span><span class="p">[(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="n">area_sum</span> <span class="o">+=</span> <span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">y</span><span class="p">)</span>
-
-    <span class="n">cover_area</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_a</span> <span class="o">-</span> <span class="n">min_x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_b</span> <span class="o">-</span> <span class="n">min_y</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">area_sum</span> <span class="o">!=</span> <span class="n">cover_area</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">False</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">),</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">vertexs</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">x0</span> <span class="ow">in</span> <span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">max_a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">y0</span> <span class="ow">in</span> <span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">max_b</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">False</span>
-        <span class="k">elif</span> <span class="n">x0</span> <span class="ow">in</span> <span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">max_a</span><span class="p">)</span> <span class="ow">or</span> <span class="n">y0</span> <span class="ow">in</span> <span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">max_b</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
-                <span class="k">return</span> <span class="bp">False</span>
-
-    <span class="k">return</span> <span class="bp">True</span>
-</code></pre></div></div>
-
-<p>这里面 <code class="language-plaintext highlighter-rouge">Counter</code> 这个类比较甜，它实际上起到了一个提供默认值的默认数组的功能<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">4</a></sup>。</p>
-
-<h2 id="解微积分">解③：微积分</h2>
-
-<p>可以用曲面积分相关知识简化求解过程，事实上所有计算几何相关的问题总有数学上的解决思路，但由于这并不是我们专注的领域，就不介绍了。</p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:2" role="doc-endnote">
-      <p>唯一正确的 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>当然也可以选择顶部闭合、底部开放，这没什么区别 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>用 <code class="language-plaintext highlighter-rouge">ex</code> 而不是 <code class="language-plaintext highlighter-rouge">exit</code> 主要是为了避免和 Python 关键字冲突，（这个冲突）会造成代码高亮上的问题 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>我是真的服了，在习惯了 Rust 风格库的事无巨细，我从来发现 Python 的库提供的 API 如此匮乏，<code class="language-plaintext highlighter-rouge">DefaultDict</code> 居然只提供c传默认值构造方法的参数而没有提供传一个固定默认值的参数 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0218 - The Skyline Problem</title><link href="/oth/LeetCode0218.html" rel="alternate" type="text/html" title="0218 - The Skyline Problem" /><published>2023-06-01T00:00:00+08:00</published><updated>2023-06-01T00:00:00+08:00</updated><id>/oth/LeetCode0218</id><content type="html" xml:base="/oth/LeetCode0218.html"><![CDATA[<h2 id="题干">题干</h2>
-
-<p><a href="https://leetcode.com/problems/the-skyline-problem/description/">问题描述</a></p>
-
-<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.1/0218_the_skyline_problem">源代码</a></p>
-
-<h2 id="破题">破题</h2>
-
-<p>这道题的关键是能观察到：关键点是顺着 $x$ 轴的方向，当剪影的高度发生变化时确定的。</p>
-
-<p>这样，如果能确定每个 $x$ 坐标对应的建筑物的最大高度，就能求出关键点。</p>
-
-<h2 id="解分段树">解①：分段树</h2>
-
-<p>最直接的一个思路是把建筑列表里的每栋建筑的高度在它所属区间上标识出，这样就可以查询每个 $x$ 坐标的最大高度。</p>
-
-<p>分段树（Segment Tree）就适用于这种情况：考虑分段树的里的批量更新，既支持批量累加，又支持批量赋值，而批量赋值就适用于当前这种给定区间标记高度的任务。</p>
-
-<p>需要注意：</p>
-
-<ol>
-  <li>由于建筑间区间重叠，因此批量赋值和查询时要取（建筑高度）的最大值，作为剪影的代表；</li>
-  <li>建筑的右边缘的高度是无效的，也就是对于左右端的坐标分别为 $l$ 和 $r$ 的建筑，它的高度有效范围为 $[l, r)$</li>
-</ol>
-
-<h3 id="python-实现">Python 实现<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></h3>
-
-<p><strong>分段树</strong></p>
-
-<p>使用<a href="/algs/SegmentTree.html">DFS 型的分段树</a>来节省一半的内存。</p>
-
-<p>由于实际上我们只使用批量赋值的信息，而不需要原信息，因此直接省略了树本身，只保留更新的结构。</p>
-
-<p>有一点， Python 的函数调用是真的消耗时间，在 Rust 里面你可以随意地使用函数包装，实际上调用的成本几乎都可以被优化掉，因此可以基于 API 的人体工程学考虑，用 Cursor 类别处理“分段”信息，但在 Python 上，这种频繁调用地包装函数会导致运行时间变为 3 倍，于是我们不使用包装，而是把参数就地直接展开。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SegmentTree</span><span class="p">():</span>
-    <span class="s">"""DFS Layout,
-    left: i+1,
-    right: 2+2l
-    """</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="c1"># Just ignore self.tree
-</span>        <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">data_len</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">root</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">data_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="s">"""Override the smaller value"""</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">_assign</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">root</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="ow">and</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-            <span class="n">subl</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span>
-
-            <span class="bp">self</span><span class="p">.</span><span class="n">_assign</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">_assign</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">subl</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="s">"""query [l, r] -&gt; (x, h)"""</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_query</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">root</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">0</span>
-
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="ow">and</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-            <span class="n">subl</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
-                    <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="p">)</span>
-
-                <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">subl</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">subl</span><span class="p">],</span>
-                    <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="p">)</span>
-
-                <span class="bp">self</span><span class="p">.</span><span class="n">assigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-
-            <span class="n">lv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_query</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_query</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">subl</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">lv</span><span class="p">,</span> <span class="n">rv</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p><strong>数据离散化</strong></p>
-
-<p>在测试里有专门的 $x$ 坐标很大的建筑物，如果直接按照 $x$ 坐标建树，性能将是不可接受的，需要进行离散化处理。</p>
-
-<p>我们可以取建筑两端的 $x$ 坐标，用它们的排名压缩坐标轴。需要注意一点，如果用向量和下标的方式储存坐标与排名的对应关系，需要跳过重复的元素，否会产生同一坐标不同排名的情况，从而妨碍正确结果的求出。</p>
-
-<p><strong>完整过程</strong></p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">bisect_right</span>
-
-
-<span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">getSkyline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buildings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-        <span class="k">return</span> <span class="n">solve</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">buildings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="c1"># 数据离散化 (Discretization)
-</span>
-    <span class="n">x_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">buildings</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-        <span class="k">if</span> <span class="n">x_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">l</span><span class="p">:</span>
-            <span class="n">x_data</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">:</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">bisect_right</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-        <span class="c1"># i != 0 for right x-axis
-</span>        <span class="k">if</span> <span class="n">x_data</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">r</span><span class="p">:</span>
-            <span class="n">x_data</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-
-    <span class="n">x_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_data</span><span class="p">)}</span>
-
-    <span class="c1"># Build Segment Tree by Batch Update
-</span>
-    <span class="n">segtree</span> <span class="o">=</span> <span class="n">SegmentTree</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_data</span><span class="p">))</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">x_map</span><span class="p">[</span><span class="n">l</span><span class="p">]</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">x_map</span><span class="p">[</span><span class="n">r</span><span class="p">]</span>
-		<span class="c1"># [l, r)
-</span>        <span class="n">segtree</span><span class="p">.</span><span class="n">assign</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="c1"># Sweep Line
-</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_data</span><span class="p">):</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">segtree</span><span class="p">.</span><span class="n">query</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span> <span class="ow">or</span> <span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">h</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">res</span>
-
-<span class="c1"># 分段树定义如上
-</span></code></pre></div></div>
-
-<h2 id="解树状数组">解②：树状数组</h2>
-
-<p>如果说前面对分段树的改动还比较小<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，那么<a href="/algs/FenwickTree.html">树状数组</a>的思路里面对树状数组的改动就比较tricky了，因为普通的树状数组，以下简称 BIT（Binary Indexed Tree）， 用某个点的前缀和表示该点的高度，那么任何 $x$ 轴靠前坐标上的高度更新都会影响后面位置的高度的计算。</p>
-
-<p>因此我们对树状数组的改动是让它前面位置的更新不影响后面位置前缀和的计算，假如，考虑一种情况，所有建筑的右边缘都是 $\infty$ ，而更新和查询就像前面分段树一样，都是取所有相关位置值的最大：也就是更新的时候扫描所有祖先节点，取其位置既有值和当前更新值的最大，查询的时候扫描所有前缀位置，取最大值，那么此时就可以用树状数组正确地更新高度和单点查询。</p>
-
-<p>因为此时的更新要么不影响后面位置的高度，要么影响得都是建筑区间重叠的部分：</p>
-
-<p>假设两栋建筑的区间分别为 $[l_0, \infty)$ 和 $[l_1, \infty)$ 高度分别为 $h_0$ 和 $h_1$ ，如果 $l_0 \neq l_1$ ，不妨令 $l_0 \lt l_1$ ，那么在 $[l_0, l_1)$ 的区间上，两者互不影响，因为这个区域只有 $l_0$ 的更新，而在 $[l_1, \infty)$ 的区域，两者本来就是区间重叠，用两个值中的最大值覆盖即可。这样在查询高度的时候，对于位置 $x$ ，如果 $x\in [l_0, l_1)$ ，那它的高度是 $h_0$ ，如果 $x\in [l_1, \infty)$ ，那它的高度是 $\max (h_0, h_1)$ 。</p>
-
-<p>当然 $\infty$ 的情况既不可能，也无法计算，但是如果说所有建筑的右边缘都是重合的，都是 $r$ ，而所有超过 $r$ 的 $x$ 轴上的位置都不不需要查询，那么问题也是等价的。</p>
-
-<p>那么回到当前问题，如果建筑能够按照右边缘的 $x$ 轴位置从右到左的顺序排列，然后我们从右向左扫描，只在扫描到建筑的右边缘时才把该建筑（所代表的一个区间的高度）更新到树状数组里，然后对扫描线位置进行高度查询，这样我们就可以确保所有建筑的右边缘都是重合的，并且不需要查询超过重合点之后的位置。</p>
-
-<p>但是，但是，且不说我们的建筑是按照左边缘的从左到右的顺序排列的，关键问题是题目要求地关键点是按照从左到右扫描的顺序得到的，根本不能从右向左扫描，这要怎么解决呢？</p>
-
-<p>于是有了这里比较Tricky地树状数组地构造<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>：</p>
-
-<p>既然一定要从左向右扫描，我™ 😡直接从数组的尾部开始建立这个树状数组！</p>
-
-<p>这样某个位置的高度就是它的后缀最大值，而它的祖先节点就在它的左边，从左向右扫描时就完美符合了前面假设得树状数组的适应情况！</p>
-
-<p><strong>反向树状数组</strong></p>
-
-<p>对于 base 1 的数组，$x$ 所辖区间长度是 <code class="language-plaintext highlighter-rouge">x &amp; (-x)</code> ，而对于 base 0 的数组则是 <code class="language-plaintext highlighter-rouge">(x+1) &amp; -(x+1)</code> ，对于从尾部建立起来的树状数组，$x’ = n - x - 1$ ，其中 $n$ 为数组长度。</p>
-
-<p>树状数组更新的时候实际上只需要更新到扫描线的位置（也就是代码里的 <code class="language-plaintext highlighter-rouge">until</code> ）</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">RevBIT</span><span class="p">():</span>
-    <span class="s">"""Reversed Binary Indexed Tree"""</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="c1"># base 0
-</span>        <span class="bp">self</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">data_len</span>
-
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">until</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">until</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
-
-            <span class="n">i</span> <span class="o">-=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-            <span class="n">acc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-            <span class="n">l</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">break</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="n">l</span>
-
-        <span class="k">return</span> <span class="n">acc</span>
-</code></pre></div></div>
-
-<p><strong>总体过程</strong></p>
-
-<p>总体过程首先是 $x$ 轴坐标的排序和离散化，和前面分段树的处理一样，后面在扫描过程中更新建筑到树状数组上和即时地查询，显然对于每栋建筑，我们只需要更新建筑的右边缘的坐标<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup>和高度。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">bisect_right</span>
-
-
-<span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">getSkyline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buildings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-        <span class="k">return</span> <span class="n">solve</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">buildings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="n">x_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">buildings</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-        <span class="k">if</span> <span class="n">x_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">l</span><span class="p">:</span>
-            <span class="n">x_data</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">:</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">bisect_right</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">x_data</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">r</span><span class="p">:</span>
-            <span class="n">x_data</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-
-    <span class="n">x_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_data</span><span class="p">)}</span>
-
-    <span class="n">bit</span> <span class="o">=</span> <span class="n">RevBIT</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_data</span><span class="p">))</span>
-
-    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_data</span><span class="p">):</span>
-        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">==</span> <span class="n">buildings</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="n">r</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">buildings</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
-
-            <span class="n">bit</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">x_map</span><span class="p">[</span><span class="n">r</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">until</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
-
-            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="n">h</span> <span class="o">=</span> <span class="n">bit</span><span class="p">.</span><span class="n">suffix</span><span class="p">(</span><span class="n">x_map</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span> <span class="ow">or</span> <span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">h</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">res</span>
-</code></pre></div></div>
-
-<p>但是，在仔细考虑下我们对反向建构的树状数组的使用🤔，发现虽然我们扫描后缀，但只要一个位置来保存高度，而不需要真地计算前缀和，那么我们完全可以用一个普通的树状数组的结构，但是用父节点保存高度，更新的时候向前更新节点（查询扫描的逆过程，比如 $7 \rightarrow 6 \rightarrow 4 \rightarrow 2 \rightarrow 1$）<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，查询的时候向后扫描所有父节点。</p>
-
-<p><strong>徒有其表地树状数组</strong></p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FakeBIT</span><span class="p">():</span>
-    <span class="s">"""Fake Binary Indexed Tree whose prefix for update and suffix for query"""</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="c1"># base 0
-</span>        <span class="bp">self</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">data_len</span>
-
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">until</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">until</span><span class="p">:</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
-
-            <span class="n">i</span> <span class="o">-=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">suffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">):</span>
-            <span class="n">acc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-            <span class="n">i</span> <span class="o">+=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">acc</span>
-</code></pre></div></div>
-
-<p>总体过程和反向树状数组一样，只需要把 <code class="language-plaintext highlighter-rouge">bit = RevBIT(len(x_data))</code> 替换为 `    bit = FakeBIT(len(x_data))`</p>
-
-<h2 id="解优先级队列">解③：优先级队列</h2>
-
-<p>借着上文，我们从反向树状数组推到假树状数组，于是可以想到，为什么不干脆用优先级队列取代上面树状数组的作用？每次扫描的时候把把建筑更新到优先级队列里，保存一个右边缘坐标和高度，查询的时候就从对队首弹出所有右边缘不符合条件的元素，然后新的队首的元素的高度就是我们需要的该位置的最大高度，当然如果队列为空，就是高度为 $0$ 。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">insort</span>
-<span class="kn">from</span> <span class="nn">sortedcontainers</span> <span class="kn">import</span> <span class="n">SortedList</span>
-
-
-<span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">getSkyline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buildings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-        <span class="k">return</span> <span class="n">solve</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">buildings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="n">x_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">]</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">:</span>
-        <span class="n">insort</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-
-    <span class="n">queue</span> <span class="o">=</span> <span class="n">SortedList</span><span class="p">([],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">n_buildings</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x_data</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_buildings</span> <span class="ow">and</span> <span class="n">buildings</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span><span class="p">:</span>
-            <span class="n">queue</span><span class="p">.</span><span class="n">add</span><span class="p">((</span><span class="n">buildings</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">buildings</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]))</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="c1"># pop outdated from priority queue
-</span>
-        <span class="k">while</span> <span class="n">queue</span> <span class="ow">and</span> <span class="n">queue</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">:</span>
-            <span class="n">queue</span><span class="p">.</span><span class="n">pop</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">queue</span><span class="p">:</span>
-            <span class="n">h</span> <span class="o">=</span> <span class="n">queue</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">h</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span> <span class="ow">or</span> <span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">h</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">h</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">res</span>
-</code></pre></div></div>
-
-<p><code class="language-plaintext highlighter-rouge">sortedcontainers</code> 是 LeetCode 承诺地自动包含进 Python 环境里的第三方库，它是一个纯 Python 但是足够高效地有序集合的库，只包含三个有序集合：<code class="language-plaintext highlighter-rouge">SortedList</code>，<code class="language-plaintext highlighter-rouge">SortedSet</code>，<code class="language-plaintext highlighter-rouge">SortedDict</code> ，用来补充标准库缺乏地功能。<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup><sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup><sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup></p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>python 3.10 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>只是在批量赋值和查询的时候有一个额外的求取最大值的操作，这是为了确保重叠区间的高度是上面所有建筑高度的最大值 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>我很欣赏这种设计，它就是非常清楚这个数据结构地构造和实质，然后就可以保留实质，根据需要随意地解构然后重构，这种使用可以说已入化境 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>当然准确说是 $r-1$ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>计算节点的关键是把握子区间的长度 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:6" role="doc-endnote">
-      <p>但是我不得不吐槽得是，Python 作为曾经地号称“自带电池”地方便语言，但现在很多方面已经非常老迈（虽然正在尝试追赶），特别是相对于Rust而言，基本上如果不是为了比较不同实现的性能，出于方便考虑我宁可用 Rust ，Rust的问题就是优化太好、运行太快了，测试结果几乎总是 0 ms ，而 Python在这里的优势居然是足够慢，便于测试中能发现性能上的问题😅。 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:7" role="doc-endnote">
-      <p>我真的为了寻找一个提供优先级队列功能地容器，花费了不少时间，Python 标准库里面有几个看起来很像地，但都不很合适，一个是 <code class="language-plaintext highlighter-rouge">queue.PriorityQueue</code> 名字就叫做优先级队列，但是是用来做进线程调度地😅； 另一个是它的底层实现 <code class="language-plaintext highlighter-rouge">heapq.[heapify, heappush, heappop]</code> ，简直就和 C 语言的函数一样，可以传一个列表，然后构建基于堆地优先级队列，但是连个自定义 <code class="language-plaintext highlighter-rouge">key</code> 的功能都没有，还需要专门用一个数据包装，来自定义比较函数，实在绷不住；还有一个是 <code class="language-plaintext highlighter-rouge">collections.OrderedDict</code> 但它保持地是插入顺序。 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:8" role="doc-endnote">
-      <p>但是第三方地 <code class="language-plaintext highlighter-rouge">sortedcontainers.SortedList</code> 也令人不太满意，首先方法非常简单，只供最基本地使用，另外实在不知道它加一些 <code class="language-plaintext highlighter-rouge">not implemented，use xxx replace</code> 的方法到实现里有什么好处，调用不存在的方法本来就会报错，又不需要它来做警戒哨，这只是在混淆代码的静态分析程序，让智能提示里出现错误地选项，让每个第一次使用它的人浪费几十秒的时间，去发现正确的方法😡。 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry></feed>
