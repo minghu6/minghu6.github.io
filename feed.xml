@@ -1,4 +1,261 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-07-26T18:04:45+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0032 - Longest Valid Parentheses</title><link href="/oth/LeetCode0032.html" rel="alternate" type="text/html" title="0032 - Longest Valid Parentheses" /><published>2023-07-25T00:00:00+08:00</published><updated>2023-07-25T00:00:00+08:00</updated><id>/oth/LeetCode0032</id><content type="html" xml:base="/oth/LeetCode0032.html"><![CDATA[<h2 id="题干">题干</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-08-02T12:15:14+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Why Greedy？</title><link href="/algs/Greedy.html" rel="alternate" type="text/html" title="Why Greedy？" /><published>2023-08-01T00:00:00+08:00</published><updated>2023-08-01T00:00:00+08:00</updated><id>/algs/Greedy</id><content type="html" xml:base="/algs/Greedy.html"><![CDATA[<h2 id="前言">前言</h2>
+
+<p>“贪心”的这个概念根本就有问题：</p>
+
+<ol>
+  <li>从适用条件上讲，它过于地宽泛而没有用；</li>
+  <li>从内容上讲，它只是机械地总结了结果，而缺乏提示最关键的思考过程</li>
+</ol>
+
+<p>真正地问题在于为什么 Greedy 成立，以及成立的内在核心条件是什么？</p>
+
+<p>这是一个两步递进的问题，首先是证明 Greedy 成立，Greedy 形式上总是由一个阶段的局部最优解来得到全局最优解，这天然适合用归纳法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>来进行证明，只要证明初始条件的成立<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>和前一个阶段的局部最优解能够导出下一个阶段的局部最优解。</p>
+
+<p>然后可以发现 Greedy 成立的条件会有类似之处，进行真正有意义地总结。</p>
+
+<p>下面我们介绍一些贪心算法的实例，来进行观察。</p>
+
+<h2 id="树上直径">树上直径</h2>
+
+<p>求解非负权树形图的直径。</p>
+
+<p>树形图（Tree Graph），就是像树一样的无向连通图，也就是无环地无向连通图。</p>
+
+<p>树上的直径就是两点间最长的简单路径<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">3</a></sup>。</p>
+
+<h3 id="算法推论">算法推论</h3>
+
+<p>这时图上任意一点 $v_0$ ，以它为起点，距离最远的一个点是 $v_1$，则 $v_1$ 一定是直径的两个端点之一。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+
+<p>考虑树的直径一定横跨左右子树<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，而 $P_{v_0\rightarrow v_1}$ 只有两种可能：  与直径有交点或者没有交点 。</p>
+
+<p>如果没有交点，就是 $P_{v_0\rightarrow v_1}$ 只在一侧的子树上的情况，那么如果连接树的根节点和 $P_{v_0\rightarrow v_1}$ 上最近根的一个点 $v_1’$ ，假设根节点是 $v_R$ ，同侧子树的直径的端点是 $v_d$ ，那么根据直径的性质，$|v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_d|$ ，这样就有 $|v_0\rightarrow v_1’ \rightarrow v_1| \leqslant |v_0\rightarrow v_R\rightarrow v_d|$ 。</p>
+
+<ol>
+  <li>如果 $|v_0\rightarrow v_1’ \rightarrow v_1| \lt |v_0\rightarrow v_R\rightarrow v_d|$ ，构造出的新路径 $P_{v_0\rightarrow v_R\rightarrow v_d}$ 就是更长的距离 $v_0$ 的路径，这就与前提条件相悖；</li>
+  <li>否则 $|v_0\rightarrow v_1’ \rightarrow v_1| = |v_0\rightarrow v_R\rightarrow v_d|$ ，这意味着 $P_{v_R\rightarrow v_0\rightarrow v_1’\rightarrow v_1}$ 要么比原路径 $P_{v_R\rightarrow v_d}$ 更长，这就和前提条件相悖，要么相等<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>，$|v_1’ \rightarrow v_1| = |v_R\rightarrow v_1’ \rightarrow v_1| = |v_R\rightarrow v_d|$ 这就说明 $P_{v_R\rightarrow v_1’\rightarrow v_1}$ 也是一条可选的直径（的一部分），此时 $v_1$ 当然就是直径的一个端点。</li>
+</ol>
+
+<p>如果存在交点</p>
+
+<h2 id="dijkstra-最短路径">Dijkstra 最短路径</h2>
+
+<h2 id="jump-games">Jump Games</h2>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:3" role="doc-endnote">
+      <p>Inductive Reasoning，也许用诱导推理这个词更能把握它的内核，而且总是可以联想到后缀数组的诱导排序（Induced Sorting）算法， <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>这通常是显而易见的 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:1" role="doc-endnote">
+      <p>没有重复点的路径 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>然后再求解距离 $v_1$ 最远的点，就可以求出整个直径 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>不这样的话，假如只在其中一棵子树上，通过连接另一侧子树上的点、根节点和直径的近端的点，就能构造出更长的直径 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>存在零权重的边 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">LeetCode Packet 1</title><link href="/oth/LeetCodePacket1.html" rel="alternate" type="text/html" title="LeetCode Packet 1" /><published>2023-07-29T00:00:00+08:00</published><updated>2023-07-29T00:00:00+08:00</updated><id>/oth/LeetCodePacket1</id><content type="html" xml:base="/oth/LeetCodePacket1.html"><![CDATA[<h2 id="44-wildcard-matching"><a href="https://leetcode.com/problems/wildcard-matching/">44. Wildcard Matching</a></h2>
+
+<p>各方面都更像 <a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a> II ，前者是正则匹配，后者则是一般 shell 上文件名的匹配，而且后者（也就是本题）的 DP 实现可以把时间和空间性能很好地结合在一起。</p>
+
+<p>把模式串的遍历放在外循环，唯一需要仔细考虑下的就是每一轮 DP 的初始化：</p>
+
+<ol>
+  <li>第一轮的 DP，$\text{dp}[0] = \text{true}$ ，也就是空串匹配空串，其他位置是非空文本串匹配空模式串，显然全都是 $\text{false}$ ；</li>
+  <li>第二轮及之后的 DP，如果对应位置是 <code class="language-plaintext highlighter-rouge">*</code> 符号，$\text{dp}[0]$ 就等于前一轮的 $\text{dp}[0]$ ，否则就排除了模式串前缀全是星符号的情况，就一定是 $\text{false}$</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">dp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">False</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># j = 0
+</span>    <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">'*'</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">or</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">'?'</span><span class="p">:</span>
+            <span class="n">prev1</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">prev1</span> <span class="o">=</span> <span class="n">prev1</span><span class="p">,</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prev1</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">prev1</span> <span class="o">=</span> <span class="n">prev1</span><span class="p">,</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">prev1</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">return</span> <span class="n">dp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>和一个直接使用 <code class="language-plaintext highlighter-rouge">fnmatch.fnamtch</code> 的运行时间一致。</p>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[44. Wildcard Matching]]></summary></entry><entry><title type="html">0042 - Trapping Rain Water</title><link href="/oth/LeetCode0042.html" rel="alternate" type="text/html" title="0042 - Trapping Rain Water" /><published>2023-07-27T00:00:00+08:00</published><updated>2023-07-27T00:00:00+08:00</updated><id>/oth/LeetCode0042</id><content type="html" xml:base="/oth/LeetCode0042.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/trapping-rain-water/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.11/0042_trapping_rain_water/py0042">源代码</a></p>
+
+<p>如果能知到每个单位区间左边和右边的最大高度，取其最小值，就是该单位的存雨量。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+
+<h3 id="链接题目">链接题目</h3>
+
+<p><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></p>
+
+<h2 id="解双向扫描">解①双向扫描：</h2>
+
+<p>可以认为下降和上升是需要匹配的两个阶段，如果事先记录下降前的高度，在一个下降-上升周期结束的时候，就可以回溯计算这个“坑道”的存雨量，不过这有一个前提，就是上升达到的最大高度不小于下降前的最大高度，确保我们正确计算了这个坑道的雨量。但这就带来了一个问题，可能一直到结束，后面都找不到匹配的高度，于是可以参照 <a href="/oth/LeetCode0032.html">0032</a> 里面的双向扫描，再次地从后向前扫描到最后一个下降的“峰”位。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># peak
+</span>    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">)))</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="n">mode</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">oldk</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">oldk</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">)))</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>但是必须吐槽得是本来 <code class="language-plaintext highlighter-rouge">mode</code> 采用得是枚举类型：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+	<span class="n">Down</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">Up</span> <span class="o">=</span> <span class="mi">1</span>
+</code></pre></div></div>
+
+<p>但是 Python 的 Enum ，或者说一般地对类的封装是如此地消耗内存，只这一个类的定义，就直接让测试结果的内存消耗从排名靠前掉到了排名靠后！于是替换成了布尔类型。</p>
+
+<p>相比于下面介绍的同复杂度但是一遍扫描的算法，双向扫描的算法要稍微慢一点。</p>
+
+<h2 id="解双指针">解②双指针：</h2>
+
+<p>假设我们事先找到序列里的最大高度<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup> $h_\text{max}$：</p>
+
+<p>那么在它的左边，从头开始扫描，维护一个到当前位置 $i$ 为止的前缀最大值 $h_\text{left} = \max\lbrace {h_0 \dots h_i}\rbrace$，每个位置的积水就是 $h_\text{left}-h_i$ ；</p>
+
+<p>在它的右边，从尾开始扫描，维护一个到当前位置 $j$ 为止的前缀最大值 $h_\text{right} = \max\lbrace{h_{n-1} \dots h_j}\rbrace$，每个位置的积水就是$h_\text{right}-h_j$ 。</p>
+
+<p>实际上我们不需要真的取寻找这个最大高度，我们只需要确定 $h_\text{left}$ 和 $h_\text{right}$ 不是最大值即可，只要从两边同时开始扫描，比较  $h_\text{left}$ 和 $h_\text{right}$ ，其中较小的那一个计算该位置积水，然后继续前进，直到完成整个序列的扫描，也就是两端相遇。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">lf</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">rh</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">lf_max</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span>
+    <span class="n">rh_max</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">lf</span> <span class="o">&lt;</span> <span class="n">rh</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]:</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="n">lf_max</span> <span class="o">-</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span>
+
+            <span class="n">lf</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lf_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">lf_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="n">rh_max</span> <span class="o">-</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]</span>
+
+            <span class="n">rh</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">rh_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rh_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<h2 id="解单调栈">解③单调栈：</h2>
+
+<p>单调栈，Monotonic Stack，这是第一次遇到可以恰当地套用这个算法思想的题目。</p>
+
+<p>回到双向扫描的思路，只要序列一直保持不增<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，就（把索引位置）入栈，直到遇到一个大于栈顶元素（对应高度）的值 $h_i$，然后弹出所有（对应高度）不超过 $h_i$ 的栈元素，于是可以利用这些元素<strong>水平地</strong>计算积雨。</p>
+
+<p>每一层的高度是（弹出的）相邻栈元素对应的高度差，长度是每个栈元素 $k_0$ 的前一个栈元素 $k_1$ 与当前位置 $i$ 的差减一：$i-k_1-1$ 。</p>
+
+<p>并且注意，如果在弹出不超过 $h_i$ 的元素后，栈中还有元素，那么弹出的最后一个元素到栈顶元素还有一段积雨，高度差则是 $h[i]-h_\text{last}$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">pairwise</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]:</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="p">[</span><span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">()]</span>
+
+            <span class="k">while</span> <span class="n">stack</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">cache</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">())</span>
+
+            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">cache</span><span class="p">)))</span>
+
+            <span class="k">if</span> <span class="n">stack</span><span class="p">:</span>
+               <span class="n">ans</span> <span class="o">+=</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">cache</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>测试时的实际性能不错。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>由此可以推出，当用两个数组分别记录某个位置的前缀的高度最大值和后缀的高度最大值，然后分别从左扫描和从右扫描，计算完这个数组，这就是所谓 DP 的思路，真是什么玩意儿！ <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>若高度不唯一，任选其一即可 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>相等元素也需要入栈，为了正确计算每一层的积水 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0032 - Longest Valid Parentheses</title><link href="/oth/LeetCode0032.html" rel="alternate" type="text/html" title="0032 - Longest Valid Parentheses" /><published>2023-07-25T00:00:00+08:00</published><updated>2023-07-25T00:00:00+08:00</updated><id>/oth/LeetCode0032</id><content type="html" xml:base="/oth/LeetCode0032.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/longest-valid-parentheses/description/">问题描述</a></p>
 
@@ -197,6 +454,12 @@
   <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
   <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
   <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
+</ul>
+
+<h3 id="monotonic-stack">Monotonic Stack</h3>
+
+<ul>
+  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
 </ul>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[Application Themes]]></summary></entry><entry><title type="html">0022 - Generate Parentheses</title><link href="/oth/LeetCode0022.html" rel="alternate" type="text/html" title="0022 - Generate Parentheses" /><published>2023-07-24T00:00:00+08:00</published><updated>2023-07-24T00:00:00+08:00</updated><id>/oth/LeetCode0022</id><content type="html" xml:base="/oth/LeetCode0022.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/generate-parentheses/description/">问题描述</a></p>
@@ -2275,780 +2538,4 @@
       <p>但是这道题的测试数据非常宽松，反而是朴素算法的性能最好 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">串上DP</title><link href="/algs/StringDP.html" rel="alternate" type="text/html" title="串上DP" /><published>2023-07-01T00:00:00+08:00</published><updated>2023-07-01T00:00:00+08:00</updated><id>/algs/StringDP</id><content type="html" xml:base="/algs/StringDP.html"><![CDATA[<h2 id="前言">前言</h2>
-
-<p>总结一系列在字符串上通过动态规划实现渐进最优的算法。</p>
-
-<p>为了形式化描述定义以下几个概念：</p>
-
-<p><strong>朴素算法：</strong> 不使用 DP 思想，暴力比较的算法。</p>
-
-<p><strong>匹配：</strong> 符合算法要求的一个子串，一般追踪地是最右边的一个匹配。</p>
-
-<p><strong>模式串：</strong> 作为算法运行目标的串，有时候相对于其他子串，也叫它母串。</p>
-
-<p>同时：</p>
-
-<ol>
-  <li>用 $n$ 表示母串的长度；</li>
-  <li>用 $i_0$ 表示追踪的（最右）匹配所属的坐标，用 $s[l..r]$ 它所代表的子串。</li>
-</ol>
-
-<h2 id="z-函数">Z 函数</h2>
-
-<p>后缀函数，母串与（真）后缀子串的前缀相等的部分。</p>
-
-<p><strong>特别规定：</strong> $z[0] = 0$</p>
-
-<p><strong>举例：</strong></p>
-
-\[\begin{array}{l}
-\text{patstr}: s[0..6]=\text{abcabca}\\
-&amp;- &amp;z[0] = 0\\
-\text{suffix}[1]= s[1.. 6]=\text{bcabca} &amp;\varnothing &amp;z[1] = 0\\
-\text{suffix}[2]=s[2..6]=\text{cabca} &amp;\varnothing &amp;z[2]=0\\
-\text{suffix}[3]=s[3..6]=\text{abca} &amp;abca &amp;z[3]=4\\
-\text{suffix}[4]=s[4..6]=\text{bca} &amp;\varnothing &amp;z[4]=0\\
-\text{suffix}[5]=s[5..6]=\text{ca} &amp;\varnothing &amp;z[5]=0\\
-\text{suffix}[6]=s[6..6]=\text{a} &amp;a &amp;z[6]=1\\
-\end{array}\]
-
-<p><strong>形式化表示：</strong></p>
-
-<p>$z[i] = \displaystyle \max_{k=0..i} {k: s[0.. k-1]=s[i..i+k-1]}$</p>
-
-<p><strong>DP过程：</strong></p>
-
-<p>寻找最右边的匹配，这里就应该是最右边的，与母串前缀相等的子串。</p>
-
-<p>这个子串必然是之前的位置 $i_0$ 计算过的一个匹配，它的范围是 $s[i_0..r]$ ，首先确保了当前位置 $i$ 不会落到它的左边，这时如果发现 $i &lt; r$ ，那么根据匹配的性质 $s[i_0..r]=s[0..r-i_0]$ ，就有：</p>
-
-<p>$s[i..r]=s[r-i_0-(r-i)..r-i_0]=s[i-i_0..r-i_0]$ ，这样可以利用 $z[i-i_0]$ ：</p>
-
-<ol>
-  <li>如果 $z[i-i_0] \lt r-i+1$，那么实际上 $z[i]$ 就是等于 $z[i-i_0]$ ，因为它们不仅与母串前缀相等的部分是一样的，与母串前缀不相等的失配字符也是一样的；</li>
-  <li>如果 $z[i-i_0] \geqslant r-i+1$，那么z[i] 可以知道大于等于 $r-i+1$ ，之后可以遂行朴素算法逐字符匹配。</li>
-</ol>
-
-<p><strong>复杂度分析：</strong></p>
-
-<p>对每个位置 $i$ 运用朴素算法进行比较时，最多有 $1$ 次字符失配，在此之间的比较结果都是字符匹配，而每一次字符匹配都会使得最右匹配的 $r$ 加一，而 $r$ 不会超过 $n$ ，这样实际上总共的字符比较次数是 $O(n)$ 。</p>
-
-<h2 id="kmp-前缀函数">KMP 前缀函数</h2>
-
-<p>前缀函数，子串（真）前缀与子串后缀相等的部分。</p>
-
-<p><strong>特别规定：</strong> $\pi[0] = 0$</p>
-
-<p><strong>举例：</strong></p>
-
-\[\begin{array}{l}
-\text{patstr}: s[0..6]=\text{abcabca}\\
- &amp;- &amp;\pi[0] = 0\\
-\text{prefix}[1]= s[0..1]=\text{ab} &amp;\varnothing &amp;\pi[1] = 0\\
-\text{prefix}[2]=s[0..2]=\text{abc} &amp;\varnothing &amp;\pi[2]=0\\
-\text{prefix}[3]=s[0..3]=\text{abca} &amp;a &amp;\pi[3]=1\\
-\text{prefix}[4]=s[0..4]=\text{abcab} &amp;ab &amp;\pi[4]=2\\
-\text{prefix}[5]=s[0..5]=\text{abcabc} &amp;abc &amp;\pi[5]=3\\
-\text{prefix}[6]=s[0..6]=\text{abcabca} &amp;abca &amp;\pi[6]=4\\
-\end{array}\]
-
-<p><strong>形式化表示：</strong></p>
-
-<p>$z[i] = \displaystyle \max_{k=0..i} {k: s[0.. k-1]=s[i-(k-1)..i]}$</p>
-
-<p>和上面 Z-函数比较，可以发现，它俩一个与模式串的前缀做比较，不过一个比较得是后缀的前缀，而另一个是前缀的后缀，这种相似性可能就是Z-函数被叫做拓展KMP的原因。</p>
-
-<p><strong>DP过程：</strong></p>
-
-<p>这里的最右匹配是最右边的，与前缀相等的后缀子串，实际上也就是前一个位置的相等后缀，即 $i_0=i-1$ ，</p>
-
-<p>记 $\pi[i-1]$ 为 $\pi_0^{(0)}$，则根据 $\pi$ 函数的性质，有 $s[0..\pi_0-1]=s[i_0-\pi_0+1..i_0]$ ，并且 $\pi[i] \leqslant \pi[i-1] + 1 = \pi_0+1$ ，</p>
-
-<p>当 $s[i]=\pi_0$ 时，$\pi[i]$ 取到最大值 $\pi_0+1$ ，否则寻找下一个可能匹配，但是我们不能简单地缩小长度，因为比较的<strong>“基”发生了变化</strong>，KMP 前缀函数比通常其他串上 DP 更难想的点在于，它的失败匹配并不是一个简单过程，而是<strong>递归</strong>的，下一个可能的 $\pi_0^{(n)}$ 是从当前长度 $\pi_0^{(n-1)}$ 计算出的：$\pi_0^{(n)} = \pi[\pi_0^{(n-1)}-1]\ (n \geqslant 1)$ 。</p>
-
-<p>如此这般，直到找到一个匹配，或者发现没有匹配。</p>
-
-<p><strong>复杂度分析：</strong></p>
-
-<p>求解每个位置 $i$ 的 $\pi[i]$ 时，最多有一次字符匹配，而每一次字符失配都会使得最右匹配的长度减少 $1$；同时匹配的长度一次最多增加 $1$ ，因此字符比较次数是 $O(n)$ 。</p>
-
-<h2 id="串哈希找最长回文">串哈希找最长回文</h2>
-
-<p>前缀函数，作为回文串的后缀部分。</p>
-
-<p><strong>背景：</strong></p>
-
-<p>使用串哈希的方法<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 寻找模式串中最长的回文串。</p>
-
-<p><strong>举例：</strong></p>
-
-\[\begin{array}{l}
-\text{patstr}: s[0..6]=\text{abaabaa}\\
-\text{prefix}[0]= s[0..0]=\text{a}&amp;a &amp;R[0]=1\\
-\text{prefix}[1]= s[0..1]=\text{ab} &amp;b &amp;R[1]=1\\
-\text{prefix}[2]=s[0..2]=\text{aba} &amp;aba &amp;R[2]=3\\
-\text{prefix}[3]=s[0..3]=\text{abaa} &amp;aa &amp;R[3]=2\\
-\text{prefix}[4]=s[0..4]=\text{abaab} &amp;baab &amp;R[4]=4\\
-\text{prefix}[5]=s[0..5]=\text{abaaba} &amp;abaaba &amp;R[5]=6\\
-\text{prefix}[6]=s[0..6]=\text{abaabaa} &amp;aa &amp;R[6]=2\\
-\end{array}\]
-
-<p><strong>形式化表示：</strong></p>
-
-<p>$R[i] = \displaystyle \max_{k=0..i} {k: s[i-(k-1)..i]\ \in \text{Palindrome}}$</p>
-
-<p><strong>DP过程：</strong></p>
-
-<p>和 KMP 前缀数组的计算非常类似，而且更简单，首先最右匹配是前一个位置的后缀上的最长回文，$i_0=i-1$ 。</p>
-
-<p>记 $R[i-1]$ 为 $R_0$ ，不管是奇数回文还是偶数回文，总有 $R[i] \leqslant R_0 + 2$ ，然后遂行朴素算法从长度为 $R_0 + 2$ 开始的后缀子串开始检查，如果不是回文，就一步步缩小长度直到 $1$ <sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>。</p>
-
-<p><strong>复杂度分析：</strong></p>
-
-<p>每一轮，回文检查成功最多一次，而检查如果失败，每失败一次就减少 $1$ ；同时 $R$ 每轮最多增加 $2$ ，这样暴力匹配的次数仍然是 $O(n)$ 。</p>
-
-<h2 id="manacher-算法">Manacher 算法</h2>
-
-<p>以某个位置为对称轴的回文半径，分奇数轴和偶数轴两种情况，分别用 $d_1$ 和 $d_2$ 表示 。</p>
-
-<p><strong>特别规定：</strong></p>
-
-<ol>
-  <li>奇数回文的半径包含轴点本身，因此最小长度为 1；</li>
-  <li>由于偶数回文的轴是两点间的空而不是点，因此这里规定空的坐标表示是它后面点的坐标，也就是和插入序<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>一样，这样 $d_2[0]$ 就是未定义的，不妨规定 $d_2[0]=0$ ，$0$ 也是偶数回文的最小长度。</li>
-</ol>
-
-<p><strong>背景：</strong></p>
-
-<p>求解所有本质不同的回文串</p>
-
-<p><strong>举例：</strong></p>
-
-\[\begin{array}{l}
-\text{patstr}: s[0..6]=\text{abaabaa}\\
-\\
-\texttt{Odd:}\\
-s[0]=\text{a}&amp;a &amp;d_1[0]=1\\
-s[1]=\text{aba} &amp;aba &amp;d_1[1]=2\\
-s[2]=\text{ababa} &amp;a &amp;d_1[2]=1\\
-s[3]=\text{abaabaa} &amp;a &amp;d_1[3]=1\\
-s[4]=\text{aabaa} &amp;aba &amp;d_1[4]=2\\
-s[5]=\text{baa} &amp;a &amp;d_1[5]=1\\
-s[6]=\text{a} &amp;a &amp;d_1[6]=1\\
-\\ 
-\texttt{Even:}\\
-&amp;- &amp;d_2[0]=0\\
-s[1]=\text{a-b} &amp;\varnothing &amp;d_2[1]=0\\
-s[2]=\text{ab-aa} &amp;\varnothing &amp;d_2[2]=0\\
-s[3]=\text{aba-aba} &amp;abaaba &amp;d_2[3]=3\\
-s[4]=\text{baa-baa} &amp;\varnothing &amp;d_2[4]=0\\
-s[5]=\text{ab-aa} &amp;\varnothing &amp;d_2[5]=0\\
-s[6]=\text{a-a} &amp;aa &amp;d_2[6]=1\\
-\end{array}\]
-
-<p><strong>形式化表示：</strong></p>
-
-<p>$d_1[i] = \displaystyle \max_{k=0..i} {k: s[i-(k-1)..i+k-1]\ \in \text{Palindrome}}$</p>
-
-<p>$d_2[i] = \displaystyle \max_{k=0..i} {k: s[i-k..i+k-1]\ \in \text{Palindrome}}$</p>
-
-<p><strong>DP过程：</strong></p>
-
-<p>类似于Z-函数的过程，最右匹配是最右边的回文半径，如果 $i &lt; r$ ，由于肯定有 $i &gt; i_0$ ，那么根据回文串的性质：</p>
-
-<ol>
-  <li>轴的两侧是对称的；</li>
-  <li>对称的两边交换位置，仍然是对称的</li>
-</ol>
-
-<p>因此有对称的两个子串</p>
-
-<p>$s[i..r] \leftrightarrow s[l..l+r-i]$</p>
-
-<p>对奇数轴：$d_1[i]$ 初始值为 $\min(d_1[l+r-i], r-i+1)$ ；</p>
-
-<p>对偶数轴：关于空的对称，采取插入序，$d_2[i]$ 初始值为 $\min(d_2[l+r-i+1], r-i+1)$</p>
-
-<p>然后逐个字符比较，直到匹配或者字符串长度耗尽。</p>
-
-<p><strong>复杂度分析：</strong></p>
-
-<p>每轮的字符对称匹配最多失败一次，而每成功一次， $r$ 就要增加 $1$ ；而 $r$ 最多增加到 $n-1$ ，因此字符比较复杂度是 $O(n)$ 。</p>
-
-<h2 id="概念澄清">概念澄清</h2>
-
-<h3 id="后缀树组sa">后缀树组（SA）</h3>
-
-<p>后缀函数，串所有后缀的排名。</p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>给模式串所有前缀建立滚动式哈希 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>长度为 $1$ 的串此时必然是回文 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>在一个有序向量上搜索某个元素，如果没有相等元素，就返回一个位置，使得如果在这个位置插入被搜索值后仍能维持向量有序，这里简称为插入序 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">串哈希</title><link href="/algs/StringHash.html" rel="alternate" type="text/html" title="串哈希" /><published>2023-06-26T00:00:00+08:00</published><updated>2023-06-26T00:00:00+08:00</updated><id>/algs/StringHash</id><content type="html" xml:base="/algs/StringHash.html"><![CDATA[<h2 id="概念基础">概念基础</h2>
-
-<p>字符串哈希是从 <a href="https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm">Rabin-Karp 算法 (1987)</a> 衍生出来的，用于解决基于字符串子串比较问题的一种思路。</p>
-
-<p>RK 算法使用了一个简单的多项式滚动哈希算法<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，对于任意子串 $\text{substr}[l..r]$ ，它的哈希值可以由两端对应的前缀字符串       $\text{substr}[0..l-1]$ 和 $\text{substr}[0..r]$ 的哈希值计算得到，也就是说如果提前计算了字符串所有前缀的哈希，那么它的任意子串的哈希都可以在常量时间计算得到。</p>
-
-<p>同时作为滚动哈希，每个前缀 $\text{substr}[0..i]$ 的哈希也可以由子前缀 $\text{substr}[0..i-1]$ 直接计算得出，这样就可以在 $O(n)$ 的时间计算出所有前缀的哈希，并用 $O(1)$ 的时间做子串的比较。</p>
-
-<p>下面介绍这个哈希算法：</p>
-
-<h3 id="哈希算法">哈希算法<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup><sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></h3>
-
-<p>对于串 $s$</p>
-
-\[\begin{array}{l}
-\text{hash}(s) &amp;= s[0]\cdot p^0 + s[1] \cdot p^1 + s[2] \cdot p^2 + ... + s[n-1] \cdot p^{n-1} \pmod m \\
-&amp;= \displaystyle\sum_{i=0}^{n-1} s[i] \cdot p^i \pmod m
-\end{array}\]
-
-<p>其中， $n$ 为串的长度，$m$ 和 $p$ 是根据需要挑选的一个正整数。</p>
-
-<p>一般可以令 $p$ 为字母表（alphabet）大小的质数，比如对于只包含小写字母的串，$p=31$；对于大小写字母，$p=53$ 。</p>
-
-<p>$m$ 作为模除运算的除数，需要是一个很大的整数，因为两个随机字符串发生哈希碰撞的概率 $\approx \frac{1}{m}$，可以取 $2^{64}$ ，这样做的好处是用 <code class="language-plaintext highlighter-rouge">u64</code> 保存数值时不需要显式地进行取模运算，等待数值自然溢出即可，但这样必然存在方法，用来构造无关于 $p$ 的产生哈希碰撞的字符串，更好的方法是选取一个大素数，比如 $10^9 + 9$ ，这个大小的素数有一个好处，就是确保 <code class="language-plaintext highlighter-rouge">u64</code> 类型足以容纳计算结果而不会溢出<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
-
-<p>$s[i]$ 是在位置 $i$ 处字符的值，这个值是字符在字母表里的排名，而一般空串的哈希值为 $0$ ，因此字符的排名最好从 $1$ 开始，来避免字母表里最小字符与与空串的值相同。</p>
-
-<p>这样串 $s$ 的前缀可以通过 $\text{hash}(s[0..i]) = \text{hash}(s[0..i-1]) \cdot p + s[i] \mod m$ 计算得到，而任意子串的哈希值则有如下的关系：</p>
-
-\[p^{l}\cdot \text{hash}(s[l..r]) \pmod m =\text{hash}(s[0..r]) - \text{hash}(s[0..l-1]) \pmod m\]
-
-<p>这样需要再额外计算一步 $p^l$ 的<a href="https://cp-algorithms.com/algebra/module-inverse.html">模乘逆元</a>，可以通过<a href="/algs/GCD.html">拓展欧几里得算法</a>，以 $p^l$ 和 $m$ 为参数直接求解模乘逆元。</p>
-
-<p>可以通过换一下多项式滚动哈希的计算方向，来避免求解模乘逆元这一步操作。</p>
-
-<h4 id="msb-型算法">MSB 型算法</h4>
-
-<p>可以认为串 $s$ 的哈希是一个由串上每个字符组成的 $p$ 进制的数字，前面的计算方法是小端序（LSB，Least Significant Bit)</p>
-
-<p>而我们更改为大端序（MSB，Most Significant Bit）：</p>
-
-\[\begin{array}{l}
-\text{hash}(s) &amp;= s[0]\cdot p^{n-1} + s[1] \cdot p^{n-2} + ... + s[n-1] \cdot p^{0} \pmod m \\
-&amp;= \displaystyle\sum_{i=0}^{n-1} s[i] \cdot p^{n-1-i} \pmod m
-\end{array}\]
-
-<p>这样子串哈希与前缀哈希就有如下的关系：</p>
-
-\[\text{hash}(s[l..r]) =\text{hash}(s[0..r]) - \text{hash}(s[0..l-1]) \cdot p^{r-(l-1)} \pmod m\]
-
-<p>另外在计算前缀时，MSB 需要从后开始遍历串。</p>
-
-<p><em>对子串哈希的查询总让人想起树状数组（BIT）里面用前缀来计算区间的类似操作</em></p>
-
-<h3 id="哈希碰撞">哈希碰撞</h3>
-
-<p>用哈希来做串的映射时总要考虑哈希碰撞，也就是串不同但哈希值相同的情况，在广泛地基于概率的算法与数据结构<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>中也习惯用假阳性（False Positive）来表示这种情况。</p>
-
-<h4 id="大量比较">大量比较</h4>
-
-<p>在考虑到串的比较次数较多时，比如 $10^6$ 个不同字符串的两两比较，会有 $10^{6+6} = 10^{12}$ 个情况，这时 $10^9$ 的碰撞空间就不够用了，这时总是会发生碰撞。</p>
-
-<p>这时就必须扩大碰撞空间，而单一地增大 $m$ ，然后对应地把计算的数据类型从 <code class="language-plaintext highlighter-rouge">u64</code> 提升到 <code class="language-plaintext highlighter-rouge">u128</code> 乃至专门的 Big Int 类型，实在不怎么可取，不如独立计算几组哈希值，采用不同的 $p$ 或者 $m$ ，比如两组，就可以让碰撞空间扩大到 $(10^9)^2=10^{18}$ 从而满足前面的情况，当然还可以有更多的组数来得到更大的哈希空间。</p>
-
-<h4 id="绝对正确">绝对正确</h4>
-
-<p>如果对判断的结果要求绝对正确，可以在哈希判等的情况下再用原始的文本串进行比较。</p>
-
-<h2 id="实现">实现</h2>
-
-<p>将用 Rust 来实现字符串哈希，并在此基础上实现 Rabin-Karp 算法。</p>
-
-<h3 id="字母表">字母表</h3>
-
-<p>在计算串哈希的时候，首先要考虑串的构成字符的字母表，这涉及字符值的计算与 $p$ 的选取。</p>
-
-<p>于是我们可以把字母表抽象出来，规定它应该有：</p>
-
-<ol>
-  <li>查询给定字符的排名，<code class="language-plaintext highlighter-rouge">rank</code> ，排名用作计算哈希时字符的值，从 $1$ 开始；</li>
-  <li>给出字母表的大小，<code class="language-plaintext highlighter-rouge">len</code>；</li>
-  <li>给出字母表大小对应的 $p$ ，<code class="language-plaintext highlighter-rouge">prime</code></li>
-</ol>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">trait</span> <span class="n">AlphaBet</span> <span class="p">{</span>
-    <span class="cd">/// None for char out of scope of the alphabet</span>
-    <span class="k">fn</span> <span class="nf">rank</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span><span class="p">;</span>
-    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span><span class="p">;</span>
-    <span class="k">fn</span> <span class="nf">prime</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">u64</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>定义几个字母表实例作为示范：</p>
-
-<p>不得不称赞 Rust 原生的模式匹配语法让代码干净简洁许多！</p>
-
-<h4 id="数字字母">数字字母</h4>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">DigitsLetters</span><span class="p">;</span>
-
-<span class="k">impl</span> <span class="n">AlphaBet</span> <span class="k">for</span> <span class="n">DigitsLetters</span> <span class="p">{</span>
-    <span class="k">fn</span> <span class="nf">rank</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span> <span class="p">{</span>
-        <span class="nf">Some</span><span class="p">(</span><span class="k">match</span> <span class="n">c</span> <span class="p">{</span>
-            <span class="sc">'0'</span><span class="o">..=</span><span class="sc">'9'</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">-</span> <span class="sc">'0'</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="sc">'A'</span><span class="o">..=</span><span class="sc">'Z'</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">-</span> <span class="sc">'A'</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span>
-            <span class="sc">'a'</span><span class="o">..=</span><span class="sc">'z'</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">-</span> <span class="sc">'a'</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">26</span><span class="p">,</span>
-            <span class="n">_</span> <span class="k">=&gt;</span> <span class="k">return</span> <span class="nb">None</span>
-        <span class="p">})</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
-        <span class="mi">26</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">10</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">prime</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">u64</span> <span class="p">{</span>
-        <span class="mi">79</span> <span class="c1">// 0x4F</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h4 id="常见中文">常见中文</h4>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Common CJK + CJK Symbols and Punctuation + ASCII</span>
-<span class="k">pub</span> <span class="k">struct</span> <span class="n">CommonChinese</span><span class="p">;</span>
-
-<span class="k">impl</span> <span class="n">AlphaBet</span> <span class="k">for</span> <span class="n">CommonChinese</span> <span class="p">{</span>
-    <span class="k">fn</span> <span class="nf">rank</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="n">c</span> <span class="k">as</span> <span class="nb">u64</span><span class="p">;</span>
-
-        <span class="nf">Some</span><span class="p">(</span><span class="k">match</span> <span class="n">c</span> <span class="p">{</span>
-            <span class="mi">0</span><span class="o">..=</span><span class="mi">127</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1">// ASCII</span>
-            <span class="mi">0x3000</span><span class="o">..=</span><span class="mi">0x303F</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="o">-</span> <span class="mi">0x3000</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">128</span><span class="p">,</span>  <span class="c1">// CJK Symbols and Punctuation</span>
-            <span class="mi">0x4E00</span><span class="o">..=</span><span class="mi">0x9FFF</span> <span class="k">=&gt;</span> <span class="n">c</span> <span class="o">-</span> <span class="mi">0x4E00</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">128</span> <span class="o">+</span> <span class="mi">0x40</span><span class="p">,</span>  <span class="c1">// Common CJK</span>
-            <span class="n">_</span> <span class="k">=&gt;</span> <span class="k">return</span> <span class="nb">None</span><span class="p">,</span>
-        <span class="p">})</span>
-    <span class="p">}</span>
-
-    <span class="cd">/// 21184</span>
-    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
-        <span class="p">(</span><span class="mi">0x9FFF</span> <span class="o">-</span> <span class="mi">0x4E00</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">127</span> <span class="o">-</span> <span class="mi">0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0x303F</span> <span class="o">-</span> <span class="mi">0x3000</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">prime</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">u64</span> <span class="p">{</span>
-        <span class="mi">21187</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h3 id="计算哈希">计算哈希</h3>
-
-<h4 id="多组哈希">多组哈希</h4>
-
-<p>$p$ 与字母表的大小是绑定的，选择用一组不同的 $m$ 来独立计算多组哈希。</p>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="p">[</span><span class="nb">u64</span><span class="p">;</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="mi">1_000_000_000</span> <span class="o">+</span> <span class="mi">9</span><span class="p">,</span>
-    <span class="mi">1_000_000_000</span> <span class="o">+</span> <span class="mi">7</span>
-<span class="p">];</span>
-
-
-<span class="nd">macro_rules!</span> <span class="n">check_n</span> <span class="p">{</span>
-    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">{</span>
-            <span class="nd">unimplemented!</span><span class="p">(</span><span class="s">"N should be in [1, 2], however {N} found"</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h4 id="一次性计算">一次性计算</h4>
-
-<p>比如用在模式串的计算上</p>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">check_n</span> <span class="p">{</span>
-    <span class="p">()</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">{</span>
-            <span class="nd">unimplemented!</span><span class="p">(</span><span class="s">"N should be in [1, 2], however {N} found"</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">};</span>
-<span class="p">}</span>
-
-
-<span class="k">pub</span> <span class="k">fn</span> <span class="n">rolling_hash</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">(</span>
-    <span class="n">s</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">,</span>
-    <span class="n">alphabet</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">dyn</span> <span class="n">AlphaBet</span><span class="p">,</span>
-<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">],</span> <span class="n">ComputeRollingHashError</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="nd">check_n!</span><span class="p">();</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">nacc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">N</span><span class="p">];</span>
-
-    <span class="k">if</span> <span class="n">s</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">nacc</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">alphabet</span><span class="nf">.prime</span><span class="p">();</span>
-
-    <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="n">s</span><span class="nf">.chars</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="n">alphabet</span>
-            <span class="nf">.rank</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-            <span class="nf">.ok_or</span><span class="p">(</span><span class="nn">ComputeRollingHashError</span><span class="p">::</span><span class="nf">CharOutOfScope</span><span class="p">(</span><span class="n">c</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
-
-        <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-                <span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span><span class="p">;</span>
-            <span class="p">}</span>
-            <span class="k">else</span> <span class="p">{</span>
-                <span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">nacc</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="nf">Ok</span><span class="p">(</span><span class="n">nacc</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h4 id="前缀计算">前缀计算</h4>
-
-<p>比如用在文本串的计算上</p>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// [msb] polynomial rolling computing</span>
-<span class="nd">#[repr(transparent)]</span>
-<span class="k">pub</span> <span class="k">struct</span> <span class="n">PrefixRollingHash</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">1</span><span class="o">&gt;</span>
-<span class="p">{</span>
-    <span class="n">nprefix</span><span class="p">:</span> <span class="p">[</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">N</span><span class="p">],</span>
-<span class="p">}</span>
-
-<span class="cd">/// String Prefix (MSB) Plynomial Rolling Hash</span>
-<span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">PrefixRollingHash</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span>
-        <span class="n">s</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">alphabet</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">dyn</span> <span class="n">AlphaBet</span><span class="p">,</span>
-    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="n">ComputeRollingHashError</span><span class="o">&gt;</span> <span class="p">{</span>
-        <span class="nd">check_n!</span><span class="p">();</span>
-
-        <span class="c1">// Create chars</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">chars</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
-
-        <span class="c1">// Init chars</span>
-        <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="n">s</span><span class="nf">.chars</span><span class="p">()</span> <span class="p">{</span>
-            <span class="n">chars</span><span class="nf">.push</span><span class="p">(</span>
-                <span class="n">alphabet</span>
-                    <span class="nf">.rank</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-                    <span class="nf">.ok_or</span><span class="p">(</span><span class="nn">ComputeRollingHashError</span><span class="p">::</span><span class="nf">CharOutOfScope</span><span class="p">(</span><span class="n">c</span><span class="p">))</span><span class="o">?</span><span class="p">,</span>
-            <span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="c1">// Create nprefix</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">nprefix</span><span class="p">:</span> <span class="p">[</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u64</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="nf">zeroed</span><span class="p">()</span> <span class="p">};</span>
-        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">alphabet</span><span class="nf">.prime</span><span class="p">();</span>
-
-        <span class="c1">// Init nprefix</span>
-        <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="k">mut</span> <span class="n">prefix</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">chars</span><span class="nf">.len</span><span class="p">()];</span>
-
-            <span class="k">if</span> <span class="o">!</span><span class="n">chars</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
-                <span class="n">prefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chars</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-
-                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">chars</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-                    <span class="n">prefix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">prefix</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">chars</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
-                <span class="p">}</span>
-            <span class="p">}</span>
-
-            <span class="n">nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefix</span><span class="p">;</span>
-        <span class="p">}</span>
-
-
-        <span class="nf">Ok</span><span class="p">(</span><span class="k">Self</span> <span class="p">{</span> <span class="n">nprefix</span> <span class="p">})</span>
-    <span class="p">}</span>
-
-    <span class="c1">// ...</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h4 id="子串查询">子串查询</h4>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">N</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">PrefixRollingHash</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">npows</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">]])</span> <span class="k">-&gt;</span> <span class="p">[</span><span class="nb">u64</span><span class="p">;</span> <span class="n">N</span><span class="p">]</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="nf">.len</span><span class="p">());</span>
-
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">N</span><span class="p">];</span>
-
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
-                <span class="n">res</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">r</span><span class="p">];</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="p">{</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">N</span> <span class="p">{</span>
-                <span class="c1">// coefficent</span>
-                <span class="k">let</span> <span class="n">coeff</span> <span class="o">=</span> <span class="n">npows</span><span class="p">[</span><span class="n">r</span> <span class="o">-</span> <span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span><span class="n">n</span><span class="p">];</span>
-
-                <span class="k">let</span> <span class="n">a</span> <span class="o">=</span> <span class="k">self</span><span class="py">.nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">r</span><span class="p">];</span>
-                <span class="k">let</span> <span class="n">b</span> <span class="o">=</span> <span class="k">self</span><span class="py">.nprefix</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="o">*</span> <span class="n">coeff</span>
-                <span class="o">%</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
-
-                <span class="n">res</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span> <span class="p">{</span> <span class="n">M</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="p">};</span>
-            <span class="p">}</span>
-        <span class="p">};</span>
-
-        <span class="n">res</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h2 id="应用">应用</h2>
-
-<h3 id="查询回文串">查询回文串</h3>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>注意区别于同作者的另一个更正式的多项式滚动哈希算法，<a href="https://en.wikipedia.org/wiki/Rabin_fingerprint">Rabin fingerprint</a> ，据说有一些 RK 算法的实现在内部使用了这个算法而不是原始提出的更简单的那一个。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>https://cp-algorithms.com/string/string-hashing.html <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>https://oi-wiki.org/string/hash/ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>$2^{64} \approx 2^4 \cdot (10^3)^6 = 16 \cdot 10^{18} $ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>比如前面<a href="/algs/BM.html">Boyer-Moore算法</a>里介绍过的Bloom Filter <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[概念基础]]></summary></entry><entry><title type="html">0850 - Rectangle Area II</title><link href="/oth/LeetCode0850.html" rel="alternate" type="text/html" title="0850 - Rectangle Area II" /><published>2023-06-11T00:00:00+08:00</published><updated>2023-06-11T00:00:00+08:00</updated><id>/oth/LeetCode0850</id><content type="html" xml:base="/oth/LeetCode0850.html"><![CDATA[<h2 id="题干">题干</h2>
-
-<p><a href="https://leetcode.com/problems/rectangle-area-ii/description/">问题描述</a></p>
-
-<h2 id="破题">破题</h2>
-
-<p>要求矩形覆盖的面积，在做了<a href="/oth/LeetCode0218.html">天际线问题</a>和<a href="/oth/LeetCode0391.html">完美矩形问题</a>后，这个问题的思路就看得非常清楚了，只需要沿着某一轴扫描，计算在另一轴上覆盖的长度，计算的时机是遇到每个矩形的入边或者出边的（重复的不算），这样拆分成一个个小矩形，就得到了覆盖的面积和。</p>
-
-<p>于是问题的关键，不妨以 $x$ 轴为扫描方向，就在于如何动态地计算 $y$ 轴上的覆盖长度。</p>
-
-<p>由于本题的限制相当宽松，建筑的数量最多只到 $200$ ，因此可以允许其他非最优解的多种复杂度的方法。</p>
-
-<h2 id="解">解①：</h2>
-
-<p>在 $y$ 轴，对每个矩形竖直的边，$[y_1, y_2]$ ，把边的开始位置 $y_1$，标记 $1$ ，它的结束位置标记 $-1$ ，把这些标记按照 $y$ 轴上的坐标进行排序，对这些标记进行累加，最后的和一定是 $0$ ，它的变化过程一定是从 $0$ 到正值再到 $0$ ，每一次归 $0$ 就意味着一条线段的结束，把这些分离的线段累加起来，这就得到了此时的 $y$ 轴上的线段和。</p>
-
-<p>由于每次扫描都需要排序并重新装填 $y$ 坐标，因此总的时间复杂度为 $O(n\cdot (n\text{log}n + n)) = O(n^2\text{log}n)$ 。</p>
-
-<p>这有可以优化的地方，如果提前把 $y$ 轴离散化，就可以直接做坐标-排名的映射，就不需要每次都排序 $y$ 坐标，于是就只剩下装填所有的 $y$ 坐标的成本，时间复杂度就可以降低为 $O(n^2)$ 。</p>
-
-<h2 id="解-1">解②：</h2>
-
-<p>更直接地，把 $x$ 轴坐标也离散化，与离散化地 $y$ 轴坐标构成二维数组，每个矩形（的 $4$ 个顶点）在这个二维数组上映射，然后扫描这个二维数组计算面积。</p>
-
-<p>时间复杂度是离散化+矩形映射+统计： $O(n\text{log}n + n + n^2)$  = $O(n^2)$</p>
-
-<h2 id="解-2">解③：</h2>
-
-<p>上述地算法之所以不够优，关键在于每扫描到一个位置，就要用至少 $O(n)$ 的时间复杂度装填 $y$ 坐标，而拿到这道题目后，第一眼可以看出，我们应该可以用前面的分段树或者树状数组来在 $O(\text{log}n)$ 的时间内装填 $y$ 坐标。</p>
-
-<p>这看起来非常简单，但是，但是，在开始写的时候，才发现这道题并不如想象中那么简单，它有别于<a href="/oth/LeetCode0218.html">天际线那道题</a>的关键是建筑都是连续的，不存在从半空中开始涨起，而矩形没有这个性质，它在 $y$ 轴上的排列可能是不连续的。</p>
-
-<h3 id="线段的取消">线段的取消</h3>
-
-<p>这样的话似乎只能在 y 轴空间上存储整个线段，但是如何在矩形结束的时候准确撤销它所属的线段呢？ 但是分段树可以按照区间<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 额外存储该区间边的数量，这样在新的边加入时，更新的时候把它覆盖的区间的边的数量增 $1$ ，取消边的时候就把区间的边的数量减 $1$ ，在二分区间向下更新的时候，如果某个区间的边数不为零，那么这个区间的值就是它代表的整个线段的长度，否则，就要由子区间的值求和得到。</p>
-
-<p>这样分段树全区间的值，就是 $y$ 轴上线段的总长度。</p>
-
-<h3 id="区间的表示">区间的表示</h3>
-
-<p>以为解决了边的添加和取消就完事大吉了吗？，不，还有很大的问题：如果分段树上每个点对应某个坐标，就像习惯得那样，这就面临坐标划分与区间划分二者不一致的问题，对于用坐标表示的边来说，坐标是可重叠的，而分段树的区间划分两端是不可重叠的。举例说，对于 [0, 2] 的边的划分，按照坐标来说就是 $[0, 1]$ 和 $[1, 2]$ ，而按照区间划分则为 $[0,1]$ 和 $[2, 2]$ 。</p>
-
-<p>这实在是不好解决，因为分段树上 $[a, b]$ 的区间不能表示为坐标上 $[a, b]$ 的边，必须寻找一个新的与分段树区间划分一致地表示。于是我们可以考虑坐标可以重叠，但是区间不会重叠，可以定义标号 $i$ 表示坐标从 $[i, i+1]$ 的区间，这样分段树上的 $[a, b]$ 就不再表示坐标 $[a, b]$ 的边，而是标号 $a$~$b$ ，一共 $b-a+1$ 个单位区间的和，这样问题就解决了！</p>
-
-<h3 id="取模与数据类型">取模与数据类型</h3>
-
-<p>最后由于计算结果过大，需要对结果取模，其中模数给得是 $10^9+7$ ，是个质数，这有什么说法吗？</p>
-
-<p>质数取模得可以想到的是中国剩余定理，如果一个一元线性同余<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>方程的模数两两互质，那么这个方程是有解的而且可以构造出来，但它显然和我们这里没什么关系，事实上可以取任何一个大小符合条件的数，至于质不质地也没什么关系。</p>
-
-<p>至于取模运算本身倒是（对我们有用的）运算性质：</p>
-
-\[\begin{array}{l}
-&amp;a \cdot b\pmod{N} &amp;\equiv (a\pmod{N} \cdot b\pmod{N})\pmod{N}\\
-&amp;(a+b) \pmod{N} &amp;\equiv (a\pmod{N} + b\pmod{N})\pmod{N}
-\end{array}{}\]
-
-<p>另外需要吐槽得是本题 LeetCode 习惯性地给出的 <code class="language-plaintext highlighter-rouge">i32</code> 类型就不适当，它在例题上，在对结果取模前就数值溢出了，你必须手动把它提到更大的整数类型上。</p>
-
-<h3 id="统一排序">统一排序</h3>
-
-<p>由于在每个不同坐标的矩形的进入或离开时都要计算面积，因此像之前把入边和出边分开保存排序的做法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>会让代码显得很冗余吗，于是直接把 $x$ 坐标、入边出边的类型标记和 $y$ 轴两坐标，构成一个 $4$ 元组，统一排序。</p>
-
-<h3 id="rust-实现">Rust 实现<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></h3>
-
-<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.3/0850_rectangle_area_2">源代码</a></p>
-
-<h4 id="分段树">分段树</h4>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">SegmentTree</span> <span class="p">{</span>
-    <span class="cd">/// (coverd edges number, range_sum)</span>
-    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="n">y_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
-    <span class="n">y_data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">}</span>
-
-
-<span class="cd">/// DFS 型</span>
-<span class="k">impl</span> <span class="n">SegmentTree</span> <span class="p">{</span>
-    <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">y_end</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
-        <span class="n">SegmentTree</span> <span class="p">{</span>
-            <span class="c1">// numbers of interval units</span>
-            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span> <span class="p">(</span><span class="n">y_end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">],</span>
-            <span class="n">y_end</span><span class="p">,</span>
-            <span class="n">y_data</span><span class="p">,</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">update</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">mark</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.y_end</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mark</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">update_</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">mark</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span> <span class="p">{</span>
-            <span class="k">return</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="k">let</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
-        <span class="k">let</span> <span class="n">sub_len</span> <span class="o">=</span> <span class="p">(</span><span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-
-        <span class="k">let</span> <span class="n">i_lf</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-        <span class="k">let</span> <span class="n">i_rh</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sub_len</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
-
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="o">&amp;&amp;</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="n">mark</span> <span class="p">{</span>
-                <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-            <span class="p">}</span>
-            <span class="k">else</span> <span class="p">{</span>
-                <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
-            <span class="p">}</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i_lf</span><span class="p">,</span> <span class="n">mark</span><span class="p">);</span>
-            <span class="k">self</span><span class="nf">.update_</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i_rh</span><span class="p">,</span> <span class="n">mark</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="k">if</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.0</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
-            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="p">(</span><span class="k">self</span><span class="py">.y_data</span><span class="p">[</span><span class="n">tr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="k">self</span><span class="py">.y_data</span><span class="p">[</span><span class="n">tl</span><span class="p">])</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="n">tl</span> <span class="o">!=</span> <span class="n">tr</span> <span class="p">{</span>
-            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_lf</span><span class="p">]</span><span class="na">.1</span> <span class="o">+</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i_rh</span><span class="p">]</span><span class="na">.1</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="p">{</span>
-            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="na">.1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">fn</span> <span class="nf">sum</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-        <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="na">.1</span> <span class="k">as</span> <span class="nb">i32</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>其中 <code class="language-plaintext highlighter-rouge">y_end</code> 指得是原坐标的排名，加一后的值，表示总共排名的数量或者总的不同 $y$ 坐标的数量。内部构成的区间数应该比总的不同 $y$ 坐标数少一。</p>
-
-<h4 id="完整过程">完整过程</h4>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::{</span>
-    <span class="nn">cmp</span><span class="p">::{</span><span class="n">max</span><span class="p">,</span> <span class="n">min</span><span class="p">},</span>
-    <span class="nn">collections</span><span class="p">::{</span><span class="n">BTreeSet</span><span class="p">,</span> <span class="n">HashMap</span><span class="p">},</span>
-<span class="p">};</span>
-
-<span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">u64</span> <span class="o">=</span> <span class="mi">1_000_000_000</span> <span class="o">+</span> <span class="mi">7</span><span class="p">;</span>
-
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">y_map</span><span class="p">)</span> <span class="o">=</span> <span class="nf">build_y_discrezation</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rectangles</span><span class="p">);</span>
-
-    <span class="k">let</span> <span class="n">lines</span> <span class="o">=</span> <span class="nf">build_x_lines</span><span class="p">(</span><span class="n">rectangles</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">y_map</span><span class="p">);</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">tree</span> <span class="o">=</span> <span class="nn">SegmentTree</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">y_map</span><span class="nf">.len</span><span class="p">());</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">x0</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="na">.0</span><span class="p">;</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ty</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="k">in</span> <span class="n">lines</span> <span class="p">{</span>
-
-        <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">x0</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">h</span> <span class="o">=</span> <span class="n">tree</span><span class="nf">.sum</span><span class="p">();</span>
-
-            <span class="n">acc</span> <span class="o">+=</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">*</span> <span class="n">h</span> <span class="k">as</span> <span class="nb">u64</span><span class="p">)</span> <span class="o">%</span> <span class="n">M</span><span class="p">;</span>
-
-            <span class="n">x0</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="n">tree</span><span class="nf">.update</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ty</span><span class="p">);</span>
-
-    <span class="p">}</span>
-
-    <span class="p">(</span><span class="n">acc</span> <span class="k">as</span> <span class="nb">u64</span> <span class="o">%</span> <span class="n">M</span><span class="p">)</span> <span class="k">as</span> <span class="nb">i32</span>
-<span class="p">}</span>
-
-<span class="k">fn</span> <span class="nf">build_y_discrezation</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="o">&amp;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">set</span> <span class="o">=</span> <span class="nn">BTreeSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
-
-    <span class="k">for</span> <span class="n">rec</span> <span class="k">in</span> <span class="n">rectangles</span> <span class="p">{</span>
-        <span class="n">set</span><span class="nf">.insert</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-        <span class="n">set</span><span class="nf">.insert</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
-    <span class="p">}</span>
-
-    <span class="p">(</span>
-        <span class="n">set</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span><span class="nf">.collect</span><span class="p">(),</span>
-        <span class="n">set</span><span class="nf">.into_iter</span><span class="p">()</span>
-            <span class="nf">.enumerate</span><span class="p">()</span>
-            <span class="nf">.map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)|</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">))</span>
-            <span class="nf">.collect</span><span class="p">(),</span>
-    <span class="p">)</span>
-<span class="p">}</span>
-
-<span class="k">fn</span> <span class="nf">build_x_lines</span><span class="p">(</span>
-    <span class="n">rectangles</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span><span class="p">,</span>
-    <span class="n">y_map</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">i32</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">lines</span> <span class="o">=</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">rectangles</span><span class="nf">.len</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span><span class="p">);</span>
-
-    <span class="k">for</span> <span class="n">rec</span> <span class="k">in</span> <span class="n">rectangles</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-        <span class="k">let</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
-        <span class="k">let</span> <span class="n">y1</span> <span class="o">=</span> <span class="o">*</span><span class="n">y_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="nf">.unwrap</span><span class="p">();</span>
-        <span class="k">let</span> <span class="n">y2</span> <span class="o">=</span> <span class="o">*</span><span class="n">y_map</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rec</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="nf">.unwrap</span><span class="p">();</span>
-
-        <span class="n">lines</span><span class="nf">.push</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="k">true</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">));</span>  <span class="c1">// 0  true for enter</span>
-        <span class="n">lines</span><span class="nf">.push</span><span class="p">((</span><span class="n">x2</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">));</span> <span class="c1">// 1  false for exit</span>
-    <span class="p">}</span>
-
-    <span class="n">lines</span><span class="nf">.sort_unstable</span><span class="p">();</span>
-
-    <span class="n">lines</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>用树状数组好像也不好解决这个问题 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>同余就是余数相同的意思 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>为了理论上减少排序的负担 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>就像前面吐槽用 Python 主要是因为它足够慢，足够缺少优化，这个 Rust 实现运行基本在 0-2 ms，内存 2.x MB，很难说有测量比较的意义 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry></feed>

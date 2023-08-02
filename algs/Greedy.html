@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LeetCode Map
+            Why Greedy？
         
     "
 />
 
-<meta property="og:url" content="//oth/LeetCodeMap.html" />
+<meta property="og:url" content="//algs/Greedy.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LeetCode Map
+        Why Greedy？
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LeetCode Map</h1>
+    <h1 class="post__title__text">Why Greedy？</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
-            Other
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      July 25, 2023
+      August 01, 2023
     </div>
     
   </div>
@@ -127,58 +127,74 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="application-themes">Application Themes</h2>
+    <div class="post__content"><h2 id="前言">前言</h2>
 
-<h3 id="linesweep">LineSweep</h3>
+<p>“贪心”的这个概念根本就有问题：</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
-  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
-  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
-  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
-</ul>
+<ol>
+  <li>从适用条件上讲，它过于地宽泛而没有用；</li>
+  <li>从内容上讲，它只是机械地总结了结果，而缺乏提示最关键的思考过程</li>
+</ol>
 
-<h3 id="graph">Graph</h3>
+<p>真正地问题在于为什么 Greedy 成立，以及成立的内在核心条件是什么？</p>
 
-<ul>
-  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
-</ul>
+<p>这是一个两步递进的问题，首先是证明 Greedy 成立，Greedy 形式上总是由一个阶段的局部最优解来得到全局最优解，这天然适合用归纳法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>来进行证明，只要证明初始条件的成立<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>和前一个阶段的局部最优解能够导出下一个阶段的局部最优解。</p>
 
-<h3 id="palindrome">Palindrome</h3>
+<p>然后可以发现 Greedy 成立的条件会有类似之处，进行真正有意义地总结。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<p>下面我们介绍一些贪心算法的实例，来进行观察。</p>
 
-<h3 id="words-comparison">Words Comparison</h3>
+<h2 id="树上直径">树上直径</h2>
 
-<ul>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<p>求解非负权树形图的直径。</p>
 
-<h3 id="parentheses">Parentheses</h3>
+<p>树形图（Tree Graph），就是像树一样的无向连通图，也就是无环地无向连通图。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-</ul>
+<p>树上的直径就是两点间最长的简单路径<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">3</a></sup>。</p>
 
-<h2 id="tech-themes">Tech Themes</h2>
+<h3 id="算法推论">算法推论</h3>
 
-<h3 id="dp">DP</h3>
+<p>这时图上任意一点 $v_0$ ，以它为起点，距离最远的一个点是 $v_1$，则 $v_1$ 一定是直径的两个端点之一。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-</ul>
+<p>考虑树的直径一定横跨左右子树<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，而 $P_{v_0\rightarrow v_1}$ 只有两种可能：  与直径有交点或者没有交点 。</p>
 
-<h3 id="monotonic-stack">Monotonic Stack</h3>
+<p>如果没有交点，就是 $P_{v_0\rightarrow v_1}$ 只在一侧的子树上的情况，那么如果连接树的根节点和 $P_{v_0\rightarrow v_1}$ 上最近根的一个点 $v_1’$ ，假设根节点是 $v_R$ ，同侧子树的直径的端点是 $v_d$ ，那么根据直径的性质，$|v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_d|$ ，这样就有 $|v_0\rightarrow v_1’ \rightarrow v_1| \leqslant |v_0\rightarrow v_R\rightarrow v_d|$ 。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
-</ul>
+<ol>
+  <li>如果 $|v_0\rightarrow v_1’ \rightarrow v_1| \lt |v_0\rightarrow v_R\rightarrow v_d|$ ，构造出的新路径 $P_{v_0\rightarrow v_R\rightarrow v_d}$ 就是更长的距离 $v_0$ 的路径，这就与前提条件相悖；</li>
+  <li>否则 $|v_0\rightarrow v_1’ \rightarrow v_1| = |v_0\rightarrow v_R\rightarrow v_d|$ ，这意味着 $P_{v_R\rightarrow v_0\rightarrow v_1’\rightarrow v_1}$ 要么比原路径 $P_{v_R\rightarrow v_d}$ 更长，这就和前提条件相悖，要么相等<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>，$|v_1’ \rightarrow v_1| = |v_R\rightarrow v_1’ \rightarrow v_1| = |v_R\rightarrow v_d|$ 这就说明 $P_{v_R\rightarrow v_1’\rightarrow v_1}$ 也是一条可选的直径（的一部分），此时 $v_1$ 当然就是直径的一个端点。</li>
+</ol>
+
+<p>如果存在交点</p>
+
+<h2 id="dijkstra-最短路径">Dijkstra 最短路径</h2>
+
+<h2 id="jump-games">Jump Games</h2>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:3" role="doc-endnote">
+      <p>Inductive Reasoning，也许用诱导推理这个词更能把握它的内核，而且总是可以联想到后缀数组的诱导排序（Induced Sorting）算法， <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>这通常是显而易见的 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:1" role="doc-endnote">
+      <p>没有重复点的路径 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>然后再求解距离 $v_1$ 最远的点，就可以求出整个直径 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>不这样的话，假如只在其中一棵子树上，通过连接另一侧子树上的点、根节点和直径的近端的点，就能构造出更长的直径 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>存在零权重的边 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

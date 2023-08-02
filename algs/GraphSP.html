@@ -483,7 +483,7 @@ p \gets y \\
 
 <h2 id="so-called-spfa-算法">so-called ‘SPFA’ 算法</h2>
 
-<p>这个 Bellman-Ford 的改进算法在 OI 界可谓大名鼎鼎，对于随机图的实际运行很快，而且实现方便。它是中国的研究员提出的，被认为本质上是 Tarjan 的图上广度优先遍历的一般化版本<sup id="fnref:wiki-spfa" role="doc-noteref"><a href="#fn:wiki-spfa" class="footnote" rel="footnote">2</a></sup> ，虽然从算法思想上的没有什么直接的关系。</p>
+<p>这个 Bellman-Ford 的改进算法在 OI 界可谓大名鼎鼎，对于随机图的实际运行很快，而且实现方便。它是中国的研究员提出的，被认为本质上是 Tarjan 的图上广度优先遍历的一般化版本<sup id="fnref:wiki-spfa" role="doc-noteref"><a href="#fn:wiki-spfa" class="footnote" rel="footnote">2</a></sup> ，虽然从算法思想上没有什么直接的关系。</p>
 
 <h3 id="算法思想-2">算法思想</h3>
 
@@ -632,20 +632,20 @@ R \gets \lbrace s \rbrace\\
 
 <p>假如对 $\text{dis}$ 按照不减的顺序求出，每求出一个就更新该点的所有出边连接的点的 $\text{dis}$ ，那么下一个得到的最小 $\text{dis}$ 也仍然是所属点的最短距离。</p>
 
-<p>这是一个归纳法的思考方向，让我们用规整的形式来更好地说明：</p>
+<p>我们用归纳法的形式来说明：</p>
 
 <ol>
   <li>
-    <p>初始地情况，$\text{dis}[s]=0$ ，它是最小的 $\text{dis}$，也不妨认为它是 $s\rightarrow s$ 的最短距离；</p>
+    <p>初始地情况，$\text{dis}[s]=0$ ，它是最小的 $\text{dis}$，不妨认为它是 $s\rightarrow s$ 的最短距离；</p>
   </li>
   <li>
     <p>当 $d$ 是剩下点中 $\text{dis}$ 最小的点时，由于它的最短路径（强连通图保证至少有一条 $s$ 到 $d$ 的路径）上的前驱点 $d’$ 满足 $\text{dis}[d’] \leqslant \text{dis}[d]$ ：</p>
 
     <p>2.1 如果 $\text{dis}[d’] \lt \text{dis}[d]$， $d’$  之前已经被计算出最短路径，而 $d$ 已经被 $d’$  的出边更新为最短路径</p>
 
-    <p>2.2 特别地当 $w_{d’d}=0$ ，也就是 $\text{dis}[d’]=\text{dis}[d]$ ，$d’$ 可以忽略，直接找它的前驱 $d’’$ , 直到 $d^{(n)}=s$ ，总之都是之前已经被求出的</p>
+    <p>2.2 如果 $\text{dis}[d’]=\text{dis}[d]$ ，也就是 $w_{d’d}=0$ 时，$d’$ 可以忽略，直接找它的前驱 $d’’$ , 直到 $d^{(n)}=s$ ，总之都是之前已经被求出的</p>
 
-    <p>所以当之前的 $\text{dis}$ 都是最短路径时， $d$ 也是最短路径</p>
+    <p>所以当之前所有的最短路径都被求出时， $d$ 的最短路径也就求出了</p>
   </li>
 </ol>
 
