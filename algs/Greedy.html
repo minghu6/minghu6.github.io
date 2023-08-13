@@ -136,9 +136,9 @@
   <li>从内容上讲，它只是机械地总结了结果，而缺乏提示最关键的思考过程</li>
 </ol>
 
-<p>真正地问题在于为什么 Greedy 成立，以及成立的内在核心条件是什么？</p>
+<p>真正地问题在于为什么 Greedy 成立，以及成立的内在核心条件是什么？<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">1</a></sup></p>
 
-<p>这是一个两步递进的问题，首先是证明 Greedy 成立，Greedy 形式上总是由一个阶段的局部最优解来得到全局最优解，这天然适合用归纳法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>来进行证明，只要证明初始条件的成立<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>和前一个阶段的局部最优解能够导出下一个阶段的局部最优解。</p>
+<p>这是一个两步递进的问题，首先是证明 Greedy 成立，Greedy 形式上总是由一个阶段的局部最优解来得到全局最优解，这天然适合用归纳法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>来进行证明，只要证明初始条件的成立<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup>和前一个阶段的局部最优解能够导出下一个阶段的局部最优解。</p>
 
 <p>然后可以发现 Greedy 成立的条件会有类似之处，进行真正有意义地总结。</p>
 
@@ -150,33 +150,72 @@
 
 <p>树形图（Tree Graph），就是像树一样的无向连通图，也就是无环地无向连通图。</p>
 
-<p>树上的直径就是两点间最长的简单路径<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">3</a></sup>。</p>
+<p>树上的直径就是两点间最长的简单路径<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">4</a></sup>。</p>
 
 <h3 id="算法推论">算法推论</h3>
 
-<p>这时图上任意一点 $v_0$ ，以它为起点，距离最远的一个点是 $v_1$，则 $v_1$ 一定是直径的两个端点之一。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+<p>这时图上任意一点 $v_0$ ，以它为起点，距离最远的一个点是 $v_1$，则 $v_1$ 一定是直径的两个端点之一，然后再以 $v_1$ 为起点寻找距它最远的点 $v_2$ 就得到了直径。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">5</a></sup></p>
 
-<p>考虑树的直径一定横跨左右子树<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，而 $P_{v_0\rightarrow v_1}$ 只有两种可能：  与直径有交点或者没有交点 。</p>
+<h3 id="贪心证明">贪心证明</h3>
+
+<p>考虑树的直径一定横跨左右子树<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">6</a></sup>，而 $P_{v_0\rightarrow v_1}$ 只有两种可能：  与直径有交点或者没有交点 。</p>
 
 <p>如果没有交点，就是 $P_{v_0\rightarrow v_1}$ 只在一侧的子树上的情况，那么如果连接树的根节点和 $P_{v_0\rightarrow v_1}$ 上最近根的一个点 $v_1’$ ，假设根节点是 $v_R$ ，同侧子树的直径的端点是 $v_d$ ，那么根据直径的性质，$|v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_d|$ ，这样就有 $|v_0\rightarrow v_1’ \rightarrow v_1| \leqslant |v_0\rightarrow v_R\rightarrow v_d|$ 。</p>
 
 <ol>
   <li>如果 $|v_0\rightarrow v_1’ \rightarrow v_1| \lt |v_0\rightarrow v_R\rightarrow v_d|$ ，构造出的新路径 $P_{v_0\rightarrow v_R\rightarrow v_d}$ 就是更长的距离 $v_0$ 的路径，这就与前提条件相悖；</li>
-  <li>否则 $|v_0\rightarrow v_1’ \rightarrow v_1| = |v_0\rightarrow v_R\rightarrow v_d|$ ，这意味着 $P_{v_R\rightarrow v_0\rightarrow v_1’\rightarrow v_1}$ 要么比原路径 $P_{v_R\rightarrow v_d}$ 更长，这就和前提条件相悖，要么相等<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>，$|v_1’ \rightarrow v_1| = |v_R\rightarrow v_1’ \rightarrow v_1| = |v_R\rightarrow v_d|$ 这就说明 $P_{v_R\rightarrow v_1’\rightarrow v_1}$ 也是一条可选的直径（的一部分），此时 $v_1$ 当然就是直径的一个端点。</li>
+  <li>否则 $|v_0\rightarrow v_1’ \rightarrow v_1| = |v_0\rightarrow v_R\rightarrow v_d|$ ，这意味着 $P_{v_R\rightarrow v_0\rightarrow v_1’\rightarrow v_1}$ 要么比原路径 $P_{v_R\rightarrow v_d}$ 更长，这就和前提条件相悖，要么相等<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">7</a></sup>，$|v_1’ \rightarrow v_1| = |v_R\rightarrow v_1’ \rightarrow v_1| = |v_R\rightarrow v_d|$ 这就说明 $P_{v_R\rightarrow v_1’\rightarrow v_1}$ 也是一条可选的直径（的一部分），此时 $v_1$ 当然就是直径的一个端点。</li>
 </ol>
 
-<p>如果存在交点</p>
+<p>如果存在交点，假设交点是 $v_1’$ ，直径的与 $v_0$ 异侧的端点是 $v_{d}$ ，假如 $v_1 \neq v_d$，那么总能构造出更长的距离 $v_0$ 的路径或者树的直径，否则就是存在多条相等的直径，$v_1$ 是另一条直径的端点。</p>
+
+<p>因此证明了 $v_1$ 总是直径的一个端点，当然也证明了 $v_2$ 也是直径的一个端点<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">8</a></sup>。</p>
+
+<h3 id="成立条件">成立条件</h3>
+
+<p>这个贪心算法能够成立的核心条件有两个：</p>
+
+<ol>
+  <li>树形图不存在环，两个点之间的简单路径有且只有一条；</li>
+  <li>非负权边，这让数学上的“不等式缩放”（scaling）能够成立。</li>
+</ol>
 
 <h2 id="dijkstra-最短路径">Dijkstra 最短路径</h2>
 
+<p>一提到贪心算法，可能是很多人第一时间想到 dijkstra 算法，以前在学校时，数据结构课的老师总是喜欢强调它是一种贪心算法，当时就觉得这是句干话，因为我们完全不会因为它是贪心算法就理解它的原理或者清楚它的工作过程，现在我们来重新回顾下<a href="/algs/GraphSP.html">这个算法</a>：</p>
+
+<p>非负权边的无向连通图，求解从某个点 $v_0$ 出发到其他所有点的最短路径。</p>
+
+<h3 id="算法推论-1">算法推论</h3>
+
+<p>可以依次求出距离 $v_0$ 最短、次短、第三短。。。。。。的点的路径，每求出一个点，就用这个最短路径更新与它直接相连的那些点。</p>
+
+<p>初始可以认为与 $v_0$ 直接相连点的最短路径就它们的直接路径长度，而其他点的最短路径是无穷大。</p>
+
+<h3 id="贪心证明-1">贪心证明</h3>
+
+<ol>
+  <li>由于是非负路径，初始时首先可以依次确定与 $v_0$ 直接相连的那些点的最短距离</li>
+  <li>同样由于是非负路径，到某个点 $v_1$ 的最短路径上的前驱点 $v_1’$ 的最短路径一定更小，首先会被求出，而 $v_1$ 的最短路径因此会被正确更新<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup></li>
+</ol>
+
+<h3 id="成立条件-1">成立条件</h3>
+
+<p>显然最重要的就是边的权重是非负值，这再次允许我们进行非比较地不等式缩放。</p>
+
 <h2 id="jump-games">Jump Games</h2>
+
+<p><a href="/oth/LeetCodeJumpGames.html"></a></p>
 
 <h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
+    <li id="fn:10" role="doc-endnote">
+      <p>贪心算法就总是第一眼看上去感觉好像是对的，但是又不能 100% 确定，证明它或者理解它为什么是对的比实现它要复杂得多 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
     <li id="fn:3" role="doc-endnote">
-      <p>Inductive Reasoning，也许用诱导推理这个词更能把握它的内核，而且总是可以联想到后缀数组的诱导排序（Induced Sorting）算法， <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>Inductive Reasoning，也许用诱导推理这个词更能把握它的内核，而且总是可以联想到后缀数组的诱导排序（Induced Sorting）算法，反过来归纳一词总让人误以为这是一种经验猜测而不是逻辑推理 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:2" role="doc-endnote">
       <p>这通常是显而易见的 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
@@ -185,13 +224,19 @@
       <p>没有重复点的路径 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:4" role="doc-endnote">
-      <p>然后再求解距离 $v_1$ 最远的点，就可以求出整个直径 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>两步地贪心算法 QAQ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:5" role="doc-endnote">
       <p>不这样的话，假如只在其中一棵子树上，通过连接另一侧子树上的点、根节点和直径的近端的点，就能构造出更长的直径 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:6" role="doc-endnote">
       <p>存在零权重的边 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>Deductive Reasoning，诱导推理的反过程–演绎推理 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:9" role="doc-endnote">
+      <p>如果存在零权边，那么总可以等价地交换这些零权边连接的点的位置，并不影响结论 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>

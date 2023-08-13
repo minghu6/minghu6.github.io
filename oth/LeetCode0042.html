@@ -135,7 +135,7 @@
 
 <p><a href="https://github.com/minghu6/leet-code/tree/v0.1.11/0042_trapping_rain_water/py0042">源代码</a></p>
 
-<p>如果能知到每个单位区间左边和右边的最大高度，取其最小值，就是该单位的存雨量。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+<p>如果能知到每个单位区间左边和右边的最大高度，取其最小值，就是该单位的存雨量。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup><sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup></p>
 
 <h3 id="链接题目">链接题目</h3>
 
@@ -196,7 +196,7 @@
 
 <h2 id="解双指针">解②双指针：</h2>
 
-<p>假设我们事先找到序列里的最大高度<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup> $h_\text{max}$：</p>
+<p>假设我们事先找到序列里的最大高度<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup> $h_\text{max}$：</p>
 
 <p>那么在它的左边，从头开始扫描，维护一个到当前位置 $i$ 为止的前缀最大值 $h_\text{left} = \max\lbrace {h_0 \dots h_i}\rbrace$，每个位置的积水就是 $h_\text{left}-h_i$ ；</p>
 
@@ -227,11 +227,13 @@
     <span class="k">return</span> <span class="n">ans</span>
 </code></pre></div></div>
 
+<p>测试时的实际性能足够快，取样表上最快的就是这个版本。</p>
+
 <h2 id="解单调栈">解③单调栈：</h2>
 
 <p>单调栈，Monotonic Stack，这是第一次遇到可以恰当地套用这个算法思想的题目。</p>
 
-<p>回到双向扫描的思路，只要序列一直保持不增<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，就（把索引位置）入栈，直到遇到一个大于栈顶元素（对应高度）的值 $h_i$，然后弹出所有（对应高度）不超过 $h_i$ 的栈元素，于是可以利用这些元素<strong>水平地</strong>计算积雨。</p>
+<p>回到双向扫描的思路，只要序列一直保持不增<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">4</a></sup>，就（把索引位置）入栈，直到遇到一个大于栈顶元素（对应高度）的值 $h_i$，然后弹出所有（对应高度）不超过 $h_i$ 的栈元素，于是可以利用这些元素<strong>水平地</strong>计算积雨。</p>
 
 <p>每一层的高度是（弹出的）相邻栈元素对应的高度差，长度是每个栈元素 $k_0$ 的前一个栈元素 $k_1$ 与当前位置 $i$ 的差减一：$i-k_1-1$ 。</p>
 
@@ -268,6 +270,9 @@
   <ol>
     <li id="fn:1" role="doc-endnote">
       <p>由此可以推出，当用两个数组分别记录某个位置的前缀的高度最大值和后缀的高度最大值，然后分别从左扫描和从右扫描，计算完这个数组，这就是所谓 DP 的思路，真是什么玩意儿！ <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>这个背景看起来就像是扫描线问题会经常出现的，不过扫描线问题的关键是存在多栋区间重叠的建筑，查询某个点的数据 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:2" role="doc-endnote">
       <p>若高度不唯一，任选其一即可 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
