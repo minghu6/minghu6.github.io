@@ -207,7 +207,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
   <li>根的两个孩子都是满二叉树的二叉树是满二叉树</li>
 </ol>
 
-<p>这个递归定义也就是我们诱导推理的过程：</p>
+<p>这个递归定义也就是我们归纳推理的过程：</p>
 
 <ol>
   <li>单节点的时候，叶子节点比中间节点数多 $1$ ；</li>
@@ -910,13 +910,22 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
 
 <span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Count</span> <span class="k">for</span> <span class="n">SubSegMaxSum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
 <span class="k">where</span>
-    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="n">Min</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
     <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,</span>
 <span class="p">{</span>
     <span class="k">type</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">SubSegMaxSumStats</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span>
 
     <span class="k">fn</span> <span class="nf">combine</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Stats</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">limit_ans</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">e</span><span class="p">()</span><span class="py">.ans</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">l</span><span class="py">.ans</span> <span class="o">==</span> <span class="n">limit_ans</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">r</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="n">r</span><span class="py">.ans</span> <span class="o">==</span> <span class="n">limit_ans</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">l</span><span class="nf">.clone</span><span class="p">();</span>
+        <span class="p">}</span>
+
         <span class="n">SubSegMaxSumStats</span> <span class="p">{</span>
             <span class="n">sum</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">l</span><span class="py">.sum</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.sum</span><span class="p">,</span>
             <span class="n">pref</span><span class="p">:</span> <span class="nf">max</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="py">.pref</span><span class="p">,</span> <span class="o">&amp;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">l</span><span class="py">.sum</span> <span class="o">+</span> <span class="o">&amp;</span><span class="n">r</span><span class="py">.pref</span><span class="p">))</span><span class="nf">.clone</span><span class="p">(),</span>
@@ -926,7 +935,7 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
     <span class="p">}</span>
 
     <span class="k">fn</span> <span class="nf">e</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">::</span><span class="n">Stats</span> <span class="p">{</span>
-        <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">()</span>
+        <span class="nn">SubSegMaxSumStats</span><span class="p">::</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">min</span><span class="p">()</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
@@ -959,6 +968,8 @@ x+y &amp;= 2^{h-1} &amp;\quad (2)\\
 
 <span class="nd">impl_for_num!</span><span class="p">(</span><span class="n">sub_seg_max_sum_stats</span> <span class="p">|</span> <span class="n">sint</span><span class="p">);</span>
 </code></pre></div></div>
+
+<p>需要注意得是因为负数的存在，零不能当做这里的默认值，需要取一个足够小的负数，但也要注意数据类型越界的问题。</p>
 
 <h2 id="保存整个子数组">保存整个子数组</h2>
 
