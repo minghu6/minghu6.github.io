@@ -629,6 +629,72 @@
 
 <p>由于本质上与基本实现一致，运行时间也是 $2$ ms 。</p>
 
+<h3 id="外分组实现2">外分组实现2</h3>
+
+<p>可以参考上面通过延迟更新<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup>来节省外分组实现的一个数组的空间：</p>
+
+<p>具体说就是用当前数组保存之前的数组，用上一轮的数组保存上两轮的数组，只有在当前数组更新的时候，才把当前数组保存的内容更新到上一轮数组。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">mut</span> <span class="n">CUR</span><span class="p">:</span> <span class="p">[</span><span class="nb">bool</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+<span class="k">static</span> <span class="k">mut</span> <span class="n">PRE1</span><span class="p">:</span> <span class="p">[</span><span class="nb">bool</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="k">false</span><span class="p">;</span> <span class="n">MAX_S_LEN</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">solve_time_saving</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+    <span class="k">unsafe</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">p_bytes</span> <span class="o">=</span> <span class="n">p</span><span class="nf">.as_bytes</span><span class="p">();</span>
+        <span class="k">let</span> <span class="n">s_bytes</span> <span class="o">=</span> <span class="n">s</span><span class="nf">.as_bytes</span><span class="p">();</span>
+
+        <span class="n">CUR</span><span class="p">[</span><span class="mi">1</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]</span><span class="nf">.fill</span><span class="p">(</span><span class="k">false</span><span class="p">);</span>
+        <span class="n">CUR</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">p_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+                <span class="c1">// The valid pattern has guaranteed that j &gt;= 2</span>
+                <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="k">let</span> <span class="n">pre2</span> <span class="o">=</span> <span class="n">PRE1</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+                        <span class="n">PRE1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">CUR</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+                        <span class="n">CUR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre2</span> <span class="p">||</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">CUR</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="k">let</span> <span class="n">pre2</span> <span class="o">=</span> <span class="n">PRE1</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+                        <span class="n">PRE1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">CUR</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+                        <span class="n">CUR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre2</span>
+                            <span class="p">||</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                                <span class="o">&amp;&amp;</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                <span class="o">&amp;&amp;</span> <span class="n">CUR</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="k">if</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'.'</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">{</span>
+                <span class="n">PRE1</span><span class="p">[</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]</span><span class="nf">.copy_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">CUR</span><span class="p">[</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]);</span>
+
+                <span class="n">CUR</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="n">CUR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">PRE1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="n">PRE1</span><span class="p">[</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]</span><span class="nf">.copy_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">CUR</span><span class="p">[</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]);</span>
+
+                <span class="n">CUR</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="n">CUR</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_bytes</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">s_bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">PRE1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">CUR</span><span class="p">[</span><span class="n">s_bytes</span><span class="nf">.len</span><span class="p">()]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>运行时间：1 ms</p>
+
 <h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">
@@ -662,6 +728,9 @@
     </li>
     <li id="fn:10" role="doc-endnote">
       <p>这个开销显然很小 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:11" role="doc-endnote">
+      <p>延迟更新、惰性更新、滚动数组，可以有很多说法儿来描述这件事儿 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>

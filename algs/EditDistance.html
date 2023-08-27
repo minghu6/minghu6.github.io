@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LeetCode Map
+            编辑距离
         
     "
 />
 
-<meta property="og:url" content="//oth/LeetCodeMap.html" />
+<meta property="og:url" content="//algs/EditDistance.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LeetCode Map
+        编辑距离
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LeetCode Map</h1>
+    <h1 class="post__title__text">编辑距离</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
-            Other
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      July 25, 2023
+      August 26, 2023
     </div>
     
   </div>
@@ -127,92 +127,88 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="app-themes">App Themes</h2>
+    <div class="post__content"><h2 id="基本概念">基本概念</h2>
 
-<p>按照特定应用场景的分类</p>
-
-<h3 id="linesweep">LineSweep</h3>
+<p>编辑距离是从一个串变换到另一个串，需要的基础操作的数量，用来衡量两个串的相似度，用在</p>
 
 <ul>
-  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
-  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
-  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
-  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
+  <li>自然语言处理上，比如拼写检查；</li>
+  <li>生物学上，做 DNA 序列对比</li>
+  <li>其他</li>
 </ul>
 
-<h3 id="graph">Graph</h3>
+<p>这里的基础操作包括：</p>
 
 <ul>
-  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
+  <li>插入一个字符</li>
+  <li>删除一个字符</li>
+  <li>替换一个字符（substitution）</li>
+  <li>交换两个字符（transposition）</li>
 </ul>
 
-<h3 id="palindrome">Palindrome</h3>
+<p>编辑距离有：</p>
+
+<h3 id="莱文斯坦距离">莱文斯坦距离</h3>
+
+<p>Lavenshtein Distance，最常见的编辑距离，通常也会冠以“编辑距离”之名。</p>
+
+<p>基本操作：</p>
 
 <ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
+  <li>插入</li>
+  <li>删除</li>
+  <li>替换</li>
 </ul>
 
-<h3 id="words-comparison">Words Comparison</h3>
+<h3 id="达梅劳-莱文斯坦距离">达梅劳-莱文斯坦距离</h3>
+
+<p>Damerau-Lavenshtein Distance，莱文斯坦距离的变种，开始是用于拼写检查，补充了第四种基本的拼写错误，近邻序顺倒颠，但后来也推广用于衡量蛋白质序列间的变异。</p>
+
+<p>基本操作：</p>
 
 <ul>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
+  <li>插入</li>
+  <li>删除</li>
+  <li>替换</li>
+  <li>（邻近）交换</li>
 </ul>
 
-<h3 id="parentheses">Parentheses</h3>
+<h3 id="lcs-距离">LCS 距离：</h3>
+
+<p>最长公共子序列距离。</p>
+
+<p>基本操作：</p>
 
 <ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
+  <li>插入</li>
+  <li>删除</li>
 </ul>
 
-<h2 id="tech-themes">Tech Themes</h2>
+<h3 id="汉明距离">汉明距离</h3>
 
-<p>按照算法思想的分类</p>
+<p>Hamming Distance，用于网络传输，作为学习网络传输都会了解到的流的校验码 。</p>
 
-<h3 id="dp">DP</h3>
+<p>基本操作：</p>
 
 <ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0044 - Wildcard Matching</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0403 - Frog Jump</a></li>
-  <li><a href="/oth/LeetCode0072.html">0072 - Edit Distance</a></li>
+  <li>替换</li>
 </ul>
 
-<h4 id="recursive-dp">Recursive DP</h4>
+<p>而且只允许同样长度的字符串。</p>
 
-<p>一类很特殊的 DP ，是在递归状态上的 DP</p>
+<h3 id="哈罗距离">哈罗距离</h3>
 
-<ul>
-  <li><a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a></li>
-</ul>
+<p>Jaro Distance，只允许交换两个字符。</p>
 
-<h3 id="monotonic-stack">Monotonic Stack</h3>
+<h2 id="dp-实现">DP 实现</h2>
 
-<ul>
-  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodeJumpGames.html">1696. Jump Game VI</a></li>
-</ul>
+<p>这些编辑距离，特别是类似于莱文斯坦距离这样的编辑距离都有一个常规地运用 DP 概念的实现。</p>
 
-<h3 id="greedy">Greedy</h3>
+<p>时间复杂度是 $O(nm)$ ，空间复杂度是 $O(\min(n,m))$ 。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<p>具体参考 <a href="/algs/TwoSeqDP.html">两序列DP</a></p>
 
-<h2 id="lang-themes">Lang Themes</h2>
-
-<p>有语言优化相关的主题</p>
-
-<h3 id="python">Python</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<h2 id="注解">注解</h2>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
