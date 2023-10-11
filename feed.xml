@@ -1,4 +1,581 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-08-27T21:56:24+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">编辑距离</title><link href="/algs/EditDistance.html" rel="alternate" type="text/html" title="编辑距离" /><published>2023-08-26T00:00:00+08:00</published><updated>2023-08-26T00:00:00+08:00</updated><id>/algs/EditDistance</id><content type="html" xml:base="/algs/EditDistance.html"><![CDATA[<h2 id="基本概念">基本概念</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2023-10-11T11:24:29+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">LeetCode Best Time to Buy and Sell Stock</title><link href="/oth/LeetCodeBuySellStock.html" rel="alternate" type="text/html" title="LeetCode Best Time to Buy and Sell Stock" /><published>2023-10-01T00:00:00+08:00</published><updated>2023-10-01T00:00:00+08:00</updated><id>/oth/LeetCodeBuySellStock</id><content type="html" xml:base="/oth/LeetCodeBuySellStock.html"><![CDATA[<h2 id="0121-best-time-to-buy-and-sell-stock"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock/">0121. Best Time to Buy and Sell Stock</a></h2>
+
+<p><em>Easy</em></p>
+
+<p>单次交易</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">maxProfit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">h</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<h2 id="0122-best-time-to-buy-and-sell-stock-ii"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/">0122. Best Time to Buy and Sell Stock II</a></h2>
+
+<p><em>Medium</em></p>
+
+<p>不限次数交易</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">maxProfit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)):</span>
+        <span class="n">ans</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<h2 id="0123-best-time-to-buy-and-sell-stock-iii"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/">0123. Best Time to Buy and Sell Stock III</a></h2>
+
+<p><em>Hard</em></p>
+
+<p>限制两次交易</p>
+
+<h3 id="破题">破题</h3>
+
+<p>题目的复杂程度终于提升到了有点儿意思的程度，这里的关键是搞清楚“最多两次”交易的限制条件到底对我们的模型意味着什么？</p>
+
+<p>可以认为，做两次交易的收益总是不差于一次交易，只要在计算模型上把一次交易视为两次交易的边缘值。</p>
+
+<h3 id="解两遍扫描">解①两遍扫描</h3>
+
+<p>把价格表分为两部分，左边用于第一次交易，右边用于第二次交易，这样只需要检查每个位置的两次交易之和，求一个最大值即可。可以让左边分割的串从空串开始，这样就包含了一次交易的情况。</p>
+
+<p>每次分割的左边串的最大收益可以依靠前面 <a href="#0121-best-time-to-buy-and-sell-stock">0121. Best Time to Buy and Sell Stock</a> 来计算，而分割的右边串则可以预先运用同样的算法反向扫描，保存个位置的计算结果，在从左开始扫描的时候查询表即可。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="n">dp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">:</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">hi</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hi</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+
+    <span class="n">ans</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">:</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">+</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="n">ans</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">+</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>运行时间：760 ms (beats 98.06%)，内存占用：30.5 MB (beats 72.56%, ~100%)</p>
+
+<h3 id="解规范解">解②规范解</h3>
+
+<p>在上一个解的时候，我们通过组合单次求解的方法来计算两次交易得到的最大收益，而这个单次求解的方法好像扫描一个个位置就可以进行该位置的更新，（因为当天交易收益总是零，因此是否允许当天交易都不重要），这暗示我们很可能有一个扫描每个位置就可以计算出两次交易的最大收益的模型。</p>
+
+<p>这才引出对股票买卖问题的统一模型：</p>
+
+<p>累积计算每次买或卖的收益，买的收益是 $-\text{price}$ ，卖的收益是买的收益加上 $\text{price}$ ，下次交易的收益基础是之前的收益。</p>
+
+<p>对于两次买卖就有：</p>
+
+\[\begin{align}
+\text{buy}_1 &amp;= \max(\text{buy}_1',\text{-price})\\
+\text{sell}_1 &amp;= \max(\text{buy}_1',\text{price})\\
+\text{buy}_2 &amp;= \max(\text{sell}_1',\text{-price})\\
+\text{sell}_2 &amp;= \max(\text{buy}_2',\text{price})\\
+\end{align}\]
+
+<p>也就是：$\text{buy}_1 \rightarrow \text{sell}_1 \rightarrow \text{buy}_2 \rightarrow \text{sell}_2$</p>
+
+<p>有必要解释下，按照自然流程，两次交易至少应该是第一天 $\text{buy}_1$ ，第二天 $\text{sell}_1$ ，第三天 $\text{buy}_2$，第四天 $\text{sell}_2$，是一个 $4$ 天的窗口，但是这需要额外检查下数据长度，而把这些操作压缩到一天，并不影响结果，而且可以适应长度不足 $4$ 的情况。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">buy1</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sell1</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># prices[0]+buy1
+</span>    <span class="n">buy2</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sell2</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># prices[0]+buy2
+</span>
+    <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">if</span> <span class="n">buy1</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">buy1</span> <span class="o">=</span> <span class="o">-</span><span class="n">price</span>
+        <span class="k">elif</span> <span class="n">sell1</span> <span class="o">&lt;</span> <span class="n">buy1</span><span class="o">+</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">sell1</span> <span class="o">=</span> <span class="n">buy1</span><span class="o">+</span><span class="n">price</span>
+        <span class="k">if</span> <span class="n">buy2</span> <span class="o">&lt;</span> <span class="n">sell1</span><span class="o">-</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">buy2</span> <span class="o">=</span> <span class="n">sell1</span><span class="o">-</span><span class="n">price</span>
+        <span class="k">elif</span> <span class="n">sell2</span> <span class="o">&lt;</span> <span class="n">buy2</span><span class="o">+</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">sell2</span> <span class="o">=</span> <span class="n">buy2</span><span class="o">+</span><span class="n">price</span>
+
+    <span class="k">return</span> <span class="n">sell2</span>
+</code></pre></div></div>
+
+<p>运行时间：670 ms (beats 99.76%)，内存占用：30.5 MB (beats 88.72%, ~100%) 。</p>
+
+<p>这个统一模型在一遍扫描就解决了问题，并且省掉了前面的 $O(n)$ 的内存占用<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup> 。</p>
+
+<h2 id="0188-best-time-to-buy-and-sell-stock-iv"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/">0188. Best Time to Buy and Sell Stock IV</a></h2>
+
+<p><em>Hard</em></p>
+
+<p>上面问题的一般化，不是限制两次交易，而是给定的参数 $k$ 次。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">buy</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">k</span>
+    <span class="n">sell</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># buy[i] - sell[i+1]
+</span>
+    <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="n">prices</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">price</span><span class="p">:</span>
+                <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">price</span>
+            <span class="k">elif</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">price</span><span class="p">:</span>
+                <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">price</span>
+
+    <span class="k">return</span> <span class="n">sell</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>运行时间：59 ms (Beats 99.16%, ~100%)，内存占用：16.36MB (Beats 82.07%，~100%)。</p>
+
+<h2 id="0309-best-time-to-buy-and-sell-stock-with-cooldown"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/">0309. Best Time to Buy and Sell Stock with Cooldown</a></h2>
+
+<p><em>Medium</em></p>
+
+<p>不限次交易，有冷冻期</p>
+
+<h3 id="破题-1">破题</h3>
+
+<p>购买冷冻期机制的引入改变了整个的模型，使得我们不能像前面的那个无限次数交易那样简单统计所有增量，就可以得到答案。</p>
+
+<p>如果遵循股票买卖整个系列的顺序来做题，题解可能格外困难，因为很容易受到前面解题思路的影响，而重构整个模型并没有那么直观，因此我认为应该把这道题标记为 Hard 难度。</p>
+
+<p>因此，让我们先从最简单地、最基本地方法开始：一个基于递归，使用记忆化优化的，穷举所有可能的解决方法。</p>
+
+<h3 id="解递归记忆化">解①递归记忆化</h3>
+
+<p>逐个读取价格表，分两个模式：等待购入和等待卖出。下面分别用 $\text{Buy}$ 和 $\text{Sell}$ 表示这两个模式，在 $\text{Buy}$ 模式下有两种选择：在当前价格日卖出和下一天再说，同样地 $\text{Sell}$ 模式也有两种选择，以当前价格卖出和下一天再说。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">Buy</span> <span class="o">=</span> <span class="n">auto</span><span class="p">(),</span>
+    <span class="n">Sell</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">recur</span><span class="p">(</span><span class="n">mode</span><span class="p">:</span> <span class="n">Mode</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">:</span>
+            <span class="n">cand1</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Sell</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">cand2</span> <span class="o">=</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cand1</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">cand2</span> <span class="o">=</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Sell</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">cand1</span><span class="p">,</span> <span class="n">cand2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>运行时间：52 ms (beats 44.28%, ~100%)，内存占用：21.06 MB (beats 31.05%)。</p>
+
+<h3 id="解迭代dp">解②迭代DP</h3>
+
+<p>上面的递归实现，可以帮助我们理清普通 DP 版本的实现思路。</p>
+
+<p>对于交易有限次数的股票模型，可以穷举所有所有轮次买和卖的状态，但是对于不限次数的模型，则不能这样穷举，只能区分买和卖，不能辨别轮次。</p>
+
+<p>尝试从正面看这个问题，分别用 <code class="language-plaintext highlighter-rouge">buy</code> 和 <code class="language-plaintext highlighter-rouge">sell</code> 两个数组代表一个前缀价格串上的最后操作是买或卖带来的最大收益。</p>
+
+<p>这样，</p>
+
+<ol>
+  <li>
+    <p>买的最大收益是要比较前一天买的最大收益（意味着当前没有买卖）以及包含冷冻期在内的卖的最大收益加上当前价格；</p>
+  </li>
+  <li>
+    <p>卖的最大收益则是前一天卖的最大收益（意味着当前没有买卖）或者前一天买的最大收益加上当前价格（当前卖出）</p>
+  </li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">prices</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">buy</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">buy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">buy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">sell</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">buy</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">sell</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">sell</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>运行时间：36 ms (beats 98.07%, ~100%)，内存占用：16.39 MB (beats 99.34%) 。</p>
+
+<p>当然，仔细观察代码，会发现 $O(n)$ 的内存占用是不必要的，实际上只需要维护三个持久变量：$\text{buy}_0$, $\text{buy}_1$ 和 $\text{sell}_0$ 。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">prices</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">buy0</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">buy1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy0</span><span class="p">,</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">sell0</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">buy2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy1</span><span class="p">,</span> <span class="n">sell0</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">sell1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sell0</span><span class="p">,</span> <span class="n">buy0</span> <span class="o">+</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">sell0</span> <span class="o">=</span> <span class="n">sell1</span>
+        <span class="n">buy1</span><span class="p">,</span> <span class="n">buy0</span> <span class="o">=</span> <span class="n">buy2</span><span class="p">,</span> <span class="n">buy1</span>
+
+    <span class="k">return</span> <span class="n">sell0</span>
+</code></pre></div></div>
+
+<p>运行时间：45 ms (beats 79.16%, ~100%)，内存占用：16.56 MB (beats 87.33%. ~100%) 。</p>
+
+<h2 id="0714-best-time-to-buy-and-sell-stock-with-transaction-fee"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/">0714. Best Time to Buy and Sell Stock with Transaction Fee</a></h2>
+
+<p><em>Medium</em></p>
+
+<p>不限次交易，有交易费</p>
+
+<h3 id="解状态dp">解①状态DP</h3>
+
+<p>直接按照前面交易冻结日的股票交易模型，易得</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">fee</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+    <span class="n">buy</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sell</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">buy1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy</span><span class="p">,</span> <span class="n">sell</span><span class="o">-</span><span class="n">price</span><span class="p">)</span>
+        <span class="n">sell1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sell</span><span class="p">,</span> <span class="n">buy</span><span class="o">+</span><span class="n">price</span><span class="o">-</span><span class="n">fee</span><span class="p">)</span>
+
+        <span class="n">buy</span> <span class="o">=</span> <span class="n">buy1</span>
+        <span class="n">sell</span> <span class="o">=</span> <span class="n">sell1</span>
+
+    <span class="k">return</span> <span class="n">sell</span>
+</code></pre></div></div>
+
+<p>运行时间：566 ms (beats 77%, ~100%)，内存占用：23.7 MB (beats 67.29%, ~100%) 。</p>
+
+<h3 id="解贪心">解②贪心</h3>
+
+<p>但是还是有方法利用  <a href="#0122-best-time-to-buy-and-sell-stock-ii">0122. Best Time to Buy and Sell Stock</a></p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>虽然形式上压缩到了一天，但是我们的计算公式也暗示，实际上不可能同时更新，实质上全部更新还是至少需要四天，对于一次交易也至少需要两天 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>虽然在测试上也看不这个内存节省的区别来，但毕竟是 Python 嘛，内存模型并不节省 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[0121. Best Time to Buy and Sell Stock]]></summary></entry><entry><title type="html">0115 - Distinct Subsequences</title><link href="/oth/LeetCode0115.html" rel="alternate" type="text/html" title="0115 - Distinct Subsequences" /><published>2023-09-30T00:00:00+08:00</published><updated>2023-09-30T00:00:00+08:00</updated><id>/oth/LeetCode0115</id><content type="html" xml:base="/oth/LeetCode0115.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/distinct-subsequences/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.18/0115_distinct_subseq/py0115">源代码</a></p>
+
+<p>判断一个串的所有（非连续）子序列里，等于目标串的数量。</p>
+
+<p>这里要特别关注<strong>解3：子序列的窗口范式</strong></p>
+
+<h2 id="解正解">解①正解：</h2>
+
+<p>这个是最直接的推导思路，考虑 $s$ 的前缀从 $s[..0]$ 逐个增加字符直到 $s[..n]$ ，观察对样本串 $t$ 它的前缀随之的变化。</p>
+
+<p>假设增加了一个字符 $x$ ，那么对于样本串 $t$ ，所有出现 $x$ 的位置的前缀都会因此受到影响。</p>
+
+<p>假设 $x$ 出现在 $t$ 的所有位置是 P，则有 $\text{dp}[P] := \text{dp}[P] + \text{dp}[P-1]$，也就是 $x$ 前面的前缀会因为 $x$ 的加入，而使得包含 $x$ 的前缀数量增加。特别地，当 $t$ 的前缀是空串的时候，设定值总是为 $1$ ，这样可以方便统一地计算。</p>
+
+<p>那么该如何计算出 $x$ 出现在 $t$ 的所有位置呢，正好字符集很小（大小写字母），直接用列表保存最节省内存，可以在对 $t$ 的一遍扫描过程中把坐标加进对应字符的坐标列表里。</p>
+
+<p>于是得到了下面的实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">pos</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">26</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="nb">ord</span><span class="p">(</span><span class="s">"a"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">ord</span><span class="p">(</span><span class="s">"a"</span><span class="p">)</span> <span class="k">else</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="nb">ord</span><span class="p">(</span><span class="s">"A"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">26</span>
+        <span class="n">pos</span><span class="p">[</span><span class="n">key</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">rec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">c_i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="n">pre_v</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">pre_i</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="nb">ord</span><span class="p">(</span><span class="s">"a"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">ord</span><span class="p">(</span><span class="s">"a"</span><span class="p">)</span> <span class="k">else</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="nb">ord</span><span class="p">(</span><span class="s">"A"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">26</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pos</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">c_i</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">pre_i</span><span class="p">:</span>
+                <span class="n">rec</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pre_v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rec</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rec</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">pre_v</span> <span class="o">=</span> <span class="n">tmp</span>
+            <span class="n">pre_i</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">rec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>有几点需要特别说明的：</p>
+
+<h4 id="1-快速失败地优化">1. 快速失败地优化</h4>
+
+<p>譬如</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">0</span>
+
+<span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">0</span>
+</code></pre></div></div>
+
+<p>这样的代码，几乎总是可以明显提高我们的运行表现，为一些应该很优，但由于 Python 匮乏地运行时优化而表现一般地实现挽尊：—— 。</p>
+
+<h4 id="2-dp-数组的特异处">2. DP 数组的特异处</h4>
+
+<p>从代码上乍看起来，这里的 $\text{dp}$ 数组和之前那些一般的 $\text{dp}$ 数组是一样的，我们只是照样把二维压缩到一维。</p>
+
+<p>但这里特别地是，从计算过程上看，每一行并不是所有的数据都会被更新，没有被计算的数据应该继承自上一行，而不是被置为一个固定的初始值。</p>
+
+<p>这样使用二维不仅浪费空间，而且并不方便，使用一维的空间，总是更好的选择。</p>
+
+<h4 id="3-一维地实现">3. 一维地实现</h4>
+
+<p>同样地，在使用压缩地 $\text{dp}$ 数组时，为了避免数据被覆盖，需要提前保存上一行的前一个位置的数据，但是我们预计算的位置并不一定是连续的，因此需要进行判断。对于不连续的位置，就不会存在数据覆盖的问题。</p>
+
+<p>运行时间 94 ms (beats 92.81%)，内存占用：16.46 MB (beats 96.82%, ~100%) 。</p>
+
+<h2 id="解递归迭代">解②递归+迭代：</h2>
+
+<p>实际上如果我们理解了解①，那么可以把它转换成我们更熟悉地 $\text{dp}$ 实现。</p>
+
+<p>只要考虑：</p>
+
+<ol>
+  <li>要么当 $s$ 的前缀拓展一个字符时，$t$ 也拓展一个字符，这只当 s 和 t 拓展的字符相等时才可以；</li>
+  <li>要么无条件地跳过当前字符，也就是 $s$ 拓展字符，但是 $t$ 不拓展</li>
+</ol>
+
+<p>这样当：</p>
+
+<ol>
+  <li>$s$ 的长度小于 $t$ 时，当然返回 $0$；</li>
+  <li>而当 $s$ 长度等于 $t$ 时，进行比较，返回 $1$ 或者 $0$；</li>
+  <li>当 $m$ 长度为 $0$ 时，也就是递归的一般返回点，或者说初试情况，返回 $1$</li>
+</ol>
+
+<p>递归地版本最简洁，表现也最好：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+
+<span class="o">@</span><span class="n">cache</span>
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="n">t</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">acc</span> <span class="o">+=</span> <span class="n">solve</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="k">return</span> <span class="n">acc</span>
+</code></pre></div></div>
+
+<p>运行时间：70 ms (beats 93.39%)，内存占用：34.2 MB (beats 72.33%) 。</p>
+
+<p>迭代的版本：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">rec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">pre</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">)):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                <span class="n">rec</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pre</span>
+
+            <span class="n">pre</span> <span class="o">=</span> <span class="n">tmp</span>
+
+    <span class="k">return</span> <span class="n">rec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>运行时间：95 ms (beats 92.78%)，内存占用：16.5 MB (beats 96.74%) 。</p>
+
+<h2 id="解另一个范式">解③另一个范式：</h2>
+
+<p>这里要介绍得是规模递增的另一个范式，很少提到，但是由于有更好地迭代次数，是最快的实现。</p>
+
+<p>对于上面的一般思路来说，是增加 $s$ 的前缀的字符，把问题规模一步步拓展到全局，而对于子序列地匹配，还可以这样考虑：</p>
+
+<p>每一个文本串 $s$ 上面可以匹配目标串 $t$ 的子序列都可以看做，由某些在 $s$ 上的 $t$ 长度模式的对应位置字符构成。</p>
+
+<p>这些构成 $t$ 的子序列的字符可以是连续的，也就是在同一个模式上，也可以不连续，那就是在不同的模式上。</p>
+
+<p>这看起来就像是一个固定窗口在 $s$ 上滑动，探寻窗口对应位置的字符与 $t$ 上对应字符是否相等。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">rec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">rec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">t</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                <span class="n">rec</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rec</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">rec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="tips">Tips：</h3>
+
+<ol>
+  <li>由于在外循环固定减少了 $m$ 长度的轮次，因此是相比上述更快的一个实现；</li>
+  <li>同时快速失败地优化也被省略掉了，因为已经不能提升它的表现了</li>
+</ol>
+
+<p>运行时间：44 ms (beats 99.44%, ~100%)，内存占用：16.29 MB (beats 99.85%, ~100%) 。</p>
+
+<h2 id="注解">注解</h2>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0087 - Scramble String</title><link href="/oth/LeetCode0087.html" rel="alternate" type="text/html" title="0087 - Scramble String" /><published>2023-09-19T00:00:00+08:00</published><updated>2023-09-19T00:00:00+08:00</updated><id>/oth/LeetCode0087</id><content type="html" xml:base="/oth/LeetCode0087.html"><![CDATA[<h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/scramble-string/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.17/0087_scramble_str/py0087">源代码</a></p>
+
+<p>因为这道题是 3k点赞，1k点踩， 于是看了下评论，结果为我的解题带来了非常大的负面影响：有一个评论里讲什么这道题的题解非常困难，但是用4套嵌套循环实现非常简单，这一直影响我的思路。</p>
+
+<p>然而实际上这只是一道普通的 Top-down DP，或者说，记忆化搜索就可以通过的题目。</p>
+
+<p>另外让人不爽地是这个文本：“<strong>Randomly</strong> decide to swap the two substrings……” ，随机地决定这种说法就很误导，让人搞不清问题到底是个什么类型的问题。</p>
+
+<p>实际上这个问题很简单，把串按位置划分，从 $1\dots n-1 $，确保得到的两个子串的长度至少为 $1$；</p>
+
+<p>而这两个子串有两种可能：保持原序或者颠倒顺序；</p>
+
+<p>然后试着对子串继续应用这个划分，直到子串的长度为 $1$ 。</p>
+
+<p>最终目的是检查 $s_1$ 能否变换到 $s_2$ 。</p>
+
+<h2 id="解">解①：</h2>
+
+<p>这个问题天然地适合利用递归解决，只不过可以通过保存一些中间结果来进行优化。</p>
+
+<p>具体说就是遍历每一个划分子串的位置，然后对划分后的两种情况：原序和反序，分别进行判断。</p>
+
+<p>对于原序，就是检查较小规模地同一问题 $s_1[0..i-1]$ 能够变换到 $s_2[0..i-1]$ ；以及 $s_1[i..n-1]$ 能够变换到 $s_2[i..n-1]$ ；</p>
+
+<p>对于反序，就是检查$s_1[0..i-1]$ 能够变换到 $s_2[n-i..n-1]$；以及 $s_1[i..n-1]$ 能够变换到 $s_2[0..n-i-1]$ 。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+
+<span class="o">@</span><span class="n">cache</span>
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s1</span> <span class="o">==</span> <span class="n">s2</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span> <span class="p">:])</span>
+            <span class="ow">and</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[:</span> <span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">])</span>
+            <span class="ow">or</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">return</span> <span class="bp">False</span>
+</code></pre></div></div>
+
+<p>特别地，这里检查了字符集合是否相等，作为一个快速失败地（预测）优化<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>。</p>
+
+<p>运行时间：58 ms (beats 78.15%, ~100%)，内存占用：17.9 MB (beats 36.12%, ~100%)。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>而用 <code class="language-plaintext highlighter-rouge">sorted</code> 比 <code class="language-plaintext highlighter-rouge">set</code> 明显要快，对于本题的最终结果的影响是差了 20 ms 。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">编辑距离</title><link href="/algs/EditDistance.html" rel="alternate" type="text/html" title="编辑距离" /><published>2023-08-26T00:00:00+08:00</published><updated>2023-08-26T00:00:00+08:00</updated><id>/algs/EditDistance</id><content type="html" xml:base="/algs/EditDistance.html"><![CDATA[<h2 id="基本概念">基本概念</h2>
 
 <p>编辑距离是从一个串变换到另一个串，需要的基础操作的数量，用来衡量两个串的相似度，用在</p>
 
@@ -1659,6 +2236,112 @@
     <span class="k">return</span> <span class="n">dp</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 </code></pre></div></div>
 
+<h2 id="97-interleaving-string"><a href="https://leetcode.com/problems/interleaving-string/">97. Interleaving String</a></h2>
+
+<p>交错两个字符串 $s_1$ 和 $s_2$ ，看是否等于第三个字符串 $s_3$ 。</p>
+
+<p>这个成立的渐进式条件是，$s_1$ 、 $s_2$ 的前缀同样可以交错成 $s_3$ 的某个前缀。</p>
+
+<p>因此可以从前缀长度是 $0$ 的空子串开始，判断两种情况：</p>
+
+<ol>
+  <li>$s_1$ 前缀的下一个字符是否等于 $s_3$ 前缀的下一个字符；</li>
+  <li>$s_2$ 前缀的下一个字符是否等于 $s_3$ 前缀的下一个字符</li>
+</ol>
+
+<p>这也分别构成两种情况的递归，递归的参数应该是匹配的 $s_1$ 、 $s_2$ 和 $s_3$ 的前缀长度 $i, j, k$ 。</p>
+
+<p>但实际上 $k$ 是可以被省略的，当匹配发生时，那么 $k=i+j$ 。</p>
+
+<p>另外有两个快速失败的优化：</p>
+
+<ol>
+  <li>长度不等，快速失败</li>
+  <li>字符和每个字符的次数（multiset）不等，快速失败<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></li>
+</ol>
+
+<h3 id="递归版本">递归版本：</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s3</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+    <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+    <span class="n">n3</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n1</span><span class="o">+</span><span class="n">n2</span> <span class="o">!=</span> <span class="n">n3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">if</span> <span class="n">Counter</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span> <span class="o">+</span> <span class="n">Counter</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="o">!=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">s3</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="n">mem</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">True</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n2</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">recur</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="n">j</span> <span class="o">==</span> <span class="n">n3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mem</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n1</span> <span class="ow">and</span> <span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">s3</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">]</span> <span class="ow">and</span> <span class="n">recur</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n2</span> <span class="ow">and</span> <span class="n">s2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">s3</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">]</span> <span class="ow">and</span> <span class="n">recur</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="n">mem</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">return</span> <span class="n">recur</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>以 $i,j$ 某一个参数为外循环，而不是同时尝试增加 $i,j$ ，这样就得到了迭代的版本。迭代版本有一个好处是可以压缩记忆的内存从 $O(n^2)$ 到 $O(n)$ ，因为记忆只涉及前一行和当前行（<code class="language-plaintext highlighter-rouge">mem[i-1][j], mem[i][j-1]</code>）。</p>
+
+<h3 id="迭代版本">迭代版本：</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s3</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+    <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+    <span class="n">n3</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s3</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n1</span> <span class="o">+</span> <span class="n">n2</span> <span class="o">!=</span> <span class="n">n3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">if</span> <span class="n">Counter</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span> <span class="o">+</span> <span class="n">Counter</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span> <span class="o">!=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">s3</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="n">mem</span> <span class="o">=</span> <span class="p">[</span><span class="bp">False</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">mem</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">s2</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">s3</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">mem</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mem</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">s1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">s3</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="n">mem</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">mem</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="n">s1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">s3</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="ow">or</span> <span class="n">mem</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="n">s2</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">s3</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="n">mem</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mem</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">return</span> <span class="n">mem</span><span class="p">[</span><span class="n">n2</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>需要特别注意下 $s_1$ 是空串的情况。</p>
+
 <h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">
@@ -1666,398 +2349,8 @@
     <li id="fn:1" role="doc-endnote">
       <p>这实在有些脱裤子放屁 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[44. Wildcard Matching]]></summary></entry><entry><title type="html">0042 - Trapping Rain Water</title><link href="/oth/LeetCode0042.html" rel="alternate" type="text/html" title="0042 - Trapping Rain Water" /><published>2023-07-27T00:00:00+08:00</published><updated>2023-07-27T00:00:00+08:00</updated><id>/oth/LeetCode0042</id><content type="html" xml:base="/oth/LeetCode0042.html"><![CDATA[<h2 id="题干">题干</h2>
-
-<p><a href="https://leetcode.com/problems/trapping-rain-water/description/">问题描述</a></p>
-
-<h2 id="破题">破题</h2>
-
-<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.11/0042_trapping_rain_water/py0042">源代码</a></p>
-
-<p>如果能知到每个单位区间左边和右边的最大高度，取其最小值，就是该单位的存雨量。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup><sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup></p>
-
-<h3 id="链接题目">链接题目</h3>
-
-<p><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></p>
-
-<h2 id="解双向扫描">解①双向扫描：</h2>
-
-<p>可以认为下降和上升是需要匹配的两个阶段，如果事先记录下降前的高度，在一个下降-上升周期结束的时候，就可以回溯计算这个“坑道”的存雨量，不过这有一个前提，就是上升达到的最大高度不小于下降前的最大高度，确保我们正确计算了这个坑道的雨量。但这就带来了一个问题，可能一直到结束，后面都找不到匹配的高度，于是可以参照 <a href="/oth/LeetCode0032.html">0032</a> 里面的双向扫描，再次地从后向前扫描到最后一个下降的“峰”位。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="n">mode</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># peak
-</span>    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">)))</span>
-            <span class="n">k</span> <span class="o">=</span> <span class="n">i</span>
-
-    <span class="n">mode</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="n">oldk</span> <span class="o">=</span> <span class="n">k</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">oldk</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">)))</span>
-            <span class="n">k</span> <span class="o">=</span> <span class="n">i</span>
-
-    <span class="k">return</span> <span class="n">ans</span>
-</code></pre></div></div>
-
-<p>但是必须吐槽得是本来 <code class="language-plaintext highlighter-rouge">mode</code> 采用得是枚举类型：</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-
-<span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-	<span class="n">Down</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">Up</span> <span class="o">=</span> <span class="mi">1</span>
-</code></pre></div></div>
-
-<p>但是 Python 的 Enum ，或者说一般地对类的封装是如此地消耗内存，只这一个类的定义，就直接让测试结果的内存消耗从排名靠前掉到了排名靠后！于是替换成了布尔类型。</p>
-
-<p>相比于下面介绍的同复杂度但是一遍扫描的算法，双向扫描的算法要稍微慢一点。</p>
-
-<h2 id="解双指针">解②双指针：</h2>
-
-<p>假设我们事先找到序列里的最大高度<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup> $h_\text{max}$：</p>
-
-<p>那么在它的左边，从头开始扫描，维护一个到当前位置 $i$ 为止的前缀最大值 $h_\text{left} = \max\lbrace {h_0 \dots h_i}\rbrace$，每个位置的积水就是 $h_\text{left}-h_i$ ；</p>
-
-<p>在它的右边，从尾开始扫描，维护一个到当前位置 $j$ 为止的前缀最大值 $h_\text{right} = \max\lbrace{h_{n-1} \dots h_j}\rbrace$，每个位置的积水就是$h_\text{right}-h_j$ 。</p>
-
-<p>实际上我们不需要真的取寻找这个最大高度，我们只需要确定 $h_\text{left}$ 和 $h_\text{right}$ 不是最大值即可，只要从两边同时开始扫描，比较  $h_\text{left}$ 和 $h_\text{right}$ ，其中较小的那一个计算该位置积水，然后继续前进，直到完成整个序列的扫描，也就是两端相遇。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="n">lf</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">rh</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="n">lf_max</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span>
-    <span class="n">rh_max</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]</span>
-    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">while</span> <span class="n">lf</span> <span class="o">&lt;</span> <span class="n">rh</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]:</span>
-            <span class="n">ans</span> <span class="o">+=</span> <span class="n">lf_max</span> <span class="o">-</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span>
-
-            <span class="n">lf</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lf_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">lf_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">])</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ans</span> <span class="o">+=</span> <span class="n">rh_max</span> <span class="o">-</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]</span>
-
-            <span class="n">rh</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="n">rh_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rh_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">ans</span>
-</code></pre></div></div>
-
-<p>测试时的实际性能足够快，取样表上最快的就是这个版本。</p>
-
-<h2 id="解单调栈">解③单调栈：</h2>
-
-<p>单调栈，Monotonic Stack，这是第一次遇到可以恰当地套用这个算法思想的题目。</p>
-
-<p>回到双向扫描的思路，只要序列一直保持不增<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">4</a></sup>，就（把索引位置）入栈，直到遇到一个大于栈顶元素（对应高度）的值 $h_i$，然后弹出所有（对应高度）不超过 $h_i$ 的栈元素，于是可以利用这些元素<strong>水平地</strong>计算积雨。</p>
-
-<p>每一层的高度是（弹出的）相邻栈元素对应的高度差，长度是每个栈元素 $k_0$ 的前一个栈元素 $k_1$ 与当前位置 $i$ 的差减一：$i-k_1-1$ 。</p>
-
-<p>并且注意，如果在弹出不超过 $h_i$ 的元素后，栈中还有元素，那么弹出的最后一个元素到栈顶元素还有一段积雨，高度差则是 $h[i]-h_\text{last}$。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">pairwise</span>
-
-<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]:</span>
-            <span class="n">cache</span> <span class="o">=</span> <span class="p">[</span><span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">()]</span>
-
-            <span class="k">while</span> <span class="n">stack</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                <span class="n">cache</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">())</span>
-
-            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">cache</span><span class="p">)))</span>
-
-            <span class="k">if</span> <span class="n">stack</span><span class="p">:</span>
-               <span class="n">ans</span> <span class="o">+=</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">cache</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">ans</span>
-</code></pre></div></div>
-
-<p>测试时的实际性能不错。</p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>由此可以推出，当用两个数组分别记录某个位置的前缀的高度最大值和后缀的高度最大值，然后分别从左扫描和从右扫描，计算完这个数组，这就是所谓 DP 的思路，真是什么玩意儿！ <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>这个背景看起来就像是扫描线问题会经常出现的，不过扫描线问题的关键是存在多栋区间重叠的建筑，查询某个点的数据 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
     <li id="fn:2" role="doc-endnote">
-      <p>若高度不唯一，任选其一即可 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>相等元素也需要入栈，为了正确计算每一层的积水 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>在 Python3（3.10）<code class="language-plaintext highlighter-rouge">Counter(s1) + Counter(s2)</code> 优于 <code class="language-plaintext highlighter-rouge">COunter(s1+s2)</code> 以及 <code class="language-plaintext highlighter-rouge">sorted(s1+s2)</code> <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">0032 - Longest Valid Parentheses</title><link href="/oth/LeetCode0032.html" rel="alternate" type="text/html" title="0032 - Longest Valid Parentheses" /><published>2023-07-25T00:00:00+08:00</published><updated>2023-07-25T00:00:00+08:00</updated><id>/oth/LeetCode0032</id><content type="html" xml:base="/oth/LeetCode0032.html"><![CDATA[<h2 id="题干">题干</h2>
-
-<p><a href="https://leetcode.com/problems/longest-valid-parentheses/description/">问题描述</a></p>
-
-<h2 id="破题">破题</h2>
-
-<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.10/0032_longest_valid_parans/py0032">源代码</a></p>
-
-<p>考虑合法的括号序列的性质：</p>
-
-<ul>
-  <li>开括号可以任意数量地出现，但是串结束的时候括号可能没有匹配完</li>
-  <li>闭括号不能超出开括号的数量</li>
-  <li>括号序列是对称的，从反方向来看，闭括号就是开括号，开括号就是闭括号</li>
-</ul>
-
-<p>给出一个 <strong>括号单元</strong> 的递归定义：<code class="language-plaintext highlighter-rouge">unit ::= () | (unit+)</code></p>
-
-<p>一个合法的括号串： <code class="language-plaintext highlighter-rouge">s=unit*</code></p>
-
-<h3 id="链接题目">链接题目</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-</ul>
-
-<h2 id="解双向扫描">解①双向扫描：</h2>
-
-<p>一个只包含左右括号的串总是由三部分组成：括号单元、失配的闭括号、尾部的未完成的括号单元。</p>
-
-<ol>
-  <li>与前面出现的开括号数量匹配的闭括号属于括号单元；</li>
-  <li>其余的闭括号属于失配的闭括号；</li>
-  <li>而多余的开括号如果一直到最后都没有被匹配，就会形成未完成的括号单元</li>
-</ol>
-
-<p>对于括号单元和失配闭括号，一遍扫描就可以解决：统计开括号和闭括号，当数量相等时就是一个括号单元的结束，当遇到失配闭括号时就重置开括号闭括号数量。</p>
-
-<p>但是对于尾部可能存在的未完成的括号单元，用子串 $s_1$ 表示，因为需要统计未完成的括号单元内的最长括号序列，前面的算法处理不了<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，但是如果从反方向看<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>它尾部的未完成单元，它的尾部一定不存在未完成单元<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，因此可以一遍扫描计算得到这一部分的最长的合法括号序列。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="nb">open</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">close</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">open</span> <span class="o">==</span> <span class="n">close</span><span class="p">:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="nb">open</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">')'</span><span class="p">:</span>
-            <span class="n">close</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="k">if</span> <span class="n">close</span> <span class="o">&gt;</span> <span class="nb">open</span><span class="p">:</span>
-                <span class="c1"># reset
-</span>                <span class="nb">open</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">close</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">elif</span> <span class="n">close</span> <span class="o">==</span> <span class="nb">open</span><span class="p">:</span>
-                <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="nb">open</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">open</span> <span class="o">&gt;</span> <span class="n">close</span><span class="p">:</span>
-        <span class="n">rev_open</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">rev_close</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">rev_ans</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">[</span><span class="n">start</span><span class="o">+</span><span class="mi">1</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">')'</span><span class="p">:</span>
-                <span class="n">rev_open</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
-                <span class="n">rev_close</span> <span class="o">+=</span> <span class="mi">1</span>
-
-                <span class="k">if</span> <span class="n">rev_close</span> <span class="o">&gt;</span> <span class="n">rev_open</span><span class="p">:</span>
-                    <span class="c1"># reset
-</span>                    <span class="n">rev_open</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="n">rev_close</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">elif</span> <span class="n">rev_close</span> <span class="o">==</span> <span class="n">rev_open</span><span class="p">:</span>
-                    <span class="n">rev_ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rev_ans</span><span class="p">,</span> <span class="n">rev_open</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
-
-        <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">rev_ans</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">ans</span>
-</code></pre></div></div>
-
-<p>时间复杂度 $O(n)$ ，空间复杂度 $O(1)$ ，是空间复杂度最优的解。</p>
-
-<h2 id="解dp">解②DP：</h2>
-
-<p>按照扫描方向看，用后缀数组 $\text{dp}[i]$ 表示结尾在 $i$ 处的最长合法括号序列的长度。</p>
-
-<ol>
-  <li>如果结尾字符是 <code class="language-plaintext highlighter-rouge">(</code> ，对应 $\text{dp}$ 一定为 $0$ ；</li>
-  <li>否则结尾字符是 <code class="language-plaintext highlighter-rouge">)</code> ，这时需要检查前一个字符对应的最长合法括号序列，如果在那个括号序列的前一个字符 $s[i-\text{dp}[i-1]-1]$ 又是 <code class="language-plaintext highlighter-rouge">(</code> ，则此时的 $\text{dp}[i] = 2+\text{dp}[i-1]$ ，如果此时 $i-\text{dp}[i-1]-1 \gt 0$ ，就再加上 $\text{dp}[i-\text{dp}[i-1]-2]$ ，否则没有匹配的开括号，对应 $\text{dp}$ 也为 $0$ 。</li>
-</ol>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-
-    <span class="n">dp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">')'</span> <span class="ow">and</span> <span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
-            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span><span class="o">-</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">2</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>时间复杂度 $O(n)$ ，空间复杂度 $O(n)$</p>
-
-<p>前面双向扫描也可以叫做两遍扫描，而 DP 方法只需要扫描一遍，时间性能更优。</p>
-
-<h2 id="解stack">解③Stack：</h2>
-
-<p>如果保存开括号的索引位置，那么当遇到闭括号弹出的时候，就可以计算这一对儿括号序列的长度，但有一个问题是<strong>如何计算顶层连续的括号单元？</strong></p>
-
-<p>这里使用了一个简单、但是 Tricky 的方法，保持第一个入栈的开括号前一个字符的位置在栈里，遇到闭括号时弹出开括号，当遇到失配的闭括号时，就弹出这个位置，如果栈为空，那就把当前位置入栈，如果下一个字符不是开括号就继续弹出并压入新的失配闭括号，直到遇到新的开括号，开启新的括号单元的序列。</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># 保存两个信息，记录连续信息
-</span>    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s">'('</span><span class="p">:</span>
-            <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">()</span>
-
-            <span class="k">if</span> <span class="n">stack</span><span class="p">:</span>
-                <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">ans</span>
-</code></pre></div></div>
-
-<p>时间复杂度 $O(n)$ ，空间复杂度 $O(n)$</p>
-
-<p>单位比较次数更少，时间性能最佳。</p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>可以对尾部的未完成匹配的部分的第二个字符开始再次应用算法，但这带来的了 $O(n^2)$ 的最坏时间复杂度。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>顺序从右到左，把右括号视为开括号，左括号视为闭括号 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>$s_1$ 至少开头的的那个开括号，从反向看是失配的闭括号，因此反向看尾部一定不存在未完成匹配 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">LeetCode Map</title><link href="/oth/LeetCodeMap.html" rel="alternate" type="text/html" title="LeetCode Map" /><published>2023-07-25T00:00:00+08:00</published><updated>2023-07-25T00:00:00+08:00</updated><id>/oth/LeetCodeMap</id><content type="html" xml:base="/oth/LeetCodeMap.html"><![CDATA[<h2 id="app-themes">App Themes</h2>
-
-<p>按照特定应用场景的分类</p>
-
-<h3 id="linesweep">LineSweep</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
-  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
-  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
-  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
-</ul>
-
-<h3 id="graph">Graph</h3>
-
-<ul>
-  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
-</ul>
-
-<h3 id="palindrome">Palindrome</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
-
-<h3 id="words-comparison">Words Comparison</h3>
-
-<ul>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
-
-<h3 id="parentheses">Parentheses</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-</ul>
-
-<h2 id="tech-themes">Tech Themes</h2>
-
-<p>按照算法思想的分类</p>
-
-<h3 id="dp">DP</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0044 - Wildcard Matching</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0403 - Frog Jump</a></li>
-  <li><a href="/oth/LeetCode0072.html">0072 - Edit Distance</a></li>
-</ul>
-
-<h4 id="recursive-dp">Recursive DP</h4>
-
-<p>一类很特殊的 DP ，是在递归状态上的 DP</p>
-
-<ul>
-  <li><a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a></li>
-</ul>
-
-<h3 id="monotonic-stack">Monotonic Stack</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodeJumpGames.html">1696. Jump Game VI</a></li>
-</ul>
-
-<h3 id="greedy">Greedy</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
-
-<h2 id="lang-themes">Lang Themes</h2>
-
-<p>有语言优化相关的主题</p>
-
-<h3 id="python">Python</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[App Themes]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[44. Wildcard Matching]]></summary></entry></feed>

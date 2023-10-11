@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LeetCode Map
+            0087 - Scramble String
         
     "
 />
 
-<meta property="og:url" content="//oth/LeetCodeMap.html" />
+<meta property="og:url" content="//oth/LeetCode0087.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LeetCode Map
+        0087 - Scramble String
     
 </title>
 
@@ -104,7 +104,7 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LeetCode Map</h1>
+    <h1 class="post__title__text">0087 - Scramble String</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
@@ -119,7 +119,7 @@
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      July 25, 2023
+      September 19, 2023
     </div>
     
   </div>
@@ -127,103 +127,75 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="app-themes">App Themes</h2>
+    <div class="post__content"><h2 id="题干">题干</h2>
 
-<p>按照特定应用场景的分类</p>
+<p><a href="https://leetcode.com/problems/scramble-string/description/">问题描述</a></p>
 
-<h3 id="linesweep">LineSweep</h3>
+<h2 id="破题">破题</h2>
 
-<ul>
-  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
-  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
-  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
-  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
-</ul>
+<p><a href="https://github.com/minghu6/leet-code/tree/v0.1.17/0087_scramble_str/py0087">源代码</a></p>
 
-<h3 id="graph">Graph</h3>
+<p>因为这道题是 3k点赞，1k点踩， 于是看了下评论，结果为我的解题带来了非常大的负面影响：有一个评论里讲什么这道题的题解非常困难，但是用4套嵌套循环实现非常简单，这一直影响我的思路。</p>
 
-<ul>
-  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
-</ul>
+<p>然而实际上这只是一道普通的 Top-down DP，或者说，记忆化搜索就可以通过的题目。</p>
 
-<h3 id="palindrome">Palindrome</h3>
+<p>另外让人不爽地是这个文本：“<strong>Randomly</strong> decide to swap the two substrings……” ，随机地决定这种说法就很误导，让人搞不清问题到底是个什么类型的问题。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<p>实际上这个问题很简单，把串按位置划分，从 $1\dots n-1 $，确保得到的两个子串的长度至少为 $1$；</p>
 
-<h3 id="words-comparison">Words Comparison</h3>
+<p>而这两个子串有两种可能：保持原序或者颠倒顺序；</p>
 
-<ul>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<p>然后试着对子串继续应用这个划分，直到子串的长度为 $1$ 。</p>
 
-<h3 id="parentheses">Parentheses</h3>
+<p>最终目的是检查 $s_1$ 能否变换到 $s_2$ 。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-</ul>
+<h2 id="解">解①：</h2>
 
-<h2 id="tech-themes">Tech Themes</h2>
+<p>这个问题天然地适合利用递归解决，只不过可以通过保存一些中间结果来进行优化。</p>
 
-<p>按照算法思想的分类</p>
+<p>具体说就是遍历每一个划分子串的位置，然后对划分后的两种情况：原序和反序，分别进行判断。</p>
 
-<h3 id="dp">DP</h3>
+<p>对于原序，就是检查较小规模地同一问题 $s_1[0..i-1]$ 能够变换到 $s_2[0..i-1]$ ；以及 $s_1[i..n-1]$ 能够变换到 $s_2[i..n-1]$ ；</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0044 - Wildcard Matching</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0403 - Frog Jump</a></li>
-  <li><a href="/oth/LeetCode0072.html">0072 - Edit Distance</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-  <li><a href="/oth/LeetCode0087.html">0087 - Scramble String</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0097 - Interleaving String</a></li>
-  <li><a href="/oth/LeetCode0115.html">0115 - Distinct Subsequences</a></li>
-</ul>
+<p>对于反序，就是检查$s_1[0..i-1]$ 能够变换到 $s_2[n-i..n-1]$；以及 $s_1[i..n-1]$ 能够变换到 $s_2[0..n-i-1]$ 。</p>
 
-<h4 id="recursive-dp">Recursive DP</h4>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
 
-<p>一类很特殊的 DP ，是在递归状态上的 DP</p>
+<span class="o">@</span><span class="n">cache</span>
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
 
-<ul>
-  <li><a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a></li>
-</ul>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
 
-<h4 id="状态-dp">状态 DP</h4>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s1</span> <span class="o">==</span> <span class="n">s2</span>
 
-<ul>
-  <li><a href="/oth/LeetCodeBuySellStock.html">Best Time to Buy and Sell Stock Series</a></li>
-</ul>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span> <span class="p">:])</span>
+            <span class="ow">and</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[:</span> <span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">])</span>
+            <span class="ow">or</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
 
-<h3 id="monotonic-stack">Monotonic Stack</h3>
+    <span class="k">return</span> <span class="bp">False</span>
+</code></pre></div></div>
 
-<ul>
-  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodeJumpGames.html">1696. Jump Game VI</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-</ul>
+<p>特别地，这里检查了字符集合是否相等，作为一个快速失败地（预测）优化<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>。</p>
 
-<h3 id="greedy">Greedy</h3>
+<p>运行时间：58 ms (beats 78.15%, ~100%)，内存占用：17.9 MB (beats 36.12%, ~100%)。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<h2 id="注解">注解</h2>
 
-<h2 id="lang-themes">Lang Themes</h2>
-
-<p>有语言优化相关的主题</p>
-
-<h3 id="python">Python</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>而用 <code class="language-plaintext highlighter-rouge">sorted</code> 比 <code class="language-plaintext highlighter-rouge">set</code> 明显要快，对于本题的最终结果的影响是差了 20 ms 。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

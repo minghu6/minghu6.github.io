@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            LeetCode Best Time to Buy and Sell Stock
+        
+    "
+/>
+
+<meta property="og:url" content="//oth/LeetCodeBuySellStock.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        LeetCode Best Time to Buy and Sell Stock
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">LeetCode Best Time to Buy and Sell Stock</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/oth.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
+            Other
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      October 01, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="0121-best-time-to-buy-and-sell-stock"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock/">0121. Best Time to Buy and Sell Stock</a></h2>
+
+<p><em>Easy</em></p>
+
+<p>单次交易</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">maxProfit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">h</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<h2 id="0122-best-time-to-buy-and-sell-stock-ii"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/">0122. Best Time to Buy and Sell Stock II</a></h2>
+
+<p><em>Medium</em></p>
+
+<p>不限次数交易</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">maxProfit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)):</span>
+        <span class="n">ans</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<h2 id="0123-best-time-to-buy-and-sell-stock-iii"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/">0123. Best Time to Buy and Sell Stock III</a></h2>
+
+<p><em>Hard</em></p>
+
+<p>限制两次交易</p>
+
+<h3 id="破题">破题</h3>
+
+<p>题目的复杂程度终于提升到了有点儿意思的程度，这里的关键是搞清楚“最多两次”交易的限制条件到底对我们的模型意味着什么？</p>
+
+<p>可以认为，做两次交易的收益总是不差于一次交易，只要在计算模型上把一次交易视为两次交易的边缘值。</p>
+
+<h3 id="解两遍扫描">解①两遍扫描</h3>
+
+<p>把价格表分为两部分，左边用于第一次交易，右边用于第二次交易，这样只需要检查每个位置的两次交易之和，求一个最大值即可。可以让左边分割的串从空串开始，这样就包含了一次交易的情况。</p>
+
+<p>每次分割的左边串的最大收益可以依靠前面 <a href="#0121-best-time-to-buy-and-sell-stock">0121. Best Time to Buy and Sell Stock</a> 来计算，而分割的右边串则可以预先运用同样的算法反向扫描，保存个位置的计算结果，在从左开始扫描的时候查询表即可。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="n">dp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">:</span>
+            <span class="n">hi</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">hi</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hi</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+
+    <span class="n">ans</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">:</span>
+            <span class="n">lo</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">+</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="n">ans</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">+</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>运行时间：760 ms (beats 98.06%)，内存占用：30.5 MB (beats 72.56%, ~100%)</p>
+
+<h3 id="解规范解">解②规范解</h3>
+
+<p>在上一个解的时候，我们通过组合单次求解的方法来计算两次交易得到的最大收益，而这个单次求解的方法好像扫描一个个位置就可以进行该位置的更新，（因为当天交易收益总是零，因此是否允许当天交易都不重要），这暗示我们很可能有一个扫描每个位置就可以计算出两次交易的最大收益的模型。</p>
+
+<p>这才引出对股票买卖问题的统一模型：</p>
+
+<p>累积计算每次买或卖的收益，买的收益是 $-\text{price}$ ，卖的收益是买的收益加上 $\text{price}$ ，下次交易的收益基础是之前的收益。</p>
+
+<p>对于两次买卖就有：</p>
+
+\[\begin{align}
+\text{buy}_1 &amp;= \max(\text{buy}_1',\text{-price})\\
+\text{sell}_1 &amp;= \max(\text{buy}_1',\text{price})\\
+\text{buy}_2 &amp;= \max(\text{sell}_1',\text{-price})\\
+\text{sell}_2 &amp;= \max(\text{buy}_2',\text{price})\\
+\end{align}\]
+
+<p>也就是：$\text{buy}_1 \rightarrow \text{sell}_1 \rightarrow \text{buy}_2 \rightarrow \text{sell}_2$</p>
+
+<p>有必要解释下，按照自然流程，两次交易至少应该是第一天 $\text{buy}_1$ ，第二天 $\text{sell}_1$ ，第三天 $\text{buy}_2$，第四天 $\text{sell}_2$，是一个 $4$ 天的窗口，但是这需要额外检查下数据长度，而把这些操作压缩到一天，并不影响结果，而且可以适应长度不足 $4$ 的情况。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">buy1</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sell1</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># prices[0]+buy1
+</span>    <span class="n">buy2</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sell2</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># prices[0]+buy2
+</span>
+    <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">if</span> <span class="n">buy1</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">buy1</span> <span class="o">=</span> <span class="o">-</span><span class="n">price</span>
+        <span class="k">elif</span> <span class="n">sell1</span> <span class="o">&lt;</span> <span class="n">buy1</span><span class="o">+</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">sell1</span> <span class="o">=</span> <span class="n">buy1</span><span class="o">+</span><span class="n">price</span>
+        <span class="k">if</span> <span class="n">buy2</span> <span class="o">&lt;</span> <span class="n">sell1</span><span class="o">-</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">buy2</span> <span class="o">=</span> <span class="n">sell1</span><span class="o">-</span><span class="n">price</span>
+        <span class="k">elif</span> <span class="n">sell2</span> <span class="o">&lt;</span> <span class="n">buy2</span><span class="o">+</span><span class="n">price</span><span class="p">:</span>
+            <span class="n">sell2</span> <span class="o">=</span> <span class="n">buy2</span><span class="o">+</span><span class="n">price</span>
+
+    <span class="k">return</span> <span class="n">sell2</span>
+</code></pre></div></div>
+
+<p>运行时间：670 ms (beats 99.76%)，内存占用：30.5 MB (beats 88.72%, ~100%) 。</p>
+
+<p>这个统一模型在一遍扫描就解决了问题，并且省掉了前面的 $O(n)$ 的内存占用<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup> 。</p>
+
+<h2 id="0188-best-time-to-buy-and-sell-stock-iv"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/">0188. Best Time to Buy and Sell Stock IV</a></h2>
+
+<p><em>Hard</em></p>
+
+<p>上面问题的一般化，不是限制两次交易，而是给定的参数 $k$ 次。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">buy</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">k</span>
+    <span class="n">sell</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># buy[i] - sell[i+1]
+</span>
+    <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="n">prices</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">price</span><span class="p">:</span>
+                <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">price</span>
+            <span class="k">elif</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">price</span><span class="p">:</span>
+                <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">price</span>
+
+    <span class="k">return</span> <span class="n">sell</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>运行时间：59 ms (Beats 99.16%, ~100%)，内存占用：16.36MB (Beats 82.07%，~100%)。</p>
+
+<h2 id="0309-best-time-to-buy-and-sell-stock-with-cooldown"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/">0309. Best Time to Buy and Sell Stock with Cooldown</a></h2>
+
+<p><em>Medium</em></p>
+
+<p>不限次交易，有冷冻期</p>
+
+<h3 id="破题-1">破题</h3>
+
+<p>购买冷冻期机制的引入改变了整个的模型，使得我们不能像前面的那个无限次数交易那样简单统计所有增量，就可以得到答案。</p>
+
+<p>如果遵循股票买卖整个系列的顺序来做题，题解可能格外困难，因为很容易受到前面解题思路的影响，而重构整个模型并没有那么直观，因此我认为应该把这道题标记为 Hard 难度。</p>
+
+<p>因此，让我们先从最简单地、最基本地方法开始：一个基于递归，使用记忆化优化的，穷举所有可能的解决方法。</p>
+
+<h3 id="解递归记忆化">解①递归记忆化</h3>
+
+<p>逐个读取价格表，分两个模式：等待购入和等待卖出。下面分别用 $\text{Buy}$ 和 $\text{Sell}$ 表示这两个模式，在 $\text{Buy}$ 模式下有两种选择：在当前价格日卖出和下一天再说，同样地 $\text{Sell}$ 模式也有两种选择，以当前价格卖出和下一天再说。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">Buy</span> <span class="o">=</span> <span class="n">auto</span><span class="p">(),</span>
+    <span class="n">Sell</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">recur</span><span class="p">(</span><span class="n">mode</span><span class="p">:</span> <span class="n">Mode</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">:</span>
+            <span class="n">cand1</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Sell</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">cand2</span> <span class="o">=</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cand1</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">cand2</span> <span class="o">=</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Sell</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">cand1</span><span class="p">,</span> <span class="n">cand2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">recur</span><span class="p">(</span><span class="n">Mode</span><span class="p">.</span><span class="n">Buy</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>运行时间：52 ms (beats 44.28%, ~100%)，内存占用：21.06 MB (beats 31.05%)。</p>
+
+<h3 id="解迭代dp">解②迭代DP</h3>
+
+<p>上面的递归实现，可以帮助我们理清普通 DP 版本的实现思路。</p>
+
+<p>对于交易有限次数的股票模型，可以穷举所有所有轮次买和卖的状态，但是对于不限次数的模型，则不能这样穷举，只能区分买和卖，不能辨别轮次。</p>
+
+<p>尝试从正面看这个问题，分别用 <code class="language-plaintext highlighter-rouge">buy</code> 和 <code class="language-plaintext highlighter-rouge">sell</code> 两个数组代表一个前缀价格串上的最后操作是买或卖带来的最大收益。</p>
+
+<p>这样，</p>
+
+<ol>
+  <li>
+    <p>买的最大收益是要比较前一天买的最大收益（意味着当前没有买卖）以及包含冷冻期在内的卖的最大收益加上当前价格；</p>
+  </li>
+  <li>
+    <p>卖的最大收益则是前一天卖的最大收益（意味着当前没有买卖）或者前一天买的最大收益加上当前价格（当前卖出）</p>
+  </li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">prices</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">buy</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">buy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">buy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">sell</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">buy</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">sell</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">buy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">sell</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>运行时间：36 ms (beats 98.07%, ~100%)，内存占用：16.39 MB (beats 99.34%) 。</p>
+
+<p>当然，仔细观察代码，会发现 $O(n)$ 的内存占用是不必要的，实际上只需要维护三个持久变量：$\text{buy}_0$, $\text{buy}_1$ 和 $\text{sell}_0$ 。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">prices</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">buy0</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">buy1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy0</span><span class="p">,</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">sell0</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">buy2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy1</span><span class="p">,</span> <span class="n">sell0</span> <span class="o">-</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">sell1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sell0</span><span class="p">,</span> <span class="n">buy0</span> <span class="o">+</span> <span class="n">prices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">sell0</span> <span class="o">=</span> <span class="n">sell1</span>
+        <span class="n">buy1</span><span class="p">,</span> <span class="n">buy0</span> <span class="o">=</span> <span class="n">buy2</span><span class="p">,</span> <span class="n">buy1</span>
+
+    <span class="k">return</span> <span class="n">sell0</span>
+</code></pre></div></div>
+
+<p>运行时间：45 ms (beats 79.16%, ~100%)，内存占用：16.56 MB (beats 87.33%. ~100%) 。</p>
+
+<h2 id="0714-best-time-to-buy-and-sell-stock-with-transaction-fee"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/">0714. Best Time to Buy and Sell Stock with Transaction Fee</a></h2>
+
+<p><em>Medium</em></p>
+
+<p>不限次交易，有交易费</p>
+
+<h3 id="解状态dp">解①状态DP</h3>
+
+<p>直接按照前面交易冻结日的股票交易模型，易得</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">fee</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prices</span><span class="p">)</span>
+    <span class="n">buy</span> <span class="o">=</span> <span class="o">-</span><span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sell</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">buy1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">buy</span><span class="p">,</span> <span class="n">sell</span><span class="o">-</span><span class="n">price</span><span class="p">)</span>
+        <span class="n">sell1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sell</span><span class="p">,</span> <span class="n">buy</span><span class="o">+</span><span class="n">price</span><span class="o">-</span><span class="n">fee</span><span class="p">)</span>
+
+        <span class="n">buy</span> <span class="o">=</span> <span class="n">buy1</span>
+        <span class="n">sell</span> <span class="o">=</span> <span class="n">sell1</span>
+
+    <span class="k">return</span> <span class="n">sell</span>
+</code></pre></div></div>
+
+<p>运行时间：566 ms (beats 77%, ~100%)，内存占用：23.7 MB (beats 67.29%, ~100%) 。</p>
+
+<h3 id="解贪心">解②贪心</h3>
+
+<p>但是还是有方法利用  <a href="#0122-best-time-to-buy-and-sell-stock-ii">0122. Best Time to Buy and Sell Stock</a></p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>虽然形式上压缩到了一天，但是我们的计算公式也暗示，实际上不可能同时更新，实质上全部更新还是至少需要四天，对于一次交易也至少需要两天 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>虽然在测试上也看不这个内存节省的区别来，但毕竟是 Python 嘛，内存模型并不节省 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
