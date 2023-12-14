@@ -421,7 +421,27 @@
 
 <h3 id="解贪心">解②贪心</h3>
 
-<p>但是还是有方法利用  <a href="#0122-best-time-to-buy-and-sell-stock-ii">0122. Best Time to Buy and Sell Stock</a></p>
+<p>但是还是有方法利用像 <a href="#0122-best-time-to-buy-and-sell-stock-ii">0122. Best Time to Buy and Sell Stock</a> 问题那样直接地算法来解决。</p>
+
+<p>只需要把交易费用加在购入价格上即可。</p>
+
+<p>注意这里的 $\text{buy}$ 区别于分状态 DP 问题里面的  $\text{buy}$ ，它表示得不是购入的最大收益，而是最低价格。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">prices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">fee</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">buy</span> <span class="o">=</span> <span class="n">prices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">fee</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="n">prices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">if</span> <span class="n">price</span> <span class="o">+</span> <span class="n">fee</span> <span class="o">&lt;</span> <span class="n">buy</span><span class="p">:</span>
+            <span class="n">buy</span> <span class="o">=</span> <span class="n">price</span> <span class="o">+</span> <span class="n">fee</span>
+        <span class="k">elif</span> <span class="n">price</span> <span class="o">&gt;</span> <span class="n">buy</span><span class="p">:</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="n">price</span><span class="o">-</span><span class="n">buy</span>
+            <span class="n">buy</span> <span class="o">=</span> <span class="n">price</span>
+
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
+
+<p>运行时间：495 ms (beats 99.5%, ~100%)，内存占用：23.7 MB (beats 67.29%, ~100%) 。</p>
 
 <h2 id="注解">注解</h2>
 

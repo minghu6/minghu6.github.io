@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            0174 - Dungeon Game
+        
+    "
+/>
+
+<meta property="og:url" content="//oth/LeetCode0174.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        0174 - Dungeon Game
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">0174 - Dungeon Game</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/oth.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
+            Other
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      December 11, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="题干">题干</h2>
+
+<p><a href="https://leetcode.com/problems/dungeon-game/description/">问题描述</a></p>
+
+<h2 id="破题">破题</h2>
+
+<p>绝对标准地 <em>Hard</em> 难度的问题。</p>
+
+<p>给一个二维的地图，从左上角走到右下角，看起来非常像之前做过的譬如 <a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a> 这样的题目，只需要从上到下地逐行扫描，计算从起点到每一行的每个位置的子问题的解，直到最后一行的最后一个位置。</p>
+
+<p>但是对于本题这样做是不行的，因为一般到某个位置的路线有两条，一条是从上到下的，一条是从左到右的，而有两个指标用来选择最小生命值的路线，一个是到当前位置为止整个路径上出现过的路径和的最小值，另一个是到当前位置的路径和。这两个指标可能是矛盾的，比如有一条路线的最小值较大但是路径和较小，导致选择该路线最终在后面得到了较小的最小值，从而得到了不正确的结果。</p>
+
+<p>换句话说，前面的子问题的路线选择受后面位置数值的影响，这个 DP 的解法存在<strong>后效性</strong>，因此这个解法是不能成立的。</p>
+
+<p>这样问题就陷入了困局，实际上我花了几天的时间去考虑这个题，终于发现我们可以从终点开始做 DP 这样就避开了后效性的问题，于是引入了新的 DP 思路：<strong>后效翻转</strong> 。</p>
+
+<p>对于这道题来说，子问题变成从前面的位置到终点的最小生命值，这样从后向前找，路线的选择是确定的，只需要比较两条路线：下方和右方对应的解，选较大的即可，而当前位置子问题的解则是比较</p>
+
+<ol>
+  <li>后面的解加上当前位置值；</li>
+  <li>当前位置的值，取这两个的最小值</li>
+</ol>
+
+<p>顺带一讲，这个解应该是路径上的最小值，而路径的选择是让这个路径最小值取到最大，这样才可以付出最小生命。最后的最小生命就是把这个最小值取反，比较它与零的大小，取一个最大值，把结果加上 1 ，这样保证最后至少有一点生命值。</p>
+
+<h2 id="解迭代版本">解①迭代版本：</h2>
+
+<p>或者说 BFS，比起递归版本，这个版本通常有更多地细节去深入。</p>
+
+<p>这个解法的复杂之处在于需要考虑下受地图矩形的长度和宽度两个因素限制的坐标位置，特别是如果我们想要用一维数组来存储子问题解的话。</p>
+
+<p>计算的整个过程是从终点倒退回起点，计算每一步可到位置的子问题解，就如下图所示：</p>
+
+<div class="sx-center">
+<img src="/assets/img/leetcode0174/rec_map1.svg" style="zoom:150%;" /></div>
+
+<p>灰色线连起来的区域就是每一步可能到达的位置，这里用步数作为控制流程的变量，并为了方便以终点为原点建立坐标系，等到访问 <code class="language-plaintext highlighter-rouge">dungeon</code> 数组（以下简写作 $D$ ）时再把坐标转换为以左上角为原点的坐标系。</p>
+
+<p>这样地话，对于 $m$ 行 $n$ 列的 $D$ 数组 假设当前步数是 $l$ ，那么</p>
+
+<p>能够到达的最大的高度 $h=\min(m,l)$ ，最大宽度 $w=\min(n,l)$ 。</p>
+
+<p>因此在当前步数的从左下到右上的可达范围里</p>
+
+<p>左下位置 $(x_0,y_0): (l-w+1,w)$ ，右上位置 $(x_1,y_1): (h, l-h+1)$ 。</p>
+
+<p>这样的话，每一步的位置范围就是从 $x_0 \rightarrow x_1$ ，记录下它的差 $d_\text{max} = x_1-x_0$ ，可以用来指示当前步数最后一个位置的在一维数组里的下标。</p>
+
+<p>由于每步的位置数并不相同，因此交替使用两个一维的数组（$\text{low}_1$ 和 $\text{low}_0$）来存储当前步数和之前步数的子问题解，而解的计算要根据所处位置分为三个阶段、四种情况。三个阶段是随着步数的增加会出现的，矩形长宽都没有限制的<strong>前场</strong>、较短一维限制而较长一维没有限制的<strong>中场</strong>，以及两个维度都被限制的<strong>后场</strong>。</p>
+
+<h3 id="1-矩形前场">1. 矩形前场</h3>
+
+<div class="sx-center">
+<img src="/assets/img/leetcode0174/rec_map5.svg" style="zoom:120%;" /></div>
+<p><br /></p>
+
+<p>矩形前场就是在从终点开始的扫描过程中，随着步数增加，$h$ 和 $w$ 增加的情况。此时最左下角只能从它的右方得到，右上角只能从它的下方得到，其余位置都可以从两边得到。</p>
+
+\[\text{low}_1[i] \leftarrow 
+\left 
+\{\begin{array}{l} 
+\text{low}_0[0]&amp; (i=0) \\
+\text{low}_0[d_\text{max}-1] &amp;(i=d_\text{max})\\
+\left 
+\{\begin{array}{l}
+\text{low}_0[d-1]\\ \text{low}_0[d]
+\end{array}
+\right. &amp;(0\lt i\lt d_\text{max})
+\end{array}
+\right.\]
+
+<h3 id="2-宽矩形中场">2. 宽矩形中场</h3>
+
+<p align="center">
+  <div class="sx-center">
+<img src="/assets/img/leetcode0174/rec_map2.svg" style="zoom:120%;" /></div>
+</p>
+<p>所谓中场，就是随着步数增加，$d_\text{max}$ 却保持不变的阶段，是在步数超过较短一维的长度时进入而在步数达到较长一维的长度时退出的一个阶段。
+\(\text{low}_1[i] \leftarrow 
+\left 
+\{\begin{array}{l} 
+\text{low}_0[0]&amp; (i=0) \\
+\left 
+\{\begin{array}{l}
+\text{low}_0[d-1]\\ \text{low}_0[d]
+\end{array}
+\right. &amp;(0\lt i\leqslant d_\text{max})
+\end{array}
+\right.\)</p>
+
+<h3 id="3-高矩形中场">3. 高矩形中场</h3>
+
+<div class="sx-center">
+<img src="/assets/img/leetcode0174/rec_map3.svg" style="zoom:120%;" /></div>
+<p>\(\text{low}_1[i] \leftarrow 
+\left 
+\{\begin{array}{l}
+\text{low}_0[d_\text{max}-1] &amp;(i=d_\text{max})\\
+\left 
+\{\begin{array}{l}
+\text{low}_0[d]\\ \text{low}_0[d+1]
+\end{array}
+\right. &amp;(0\leqslant i\lt d_\text{max})
+\end{array}
+\right.\)</p>
+
+<h3 id="4-矩形后场">4. 矩形后场</h3>
+
+<div class="sx-center">
+<img src="/assets/img/leetcode0174/rec_map4.svg" style="zoom:120%;" /></div>
+
+<p>后场就是当中场结束时，也就是步长超过较长一维时进入的阶段。</p>
+
+\[\text{low}_1[i] \leftarrow 
+\left 
+\{\begin{array}{l}
+\text{low}_0[d]\\ \text{low}_0[d+1]
+\end{array}
+\right. &amp;(0\leqslant i\leqslant d_\text{max})\]
+
+<p>于是我们便得到了代码。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">dungeon</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dungeon</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dungeon</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">tot</span> <span class="o">=</span> <span class="n">m</span><span class="o">+</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="n">low0</span> <span class="o">=</span> <span class="p">[</span><span class="n">dungeon</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">low1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">tot</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+
+        <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">l</span><span class="o">-</span><span class="n">w</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">w</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="o">-</span><span class="n">h</span><span class="o">+</span><span class="mi">1</span>
+
+        <span class="n">d_max</span> <span class="o">=</span> <span class="n">x1</span><span class="o">-</span><span class="n">x0</span>
+
+        <span class="k">if</span> <span class="n">x0</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># 矩形前半场
+</span>            <span class="n">low1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x0</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y0</span><span class="p">]</span> <span class="o">+</span> <span class="n">low0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x0</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">low1</span><span class="p">[</span><span class="n">d_max</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x1</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y1</span><span class="p">]</span> <span class="o">+</span> <span class="n">low0</span><span class="p">[</span><span class="n">l</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x1</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y1</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">d_max</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x0</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">y0</span><span class="o">-</span><span class="n">d</span>
+
+                <span class="n">nx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span> <span class="o">+</span> <span class="n">nx</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">x0</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># 宽矩形中间场
+</span>            <span class="n">low1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x0</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y0</span><span class="p">]</span> <span class="o">+</span> <span class="n">low0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x0</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y0</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">d_max</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x0</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">y0</span><span class="o">-</span><span class="n">d</span>
+                <span class="n">nx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span> <span class="o">+</span> <span class="n">nx</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">y1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># 高矩形中间场 (x0 != 1)
+</span>            <span class="n">low1</span><span class="p">[</span><span class="n">d_max</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x1</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y1</span><span class="p">]</span> <span class="o">+</span> <span class="n">low0</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x1</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y1</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d_max</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x0</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">y0</span><span class="o">-</span><span class="n">d</span>
+
+                <span class="n">nx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span> <span class="o">+</span> <span class="n">nx</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># 矩形后半场
+</span>            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d_max</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x0</span><span class="o">+</span><span class="n">d</span><span class="p">,</span> <span class="n">y0</span><span class="o">-</span><span class="n">d</span>
+
+                <span class="n">nx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">low0</span><span class="p">[</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span> <span class="o">+</span> <span class="n">nx</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">low1</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">m</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">n</span><span class="o">-</span><span class="n">y</span><span class="p">]</span>
+
+        <span class="n">low0</span><span class="p">,</span> <span class="n">low1</span> <span class="o">=</span> <span class="n">low1</span><span class="p">,</span> <span class="n">low0</span>
+
+    <span class="k">return</span> <span class="mi">1</span><span class="o">+</span><span class="nb">max</span><span class="p">(</span><span class="o">-</span><span class="n">low0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>运行时间：69 ms (beats 81.50%, ~100%, 55 ms)，内存占用：17.5 MB (beats 63.73%, ~100%)。</p>
+
+<h2 id="解">解②：</h2>
+
+<p>或者说 DFS。</p>
+
+<p>在上面的迭代版本或者BFS版本里，不管是分析还是代码都显得有些冗长，这主要是因为我们不愿意直接把判断放在循环里，而要弄清楚所有的过程细节，而对于递归版本，可以很简单地实现。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">dungeon</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dungeon</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dungeon</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">m</span> <span class="ow">or</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s">'inf'</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">m</span><span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">nx</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">dungeon</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="mi">1</span><span class="o">+</span><span class="nb">max</span><span class="p">(</span><span class="o">-</span><span class="n">dfs</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>运行时间：78 ms (beats 39.60%, ~100%)，内存占用：20.21 MB (beats 5.06%)。</p>
+
+<h2 id="注解">注解</h2>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>

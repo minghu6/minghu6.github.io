@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LeetCode Map
+            双串DP
         
     "
 />
 
-<meta property="og:url" content="//oth/LeetCodeMap.html" />
+<meta property="og:url" content="//algs/TwoStrDP.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LeetCode Map
+        双串DP
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LeetCode Map</h1>
+    <h1 class="post__title__text">双串DP</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
-            Other
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      July 25, 2023
+      August 26, 2023
     </div>
     
   </div>
@@ -127,115 +127,53 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="app-themes">App Themes</h2>
+    <div class="post__content"><h2 id="前言">前言</h2>
 
-<p>按照特定应用场景的分类</p>
+<p>两个串，一个模板串，一个测试串，使之“匹配” 。</p>
 
-<h3 id="linesweep">LineSweep</h3>
+<p>如果更小规模，这里就是指两个串的前缀子串，的子问题的解决能适用贪心算法，直接被利用，计算出更大规模的问题。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
-  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
-  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
-  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
-</ul>
+<h2 id="正则匹配">正则匹配</h2>
 
-<h3 id="graph">Graph</h3>
+<p><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></p>
 
-<ul>
-  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
-</ul>
+<h3 id="简化版">简化版</h3>
 
-<h3 id="palindrome">Palindrome</h3>
+<p><a href="/oth/LeetCodePacket1.html">0044 - Wildcard Matching</a></p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<h2 id="编辑距离">编辑距离</h2>
 
-<h3 id="words-comparison">Words Comparison</h3>
+<p>以莱文斯坦距离为例，对应有 LeetCode 原题： <a href="/oth/LeetCode0072.html">0072 - Edit Distance</a> 。</p>
 
-<ul>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<h2 id="问题变形">问题变形：</h2>
 
-<h3 id="parentheses">Parentheses</h3>
+<h3 id="1-有任意填充的双串问题">1. 有任意填充的双串问题</h3>
 
-<ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-</ul>
+<p>作为子问题的前缀子串并不是题目要求的内容，而是要进一步取舍。</p>
 
-<h2 id="tech-themes">Tech Themes</h2>
+<p><a href="/algs/LeetCode1458.html">Max Dot Product of Two Subsequences</a></p>
 
-<p>按照算法思想的分类</p>
+<h2 id="代码模板">代码模板</h2>
 
-<h3 id="dp">DP</h3>
+<p>总有一个模板，利用惰性更新节省内存到一个单位的 $O(\min(n,m))$ 。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0044 - Wildcard Matching</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0403 - Frog Jump</a></li>
-  <li><a href="/oth/LeetCode0072.html">0072 - Edit Distance</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-  <li><a href="/oth/LeetCode0087.html">0087 - Scramble String</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0097 - Interleaving String</a></li>
-  <li><a href="/oth/LeetCode0115.html">0115 - Distinct Subsequences</a></li>
-</ul>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">m</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pre1</span> <span class="o">=</span> <span class="n">cache</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+	<span class="c1">// init cache[0]</span>
 
-<h4 id="recursive-dp">Recursive DP</h4>
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">n</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">pre0</span> <span class="o">=</span> <span class="n">cache</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
 
-<p>一类很特殊的 DP ，是在递归状态上的 DP</p>
+		<span class="c1">// calc cache[i]</span>
 
-<ul>
-  <li><a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a></li>
-</ul>
+        <span class="n">pre1</span> <span class="o">=</span> <span class="n">pre0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-<h4 id="状态-dp">状态 DP</h4>
+<span class="n">cache</span><span class="nf">.pop</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span>
+</code></pre></div></div>
 
-<ul>
-  <li><a href="/oth/LeetCodeBuySellStock.html">Best Time to Buy and Sell Stock Series</a></li>
-</ul>
-
-<h4 id="子序列">子序列</h4>
-
-<ul>
-  <li><a href="/algs/LeetCode1458.html">Max Dot Product of Two Subsequences</a></li>
-</ul>
-
-<h4 id="后效翻转">后效翻转</h4>
-
-<ul>
-  <li><a href="/oth/LeetCode0174.html">Dungeon Game</a></li>
-</ul>
-
-<h3 id="monotonic-stack">Monotonic Stack</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodeJumpGames.html">1696. Jump Game VI</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-</ul>
-
-<h3 id="greedy">Greedy</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
-
-<h2 id="lang-themes">Lang Themes</h2>
-
-<p>有语言优化相关的主题</p>
-
-<h3 id="python">Python</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<h2 id="注解">注解</h2>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
