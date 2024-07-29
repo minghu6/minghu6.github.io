@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2024-07-29T23:22:38+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">算法复杂度分析的标记符号</title><link href="/algs/ComplexityNotations.html" rel="alternate" type="text/html" title="算法复杂度分析的标记符号" /><published>2024-07-28T00:00:00+08:00</published><updated>2024-07-28T00:00:00+08:00</updated><id>/algs/ComplexityNotations</id><content type="html" xml:base="/algs/ComplexityNotations.html"><![CDATA[<p>介绍下在分析算法复杂度时用到的标记符号，及其数学来源。</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2024-07-29T23:45:34+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">算法复杂度分析的标记符号</title><link href="/algs/ComplexityNotations.html" rel="alternate" type="text/html" title="算法复杂度分析的标记符号" /><published>2024-07-28T00:00:00+08:00</published><updated>2024-07-28T00:00:00+08:00</updated><id>/algs/ComplexityNotations</id><content type="html" xml:base="/algs/ComplexityNotations.html"><![CDATA[<p>介绍下在分析算法复杂度时用到的标记符号，及其数学来源。</p>
 
 <p>这些标记符号开始源于德国数学家 <a href="https://en.wikipedia.org/wiki/Paul_Gustav_Heinrich_Bachmann">Paul Bachmann</a> 和 <a href="https://en.wikipedia.org/wiki/Edmund_Landau">Edmund Landau</a> 的发明，后经 <a href="https://en.wikipedia.org/wiki/Donald_Knuth">Knuth</a> 的整理，形成了现在熟悉的这些渐进符号（<strong>asymptotic notation</strong>）。</p>
 
@@ -38,31 +38,27 @@
 
 <h3 id="与-o-的关系">与 $O$ 的关系</h3>
 
-<p>在讨论之前需要先引入新的记号： $\sim$ ，它的定义是：</p>
-
-<p>$f(x)\sim g(x) \Leftrightarrow \displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = C\neq 0$</p>
-
-<p>也就是说， $g(x)$ 是 $f(x)$ 同阶的函数。并且我们进一步考虑，记号描述得其实是一种集合成员与集合的概念，这样我们就清楚了 big-O 实际上就是同阶 $\sim$ 和更高阶 $o$ 两个不相交集合的并集。</p>
+<p>记号描述得其实是一种集合成员与集合的概念，这样我们就清楚了 big-O 实际上就是同阶函数和更高阶函数 $o$ 两个不相交集合的并集 <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>。</p>
 
 <h2 id="omega--omega-记号">$\Omega$ &amp; $\omega$ 记号</h2>
 
-<p>分别叫做 big-Omega 和 little-omega ，根据 Knuth 的归纳调整，big-Omega 成为了：</p>
+<p>分别叫做 big Omega 和 little omega ，根据 Knuth 的归纳调整，big Omega 成为了：</p>
 
 <p>$f(x) = \Omega(g(x)) \Leftrightarrow g(x) = O(f(x))$</p>
 
-<p>而 little-omega 则对应了：</p>
+<p>而 little omega 则对应了：</p>
 
 <p>$f(x) = \omega(g(x)) \Leftrightarrow g(x) = o(f(x))$</p>
 
-<p>但是按照函数阶的集合的观点更直观，big-Omega 代表小于或等于这个阶的函数集合，而 little-omega 则代表了；严格小于这个阶的函数集合。</p>
+<p>但是按照函数阶的集合的观点更直观，big Omega 代表小于或等于这个阶的函数集合，而 little omega 则代表了；严格小于这个阶的函数集合。</p>
 
 <h2 id="theta-记号">$\Theta$ 记号</h2>
 
-<p>叫做 big-Theta。根据 Knuth 的定义：</p>
+<p>叫做 big Theta。根据 Knuth 的定义：</p>
 
 <p>$f(x) = \Theta(g(x)) \Leftrightarrow f(x) = O(g(x)) = \Omega(g(x))$</p>
 
-<p>是说给出的 $g(x)$ 同时满足了 big-O 和 big-Omega 这两个集合的定义。</p>
+<p>是说给出的 $g(x)$ 同时满足了 big-O 和 big Omega 这两个集合的定义。</p>
 
 <h2 id="总结">总结</h2>
 
@@ -83,10 +79,6 @@
     <tr>
       <td>$o$</td>
       <td>$\lt$</td>
-    </tr>
-    <tr>
-      <td>$\sim$</td>
-      <td>$=$</td>
     </tr>
     <tr>
       <td>$\Theta$</td>
@@ -114,6 +106,9 @@
     </li>
     <li id="fn:2" role="doc-endnote">
       <p>显然这里的 $\epsilon$ 和 big-O 形式化定义里面的 $M$ 是一样的，只是作为一种对使用传统的尊重，大写英文字母用作某个常数而 $\epsilon$ 用作任意（小）的数字。 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>很容易搞混得是 $f(x)\sim g(x)$ 描述得是等价关系 $\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = 1$ 而不是同阶关系 $\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = C \gt 0 $，缺少一个描述同阶关系的记号有点儿别扭。 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[介绍下在分析算法复杂度时用到的标记符号，及其数学来源。]]></summary></entry><entry><title type="html">质数基础</title><link href="/algs/Prime0.html" rel="alternate" type="text/html" title="质数基础" /><published>2023-12-29T00:00:00+08:00</published><updated>2023-12-29T00:00:00+08:00</updated><id>/algs/Prime0</id><content type="html" xml:base="/algs/Prime0.html"><![CDATA[<p><em>本文主要参考：</em></p>
