@@ -263,16 +263,13 @@
 
 <p>首先我们发现：</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. 一个串的回文修改次数可以通过它同一对称轴的子串[^1]的回文修改次数加上两头字符的比较结果[^2]得到
-</code></pre></div></div>
+<p>(1). 一个串的回文修改次数可以通过它同一对称轴的子串<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>的回文修改次数加上两头字符的比较结果<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>得到</p>
 
 <p>这样我们可以在 $O(n^2)$ 的时间复杂度内计算出所有串的（最小）回文修改次数，这个复杂度怎么说呢，没那么好但也暂且可以接受，总还是允许我们姑且沿着这个思路继续做下去，既然任一子串的回文修改次数是已知的，那么如何由子问题到全局问题呢？</p>
 
 <p>这时看下题目的数据规模：<code class="language-plaintext highlighter-rouge">1 &lt;= k &lt;= s.length &lt;= 100</code> ，非常小，这几乎不是暗示而是明示了题解期望一个主过程是 $O(n^3)$ 的解决方案，这样的话不需要什么，直接通过暴力搜索就可以完成子问题到全局问题的解决：</p>
 
-<ol>
-  <li>从 $k$ 的每个值开始，从子串的每个字符开始（作为分片的位置），检查每一个选择是否可以使这个子串的相应 $k$ 划分的回文修改次数更小，假设子串是 $s_i = s[0..i]$ ，而在子串里切片的位置是 $c$ ，当前检查的 $k$ 值是 $j$ ，预计算的回文修改次数是 $p$，那么我们需要判断得是 $\text{dp}[i][j] = \min(\text{dp}[c-1][j-1] + p[c][i])$ ，这里面还有个限制，就是 $j$ 个分片至少需要长度为 $j$ 的串的长度，$c$ 的选取要满足这个限制。</li>
-</ol>
+<p>(2). 从 $k$ 的每个值开始，从子串的每个字符开始（作为分片的位置），检查每一个选择是否可以使这个子串的相应 $k$ 划分的回文修改次数更小，假设子串是 $s_i = s[0..i]$ ，而在子串里切片的位置是 $c$ ，当前检查的 $k$ 值是 $j$ ，预计算的回文修改次数是 $p$，那么我们需要判断得是 $\text{dp}[i][j] = \min(\text{dp}[c-1][j-1] + p[c][i])$ ，这里面还有个限制，就是 $j$ 个分片至少需要长度为 $j$ 的串的长度，$c$ 的选取要满足这个限制。</p>
 
 <h3 id="解bfs">解①BFS</h3>
 
@@ -282,7 +279,7 @@
 
 <p>存储回文修改次数的数组不妨令为 $p$ ，可令 $p[i][j]$ 存储子串 $s[i..j]$ 的回文修改次。</p>
 
-<p>根据对称轴计算一族同轴子串的回文修改次数，具体计算方式可以是，从轴心到两端，使用两个变量，也就是双指针的方式不断检查是否越界，但如果把越界检查转换为预先确定的区间通常会更好一点<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>，但这引入了更多的技术细节，首先需要区分偶数轴和奇数轴：</p>
+<p>根据对称轴计算一族同轴子串的回文修改次数，具体计算方式可以是，从轴心到两端，使用两个变量，也就是双指针的方式不断检查是否越界，但如果把越界检查转换为预先确定的区间通常会更好一点<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，但这引入了更多的技术细节，首先需要区分偶数轴和奇数轴：</p>
 
 <p>对于偶数轴，需要从 $s[i.. i+1]$ 开始，也就是说，偶数轴的最小单位是一左一右两个单位长度的串，不妨称之为<em>最小串</em>，那么计算半径 $r$ 应该从最小串的左边一个字符 $s[i-1]$ ，和右边一个字符 $s[i+2]$ 开始，左边的最大长度为 $i-1+1=i$ ，右边的最大长度为 $n-1-(i+2)+1=n-i-2$ ，于是有：</p>
 
@@ -415,6 +412,12 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>严格说，是最大真子串 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>如果两个字符相等，就 +0 ，否则 +1 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
     <li id="fn:3" role="doc-endnote">
       <p>外循环变为内循环 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>

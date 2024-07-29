@@ -375,7 +375,6 @@
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
 
-
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s3</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
     <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
@@ -453,6 +452,244 @@
 
 <p>需要特别注意下 $s_1$ 是空串的情况。</p>
 
+<h2 id="213-house-robber-ii"><a href="https://leetcode.com/problems/house-robber-ii/">213. House Robber II</a></h2>
+
+<p>这道题建立在 <a href="https://leetcode.com/problems/house-robber/">198. House Robber</a> 的基础上，假设我们已经有了一个它的解<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">rob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">dp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+    <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> 
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">dp</span><span class="p">[</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>由于 <code class="language-plaintext highlighter-rouge">0 &lt;= nums[i] &lt;= 400</code> 的数据特点，可以通过滚动变量简化为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">rob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">dp0</span><span class="p">,</span> <span class="n">dp1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">:</span>
+        <span class="n">dp0</span><span class="p">,</span> <span class="n">dp1</span> <span class="o">=</span> <span class="n">dp1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">dp1</span><span class="p">,</span> <span class="n">dp0</span><span class="o">+</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dp1</span>
+</code></pre></div></div>
+
+<p>而 House Robber II 的困难在于并不容易直接想到 House 首尾相接成环到底意味着什么。</p>
+
+<p>相比之下，可以这么考虑，只要求一个最大值，要求首尾不能同时被取到。</p>
+
+<p>那么只有两种情况：要么首部一定不会被取到、要么尾部一定不会被取到，也就是 <code class="language-plaintext highlighter-rouge">rob(nums[1:])</code> 和 <code class="language-plaintext highlighter-rouge">rob(nums[:-1])</code> ，另外考虑到特殊的长度为 $1$ 的情况，就得到了最终的结果。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">rob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">rob0</span><span class="p">(</span><span class="n">nums</span><span class="p">):</span>
+        <span class="n">dp0</span><span class="p">,</span> <span class="n">dp1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">:</span>
+            <span class="n">dp0</span><span class="p">,</span> <span class="n">dp1</span> <span class="o">=</span> <span class="n">dp1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">dp1</span><span class="p">,</span> <span class="n">dp0</span><span class="o">+</span><span class="n">v</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">dp1</span>
+
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">rob0</span><span class="p">(</span><span class="n">nums</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
+            <span class="n">rob0</span><span class="p">(</span><span class="n">nums</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="221-maximal-square"><a href="https://leetcode.com/problems/maximal-square/">221. Maximal Square</a></h2>
+
+<p>这个题从名字上看就像是前面 <a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a> ，区别是这里是 “Square” ，正方形，是进一步特定了的矩形，显然  <a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a>  的解题的两种思路都可以直接应用在这里，只需要将最大矩形的形状限制在正方形即可。</p>
+
+<p>这里要介绍的是特别针对正方形的限制的一种 DP 思路：</p>
+
+<p>正方形的好处是它是一个<strong>中心对称</strong>的几何图形，大的正方形可以通过小的正方形拓展而来。</p>
+
+<p>使用几何“缩放”的形式实现问题规模的递增，对于一个坐标为 $(i, j)$ 的点来说，如果它被“填充”了，并且其余三个位置：$(i,j-1), (i-1,j), (i-1,j-1)$ 也都被填充了，那么这就是一个 2x2 的正方形，如果其中任一一个位置未被填充，那么这就是一个 1x1 的正方形（当然如果连  $(i, j)$ 本身都未被填充，那就不构成任何正方形）</p>
+
+<p>考虑扩增的情况：如果三个位置本身都不只是代表一个被填充的点，而是作为边长为 2 的正方形的右下角的点，那么这就有一个边长为 2+1 = 3 的正方形；同理如果三个位置都代表了边长为 3 的正方形，那么就发现了一个边长为 3+1 = 4 的正方形。这样只要求取三个位置代表的正方形的边长 n，就可以得到当前最大的正方形的边长 n+1。</p>
+
+<p>而我们使用右下角作为一个正方形的代表就是为了在从上到下和从左到右扫描过程中确保其余三个位置都是已被求解过的。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># right-down corner
+</span>
+    <span class="n">dp0</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">dp1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">'1'</span><span class="p">:</span>
+                <span class="n">dp1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp1</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dp0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dp0</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dp1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">dp1</span><span class="p">))</span>
+        <span class="n">dp1</span><span class="p">,</span> <span class="n">dp0</span> <span class="o">=</span> <span class="n">dp0</span><span class="p">,</span> <span class="n">dp1</span>
+
+    <span class="k">return</span> <span class="n">w</span> <span class="o">*</span> <span class="n">w</span>
+</code></pre></div></div>
+
+<p>运行时间：551 ms (beats 98.7%)，内存占用：19.25 MB (beats 62.82%, ~100%)。</p>
+
+<h2 id="241-different-ways-to-add-parentheses"><a href="https://leetcode.com/problems/different-ways-to-add-parentheses/">241. Different Ways to Add Parentheses</a></h2>
+
+<p>这个题从题干背景上看，非常类似于前面的 <a href="https://leetcode.com/problems/generate-parentheses/">22. Generate Parentheses</a> ，但是有所不同，特别是对于迭代版本来说。</p>
+
+<p>首先从尝试从文本中分离出操作数和操作符<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">4</a></sup><sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">5</a></sup>，因为都是二元操作符，那么显然操作数和操作符之间存在对应关系，从索引下标的角度说，第一部分的操作数的坐标也就是它的操作符的坐标。这样问题就转变成了一个我们熟悉的、形式化的单串上的问题。</p>
+
+<p>计算所有括号可能的添加的产生的值，可以先把这个操作数串分成任意两部分，计算它们在第一个部分结尾对应的操作符运算下所产生的的值，而每一部分的值又可以进一步地缩小规模，直到称为单个操作数。这就是我们解的思路。</p>
+
+<h3 id="迭代版本-1">迭代版本</h3>
+
+<p>对于递归的版本，解的实现很简单，但是对于迭代版本就有些细节需要考虑：</p>
+
+<p>首先，不同于一般地串上 DP 的算法，这里不能直接用嵌套扫描的矿建递推子问题，而是一层扫描一层长度的变革；</p>
+
+<p>其次，存储中间结果的二维数组（考虑到存储得是列表，实际上是三维数组）应该使用“起始位置-长度”而不是“起始位置-结束位置”的结构，这个优化是从 <a href="/oth/LeetCodePalindPart.html#1278-palindrome-partitioning-iii">1278. Palindrome Partitioning III</a> 里用过的；</p>
+
+<p>最后，有一些实用的简化代码的 Python 技巧，</p>
+
+<ol>
+  <li>使用 <code class="language-plaintext highlighter-rouge">product</code> 代替合并两部分结果的嵌套循环；</li>
+  <li>用两层的列表循环代替 for 循环；</li>
+  <li>直接保存二元操作符，而不是字符，然后条件判断</li>
+</ol>
+
+<p>原始代码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span> <span class="c1"># the last but one
+</span>    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">dp</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][(</span><span class="n">i</span><span class="o">+</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)]:</span>
+            <span class="k">if</span> <span class="n">op</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s">'+'</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">op</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s">'-'</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>优化后的代码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">op</span><span class="p">[</span><span class="n">j</span><span class="p">](</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># the last but one
+</span>    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">],</span> <span class="n">dp</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][(</span><span class="n">i</span><span class="o">+</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
+<span class="p">]</span>
+</code></pre></div></div>
+
+<p>完整版本：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">digits</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">mul</span><span class="p">,</span> <span class="n">sub</span><span class="p">,</span> <span class="n">add</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="n">ope</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">"+"</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">add</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">"-"</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">"*"</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">mul</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">digits</span><span class="p">:</span>
+            <span class="n">ope</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]))</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ope</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ope</span><span class="p">)</span>
+    <span class="c1">#start -&gt; #len (0..)
+</span>    <span class="n">dp</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">ope</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">op</span><span class="p">[</span><span class="n">j</span><span class="p">](</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># the last but one
+</span>                    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">],</span> <span class="n">dp</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][(</span><span class="n">i</span><span class="o">+</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
+                <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>运行时间：36 ms (beats 87.09%)，内存占用： 17.54 MB (beats 5.02%) 。</p>
+
+<h3 id="递归版本-1">递归版本</h3>
+
+<p>递归版本就非常简单，细节前面都已经彻底地讨论过了。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">digits</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">mul</span><span class="p">,</span> <span class="n">sub</span><span class="p">,</span> <span class="n">add</span>
+
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="n">ope</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">"+"</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">add</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">"-"</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s">"*"</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">mul</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">digits</span><span class="p">:</span>
+            <span class="n">ope</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]))</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ope</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ope</span><span class="p">)</span>
+
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">-</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">ope</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">op</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">dfs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">dfs</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
+        <span class="p">]</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">dfs</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>运行时间：28 ms (beats 99.19%)，内存占用： 17.69 MB (beats 5.02%) 。</p>
+
+<p><em>但是必须吐槽下这里即使不缓存计算结果，也不影响运行时间的指标</em></p>
+
 <h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">
@@ -462,6 +699,15 @@
     </li>
     <li id="fn:2" role="doc-endnote">
       <p>在 Python3（3.10）<code class="language-plaintext highlighter-rouge">Counter(s1) + Counter(s2)</code> 优于 <code class="language-plaintext highlighter-rouge">COunter(s1+s2)</code> 以及 <code class="language-plaintext highlighter-rouge">sorted(s1+s2)</code> <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>很简单的利用 DP 思想的一个算法 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>因为操作数和操作符的形式很简单，因此对于递归版本也可以省略解析的过程，而直接在串上进行操作。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>这个过程总让人有一种做编译前端词法分析的既视感。 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>

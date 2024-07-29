@@ -200,9 +200,21 @@
 
 <p>单调栈是标准解法。</p>
 
-<p>当遇到下降的高度就出栈，把之前保存的位置弹出来，计算所有可能的最大矩形。</p>
+<p>这个思路并不显而易见，它的关键思路是： <strong>分段统计</strong> 。</p>
 
-<p>这里精彩的地方是两个“哨兵”的使用大大简化了代码。</p>
+<p>前面 DP 的解法计算的指标是矩形的边，而这里则直接关注它的高度，指标的统计依据这样的观察：</p>
+
+<p><em>位于高度“波浪”上的较低点左边的、高度在其上的矩形，无法通过这个较低点来继续拓宽它的宽度</em><sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
+
+<p>也即，在较低点时可以统计它左边的、比它高的矩形面积。</p>
+
+<p>技术上，我们用一个不减顺序的单调栈来保存极低点之前的坐标以用于满足条件的矩形面积的统计。</p>
+
+<p>这样依次弹出所有高度不低于当前极低点的位置坐标，每弹出一个高度，需要弹出同等高度的所有坐标，然后计算这段宽度与高度的矩形面积，这样就统计了所极小点左边的，到极小点为止的矩形的面积。</p>
+
+<p>之后再把当前极低点的坐标入栈。</p>
+
+<p>这样如果在一行的高度数据的最后插入一个大小为 $0$ 的哨兵，确保单调栈最后一定会被清空，这样就统计了一行里面所有的矩形的面积。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -236,6 +248,8 @@
     <span class="k">return</span> <span class="n">ans</span>
 </code></pre></div></div>
 
+<p>这里最精彩或者说最 Tricky 的地方是第二个“哨兵”的运用，一方面 <code class="language-plaintext highlighter-rouge">-1</code> 可以用作单调栈的基底，省却需要检测空的情况；另一方面，在 Python 的数组检索语法里，<code class="language-plaintext highlighter-rouge">-1</code> 又代表了列表的尾部元素，而记载高度的列表尾部是哨兵，正好是 $0$ ，可以直接用作大小的判断逻辑。</p>
+
 <p>时间复杂度 $O(nm)$ 。</p>
 
 <p>运行时间：234 ms (beats 97.39%, ~100%)，内存占用：17.65 MB (beats 70.19%) 。</p>
@@ -246,6 +260,9 @@
   <ol>
     <li id="fn:1" role="doc-endnote">
       <p>这也算是扫描线算法了：） <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>高度“波浪”指得是这一行的宽度为 $1$ 个单位的高度不等的线段，就好像波浪一样。 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>

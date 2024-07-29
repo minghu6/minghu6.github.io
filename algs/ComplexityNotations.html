@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LeetCode Map
+            算法复杂度分析的标记符号
         
     "
 />
 
-<meta property="og:url" content="//oth/LeetCodeMap.html" />
+<meta property="og:url" content="//algs/ComplexityNotations.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LeetCode Map
+        算法复杂度分析的标记符号
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LeetCode Map</h1>
+    <h1 class="post__title__text">算法复杂度分析的标记符号</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
-            Other
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      July 25, 2023
+      July 28, 2024
     </div>
     
   </div>
@@ -127,117 +127,125 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="app-themes">App Themes</h2>
+    <div class="post__content"><p>介绍下在分析算法复杂度时用到的标记符号，及其数学来源。</p>
 
-<p>按照特定应用场景的分类</p>
+<p>这些标记符号开始源于德国数学家 <a href="https://en.wikipedia.org/wiki/Paul_Gustav_Heinrich_Bachmann">Paul Bachmann</a> 和 <a href="https://en.wikipedia.org/wiki/Edmund_Landau">Edmund Landau</a> 的发明，后经 <a href="https://en.wikipedia.org/wiki/Donald_Knuth">Knuth</a> 的整理，形成了现在熟悉的这些渐进符号（<strong>asymptotic notation</strong>）。</p>
 
-<h3 id="linesweep">LineSweep</h3>
+<h2 id="o-记号">$O$ 记号</h2>
 
-<ul>
-  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
-  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
-  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
-  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
-</ul>
+<p>开始叫做 big-O<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，后经过 Knuth 整理，也可以表示为 big Omicron 。</p>
 
-<h3 id="graph">Graph</h3>
+<h3 id="形式化描述">形式化描述</h3>
 
-<ul>
-  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
-</ul>
+<p>$f(x) = O(g(x)),\quad x\to \infty $</p>
 
-<h3 id="palindrome">Palindrome</h3>
+<p>等价于：</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<p>$\exists (M\gt0, x_0)$ ，使得所有 $x \geqslant x_0$ ，都有 $|f(x)| \leqslant M g(x)$ ， 其中函数 $g(x)$ 对于足够大的 $x$ 来说总是正数。</p>
 
-<h3 id="words-comparison">Words Comparison</h3>
+<h2 id="o-记号-1">$o$ 记号</h2>
 
-<ul>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<p>叫做 little-o ，也可以叫做 little omicron 。相比于 big-O ，little-o 的限制更加严格。</p>
 
-<h3 id="parentheses">Parentheses</h3>
+<h3 id="形式化描述-1">形式化描述</h3>
 
-<ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-</ul>
+<p>$f(x) = o(g(x)),\quad x\to \infty $</p>
 
-<h2 id="tech-themes">Tech Themes</h2>
+<p>等价于：</p>
 
-<p>按照算法思想的分类</p>
+<p>$\forall \epsilon \gt 0,\ \exists x_0$ ，使得所有 $x \geqslant x_0$ ，都有 $|f(x)| \leqslant \epsilon g(x)$ ， 其中函数 $g(x)$ 对于足够大的 $x$ 来说总是正数。<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
 
-<h3 id="dp">DP</h3>
+<p>这个定义形式上就类似微分里面的上极限的定义。</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0044 - Wildcard Matching</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0403 - Frog Jump</a></li>
-  <li><a href="/oth/LeetCode0072.html">0072 - Edit Distance</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-  <li><a href="/oth/LeetCode0087.html">0087 - Scramble String</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0097 - Interleaving String</a></li>
-  <li><a href="/oth/LeetCode0115.html">0115 - Distinct Subsequences</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0221 - Maximal Square</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0241 - Different Ways to Add Parentheses</a></li>
-</ul>
+<h3 id="另一种形式">另一种形式</h3>
 
-<h4 id="recursive-dp">Recursive DP</h4>
+<p>按照定义高阶无穷小的方式，它还可以写作：</p>
 
-<p>一类很特殊的 DP ，是在递归状态上的 DP</p>
+<p>$\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = 0$</p>
 
-<ul>
-  <li><a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a></li>
-</ul>
+<p>也就是说，$g(x)$ 是更高阶的一个函数，是 $f(x)$ 的严格上限。这种 little-o 的记号在泰勒展开式里作为余项也用到过。</p>
 
-<h4 id="状态-dp">状态 DP</h4>
+<h3 id="与-o-的关系">与 $O$ 的关系</h3>
 
-<ul>
-  <li><a href="/oth/LeetCodeBuySellStock.html">Best Time to Buy and Sell Stock Series</a></li>
-</ul>
+<p>在讨论之前需要先引入新的记号： $\sim$ ，它的定义是：</p>
 
-<h4 id="子序列">子序列</h4>
+<p>$f(x)\sim g(x) \Leftrightarrow \displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = C\neq 0$</p>
 
-<ul>
-  <li><a href="/algs/LeetCode1458.html">1458 - Max Dot Product of Two Subsequences</a></li>
-</ul>
+<p>也就是说， $g(x)$ 是 $f(x)$ 同阶的函数。并且我们进一步考虑，记号描述得其实是一种集合成员与集合的概念，这样我们就清楚了 big-O 实际上就是同阶 $\sim$ 和更高阶 $o$ 两个不相交集合的并集。</p>
 
-<h4 id="后效翻转">后效翻转</h4>
+<h2 id="omega--omega-记号">$\Omega$ &amp; $\omega$ 记号</h2>
 
-<ul>
-  <li><a href="/oth/LeetCode0174.html">0174 - Dungeon Game</a></li>
-</ul>
+<p>分别叫做 big-Omega 和 little-omega ，根据 Knuth 的归纳调整，big-Omega 成为了：</p>
 
-<h3 id="monotonic-stack">Monotonic Stack</h3>
+<p>$f(x) = \Omega(g(x)) \Leftrightarrow g(x) = O(f(x))$</p>
 
-<ul>
-  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodeJumpGames.html">1696. Jump Game VI</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-</ul>
+<p>而 little-omega 则对应了：</p>
 
-<h3 id="greedy">Greedy</h3>
+<p>$f(x) = \omega(g(x)) \Leftrightarrow g(x) = o(f(x))$</p>
 
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<p>但是按照函数阶的集合的观点更直观，big-Omega 代表小于或等于这个阶的函数集合，而 little-omega 则代表了；严格小于这个阶的函数集合。</p>
 
-<h2 id="lang-themes">Lang Themes</h2>
+<h2 id="theta-记号">$\Theta$ 记号</h2>
 
-<p>有语言优化相关的主题</p>
+<p>叫做 big-Theta。根据 Knuth 的定义：</p>
 
-<h3 id="python">Python</h3>
+<p>$f(x) = \Theta(g(x)) \Leftrightarrow f(x) = O(g(x)) = \Omega(g(x))$</p>
 
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<p>是说给出的 $g(x)$ 同时满足了 big-O 和 big-Omega 这两个集合的定义。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>可以按照如下表对复杂度记号进行理解：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>记号</th>
+      <th>逻辑关系</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>$O$</td>
+      <td>$\leqslant$</td>
+    </tr>
+    <tr>
+      <td>$o$</td>
+      <td>$\lt$</td>
+    </tr>
+    <tr>
+      <td>$\sim$</td>
+      <td>$=$</td>
+    </tr>
+    <tr>
+      <td>$\Theta$</td>
+      <td>$\simeq$</td>
+    </tr>
+    <tr>
+      <td>$\Omega$</td>
+      <td>$\geqslant$</td>
+    </tr>
+    <tr>
+      <td>$\omega$</td>
+      <td>$\gt$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="https://en.wikipedia.org/wiki/Time_complexity#Table_of_common_time_complexities">备查时间复杂度表</a></p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>根据 <a href="https://en.wikipedia.org/wiki/Big_O_notation#History_(Bachmann%E2%80%93Landau,_Hardy,_and_Vinogradov_notations)">wiki</a> 的说法， big-O 来源于德语 “Ordnung”，用来表示近似阶的意思。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>显然这里的 $\epsilon$ 和 big-O 形式化定义里面的 $M$ 是一样的，只是作为一种对使用传统的尊重，大写英文字母用作某个常数而 $\epsilon$ 用作任意（小）的数字。 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

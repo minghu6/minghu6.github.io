@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            LeetCode Map
+            0000 -
         
     "
 />
 
-<meta property="og:url" content="//oth/LeetCodeMap.html" />
+<meta property="og:url" content="//oth/LeetCode0233.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        LeetCode Map
+        0000 -
     
 </title>
 
@@ -104,7 +104,7 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">LeetCode Map</h1>
+    <h1 class="post__title__text">0000 -</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
@@ -119,7 +119,7 @@
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      July 25, 2023
+      June 11, 2023
     </div>
     
   </div>
@@ -127,117 +127,81 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="app-themes">App Themes</h2>
+    <div class="post__content"><h2 id="题干">题干</h2>
 
-<p>按照特定应用场景的分类</p>
+<p><a href="https://leetcode.com/problems/number-of-digit-one/description/">问题描述</a></p>
 
-<h3 id="linesweep">LineSweep</h3>
+<h2 id="破题">破题</h2>
 
-<ul>
-  <li><a href="/oth/LeetCode0218.html">0218 - The Skyline Problem</a></li>
-  <li><a href="/oth/LeetCode0391.html">0391 - Perfect Rectangle</a></li>
-  <li><a href="/oth/LeetCode0850.html">0850 - Rectangle Area II</a></li>
-  <li><a href="/oth/LeetCode1851.html">1851 - Minimum Level to Include</a></li>
-</ul>
+<p>这道题的难度是 <em>Hard</em> ，但是题干明明看起来又非常简单，这实在让人倒吸一口凉气，这可能会有多种情况地、很复杂地展开。</p>
 
-<h3 id="graph">Graph</h3>
+<p>但是，但是，不要慌，先看一下数据规模，数据规模本身足以揭露答案。发现是 $10^9$ ，这意味着线性的、一遍扫描的办法是不通的，需要一个比如对数级的亚线性的算法。这对于一个数字来说，第一时间可以想到的就是按照10进制的位来分解问题。</p>
 
-<ul>
-  <li><a href="/algs/LeetCode0685.html">0685 - Redundant Connection II</a></li>
-</ul>
+<p>比如说，给定的数字 $\texttt{N}$ 被分解为 $\texttt{N}=\displaystyle{\sum_{i=0}^{n} a_i\cdot 10^i}$ ，对于前 $i+1$ 位的数字，显然一部分的 $1$ 可以由 $a_i \cdot f(10^i)$ 计算出，这是指前 $i$ 位上的 $1$ ，但还有一部分的 $1$ 是在第 $i+1$ 位上的，它们的计算是根据 $a_i$ 的大小，显然如果 $a_i \gt 1$ ，那么会有 $10^i$ 个 $1$，而如果 $a_i=1$ ，那么会有 $(\sum_{k=1}^{\displaystyle{\sum_{j=0}^{i} a_j\cdot 10^j}}k) +1$ 个 $1$ 。这样我们逐位计算就可以在对数级的时间复杂度下算出结果。</p>
 
-<h3 id="palindrome">Palindrome</h3>
+<h2 id="解">解①：</h2>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<p>根据上面我们的想法，整理出如下代码：</p>
 
-<h3 id="words-comparison">Words Comparison</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
 
-<ul>
-  <li><a href="/algs/LeetCode0336.html">0336 - Palindrome Pairs</a></li>
-</ul>
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">f</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span><span class="o">**</span><span class="n">i</span>
 
-<h3 id="parentheses">Parentheses</h3>
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">n</span>
+    <span class="n">bits</span> <span class="o">=</span> <span class="p">[</span><span class="n">acc</span> <span class="o">%</span> <span class="mi">10</span><span class="p">]</span>
+    <span class="n">acc</span> <span class="o">//=</span> <span class="mi">10</span>
 
-<ul>
-  <li><a href="/oth/LeetCode0022.html">0022 - Generate Parentheses</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-</ul>
+    <span class="k">while</span> <span class="n">acc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">bits</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">acc</span> <span class="o">%</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">//=</span> <span class="mi">10</span>
 
-<h2 id="tech-themes">Tech Themes</h2>
+    <span class="n">ans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
-<p>按照算法思想的分类</p>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="n">bits</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">f</span><span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">j</span><span class="p">)</span> <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="mi">10</span><span class="o">**</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">)</span>
 
-<h3 id="dp">DP</h3>
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
 
-<ul>
-  <li><a href="/oth/LeetCode0005.html">0005 - Longest Palindromic Substring</a></li>
-  <li><a href="/oth/LeetCode0010.html">0010 - Regular Expression Matching</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0044 - Wildcard Matching</a></li>
-  <li><a href="/oth/LeetCode0032.html">0032 - Longest Valid Parentheses</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0403 - Frog Jump</a></li>
-  <li><a href="/oth/LeetCode0072.html">0072 - Edit Distance</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-  <li><a href="/oth/LeetCode0087.html">0087 - Scramble String</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0097 - Interleaving String</a></li>
-  <li><a href="/oth/LeetCode0115.html">0115 - Distinct Subsequences</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0221 - Maximal Square</a></li>
-  <li><a href="/oth/LeetCodePacket1.html">0241 - Different Ways to Add Parentheses</a></li>
-</ul>
+<p>代码可以整合到一个循环里：</p>
 
-<h4 id="recursive-dp">Recursive DP</h4>
+<p>这里使用 <code class="language-plaintext highlighter-rouge">base</code> 作为控制逐位循环的变量的想法是从其他代码里参考而来，觉得非常好就使用了。</p>
 
-<p>一类很特殊的 DP ，是在递归状态上的 DP</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">pack</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">div</span> <span class="o">=</span> <span class="n">n</span>
 
-<ul>
-  <li><a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a></li>
-</ul>
+    <span class="n">ans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">div</span> <span class="o">%</span> <span class="mi">10</span><span class="p">))</span>
 
-<h4 id="状态-dp">状态 DP</h4>
+    <span class="k">while</span> <span class="n">base</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span> <span class="c1"># a*pack + head/b
+</span>        <span class="n">a</span> <span class="o">=</span> <span class="n">div</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">//</span> <span class="mi">10</span>
 
-<ul>
-  <li><a href="/oth/LeetCodeBuySellStock.html">Best Time to Buy and Sell Stock Series</a></li>
-</ul>
+        <span class="k">if</span> <span class="n">a</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">head</span> <span class="o">=</span> <span class="n">base</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">head</span> <span class="o">=</span> <span class="n">n</span> <span class="o">%</span> <span class="n">base</span> <span class="o">+</span> <span class="mi">1</span>
 
-<h4 id="子序列">子序列</h4>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="n">a</span><span class="o">*</span><span class="n">pack</span> <span class="o">+</span> <span class="n">head</span>
 
-<ul>
-  <li><a href="/algs/LeetCode1458.html">1458 - Max Dot Product of Two Subsequences</a></li>
-</ul>
+        <span class="n">pack</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">pack</span> <span class="o">+</span> <span class="n">base</span>
+        <span class="n">div</span> <span class="o">//=</span> <span class="mi">10</span>
+        <span class="n">base</span> <span class="o">*=</span> <span class="mi">10</span>
 
-<h4 id="后效翻转">后效翻转</h4>
+    <span class="k">return</span> <span class="n">ans</span>
+</code></pre></div></div>
 
-<ul>
-  <li><a href="/oth/LeetCode0174.html">0174 - Dungeon Game</a></li>
-</ul>
-
-<h3 id="monotonic-stack">Monotonic Stack</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode0042.html">0042 - Trapping Rain Water</a></li>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-  <li><a href="/oth/LeetCodeJumpGames.html">1696. Jump Game VI</a></li>
-  <li><a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a></li>
-</ul>
-
-<h3 id="greedy">Greedy</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
-
-<h2 id="lang-themes">Lang Themes</h2>
-
-<p>有语言优化相关的主题</p>
-
-<h3 id="python">Python</h3>
-
-<ul>
-  <li><a href="/oth/LeetCode1340.html">1340 - Jump Games V</a></li>
-</ul>
+<h2 id="注解">注解</h2>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

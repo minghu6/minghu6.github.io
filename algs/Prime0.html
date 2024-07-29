@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            质数基础
+        
+    "
+/>
+
+<meta property="og:url" content="//algs/Prime0.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        质数基础
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">质数基础</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/algs.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
+            Algorithm
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      December 29, 2023
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><p><em>本文主要参考：</em></p>
+
+<p><em>1. en-wiki 相关页面</em></p>
+
+<p><em>2.Jonason Sorenson:《An Introduction to Prime Number Sieves》</em></p>
+
+<p>*3. *</p>
+
+<h2 id="定义">定义</h2>
+
+<p>质数（prime），指大于 $1$ 的自然数里，不能拆解为比它严格更小两个的自然数乘积的数。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+
+<p>互质（co-prime），两个整数 $a$，$b$ 没有除了 $1$ 以外的作为正整数的共同除数（divisor），则说 $a$ 质于 $b$ ，或者 $a,b$ 互质<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup>。<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">3</a></sup></p>
+
+<h2 id="性质">性质</h2>
+
+<h3 id="欧几里得引理">欧几里得引理<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">4</a></sup></h3>
+
+<p><del><strong>原始版本</strong>：如果质数 $p$ 能够除 $a\cdot b$ <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">5</a></sup>，并且 $p$ 不能除 $a$ ，则 $p$ 能够除 $b$ 。</del></p>
+
+<p><strong>现代版本</strong>：如果一个整数 $n$ 能够除 $a\cdot b$ ，并且 $n$ 与 $a$ 互质，则 $n$ 能够除 $b$ 。</p>
+
+<h4 id="证明">证明</h4>
+
+<p>现代版是对把原始欧几里得引理推广到一般整数上，我们直接对此进行证明。</p>
+
+<p>不妨假设 $n$ 是非负数：</p>
+
+<h5 id="证初始条件">证初始条件</h5>
+
+<p>对于初始情况，比如 $ab = 0$ ，此时 $a=0$ 或 $b=0$ 。</p>
+
+<p>假设 $a=0$ ，因为 $n\perp a$ ，那么显然有 $n = 1$ ，而 $1$ 可以除任何数，当然能够除 $b$ ，结论成立；</p>
+
+<p>假设 $b=0$，$b$ 能够被任何数整除，当然能被 $n$ 整除，条件成立。</p>
+
+<h5 id="证递推关系">证递推关系</h5>
+
+<p>假设结论对于所有积在 $[0, ab)$ 的情况结论都成立：</p>
+
+<p>因为 $n | a\cdot b$ ，不妨令</p>
+
+\[n\cdot q=ab \qquad\qquad \texttt{(1)}\]
+
+<p>如果 $n=a$ ，因为 $n\perp a$ ，那么显然有 $|n| = 1$ ，那么 $n$ 一定可以除 $b$ ；</p>
+
+<p>如果 $n\lt a$ ，两边减去 $n\cdot b$ ，得到 $nq - nb = ab - nb$ ，也就是 $n(q-b) = (a-n)b$ 。又因为 $n\perp a$ ，所以有 $n\perp a-n$ <sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">6</a></sup> ，而 $0 \leqslant (a-n)b \lt ab$ ，按照假设，有 $n | b$ ；</p>
+
+<p>否则 $n \gt a$，两边减去 $a\cdot q$ ，得到 $nq-aq = ab-aq$ ，也即</p>
+
+\[(n-a)q=a(b-q) \qquad\qquad \texttt{(2)}\]
+
+<p>类似地， 因为 $n-a\perp a$ ，而 $0 \leqslant a(b-q) \lt ab$ ，所以有 $n-a | b-q $ 。不妨令 $b-q = r(n-a)$ ，代回式 $\texttt{(2)}$ 得到 $(n-a)q=(n-a)ar$ ，于是有 $q=ar$ ，代回式 $\texttt{(1)}$ 有 $nar=ab$，$b=nr$ ，也就是 $n|b$ 。</p>
+
+<p>于是我们证明了递归关系的成立。</p>
+
+<p>欧几里得引理证毕。</p>
+
+<h3 id="算式基本定理">算式基本定理<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">7</a></sup></h3>
+
+<p>每一个大于 $1$ 的正整数都可以，而且唯一地分解为一组质数的乘积。</p>
+
+<h4 id="证明-1">证明</h4>
+
+<h5 id="存在性证明">存在性证明</h5>
+
+<p>这很容易理解，假如一个大于 $1$ 的正整数的因式分解不是质数就是合数，因式分解后，如果存在合数，那么合数本身也一定可以继续分解，直到只剩下质数为止。</p>
+
+<h5 id="唯一性证明">唯一性证明</h5>
+
+<p>反证法，假设 $s$ 是最小的、至少有两个质数分解组合的正整数：$s = \prod p_m = \prod q_n$ 。</p>
+
+<p>既然 $p_1 \perp q_k$ ，根据上文欧式引理，有 $p_1 |\prod_{1}^{n-1} q$；同理，$p_1 \perp p_{k=n-1}$ ，可得 $p_1 | \prod_{1}^{n-2} q$ ；直到 $p_1 | q_1$ 。又因为 $p_1 \perp q_1$ ，所以只能是 $p_1 = q_1$ ，这样就得到了比 $s$ 更小的能分解为至少两个质数组合的正整数 $\prod_{2}^{m} p = \prod_{2}^{n} q$ ，与前提假设相悖，于是反证成立。</p>
+
+<h5 id="唯一性证明独立">唯一性证明（独立）</h5>
+
+<p>这里通过不依赖欧几里得引理来独立证明。</p>
+
+<p>仍然通过反证法，假设 $s$ 是最小的、至少有两个质数分解组合的正整数 $s = \prod p_m = \prod q_n$ 。</p>
+
+<p>如果两个组合里存在一对儿相等的质数 $p_i = q_j$ ，则两边约掉相等的数后会出现一个比 $s$ 更小的多质数分解的整数，与前提相悖。</p>
+
+<p>因此不妨可以假设 $p_1 \lt q_1$ ，令 $P=\prod_{2}^{m} p$ ，$Q=\prod_{2}^{n} q$ ，则有 $s=p_1P=q_1Q$ 。</p>
+
+<p>又有 $p_1 \lt q_1$ ，所以 $P \gt Q$ ，不妨令 $s’$ 等于 $s$ 减去 $p_1Q$ ，得到 $s’ = p_1(P-Q) = Q(q_1-p_1)$ 。因为 $ s’ \lt s$ ，所以 $s’$ 只有唯一的质因数分解，那么 $p_1$ 要么在 $q_1 - p_1$ 的部分，要么在 $Q$ 的部分。</p>
+
+<p>如果 $p_1$ 在 $q_1-p_1$ 的部分，则有 $p_1 | q_1$ ，与 $p_1$ 、$q_1$ 都是质数相悖；</p>
+
+<p>如果 $p_1$ 在 $Q$ 的部分，由于前面的结论，$p_1 \not\in \lbrace q \rbrace$ ，因此就有两对儿质因数分解，这样就发现了比 $s$ 更小的多组质因数分解的正整数 $Q$ ，与假设相悖。</p>
+
+<p>反证证毕。</p>
+
+<h2 id="质性测试">质性测试</h2>
+
+<p>这里将介绍简单的测试方法<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">8</a></sup> – 试除法（trial division），其中使用的技巧将在后面查找范围内所有质数的方法里得到进一步的拓展。</p>
+
+<p>被测试的整数记为 $n$ ，试除法，顾名思义就是检查所有 $2\dots n-1$ 的值能否除 $n$ ，也就是根据原始定义进行测试。这里主要介绍常见的优化技巧：</p>
+
+<p>首先，因数测试的上限不需要到 $n-1$ ，而只需要到 $\lfloor \sqrt{n} \rfloor$ <sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">9</a></sup> ，因为因数如果存在，一定是一大一小或者相等大小，只需要检查所有较小或者相等的数就行。</p>
+
+<p>其次，可以先检测大多数情况下最常见的质因数：$2, 3$ 来快速失败。</p>
+
+<p>更进一步地，可以排除所有与 $2,3$ 不互质的数，实质上我们是在尝试寻找 $n$ 的质因数，可以用 $3\sharp\cdot k+i = 6k+i$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">10</a></sup>的形式表示后面的数字，其中 $k \in N^+, 0\leqslant i \lt 3\sharp$ 。之所以选择 $3\sharp$ 作为周期长度，是因为它是这些质因子的最小公倍数，在此基础上排除那些与 $2$ 或 $3$ 不互质的 $i$ ，比如 $i=0, 2, 4$ ，也就是只需要检查 $6k+1, 6k+5$ 。如果从数字 $5$ <sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup>开始检查是否能除 $n$ ，那么为了方便起见，周期内的这两个位置 $x$ 可以表示为 $x \mod{6} \equiv \pm1$ 。</p>
+
+<p>有了这样三个主要地优化，现在就可以写下试除法的代码：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[macro_export]</span>
+<span class="nd">macro_rules!</span> <span class="n">is_prime</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$n:expr</span><span class="p">;</span> <span class="nv">$ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="nv">$n</span><span class="p">;</span>
+
+            <span class="nv">'ret</span><span class="p">:</span> <span class="k">loop</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="p">{</span>
+                    <span class="k">break</span> <span class="kc">false</span><span class="p">;</span>
+                <span class="p">}</span>
+                
+                <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">||</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">3</span> <span class="p">{</span>
+                    <span class="k">break</span> <span class="kc">true</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                    <span class="k">break</span> <span class="kc">false</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="p">(</span><span class="mi">5</span><span class="o">..=&lt;</span><span class="nv">$ty</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">isqrt</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="nf">.step_by</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">n</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                        <span class="k">break</span> <span class="nv">'ret</span> <span class="kc">false</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+                <span class="k">break</span> <span class="kc">true</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里使用宏只是因为 Rust 缺乏统一描述常见基本数字类型的 Trait ，而使用 <code class="language-plaintext highlighter-rouge">loop</code> 是为了在宏里模拟函数体行为。</p>
+
+<h2 id="查找质数">查找质数</h2>
+
+<p>具体来说，是这样一个问题：给定一个正整数 $n$ ，查找所有质数 $p\leqslant n$ 。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">12</a></sup></p>
+
+<p>方法是通过各种“筛子算法” （Sives）来缩减问题规模，这也是数学上对此类问题的通解。</p>
+
+<h3 id="e-筛子">E-筛子</h3>
+
+<p>Eratosthenes 筛子，简称作E-筛子，属于是非常古老、简单的一种筛子算法。</p>
+
+<p>E-筛子是一种求解合数的思路，最后是通过它的补集获得需要的质数。</p>
+
+<ol>
+  <li>在对整个范围一遍扫描的过程中，开始先逐个数检查质性；</li>
+  <li>当发现一个质数 $p$ 时，就把它的乘积 $2p, 3p, \dots , \lfloor n/p\rfloor p$ 都标记为合数；</li>
+  <li>这样在继续扫描的过程中发现被标记为合数的就直接跳过，直到发现下一个质数，然后重复步骤2直到 $n$</li>
+</ol>
+
+<p>实际上我们标记合数的方法是追踪所有小于它的质数，因为根据上面所讲的<a href="#算式基本定理">正整数唯一分解定理</a>，也就是所有的合数都可以做质因数分解，一定存在一个严格比它小的质数可以除它。这样地话，如果我们是从第一个质数开始，那么实际上：</p>
+
+<ol>
+  <li>标记合数的过程不需要从 $2p$ 开始，而是直接从 $p\cdot p$ 开始，因为所有 $\lt p$ 的合数已经被更小的质数标记过了；</li>
+  <li>最外轮的扫描只到 $\lfloor \sqrt{n} \rfloor$ 即可，因为作为合数的因子对，只需要通过那些较小的就可以完成合数的标记了</li>
+</ol>
+
+<h4 id="样例代码">样例代码</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">bit_vec</span><span class="p">::</span><span class="n">BitVec</span><span class="p">;</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">e_sive</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">BitVec</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bits</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+    <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+    <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">2</span><span class="o">..=</span><span class="n">n</span><span class="nf">.isqrt</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="n">i</span><span class="o">..=</span><span class="n">n</span><span class="p">)</span><span class="nf">.step_by</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">bits</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="复杂度分析">复杂度分析</h4>
+
+<p>每查找到一个质数，就需要 $n/p$ 的操作次数，因此总的操作数为 $\displaystyle \sum_{ p\leqslant \sqrt{n}}  n/p $ 。而根据已知的结论，来自<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">13</a></sup>  chapter 22 的：$\displaystyle \sum_{p \leqslant x} \frac{1}{p} = \log\log x + O(1)$ ，可以得到算法的最坏时间复杂度为 $O(n\log\log n)$ 。</p>
+
+<p>时间复杂度近乎是线性的，但这个算法的问题不在时间上，而在空间上，因为要对每个数字进行标记，就需要 $O(n)$ bit 的空间，这个空间使用在一般问题上不算很糟糕，但在数论相关问题上就让人受不了，这就引出了下面“分段”处理的方法。</p>
+
+<h4 id="分段处理">分段处理</h4>
+
+<p>分段处理可以把空间占用从 $O(n)$ 降到 $O(\sqrt{n})$ ，这可以大大缓解算法对空间的占用。</p>
+
+<p>方法是可以预计算出所有到 $\sqrt{n}$ 为止的质数，根据前面已知，所有 $\leqslant n$ 范围内的合数都可以由预计算出的质数构造出，只需要知到这些质数的乘积落在每个分段上的第一个数，就可以标记完所有这个分段的合数。</p>
+
+<p>而如何知道质数 $p$ 落在某个分段区间的第一个数呢？只需要知道分段的左边缘 $l$ ，那么易知落点为 $l+p-(l\mod{p})$ 。</p>
+
+<h5 id="样例代码-1">样例代码</h5>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">e_seg_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span><span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">n</span><span class="nf">.isqrt</span><span class="p">();</span>
+
+        <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nf">e_sive</span><span class="p">(</span><span class="n">delta</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">delta</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                <span class="k">yield</span> <span class="n">i</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">seg</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">delta</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">l</span> <span class="o">=</span> <span class="n">delta</span><span class="p">;</span>
+
+        <span class="k">loop</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">delta</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">l</span> <span class="o">%</span> <span class="n">i</span><span class="o">..=</span><span class="n">delta</span><span class="p">)</span><span class="nf">.step_by</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">seg</span><span class="nf">.set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">delta</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">seg</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="n">l</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                        <span class="k">return</span><span class="p">;</span>
+                    <span class="p">}</span>
+
+                    <span class="k">yield</span> <span class="n">l</span> <span class="o">+</span> <span class="n">i</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="n">seg</span><span class="nf">.set_all</span><span class="p">();</span>
+            <span class="n">l</span> <span class="o">+=</span> <span class="n">delta</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h5 id="复杂度分析-1">复杂度分析</h5>
+
+<p>这样主要辅助空间是两个 $\sqrt{n}$ bit 的数组，因此空间复杂度为 $O(\sqrt{n})$ 。而当分段大小为 $\sqrt{n}$ 时，总的时间复杂度仍然是 $O(n\log\log n)$ ，实际上分段筛选和原始算法的区别就像 BFS 和 DFS 。</p>
+
+<h4 id="增量生成">增量生成</h4>
+
+<p>事实上我们应用在分段代码上的方法也可以直接用来无限生成质数，当已知 $\leqslant n$  的质数时，一轮最多可以计算到 $\leqslant n^2$ 范围的质数。</p>
+
+<h3 id="轮筛">轮筛<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">14</a></sup></h3>
+
+<p>比起 E-筛子通过求合数然后通过补集来获得质数，<strong>轮筛</strong>则是通过使用一个合适的轮子来直接获得质数。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>或者另一种说法，只能被 $1$ 和 它自己整除的数字。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>记作 $a \perp b$ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>$1$ 和 $-1$ 是唯一的两个和所有数都互质的数，也是唯一和 $0$ 互质的数；除了 $1$ 以外，自己与自己不互质。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>Euclid’s lemma，以下简称欧式引理 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>除，divide， $p$ 能被除 $a\cdot b$ 也即 $a\cdot b$ 能被 $p$ 整除，记作 $p| a\cdot b$ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>反证法，若 $n\not\perp a-n$ ，则 $n \not\perp a-n + n$ ，与前提条件相悖。 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:8" role="doc-endnote">
+      <p>Fundamental theorem of arithmetic，也可以形象地叫做正整数唯一分解定理，某种程度我更倾向于这个名字，因为这个名字一点儿都不故弄玄虚，是自解释的，但是作为章节标题它有点儿长了 :(，其他名字还有 Unique factorization theorem、 Prime factorization theorem etc. 。 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:9" role="doc-endnote">
+      <p>还有更复杂的经验算法、概率测试算法、快速确定性测试算法等一系列计算较为复杂的方法 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:12" role="doc-endnote">
+      <p>在现代编程语言里应该有名字诸如 <code class="language-plaintext highlighter-rouge">isqrt</code> 的数学函数来实现向下取整的平分根计算。 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>$c\sharp$ 指得是质数的阶乘（primorial），它可以指所有小于等于正整数 $c$ 的质数的乘积。对它的估算是 $c\sharp \leqslant 4^n$ ；不过还存在另一个模糊易混淆的定义：$p_n\sharp$ ，指得是到第 $n$ 个质数为止（包含 $p_n$ ）的质数乘积。 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:11" role="doc-endnote">
+      <p>$2, 3$ 前面在前面作为快速失败的优化已经提前测过，$4$ 是 $2$ 的倍数直接跳过，于是从 $5$ 开始检测。 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:13" role="doc-endnote">
+      <p>实质上是查找 $[2\dots n]$ 范围内的所有质数。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:14" role="doc-endnote">
+      <p>G. H. Hardy and E. M. Wright. An Introduction to the Theory of Numbers. Oxford University Press, 5th edition, 1979 <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:15" role="doc-endnote">
+      <p>Wheel Sieve <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>
