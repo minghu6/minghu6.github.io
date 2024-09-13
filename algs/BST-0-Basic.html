@@ -938,13 +938,13 @@
 
 <h3 id="前驱-vs-后继">前驱 vs 后继</h3>
 
-<p>**Predecessor: **</p>
+<p><strong>Predecessor</strong></p>
 
 <p>该节点有左孩子，那么显然是左孩子（做为根的树）的最大值就是直接前驱；</p>
 
 <p>否则，向上查询，如果节点恰好是是父节点的右孩子，那么父节点就是直接前驱，否则一路到根为止，向上 Left-most ，直到一个是右孩子关系是父节点，这样要么找到一个节点，要么返回一个 <code class="language-plaintext highlighter-rouge">none</code> 节点</p>
 
-<p><strong>Successor:</strong></p>
+<p><strong>Successor</strong></p>
 
 <p>该节点有右孩子，那么显然是右孩子（做为根的树）的最小值就是直接后继；</p>
 

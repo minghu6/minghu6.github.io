@@ -112,14 +112,14 @@
         
         <a href="/category/lang.html">
           <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
-            ProgLang
+            Language
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      November 01, 2020
+      September 08, 2024
     </div>
     
   </div>
@@ -127,64 +127,51 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h4 id="1-foldr-foldl-右结合与左结合">1. foldr, foldl 右结合与左结合</h4>
+    <div class="post__content"><p><em>origin written at 2020-11-01</em></p>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">echoes</span> <span class="o">=</span> <span class="n">foldr</span> <span class="p">(</span><span class="nf">\</span> <span class="n">x</span> <span class="n">xs</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">replicate</span> <span class="n">x</span> <span class="n">x</span><span class="p">)</span> <span class="o">++</span> <span class="n">xs</span><span class="p">)</span> <span class="kt">[]</span> <span class="c1">-- replicate 2 3 =&gt; [3 3] 2个3</span>
-<span class="n">take</span> <span class="mi">10</span> <span class="p">(</span><span class="n">echoes</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="p">])</span> <span class="c1">-- [1,2,2,3,3,3,4,4,4,4]</span>
+<h2 id="纯函数">纯函数</h2>
 
-<span class="n">echoes</span> <span class="o">=</span> <span class="n">foldl</span> <span class="p">(</span><span class="nf">\</span> <span class="n">xs</span> <span class="n">x</span> <span class="o">-&gt;</span> <span class="n">xs</span> <span class="o">++</span> <span class="p">(</span><span class="n">replicate</span> <span class="n">x</span> <span class="n">x</span><span class="p">))</span> <span class="kt">[]</span>
-<span class="n">take</span> <span class="mi">10</span> <span class="p">(</span><span class="n">echoes</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="p">])</span> <span class="c1">-- not terminating</span>
-</code></pre></div></div>
+<p>Haskell 是 <strong>纯函数</strong> 语言，语义实现的全过程都在于形式演算，而非传统的值计算。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
 
-<h4 id="2-lambda-表达式">2. $\lambda$ 表达式</h4>
+<h3 id="形式化简">形式化简</h3>
 
-<p>一般写法是 <code class="language-plaintext highlighter-rouge">\x1 -&gt; \x2 -&gt; x3 -&gt;...xn -&gt; f(x1, x2, x3, ... xn)</code></p>
+<h4 id="阿尔法化简-alpha-conversion">阿尔法化简 （$\alpha$-conversion）</h4>
 
-<p>也是本源的柯里化的写法，可以简写成<code class="language-plaintext highlighter-rouge">\x1 x2 x3 ... xn -&gt; f(x1 x2 x3 ... xn)</code></p>
+<p>通过变量名重命名来做等价变换:<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
 
-<p>举个例子:</p>
+\[\lambda x \rightarrow \lambda y \rightarrow x + y \equiv \lambda a \rightarrow \lambda y \rightarrow a + y\]
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">Prelude</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="n">add</span> <span class="o">=</span> <span class="nf">\</span><span class="n">x</span> <span class="o">-&gt;</span> <span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
-<span class="kt">Prelude</span><span class="o">&gt;</span> <span class="n">add</span> <span class="mi">1</span> <span class="mi">2</span>
-<span class="mi">3</span>
-<span class="kt">Prelude</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="n">add'</span> <span class="o">=</span> <span class="nf">\</span><span class="n">x</span> <span class="n">y</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
-<span class="kt">Prelude</span><span class="o">&gt;</span> <span class="n">add'</span> <span class="mi">1</span> <span class="mi">2</span>
-<span class="mi">3</span>
-</code></pre></div></div>
+<h4 id="贝塔化简-beta-reduction">贝塔化简 （$\beta$-reduction）</h4>
 
-<h4 id="3-纯函数和惰性求值降低开销">3. 纯函数和惰性求值降低开销</h4>
+<p>用实际的函数体替换掉参数。</p>
 
-<p>作为真正纯函数式的语言，不同于实际上广泛地使用有副作用的数据结构的某Lisp方言来，说得就是你CommonLisp，</p>
-
-<p>Haskell使用纯函数式的方法进行化简：</p>
-
-<p>3.1 阿尔法化简 ($\alpha$-conversion)</p>
-
-<p>通过变量名重命名来做等价变换:</p>
-
-<p>$\lambda$x -&gt; $\lambda$y -&gt; x + y $\equiv$ $\lambda$a -&gt; $\lambda$y -&gt; a + y</p>
-
-<p>当然前提不能有命名冲突</p>
-
-<p>3.2 贝塔化简 ($\beta$-reduction)</p>
-
-<p>就是用用实际的函数体替换掉参数</p>
-
-<p>3.3 伊塔化简 ($\eta$-reduction)</p>
+<h4 id="伊塔化简-eta-reduction">伊塔化简 （$\eta$-reduction）</h4>
 
 <p>冗余简化:</p>
 
-<p>$\lambda$x -&gt; $f$(x) $\equiv$ $f$</p>
+\[\lambda x \rightarrow f(x) \equiv f\]
 
-<p>需要注意提供必要的完整类型信息，否则为了性能优化而默认单一同态限制(Monomorphism-Restriction) 会错误地分析函数</p>
+<h3 id="柯里化currying">柯里化（currying）</h3>
 
-<h4 id="4-使用不动点fixed-point对递归本身进行抽象">4. 使用不动点(Fixed Point)对递归本身进行抽象</h4>
+<p>函数都是单参数的，多参函数，是通过柯里化方式转换成单参数：</p>
 
-<p>本身的概念是满足 $f(x) = x$ 的 $x$</p>
+<p><code class="language-plaintext highlighter-rouge">\x1 x2 ... xn -&gt; f(x1 x2 ... xn)</code> 的实际形式是 <code class="language-plaintext highlighter-rouge">\x1 -&gt; \x2 -&gt;...xn -&gt; f(x1 x2 ... xn)</code>。</p>
 
-<p>fix函数的基本概念可以做如下理解：</p>
+<p>或者说，函数参数是右结合的。</p>
 
-<p><code class="language-plaintext highlighter-rouge">fix f = f (fix f)</code></p>
+<p>举个例子:</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="kr">let</span> <span class="n">add</span> <span class="o">=</span> <span class="nf">\</span><span class="n">x</span> <span class="o">-&gt;</span> <span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="o">&gt;</span> <span class="n">add</span> <span class="mi">1</span> <span class="mi">2</span>
+<span class="mi">3</span>
+<span class="o">&gt;</span> <span class="kr">let</span> <span class="n">add'</span> <span class="o">=</span> <span class="nf">\</span><span class="n">x</span> <span class="n">y</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="o">&gt;</span> <span class="n">add'</span> <span class="mi">1</span> <span class="mi">2</span>
+<span class="mi">3</span>
+</code></pre></div></div>
+
+<h3 id="不动点fixed-point">不动点（fixed point）</h3>
+
+<p>本身的概念是满足 $f(x) = x$ 的 $x$ ，这里用作递归的形式演算 <code class="language-plaintext highlighter-rouge">fix f = f (fix f)</code> 。</p>
 
 <p>比如牛顿法开方：</p>
 
@@ -213,93 +200,117 @@
 <span class="p">(</span><span class="mf">0.01</span> <span class="n">secs</span><span class="p">,</span> <span class="mi">93</span><span class="p">,</span><span class="mi">688</span> <span class="n">bytes</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>实际的实现里fix：</p>
+<p>` fix` 实际实现里：</p>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fix</span> <span class="n">f</span> <span class="o">=</span> <span class="kr">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">f</span> <span class="n">x</span> <span class="kr">in</span> <span class="n">x</span>  <span class="c1">-- let in 用来限制作用域, in x &lt;=&gt; return x</span>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fix</span> <span class="n">f</span> <span class="o">=</span> <span class="kr">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">f</span> <span class="n">x</span> <span class="kr">in</span> <span class="n">x</span>  <span class="c1">-- `in` 限制了 `let` 绑定的作用域</span>
 </code></pre></div></div>
 
-<h4 id="5-zipper-拉锁提供中间值">5. Zipper 拉锁提供中间值</h4>
+<h2 id="函子">函子</h2>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">data</span> <span class="kt">Zipper</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">Zipper</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="n">a</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="kr">deriving</span> <span class="kt">Show</span>
-</code></pre></div></div>
+<h3 id="所谓函子functor">所谓函子（Functor）</h3>
 
-<h4 id="6-函子functor">6. 函子(Functor)</h4>
-
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fmap</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>  <span class="c1">-- Data.Function</span>
-</code></pre></div></div>
-
-<p>中缀表达式的版本是 <code class="language-plaintext highlighter-rouge">(&lt;$&gt;)</code></p>
-
-<p>看着有些奇怪，其实就是类似stream操作，关键参数是 <code class="language-plaintext highlighter-rouge">f</code> 和 <code class="language-plaintext highlighter-rouge">a -&gt; b</code> 的函数（构造器）。</p>
-
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">((</span><span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;$&gt;</span> <span class="p">(</span><span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;$&gt;</span> <span class="p">(</span><span class="o">^</span> <span class="mi">3</span><span class="p">))</span> <span class="mi">2</span>
-
-<span class="o">&gt;</span> <span class="mi">18</span>
-
-<span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="o">^</span> <span class="mi">3</span><span class="p">))</span> <span class="mi">2</span>
-
-<span class="o">&gt;</span> <span class="mi">18</span>
-</code></pre></div></div>
-
-<p>等价于 <code class="language-plaintext highlighter-rouge">((2^3) + 1) * 2</code></p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>“但除此之外还有更严格的定义：
-函子在数学上要符合以下的定律：fmap id = id
-如果，使用id函数进行映射，那么与id函数本身是一样的。
-fmap (f . g) = fmap f . fmap g
-第二条定律则说明 `fmap` 函数在复合函数运算符上是服从分配律的。
-值得注意的是，实现了Functor的 `fmap` 函数，但不满足Functor定律则该类型不是Functor。”
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="kr">where</span>
+    <span class="n">fmap</span>        <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
     
--- 摘自《Haskell函数式编程入门》
+    <span class="p">(</span><span class="o">&lt;$</span><span class="p">)</span>        <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
+    <span class="p">(</span><span class="o">&lt;$</span><span class="p">)</span>        <span class="o">=</span>  <span class="n">fmap</span> <span class="o">.</span> <span class="n">const</span>
 </code></pre></div></div>
 
-<h4 id="61-applicative-functor-讲得不透不全需要重写">6.1 Applicative Functor (讲得不透不全，需要重写)</h4>
+<p>函子提供了一种在上下文 <code class="language-plaintext highlighter-rouge">f</code> <sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">3</a></sup><sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">4</a></sup>里进行函数操作的方式。</p>
 
-<p>需要同时实现 pure 、(&lt;*&gt;)</p>
+<p>从名字上它叫函子不叫函数，就是暗示它支持把一般函数作为一个组件，带入上下文里（进行函数操作）。</p>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="p">(</span><span class="kt">Functor</span> <span class="n">f</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="kr">where</span>  
-    <span class="n">pure</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>  
-    <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>  
+<p><code class="language-plaintext highlighter-rouge">class Functor</code>  只有一个必须实现的接口函数 <code class="language-plaintext highlighter-rouge">fmap</code> ，它的签名也很好地反映了函子的本质：接受一个函数 <code class="language-plaintext highlighter-rouge">a-&gt;b</code> ，把它应用在上下文 <code class="language-plaintext highlighter-rouge">f</code> 里，使得 <code class="language-plaintext highlighter-rouge">f a</code> 变为 <code class="language-plaintext highlighter-rouge">f b</code> 。</p>
+
+<p>（标准库）还为函子的 <code class="language-plaintext highlighter-rouge">fmap</code> 导出了等价的中缀操作符 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> <sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">5</a></sup></p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">infixl</span> <span class="mi">4</span> <span class="o">&lt;$&gt;</span>
+
+<span class="p">(</span><span class="o">&lt;$&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+<span class="p">(</span><span class="o">&lt;$&gt;</span><span class="p">)</span> <span class="o">=</span> <span class="n">fmap</span>
 </code></pre></div></div>
 
-<p><strong>Java的某个近似的针对构造器“[a]“的应用函子如下：</strong></p>
+<p>此外，<code class="language-plaintext highlighter-rouge">class Functor</code> 提供了一个有默认实现<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>的 <code class="language-plaintext highlighter-rouge">(&lt;$)</code> <sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">7</a></sup>。</p>
 
-<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Stream</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
-    <span class="o">(</span><span class="nc">IntUnaryOperator</span><span class="o">)</span> <span class="n">p</span> <span class="o">-&gt;</span> <span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span>
-    <span class="o">(</span><span class="nc">IntUnaryOperator</span><span class="o">)</span> <span class="n">p</span> <span class="o">-&gt;</span> <span class="n">p</span> <span class="o">*</span> <span class="mi">2</span>
-<span class="o">)</span>
-	<span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">f</span> <span class="o">-&gt;</span> <span class="nc">Stream</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">).</span><span class="na">map</span><span class="o">(</span><span class="nl">f:</span><span class="o">:</span><span class="n">applyAsInt</span><span class="o">))</span>
-	<span class="o">.</span><span class="na">flatMap</span><span class="o">(</span><span class="nc">Function</span><span class="o">.</span><span class="na">identity</span><span class="o">())</span>
-	<span class="o">.</span><span class="na">collect</span><span class="o">(</span><span class="nc">Collectors</span><span class="o">.</span><span class="na">toList</span><span class="o">())</span>
+<p>其中，<code class="language-plaintext highlighter-rouge">.</code> 有 <code class="language-plaintext highlighter-rouge">(.) f g = \x -&gt; f (g x)</code> ，<code class="language-plaintext highlighter-rouge">const</code> 有</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">const</span>                   <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">a</span>
+<span class="n">const</span> <span class="n">x</span> <span class="kr">_</span>               <span class="o">=</span>  <span class="n">x</span>
+</code></pre></div></div>
+
+<p>可以手工（形式演算）推出 <code class="language-plaintext highlighter-rouge">(&lt;$)</code> 的类型签名：</p>
+
+<p><code class="language-plaintext highlighter-rouge">fmap . const = a -&gt; f1 (g a)</code> ，展开 <code class="language-plaintext highlighter-rouge">.</code></p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">g = a-&gt;b-&gt;a</code> =&gt; <code class="language-plaintext highlighter-rouge">(g a) = (b-&gt;a)</code>，展开 <code class="language-plaintext highlighter-rouge">const</code></li>
+  <li><code class="language-plaintext highlighter-rouge">f1 = (a -&gt; b) -&gt; f2 a -&gt; f2 b</code> ， 展开 <code class="language-plaintext highlighter-rouge">fmap</code></li>
+  <li><code class="language-plaintext highlighter-rouge">f1 (g a) = f1 (b-&gt;a) = f1 b -&gt; f1 a</code> ，规约替换 <code class="language-plaintext highlighter-rouge">(g a)</code>  和 <code class="language-plaintext highlighter-rouge">f1</code></li>
+  <li><code class="language-plaintext highlighter-rouge">a -&gt; f1 (g a) = a -&gt; f1 b -&gt; f1 a</code> ，规约替换 <code class="language-plaintext highlighter-rouge">f1 (g a)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">fmap . const = a -&gt; f b -&gt; f a</code> ，重命名 <code class="language-plaintext highlighter-rouge">f1 = f</code></li>
+</ul>
+
+<h3 id="应用函子applicative">应用函子（Applicative）</h3>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="kr">where</span>
+    <span class="cp">{-# MINIMAL pure, ((&lt;*&gt;) | liftA2) #-}</span>
+
+    <span class="n">pure</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
+
+    <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+    <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">=</span> <span class="n">liftA2</span> <span class="n">id</span>
+
+    <span class="n">liftA2</span> <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">c</span>
+    <span class="n">liftA2</span> <span class="n">f</span> <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">fmap</span> <span class="n">f</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="o">*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+    <span class="n">a1</span> <span class="o">*&gt;</span> <span class="n">a2</span> <span class="o">=</span> <span class="p">(</span><span class="n">id</span> <span class="o">&lt;$</span> <span class="n">a1</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">a2</span>
+
+    <span class="p">(</span><span class="o">&lt;*</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
+    <span class="p">(</span><span class="o">&lt;*</span><span class="p">)</span> <span class="o">=</span> <span class="n">liftA2</span> <span class="n">const</span>
     
-<span class="o">&gt;</span> <span class="o">[</span><span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">6</span><span class="o">]</span>
+<span class="c1">-- ...</span>
+
+<span class="kr">infixl</span> <span class="mi">4</span> <span class="o">&lt;$</span>
+<span class="kr">infixl</span> <span class="mi">4</span> <span class="o">&lt;*&gt;</span>
 </code></pre></div></div>
 
-<p><strong>Haskell用应用函元(或者叫做函子)</strong></p>
+<p>应用函子的设计是在上下文里为同一个函数连接多个参数。</p>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[(</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">*</span><span class="mi">2</span><span class="p">)]</span> <span class="o">&lt;*&gt;</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">]</span>
+<p><code class="language-plaintext highlighter-rouge">class Applicative</code> 最小实现需要实现 1.  <code class="language-plaintext highlighter-rouge">pure</code> ，2.  <code class="language-plaintext highlighter-rouge">(&lt;*&gt;)</code> 与 <code class="language-plaintext highlighter-rouge">liftA2</code> 中任意一个 <sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">8</a></sup>。</p>
+
+<h4 id="pure"><code class="language-plaintext highlighter-rouge">pure</code></h4>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pure</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
 </code></pre></div></div>
 
-<p>Haskell的应用函元普遍地适用于构造器，上面的例子是构造器：“[a]”</p>
+<p>把一个参数装进上下文 <code class="language-plaintext highlighter-rouge">f</code> 中 。<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup><sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">10</a></sup></p>
 
-<p>它等价于：</p>
+<h4 id="-和-lifta2"><code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 和 <code class="language-plaintext highlighter-rouge">liftA2</code></h4>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">f</span> <span class="n">x</span> <span class="o">|</span> <span class="n">f</span> <span class="o">&lt;-</span> <span class="p">[(</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="o">*</span><span class="mi">2</span><span class="p">)],</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">]]</span>
+<p><code class="language-plaintext highlighter-rouge">Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b</code></p>
+
+<p>因为 <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 与 <code class="language-plaintext highlighter-rouge">liftA2</code> 分别有以对方为基础的默认实现，所以接口只需实现其中任意一个，让我们看下它们的函数签名和默认实现。</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">=</span> <span class="n">liftA2</span> <span class="n">id</span>
+
+<span class="n">liftA2</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">c</span>
+<span class="n">liftA2</span> <span class="n">f</span> <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">fmap</span> <span class="n">f</span> <span class="n">x</span><span class="p">)</span>
 </code></pre></div></div>
+
+<p>相比于前面的 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> ， <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 是说把 <code class="language-plaintext highlighter-rouge">a -&gt; b</code> 也放进上下文 <code class="language-plaintext highlighter-rouge">f</code> 里，这样做的好处是可以利用函数柯里化，在上下文里连接多个参数。</p>
+
+<p>比如有一个多参函数 <code class="language-plaintext highlighter-rouge">a -&gt; b -&gt; c -&gt; d</code> ，那么可以结合 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> 操作符，用 <code class="language-plaintext highlighter-rouge">(a -&gt; b -&gt; c -&gt; d) &lt;$&gt; f a &lt;*&gt; f b &lt;*&gt; f c</code> 的形式在上下文里传参。<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup></p>
+
+<p>而 <code class="language-plaintext highlighter-rouge">liftA2</code> 则像是多一个参数的 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> 。</p>
 
 <p>因为这就是[]对Applicative的实现</p>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- base-4.15.0.0</span>
-<span class="c1">-- See Note: [List comprehensions and inlining]</span>
-<span class="cd">-- | @since 2.01</span>
-<span class="kr">instance</span> <span class="kt">Applicative</span> <span class="kt">[]</span> <span class="kr">where</span>
-    <span class="cp">{-# INLINE pure #-}</span>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">instance</span> <span class="kt">Applicative</span> <span class="kt">[]</span> <span class="kr">where</span>
     <span class="n">pure</span> <span class="n">x</span>    <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
-    <span class="cp">{-# INLINE (&lt;*&gt;) #-}</span>
     <span class="n">fs</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="n">x</span> <span class="o">|</span> <span class="n">f</span> <span class="o">&lt;-</span> <span class="n">fs</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">xs</span><span class="p">]</span>  <span class="c1">-- 定义在这里</span>
-    <span class="cp">{-# INLINE liftA2 #-}</span>
     <span class="n">liftA2</span> <span class="n">f</span> <span class="n">xs</span> <span class="n">ys</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="n">x</span> <span class="n">y</span> <span class="o">|</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">xs</span><span class="p">,</span> <span class="n">y</span> <span class="o">&lt;-</span> <span class="n">ys</span><span class="p">]</span>
-    <span class="cp">{-# INLINE (*&gt;) #-}</span>
     <span class="n">xs</span> <span class="o">*&gt;</span> <span class="n">ys</span>  <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="o">|</span> <span class="kr">_</span> <span class="o">&lt;-</span> <span class="n">xs</span><span class="p">,</span> <span class="n">y</span> <span class="o">&lt;-</span> <span class="n">ys</span><span class="p">]</span>
 </code></pre></div></div>
 
@@ -310,20 +321,10 @@ fmap (f . g) = fmap f . fmap g
     <span class="kt">Nothing</span> <span class="o">&lt;*&gt;</span> <span class="kr">_</span> <span class="o">=</span> <span class="kt">Nothing</span>  
     <span class="p">(</span><span class="kt">Just</span> <span class="n">f</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">something</span> <span class="o">=</span> <span class="n">fmap</span> <span class="n">f</span> <span class="n">something</span>
 
-<span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="p">(</span><span class="kt">Just</span> <span class="mi">3</span><span class="p">))</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
+<span class="o">&gt;</span> <span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="p">(</span><span class="kt">Just</span> <span class="mi">3</span><span class="p">))</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
 <span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">5</span>
 
-<span class="c1">-- 等价于:</span>
-<span class="c1">-- fmap (+) (Just 3) &lt;*&gt; Just 2</span>
-<span class="c1">-- (+) &lt;$&gt; Just 3 &lt;*&gt; Just 2</span>
-<span class="c1">-- pure (+) &lt;*&gt; Just 3 &lt;*&gt; Just 2</span>
-<span class="cm">{-
-Just (+) &lt;*&gt; Just 1 &lt;*&gt; Just 2
-= (fmap (+) Just 1) &lt;*&gt; Just 2
-= Just (1+) &lt;*&gt; Just 2
-= fmap (1+) (Just 2)= Just 3
--}</span>
-<span class="n">pure</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">3</span> <span class="o">&lt;*&gt;</span> <span class="kt">Nothing</span>
+<span class="o">&gt;</span> <span class="n">pure</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">3</span> <span class="o">&lt;*&gt;</span> <span class="kt">Nothing</span>
 <span class="o">&gt;</span> <span class="kt">Nothing</span>
 </code></pre></div></div>
 
@@ -348,22 +349,6 @@ Just (+) &lt;*&gt; Just 1 &lt;*&gt; Just 2
 <span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">3</span>
 </code></pre></div></div>
 
-<p>甚至更进一步，可以定义一个中缀表达式:</p>
-
-<p>中缀表达式不能包含字符或数字，所以通常是这些奇奇怪怪的特殊符号</p>
-
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="o">++^</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Applicative</span> <span class="n">f</span><span class="p">,</span> <span class="kt">Num</span> <span class="n">a</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
-<span class="p">(</span><span class="o">++^</span><span class="p">)</span> <span class="o">=</span> <span class="n">liftA2</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span>
-
-<span class="kr">infixl</span> <span class="mi">6</span> <span class="o">++^</span>
-
-<span class="kt">Just</span> <span class="mi">1</span> <span class="o">++^</span> <span class="kt">Just</span> <span class="mi">2</span>
-<span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">3</span>
-
-<span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">++^</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="o">&gt;</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-</code></pre></div></div>
-
 <p>计算第一个参数但忽略结果，返回第二个：(*&gt;)</p>
 
 <p>相反地返回第一个参数 的是 (&lt;*)</p>
@@ -378,13 +363,7 @@ Just (+) &lt;*&gt; Just 1 &lt;*&gt; Just 2
 <span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">1</span>
 </code></pre></div></div>
 
-<p>同样是(&lt;$)  =  fmap . const</p>
-
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">2</span> <span class="o">&lt;$</span> <span class="p">(</span><span class="kt">Just</span> <span class="mi">3</span><span class="p">)</span>
-<span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
-</code></pre></div></div>
-
-<h4 id="62-alternative-functor">6.2 Alternative Functor</h4>
+<h4 id="alternative-functor">Alternative Functor</h4>
 
 <p>Module Control.Applicative</p>
 
@@ -407,9 +386,47 @@ Just (+) &lt;*&gt; Just 1 &lt;*&gt; Just 2
 <span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">1</span>
 </code></pre></div></div>
 
-<h4 id="7-list-is-homogenous-a">7 List is homogenous: [a]</h4>
+<h3 id="单子应用monad">单子应用（Monad）</h3>
 
-<p>注意Haskell的列表元素要求是同构的，比如要求是函数，要求签名一致</p>
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>相比之下，作为函数式语言的另一个分支，Lisp家族，以 CommonLisp 为例，实际上广泛地使用可变的数据结构和有副作用的函数。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>当然前提是不能有命名冲突。 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p><code class="language-plaintext highlighter-rouge">f</code> 是单参的类型构造器（一种特殊的函数），不过正如前面讲的，Haskell 多参函数的本质都是柯里化的单参函数 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:12" role="doc-endnote">
+      <p>按照官方文档的说法，  <code class="language-plaintext highlighter-rouge">f a</code> 也可以叫做 action <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p><code class="language-plaintext highlighter-rouge">infixl</code> 关键字规定中缀操作符是（向）左结合的，并指定它的优先级，给的数字越大优先级越高，类似地还有指定右结合的 <code class="language-plaintext highlighter-rouge">infixl</code> 和不指定结合性的 <code class="language-plaintext highlighter-rouge">infix</code> （此时， <a href="https://stackoverflow.com/questions/27770118/how-does-the-infix-work">只能通过括号显式指定结合性</a>）；并且不显式指定结合性和优先级，<a href="https://www.haskell.org/onlinereport/decls.html#fixity">那么默认是左结合，优先级为最高（最高为 $9$ ）</a> 。 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>文档里也支持自己实现更高效的版本 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:8" role="doc-endnote">
+      <p>从命名规律上讲，不妨称之为：“左偏刀”，还有 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> ，可以称之为 “全刀”，后面还有一些特殊符号的运算符：<code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> ，<code class="language-plaintext highlighter-rouge">&lt;*</code> 和<code class="language-plaintext highlighter-rouge">*&gt;</code>可以依次称之为 “全星”，“左偏星” 和“右偏星” <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>或者两个都实现，只要二者不发生矛盾 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:9" role="doc-endnote">
+      <p><code class="language-plaintext highlighter-rouge">=&gt;</code> 前面是类型约束 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>在非纯函的语言看来，这个函数签名简直莫名其妙，这个 <code class="language-plaintext highlighter-rouge">f</code> 它从哪儿来的，怎么绑定的？这都不知道，唯一好像可以类比得是闭包里捕获的自由变量，但完全没有类比意义，基本上在 Haskell 里需要完全抛弃基于值的非纯函的编程模型，只考虑形式演算的问题，在这种前提下，我们就知道 <code class="language-plaintext highlighter-rouge">f</code> 会在形式演算的过程中根据签名匹配出来。 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:11" role="doc-endnote">
+      <p><code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> 和 <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 虽然优先级相同，但都是左结合 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

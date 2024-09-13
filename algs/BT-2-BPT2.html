@@ -131,7 +131,7 @@
 
 <p>没错，现在我们就是要用前文实现的 B+ 树作为我们新 B+ 树的节点基础。当然这是一个递归的概念，我们也可以继续下去把这个新的 B+ 树的实现作为节点基础实现 B+ 树，如此 $3$ 层、$4$ 层的嵌套。但从 $m$ 常数的角度，两层就够了，再多也没有意义，通常 $m$ 也就是一百左右，次级的 B+ 树的 $m$ 最多也就是就是十几，已经什么空间了，何况因此获得的性能增长也呈指数级下降。</p>
 
-<p>但是实现用前面实现的 B+ 树作为节点的基础，还需要实现额外的一些 public method ，包括增加字段，比如统计键值总数的 cnt 字段等等。但是如何扩写 <code class="language-plaintext highlighter-rouge">Vec</code> 版本的 B+ 树一时难以论说，事实上扩写&amp;重构改动的代码比原代码还长，所以就把它放到下一篇介绍，那时将得到一个相对完整的 <code class="language-plaintext highlighter-rouge">Vec</code> 版本的 B+ 树。</p>
+<p>但是实现用前面实现的 B+ 树作为节点的基础，还需要实现额外的一些 public method ，包括增加字段，比如统计键值总数的 <code class="language-plaintext highlighter-rouge">cnt</code> 字段等等。但是如何扩写 <code class="language-plaintext highlighter-rouge">Vec</code> 版本的 B+ 树一时难以论说，事实上扩写&amp;重构改动的代码比原代码还长，所以就把它放到下一篇介绍，那时将得到一个相对完整的 <code class="language-plaintext highlighter-rouge">Vec</code> 版本的 B+ 树。</p>
 
 <p>这里会列出一个作为节点实现 B+ 树的 <a href="#方法统计">TreeMap 需要实现的方法</a>，既作为下一篇的索引，也作为用其他 TreeMap 代替实现时的参考。</p>
 
