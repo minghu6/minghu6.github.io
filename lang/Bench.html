@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+
+
+<link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:site_name" content="MINGHU6's Blog" />
+<meta
+    property="og:title"
+    content="
+        
+            微观基准测试
+        
+    "
+/>
+
+<meta property="og:url" content="//lang/Bench.html" />
+
+    <meta property="og:type" content="article" />
+
+
+
+    <meta property="fb:app_id" content="" />
+
+
+
+<title>
+    
+        微观基准测试
+    
+</title>
+
+</head>
+<body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
+
+    <div class="header">
+    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+  <span id="breadcrumb">
+
+    
+
+    
+
+    
+
+    
+    <span>
+      <a href="/">
+        <img src="/assets/img/icons/home.png">
+      </a>
+    </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+  </span><!-- endof #breadcrumb -->
+
+  <section class="logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </section>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
+
+</div>
+
+
+    
+
+    <nav class="menu">
+        
+    </nav>
+</div>
+
+
+    <div class="page main">
+    <main class="page__main" id="core-wrapper">
+        <article class="post">
+
+  <div class="post__title">
+    <h1 class="post__title__text">微观基准测试</h1>
+  </div>
+  <div class="post__meta">
+    <div class="post__meta__category">
+      
+        
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            Language
+          </p>
+        </a>
+      
+    </div>
+    <p class="post__meta__divider">·</p>
+    <div class="post__meta__date">
+      October 10, 2024
+    </div>
+    
+  </div>
+
+  
+
+  <div class="post__content_container">
+    <div class="post__content"><h2 id="前言">前言</h2>
+
+<p>这里讨论的是微观基准测试（micro-benchmarking）的实现，关心的主要问题是：</p>
+
+<p><strong>在一次测试里到底要重复运行几次目标函数？</strong></p>
+
+<p>我们希望在尽可能少的运行次数下，得到一个相对稳定、准确的测量统计。</p>
+
+<h2 id="前车之辙">前车之辙</h2>
+
+<p>不妨来看一下几个语言内置的微观测试框架做了什么。</p>
+
+<h3 id="python-timeit">Python <code class="language-plaintext highlighter-rouge">timeit</code></h3>
+
+<p><em>这个模块就是一个连同命令行接口和文档注解都不超过 400 代码的单文件。</em></p>
+
+<p><em>从语法上看，就有将近 10 年的未被修改过<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">1</a></sup>，而从 API 的设计理念上<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>，核心逻辑可能写在上个世纪。</em></p>
+
+<p>它的命令行接口让用户指定作为时间观测次数的大轮次次数 <code class="language-plaintext highlighter-rouge">repeat</code> 和作为每次观测时运行的小轮次次数 <code class="language-plaintext highlighter-rouge">number</code> ，分别提供了 <code class="language-plaintext highlighter-rouge">default_repeat = 5</code> 和<code class="language-plaintext highlighter-rouge">default_number = 1000_000</code> 的默认值。</p>
+
+<p>这种指定一个固定轮次的做法非常原始、根本就没有意义。</p>
+
+<p>唯一值得一提的是 <code class="language-plaintext highlighter-rouge">class Timer</code> 里面提供的 <code class="language-plaintext highlighter-rouge">autorange</code> 方法，这个方法也仍然简单：</p>
+
+<p>从 $1$ 开始，累积交替地以 $\times 2,\ \times 5$ 的次数运行测试目标，直到总运行时间超过 $0.2$ s 。</p>
+
+<p><em>另外在测试开始运行的时候 opt-in 地禁止 GC。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">3</a></sup></em></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># In class Timer
+</span>
+<span class="k">def</span> <span class="nf">autorange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="s">"""Return the number of loops and time taken so that total time &gt;= 0.2.
+
+	Calls the timeit method with increasing numbers from the sequence
+    1, 2, 5, 10, 20, 50, ... until the time taken is at least 0.2
+    second.  Returns (number, time_taken).
+
+    If *callback* is given and is not None, it will be called after
+    each trial with two arguments: ``callback(number, time_taken)``.
+    """</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">j</span>
+            <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">timeit</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">callback</span><span class="p">:</span>
+                <span class="n">callback</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">time_taken</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">*=</span> <span class="mi">10</span>
+</code></pre></div></div>
+
+<h3 id="rust-test">Rust <code class="language-plaintext highlighter-rouge">test</code></h3>
+
+<p>相比之下，Rust 内置的 <code class="language-plaintext highlighter-rouge">test</code> crate 实现的 micro-benchmarking 逻辑就体面得多。</p>
+
+<p><strong>首先确定初始的每轮运行次数 <code class="language-plaintext highlighter-rouge">n</code><sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">4</a></sup>：</strong></p>
+
+<ol>
+  <li>运行一次目标，得到测量时间 <code class="language-plaintext highlighter-rouge">ns_single</code> ns ，如果 $\lt 1$ 就补足为 $1$ ；<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></li>
+  <li><code class="language-plaintext highlighter-rouge">n = 1000_000 / ns_single</code> 得到 $1$ ms 内的运行次数，如果 $\lt 1$ 就补足为 $1$ 。</li>
+</ol>
+
+<p><strong>然后逐步统计学取样，直到稳定地得到相对稳定的<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>观测统计或者超时<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">7</a></sup>：</strong></p>
+
+<p>以 $50$ 为一轮的取样数，<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">8</a></sup></p>
+
+<p>每一轮的迭代的运行次数仍然遵循交替 $\times 2,\ \times 5$ 的规律，</p>
+
+<p>每次取样完后，通过 <code class="language-plaintext highlighter-rouge">stats::winsorize(samples, 5.0)</code> 去掉前 5% 和后 5%的取样结果<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup> ，</p>
+
+<p>这样如果相邻两轮的观测统计 <code class="language-plaintext highlighter-rouge">summ</code> 和 <code class="language-plaintext highlighter-rouge">summ5</code> 满足以下条件：</p>
+
+<ol>
+  <li>前一轮 <code class="language-plaintext highlighter-rouge">summ</code> 的绝对偏差的中位数<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">10</a></sup> 占这个中位数本身的百分比 $\lt 1\%$ ；</li>
+  <li>前一轮 <code class="language-plaintext highlighter-rouge">summ</code> 和这一轮 <code class="language-plaintext highlighter-rouge">summ5</code> 的两个中位数的差小于 <code class="language-plaintext highlighter-rouge">summ5</code> 的绝对偏差的中位数</li>
+</ol>
+
+<p>则可以返回最新一轮 <code class="language-plaintext highlighter-rouge">summ5</code> 的统计结果，</p>
+
+<p>否则检测总运行时间是否超时，超时也返回统计结果，</p>
+
+<p>否则进行下一轮<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup>。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="n">iter</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">F</span><span class="o">&gt;</span><span class="p">(</span><span class="n">inner</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">F</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nn">stats</span><span class="p">::</span><span class="n">Summary</span>
+<span class="k">where</span>
+    <span class="n">F</span><span class="p">:</span> <span class="nf">FnMut</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="n">T</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="c1">// Initial bench run to get ballpark figure.</span>
+    <span class="k">let</span> <span class="n">ns_single</span> <span class="o">=</span> <span class="nf">ns_iter_inner</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+    <span class="c1">// Try to estimate iter count for 1ms falling back to 1m</span>
+    <span class="c1">// iterations if first run took &lt; 1ns.</span>
+    <span class="k">let</span> <span class="n">ns_target_total</span> <span class="o">=</span> <span class="mi">1_000_000</span><span class="p">;</span> <span class="c1">// 1ms</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">n</span><span class="p">:</span> <span class="nb">u64</span> <span class="o">=</span> <span class="n">ns_target_total</span> <span class="o">/</span> <span class="nn">cmp</span><span class="p">::</span><span class="nf">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ns_single</span><span class="p">);</span>
+
+    <span class="c1">// if the first run took more than 1ms we don't want to just</span>
+    <span class="c1">// be left doing 0 iterations on every loop. The unfortunate</span>
+    <span class="c1">// side effect of not being able to do as many runs is</span>
+    <span class="c1">// automatically handled by the statistical analysis below</span>
+    <span class="c1">// (i.e., larger error bars).</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nn">cmp</span><span class="p">::</span><span class="nf">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">total_run</span> <span class="o">=</span> <span class="nn">Duration</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">let</span> <span class="n">samples</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="p">[</span><span class="nb">f64</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="p">[</span><span class="mf">0.0_f64</span><span class="p">;</span> <span class="mi">50</span><span class="p">];</span>
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">loop_start</span> <span class="o">=</span> <span class="nn">Instant</span><span class="p">::</span><span class="nf">now</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="k">in</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="o">*</span><span class="n">samples</span> <span class="p">{</span>
+            <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nf">ns_iter_inner</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">as</span> <span class="nb">f64</span> <span class="o">/</span> <span class="n">n</span> <span class="k">as</span> <span class="nb">f64</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nn">stats</span><span class="p">::</span><span class="nf">winsorize</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">summ</span> <span class="o">=</span> <span class="nn">stats</span><span class="p">::</span><span class="nn">Summary</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">samples</span><span class="p">);</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="k">in</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="o">*</span><span class="n">samples</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">ns</span> <span class="o">=</span> <span class="nf">ns_iter_inner</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">n</span><span class="p">);</span>
+            <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">ns</span> <span class="k">as</span> <span class="nb">f64</span> <span class="o">/</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span> <span class="k">as</span> <span class="nb">f64</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="nn">stats</span><span class="p">::</span><span class="nf">winsorize</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">);</span>
+        <span class="k">let</span> <span class="n">summ5</span> <span class="o">=</span> <span class="nn">stats</span><span class="p">::</span><span class="nn">Summary</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">samples</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="n">loop_run</span> <span class="o">=</span> <span class="n">loop_start</span><span class="nf">.elapsed</span><span class="p">();</span>
+
+        <span class="c1">// If we've run for 100ms and seem to have converged to a</span>
+        <span class="c1">// stable median.</span>
+        <span class="k">if</span> <span class="n">loop_run</span> <span class="o">&gt;</span> <span class="nn">Duration</span><span class="p">::</span><span class="nf">from_millis</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+            <span class="o">&amp;&amp;</span> <span class="n">summ</span><span class="py">.median_abs_dev_pct</span> <span class="o">&lt;</span> <span class="mf">1.0</span>
+            <span class="o">&amp;&amp;</span> <span class="n">summ</span><span class="py">.median</span> <span class="o">-</span> <span class="n">summ5</span><span class="py">.median</span> <span class="o">&lt;</span> <span class="n">summ5</span><span class="py">.median_abs_dev</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="n">summ5</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">total_run</span> <span class="o">+=</span> <span class="n">loop_run</span><span class="p">;</span>
+        <span class="c1">// Longest we ever run for is 3s.</span>
+        <span class="k">if</span> <span class="n">total_run</span> <span class="o">&gt;</span> <span class="nn">Duration</span><span class="p">::</span><span class="nf">from_secs</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">summ5</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="c1">// If we overflow here just return the results so far. We check a</span>
+        <span class="c1">// multiplier of 10 because we're about to multiply by 2 and the</span>
+        <span class="c1">// next iteration of the loop will also multiply by 5 (to calculate</span>
+        <span class="c1">// the summ5 result)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="k">match</span> <span class="n">n</span><span class="nf">.checked_mul</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nf">Some</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nb">None</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">summ5</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="重新发明-python">重新发明 [Python]</h2>
+
+<h3 id="发明动机">发明动机</h3>
+
+<p>一谈起为 Python Code 做基准测试，有人洋洋洒洒能列出很多种方法，什么使用 <code class="language-plaintext highlighter-rouge">time</code> 模块，使用 <code class="language-plaintext highlighter-rouge">timeit</code> 模块，使用 <code class="language-plaintext highlighter-rouge">profile</code> 或 <code class="language-plaintext highlighter-rouge">cProfile</code> ，甚至使用 Unix-like 系统上的 <code class="language-plaintext highlighter-rouge">time</code> 命令，但是真正能用的还是 <code class="language-plaintext highlighter-rouge">timeit</code> 。</p>
+
+<p>可正如前面所讲，“你什么 <code class="language-plaintext highlighter-rouge">timeit</code> 都在做基准测试，它能做吗，做不了，没那个能力知道吧”。</p>
+
+<p>又找不到一个主流的、大小合适的、做微观基准测试的 Python 第三方库，因此有必要为 Python 写一个可用的微观基准测试框架，这个动机也是本文的起源。</p>
+
+<h3 id="实操">实操</h3>
+
+<p>直接参照 Rust <code class="language-plaintext highlighter-rouge">test</code> 里的实现做一个 Python 的版本<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">12</a></sup>。</p>
+
+<p>好消息是 Python 内置的 <code class="language-plaintext highlighter-rouge">statistics</code> 模块把 Rust <code class="language-plaintext highlighter-rouge">test</code> 里面花两百行代码实现的统计方法<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">13</a></sup>都实现了，这为我们省去了很多功夫。</p>
+
+<p><em>这里只列举核心的方法，完整框架参考<a href="https://github.com/minghu6/py-minghu6">项目所在仓库</a>  。</em></p>
+
+<h3 id="数据结构">数据结构</h3>
+
+<p>首先定义一个测试方法应该返回的基本数据结构 <code class="language-plaintext highlighter-rouge">CaseStats</code> ：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CaseStats</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="s">"""case -&gt; module -&gt; benchmark -(archiving)&gt; records"""</span>
+
+    <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">ave</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">iters</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1"># diviation in nanos
+</span>    <span class="n">dev</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">raw_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>一个被测试的目标函数函数应该是 <code class="language-plaintext highlighter-rouge">type BenchCase = Callable[[], None]</code> ，</p>
+
+<p>这样测试方法的类型就是 <code class="language-plaintext highlighter-rouge">Callable[[BenchCase], CaseStats]</code> 。</p>
+
+<h3 id="辅助方法">辅助方法</h3>
+
+<p>首先是需要的一系列统计方法：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
+<span class="kn">from</span> <span class="nn">statistics</span> <span class="kn">import</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">median</span>
+
+
+<span class="k">class</span> <span class="nc">SampleStats</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">median_abs_dev</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">median_abs_dev</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="o">@</span><span class="n">cache</span>
+    <span class="k">def</span> <span class="nf">median_abs_dev_pct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="s">""" 0.01 stand for 1% """</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">median_abs_dev</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">median</span>
+
+<span class="k">def</span> <span class="nf">winsoring</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="s">""" [Winsoring](https://en.wikipedia.org/wiki/Winsorizing) high e/n and low e/n
+
+    in-place
+    """</span>
+
+    <span class="k">assert</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="n">n</span>
+
+    <span class="c1"># percentiles
+</span>    <span class="n">pcts</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">pcts</span><span class="p">[</span><span class="n">e</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">pcts</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">e</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">:</span>
+            <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hi</span>
+
+        <span class="k">elif</span> <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">:</span>
+            <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lo</span>
+
+
+<span class="k">def</span> <span class="nf">median_abs_dev</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">median</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">median</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">),</span> <span class="n">samples</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>一个便于观测时间的方法，利用了 Python 上文管理器的 <code class="language-plaintext highlighter-rouge">with</code> 语法：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Watch</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s">".2f"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="s">"""
+        :fmt: format float number of (s/ms/us)
+        """</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="n">perf_counter_ns</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="n">perf_counter_ns</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">start</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="k">def</span> <span class="nf">nanos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="k">def</span> <span class="nf">micros</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="k">def</span> <span class="nf">millis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000_000</span>
+
+    <span class="o">@</span><span class="nb">property</span>
+    <span class="k">def</span> <span class="nf">secs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000_000_000</span>
+</code></pre></div></div>
+
+<p>然后我们可以写性能统计取样的方法：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">SAMPLE_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">WINSORING_PERCENTILE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">'n'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">'e'</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">BenchCase</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SampleStats</span><span class="p">:</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">SAMPLE_SIZE</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SAMPLE_SIZE</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">f</span><span class="p">()</span>
+
+        <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span> <span class="o">//</span> <span class="n">n</span>
+
+    <span class="n">winsoring</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="o">**</span><span class="n">WINSORING_PERCENTILE</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">SampleStats</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="主过程">主过程</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">run_a_benchmark</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">BenchCase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SampleStats</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+        <span class="n">f</span><span class="p">()</span>
+
+    <span class="n">tot</span> <span class="o">=</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span>
+
+    <span class="k">assert</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s">"It's just impossible for CPython"</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1000_000</span> <span class="o">/</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="n">summ</span> <span class="o">=</span> <span class="n">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">summ5</span> <span class="o">=</span> <span class="n">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">millis</span> <span class="o">&gt;</span> <span class="mi">200</span>
+            <span class="ow">and</span> <span class="n">summ</span><span class="p">.</span><span class="n">median_abs_dev_pct</span> <span class="o">&lt;</span> <span class="mf">1.0</span>
+            <span class="ow">and</span> <span class="n">summ</span><span class="p">.</span><span class="n">median</span> <span class="o">-</span> <span class="n">summ5</span><span class="p">.</span><span class="n">median</span> <span class="o">&lt;</span> <span class="n">summ5</span><span class="p">.</span><span class="n">median_abs_dev</span>
+           <span class="p">):</span>
+
+            <span class="k">return</span> <span class="n">summ5</span>
+
+        <span class="n">tot</span> <span class="o">+=</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span>
+
+        <span class="k">if</span> <span class="n">tot</span> <span class="o">&gt;</span> <span class="mi">3_000_000_000</span><span class="p">:</span>  <span class="c1"># 3 seconds
+</span>            <span class="k">return</span> <span class="n">summ5</span>
+
+        <span class="n">n</span> <span class="o">*=</span> <span class="mi">10</span>  <span class="c1"># x2 x5
+</span></code></pre></div></div>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:2" role="doc-endnote">
+      <p>PEP484 Was accepted in Python 3.5 which was released in <strong>September 2015</strong> <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>居然是传一个代码片段的字符串，和一个上下文环境的字典，非常地不正规，完全是 Python 2 那个时代的流行时尚 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>禁止 GC 可以排除由于 GC 带来的观测指标的波动，但长时间不 GC 会降低本身就很有限的性能。基本上这种操作仍然没有太大意义，外部的干扰因素有很多，应该通过统计学办法来排除干扰。 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:8" role="doc-endnote">
+      <p>相当于 <code class="language-plaintext highlighter-rouge">timeit</code> 里的 <code class="language-plaintext highlighter-rouge">number</code> <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>这是 CPython 永远不用担心的问题。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:6" role="doc-endnote">
+      <p>这不是中文语法错误，“稳定地”指相邻迭代的两轮观测统计的“平均值”相近，“稳定的”指一轮观测统计内部的“方差”小。 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>3 s <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:7" role="doc-endnote">
+      <p>相当于 <code class="language-plaintext highlighter-rouge">timeit</code> 里 <code class="language-plaintext highlighter-rouge">repeat=50</code> <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:9" role="doc-endnote">
+      <p>通过分别把 $\lt 5\%$ 和 $\gt 95\%$ 的样本值修改为 $=5\%$ 和 $= 95\%$ 的样本值 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:12" role="doc-endnote">
+      <p>绝对偏差的中位数，<a href="https://en.wikipedia.org/wiki/Median_absolute_deviation">Median absolute deviation</a> ，$\texttt{MAD} = \texttt{median}(\vert X_i-\texttt{median}(X) \vert)$，方法分类上属于 <a href="https://en.wikipedia.org/wiki/Average_absolute_deviation">Average absolute deviation</a> ，是一种被认为比样本方差和标准差更有鲁棒性的估算标量。 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:11" role="doc-endnote">
+      <p>这里还细心检查了 <code class="language-plaintext highlighter-rouge">loop</code> 代码的下一次执行，也就是 <code class="language-plaintext highlighter-rouge">n * 2 * 5</code> 后是否会溢出，如果会溢出也提前返回。 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:14" role="doc-endnote">
+      <p>假设环境是 Python 3.12 <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:13" role="doc-endnote">
+      <p>Rust 的问题，或者说这是个组织结构问题，在于我们知道它的源代码结构非常地迭床架屋，里面充斥着形形色色重新发明的轮子和仅限内部使用的范用工具，从 DRY 的角度看这是双重的折磨，一方面轮子不应该重新发明，而应该使用一个范用库；另一方面，发明的范用工具，应该开放为范用库。而这二百多行代码就属于前者–重新造的轮子。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+
+    <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <nav id="toc" data-toggle="toc"></nav>
+      <span>
+        <a href="/lang/Bench.html#">
+          <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
+        </a>
+      </span>
+    </div>
+    <!-- <div id="toc-wrapper" class="pl-0 pr-4 mb-5">
+
+    </div> -->
+  </div>
+
+</article>
+
+    </main>
+
+    <div class="page__comment">
+        <script src="https://giscus.app/client.js"
+            data-repo="minghu6/minghu6.github.io"
+            data-repo-id="MDEwOlJlcG9zaXRvcnkxMTI3NDIxOTA="
+            data-category="Announcements"
+            data-category-id="DIC_kwDOBrhPLs4CSYaE"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="1"
+            data-input-position="top"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+        </script>
+    </div>
+</div>
+
+    <!--
+  The Search results
+-->
+<div id="search-result-wrapper" class="d-flex justify-content-center unloaded">
+  <div class="col-12 col-sm-11 post-content">
+    <div id="search-hints">
+    </div>
+    <div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div>
+  </div>
+</div>
+
+
+    <footer class="footer">
+        <section class="footer__about">
+                <p class="footer__about__copyright">© minghu6</p>
+                
+                <span class="divider">·</span>
+                
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+        </section>
+</footer>
+
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
+
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script>
+
+
+<!-- <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script> -->
+<script>
+  MathJax = {
+  tex: {
+    inlineMath: [
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+}
+</script>
+
+<!-- <script>
+var navSelector = "#toc";
+// only show two levels
+$("body").scrollspy({
+  target: navSelector,
+});
+</script> -->
+
+
+    <!--
+Jekyll Simple Search loader
+See: <https://github.com/christian-fei/Simple-Jekyll-Search>
+-->
+
+
+
+<script src="/assets/js/simple-jekyll-search.min.js"></script>
+
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('search-results'),
+    json: "/assets/search.json",
+    searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
+    noResultsText: '<p class="mt-5">No result</p>',
+    templateMiddleware: function(prop, value, template) {
+      if (prop === 'categories') {
+        if (value === '') {
+          return `${value}`;
+        } else {
+          return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`;
+        }
+      }
+    }
+  });
+
+  $(function() {
+    const btnSearchTrigger = $("#search-trigger");
+    const btnCancel = $("#search-cancel");
+    const main = $(".main");
+    const topbarTitle = $("#topbar-title");
+    const searchWrapper = $("#search-wrapper");
+    const resultWrapper = $("#search-result-wrapper");
+    const results = $("#search-results");
+    const input = $("#search-input");
+    const hints = $("#search-hints");
+
+    const scrollBlocker = (function() {
+      let offset = 0;
+      return {
+        block() {
+          offset = window.scrollY;
+          $("html,body").scrollTop(0);
+        },
+        release() {
+          $("html,body").scrollTop(offset);
+        },
+        getOffset() {
+          return offset;
+        }
+      };
+    }());
+
+/*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+    const mobileSearchBar = (function() {
+      return {
+        on() {
+          topbarTitle.addClass("unloaded");
+          btnSearchTrigger.addClass("unloaded");
+          searchWrapper.addClass("d-flex");
+          btnCancel.addClass("loaded");
+        },
+        off() {
+          btnCancel.removeClass("loaded");
+          searchWrapper.removeClass("d-flex");
+          topbarTitle.removeClass("unloaded");
+          btnSearchTrigger.removeClass("unloaded");
+        }
+      };
+    }());
+
+    const resultSwitch = (function() {
+      let visible = false;
+
+      return {
+        on() {
+          if (! visible) {
+            scrollBlocker.block();
+            resultWrapper.removeClass("unloaded");
+            main.addClass("unloaded");
+            visible = true;
+          }
+        },
+        off() {
+          if (visible) {
+            results.empty();
+            if (hints.hasClass("unloaded")) {
+              hints.removeClass("unloaded");
+            }
+            resultWrapper.addClass("unloaded");
+            main.removeClass("unloaded");
+            scrollBlocker.release();
+
+            input.val("");
+            visible = false;
+          }
+        },
+        isVisible() {
+          return visible;
+        }
+      };
+
+    }());
+
+    function isMobileView() {
+      return btnCancel.hasClass("loaded");
+    }
+
+    btnSearchTrigger.click(function() {
+      mobileSearchBar.on();
+      resultSwitch.on();
+      input.focus();
+    });
+
+    btnCancel.click(function() {
+      mobileSearchBar.off();
+      resultSwitch.off();
+    });
+
+    input.focus(function() {
+      searchWrapper.addClass("input-focus");
+    });
+
+    input.focusout(function() {
+      searchWrapper.removeClass("input-focus");
+    });
+
+    input.on("input", () => {
+      if (input.val() === "") {
+        if (isMobileView()) {
+          hints.removeClass("unloaded");
+        } else {
+          resultSwitch.off();
+        }
+
+      } else {
+        resultSwitch.on();
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
+      }
+    });
+
+  });
+</script>
+
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css">
+
+
+</body>
+</html>

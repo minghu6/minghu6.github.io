@@ -388,7 +388,7 @@
 
 <p>但是，在仔细考虑下我们对反向建构的树状数组的使用🤔，发现虽然我们扫描后缀，但只要一个位置来保存高度，而不需要真地计算前缀和，那么我们完全可以用一个普通的树状数组的结构，但是用父节点保存高度，更新的时候向前更新节点（查询扫描的逆过程，比如 $7 \rightarrow 6 \rightarrow 4 \rightarrow 2 \rightarrow 1$）<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，查询的时候向后扫描所有父节点。</p>
 
-<p><strong>徒有其表地树状数组</strong></p>
+<p><strong>徒有其表的树状数组</strong></p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FakeBIT</span><span class="p">():</span>
     <span class="s">"""Fake Binary Indexed Tree whose prefix for update and suffix for query"""</span>
@@ -414,7 +414,7 @@
         <span class="k">return</span> <span class="n">acc</span>
 </code></pre></div></div>
 
-<p>总体过程和反向树状数组一样，只需要把 <code class="language-plaintext highlighter-rouge">bit = RevBIT(len(x_data))</code> 替换为 `    bit = FakeBIT(len(x_data))`</p>
+<p>总体过程和反向树状数组一样，只需要把 <code class="language-plaintext highlighter-rouge">bit = RevBIT(len(x_data))</code> 替换为 <code class="language-plaintext highlighter-rouge">bit = FakeBIT(len(x_data))</code></p>
 
 <h2 id="解优先级队列">解③：优先级队列</h2>
 
@@ -499,7 +499,7 @@
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/oth/LeetCode0218.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

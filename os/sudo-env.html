@@ -135,14 +135,13 @@ Defaults <span class="nv">env_keep</span><span class="o">=</span><span class="s2
 
 <p>使用当前用户的PATH</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Defaults env_reset改成Defaults !env_reset取消掉对PATH变量的重置，然后在.bashrc中最后添加alias sudo='sudo env PATH=$PATH'，这样sudo执行命令时所搜寻的路径就是系统的PATH变量中的路径，如想添加其他变量也是类似。
-</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">Defaults env_reset</code>改成<code class="language-plaintext highlighter-rouge">Defaults !env_reset</code>取消掉对<code class="language-plaintext highlighter-rouge">PATH</code>变量的重置，然后在<code class="language-plaintext highlighter-rouge">.bashrc</code>中最后添加<code class="language-plaintext highlighter-rouge">alias sudo='sudo env PATH=$PATH'</code>，这样<code class="language-plaintext highlighter-rouge">sudo</code>执行命令时所搜寻的路径就是系统的<code class="language-plaintext highlighter-rouge">PATH</code>变量中的路径，如想添加其他变量也是类似。</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/os/sudo-env.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

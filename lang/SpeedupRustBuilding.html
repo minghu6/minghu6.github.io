@@ -135,17 +135,15 @@
   <li>拆分过大的 crate ，一个基本编译单元至少是一个 crate，拆分 crate 可以利用多核优势</li>
   <li>检查不必要的依赖，某些依赖可能会大幅拖慢编译时间</li>
   <li>避免不必要的多态，缩减编译时间</li>
-  <li>为 release 也开启增量编译 <code class="language-plaintext highlighter-rouge">incremental = true</code> ，这会让cold build 慢一点，但是大幅加速 hot build，</li>
+  <li>为 release 也开启增量编译 <code class="language-plaintext highlighter-rouge">incremental = true</code> ，这会让 cold build 慢一点，但是大幅加速 hot build，</li>
   <li>是对于被工具压缩的 crate，debug 策略会非常慢，需要对这些包<a href="https://doc.rust-lang.org/cargo/reference/profiles.html#overrides">单独设置 debug 策略</a></li>
 </ol>
-
-<p>​</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/lang/SpeedupRustBuilding.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

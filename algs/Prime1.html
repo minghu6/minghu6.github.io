@@ -131,17 +131,32 @@
 
 <h2 id="前言">前言</h2>
 
-<p>所有（可用的）质数筛子，如果不使用分段技术，那么不管它的<strong>时间复杂度</strong>和<strong>空间复杂度</strong>在理论上是超线性、线性还是亚线性，在实践上它们的时间和空间复杂度都可以视为线性。</p>
+<p>有几个关于质数筛子的总结性观察：</p>
 
-<p>这是因为，一方面是因为它们的区别只在于 $ n\log\log n$,  $n$ 和 $\large\frac{n}{\log\log n}$ 。一方面 $\log\log n$ 对于一个 64 位机的指针宽度的最大数字也就是 $\log\log64 = 8$ ，很可能还不如一个常数大；另一个方面，在实现上，超线性和线性算法有数据结构简单的优势，而亚线性算法则有实际实现不了的劣势。</p>
+<h3 id="观察-1">观察 1</h3>
 
-<p>分段技术会将空间占用降为 $O(\sqrt n)$ 。</p>
+<p>不使用分段技术的（可用的）质数筛子，不管它的<strong>时间复杂度</strong>和<strong>空间复杂度</strong>在理论上是超线性、线性还是亚线性，在实践上都可以视为线性。</p>
 
-<p>通常来讲，算法的瓶颈在于空间占用，使用了分段技术的算法有无可匹敌的优势。</p>
+<p>这是因为，</p>
+
+<ol>
+  <li>它们的区别往往只在于 $ N\log\log N$,  $N$ 和 $\large\frac{N}{\log\log N}$ ，而 $\log\log N$ 对于一个 64 位机的指针宽度的最大数字也就是 $\log\log64 = 8$ ，很可能还不如一个常数大；</li>
+  <li>在实现上，超线性和线性算法有数据结构简单的优势，而亚线性算法则有规定时间复杂度内实际实现不了或者常数很大的劣势。</li>
+</ol>
+
+<h3 id="观察-2">观察 2</h3>
+
+<p>质数筛子的时间复杂度和空间复杂度不可能同时为亚线性。</p>
+
+<h3 id="观察-3">观察 3</h3>
+
+<p>能否应用分段技术是筛子算法先进与否的分水岭。</p>
+
+<p>能运用分段技术，实质就是可以进行独立任务分解，这样一方面可以将空间占用降为 $O(\sqrt N)$ ，而通常算法的瓶颈在于空间占用；另一方面也可以在多核架构下进行并行化处理。</p>
 
 <p><em>以下介绍的筛子按照发明的时间顺序进行排列， 标题括号里的是对其总体评价。</em></p>
 
-<h2 id="e-筛子">E-筛子（√√√）</h2>
+<h2 id="eratosthenes-筛子">Eratosthenes 筛子（√√√）</h2>
 
 <p>Eratosthenes 筛子，简称作E-筛子，属于是非常古老、简单的一种筛子算法：</p>
 
@@ -151,7 +166,7 @@
   <li>这样在继续扫描的过程中发现被标记为合数的就直接跳过，直到发现下一个质数，然后重复步骤2直到 $n$</li>
 </ol>
 
-<p>实际上我们标记合数的方法是追踪所有小于它的质数，因为根据之前所讲的<a href="/algs/Prime0.html#算式基本定理">正整数唯一分解定理</a>，也就是所有的合数都可以做质因数分解，一定存在一个严格比它小的质数可以除它。这样地话，如果我们是从第一个质数开始，那么实际上：</p>
+<p>实际上我们标记合数的方法是追踪所有小于它的质数，因为根据之前所讲的<a href="/algs/Prime0.html#算式基本定理">正整数唯一分解定理</a>，也就是所有的合数都可以做质因数分解，一定存在一个严格比它小的质数可以除它。这样的话，如果我们是从第一个质数开始，那么实际上：</p>
 
 <ol>
   <li>标记合数的过程不需要从 $2p$ 开始，而是直接从 $p\cdot p$ 开始，因为所有 $\lt p$ 的合数已经被更小的质数标记过了；</li>
@@ -214,17 +229,17 @@
 
 <h3 id="复杂度分析">复杂度分析</h3>
 
-<p>每查找到一个质数 $p$ ，就需要 $n/p$ 的操作次数，因此总的操作数为 $\displaystyle \sum_{ p\leqslant \sqrt{n}}  n/p $ 。而根据已知的结论，来自<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>  chapter 22 的：$\displaystyle \sum_{p \leqslant x} \frac{1}{p} = \log\log x + O(1)$ ，可以得到算法的最坏时间复杂度为 $O(n\log\log n)$ 。</p>
+<p>每查找到一个质数 $p$ ，就需要 $N/p$ 的操作次数，因此总的操作数为 $\displaystyle \sum_{ p\leqslant \sqrt{N}}  N/p $ 。而根据已知的结论，来自<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>  chapter 22 的：$\displaystyle \sum_{p \leqslant x} \frac{1}{p} = \log\log x + O(1)$ ，可以得到算法的最坏时间复杂度为 $O(N\log\log N)$ 。</p>
 
 <h3 id="算法评价">算法评价</h3>
 
-<p>是最快的算法！空间占用也仅次于它的分段算法！</p>
+<p>是次快的算法，而且非常简单，虽然空间占用 $O(N)$，但常数非常小（等效 $O(\large\frac{N}{\log\log N})$ 说是）。</p>
 
-<h2 id="分段e-筛">分段E-筛（√√√）</h2>
+<h2 id="分段-eratosthenes-筛">分段 Eratosthenes 筛（√√√）</h2>
 
-<p>分段处理可以把空间占用从 $O(n)$ 降到 $O(\sqrt{n})$ ，指数级地缓解算法的空间占用。</p>
+<p>分段处理可以把空间占用从 $O(N)$ 降到 $O(\sqrt{N})$ ，指数级地缓解算法的空间占用。</p>
 
-<p>方法是可以预计算出所有到 $\sqrt{n}$ 为止的质数，根据前面已知，所有 $\leqslant n$ 范围内的合数都可以由预计算出的质数构造出，只需要知到这些质数的乘积落在每个分段上的第一个数，就可以标记完所有这个分段的合数。</p>
+<p>方法是可以预计算出所有到 $\sqrt{N}$ 为止的质数，根据前面已知，所有 $\leqslant N$ 范围内的合数都可以由预计算出的质数构造出，只需要知到这些质数的乘积落在每个分段上的第一个数，就可以标记完所有这个分段的合数。</p>
 
 <p>而如何知道质数 $p$ （的乘积）落在某个分段区间的第一个数呢？只需要知道分段的左边缘 $l$ ，那么易知落点为 $l+p-(l\mod{p})$ 。</p>
 
@@ -282,104 +297,103 @@
 
 <h3 id="复杂度分析-1">复杂度分析</h3>
 
-<p>这样主要辅助空间是两个 $\sqrt{n}$ bit 的数组，因此空间复杂度为 $O(\sqrt{n})$ 。而当分段大小为 $\sqrt{n}$ 时，总的时间复杂度仍然是 $O(n\log\log n)$ 。</p>
+<p>这样主要辅助空间是两个 $\sqrt{N}$ bit 的数组，因此空间复杂度为 $O(\sqrt{N})$ 。而当分段大小为 $\sqrt{N}$ 时，总的时间复杂度仍然是 $O(N\log\log N)$ 。</p>
 
 <h3 id="算法评价-1">算法评价</h3>
 
-<p>综合最优！算法属于最快的一档，而且空间占用具有无与伦比的优势！</p>
+<p>速度排名属于第三档，但仍然简单而且足够快，重要的是使用了分片技术！</p>
 
-<h2 id="分段-e-筛拓展">分段 E-筛拓展</h2>
+<h2 id="sundaram-筛子">Sundaram 筛子（√√√）</h2>
 
-<h3 id="增量e-筛">增量E-筛（√√）</h3>
+<p>Sundaram 筛子<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">2</a></sup> ，是基于奇数因子分解 $2k+1$ 的筛子。</p>
 
-<p>事实上根据前面的分段思路可以抽象出一个范用的函数：给它一个前 $k$ 个质数组成的集合 $P= \lbrace p_1,p_2,\dots, p_k \rbrace$ ，让它补足计算到 $N$ 为止的所有质数，把它们加入到 $P$ 中。</p>
+<p>方法是检查所有 $i + j + 2ij\quad (1\leqslant i \leqslant j)$ 形式的数字，筛掉所有奇数里的合数。</p>
 
-<p><em>因为这就像是重新接手前面一个查找质数的工作，所以加了一个reentrant的后缀。</em></p>
+<p>原理如下：</p>
 
-<p>显然，首先要判断这前 $k$ 个质数是否足以筛完 $[0, N]$ 范围内的剩余质数，如果不能，就要一轮一轮地扩充质数数量，直到 $p_k^2 \geqslant N$ 。</p>
+\[\begin{array}{ll}
+2k+1&amp;= 2\cdot(i+j+2ij) + 1 \\
+&amp;= 2i + 2j + 4ij + 1  \\
+&amp;= (2i+1)(2j+1) 
+\end{array}\]
 
-<p>这个过程中，不管是每轮筛 $[p_k+1, p_k^2]$ 范围的质数，还是最后筛 $[p_k+1, N]$ 范围的质数，都可以直接使用前面分段 E-筛的子函数 <code class="language-plaintext highlighter-rouge">e_seg_sieve_0</code> 。</p>
+<p>也就是说所有由 $k=i + j + 2ij$ 构成的奇数都是合数；反过来，一个奇数合数也只能是分解为两个奇数之积。</p>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// 1. pris from 0..x, no empty.</span>
-<span class="cd">/// 2. return (l, l+delta]</span>
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">e_inc_sieve_reentrant</span><span class="p">(</span><span class="n">pris</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nd">debug_assert!</span><span class="p">(</span><span class="o">!</span><span class="n">pris</span><span class="nf">.is_empty</span><span class="p">());</span>
+<h3 id="样例代码-2">样例代码</h3>
 
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="n">pris</span><span class="nf">.last</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.clone</span><span class="p">();</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">sundaram_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="k">dyn</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="nd">sieve_spec_case!</span><span class="p">(</span><span class="n">n</span><span class="p">;</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]);</span>
 
-    <span class="k">while</span> <span class="n">p</span> <span class="o">*</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="p">{</span>
-        <span class="n">pris</span><span class="nf">.extend</span><span class="p">(</span>
-            <span class="nf">e_seg_sieve_0</span><span class="p">(</span><span class="n">pris</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-                <span class="nf">.into_iter</span><span class="p">()</span>
-                <span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(),</span>
-        <span class="p">);</span>
+    <span class="k">let</span> <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bits</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
 
-        <span class="n">p</span> <span class="o">=</span> <span class="n">pris</span><span class="nf">.last</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.clone</span><span class="p">();</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">k</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="n">i</span><span class="o">..=</span><span class="n">k</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">*</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">k</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">*</span> <span class="n">j</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+        <span class="p">}</span>
     <span class="p">}</span>
 
-    <span class="k">let</span> <span class="n">rem</span> <span class="o">=</span> <span class="nf">e_seg_sieve_0</span><span class="p">(</span><span class="n">pris</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span><span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">();</span>
-
-    <span class="n">pris</span><span class="nf">.extend</span><span class="p">(</span><span class="n">rem</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>利用 <code class="language-plaintext highlighter-rouge">e_inc_sieve_reentrant</code> 这个函数，可以递归地使用，成为一个筛子：</p>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">e_inc_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="k">dyn</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
-    <span class="nd">sieve_spec_case!</span><span class="p">(</span><span class="n">n</span><span class="p">;</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">]);</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">pris</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">];</span>
-
-    <span class="nf">e_inc_sieve_reentrant</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">pris</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
-
-    <span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">pris</span><span class="nf">.into_iter</span><span class="p">())</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h4 id="算法评价-2">算法评价</h4>
-
-<p>最快的那一档。</p>
-
-<h3 id="增量-e-筛增量筛">增量 E-筛增量筛（√√）</h3>
-
-<p>也可以逐轮地使用，得到一个增量筛，名字有些拗口：</p>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">e_inc_sieve_inf</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span>
-        <span class="nd">#[coroutine]</span>
-        <span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="k">mut</span> <span class="n">p0</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
-            <span class="k">let</span> <span class="k">mut</span> <span class="n">pris</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">];</span>
-
-            <span class="k">yield</span> <span class="mi">2</span><span class="p">;</span>
-            <span class="k">yield</span> <span class="mi">3</span><span class="p">;</span>
-
-            <span class="k">loop</span> <span class="p">{</span>
-                <span class="k">let</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">pris</span><span class="nf">.last</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.clone</span><span class="p">();</span> <span class="c1">// ~p0^2</span>
-                <span class="k">let</span> <span class="n">round</span> <span class="o">=</span> <span class="nf">e_seg_sieve_0</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pris</span><span class="p">,</span> <span class="n">p0</span> <span class="o">*</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">*</span> <span class="n">p1</span> <span class="o">-</span> <span class="n">p0</span> <span class="o">*</span> <span class="n">p0</span><span class="p">)</span>
-                    <span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">();</span>
-
-                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">round</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-                    <span class="k">yield</span> <span class="n">round</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
-                <span class="p">}</span>
-
-                <span class="n">pris</span><span class="nf">.extend</span><span class="p">(</span><span class="n">round</span><span class="p">);</span>
-                <span class="n">p0</span> <span class="o">=</span> <span class="n">p1</span><span class="p">;</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
+    <span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span>
+        <span class="nf">once</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="nf">.chain</span><span class="p">(</span><span class="n">bits</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span><span class="nf">.skip</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="nf">.filter_map</span><span class="p">(</span>
+            <span class="p">|(</span><span class="n">i</span><span class="p">,</span> <span class="n">flag</span><span class="p">)|</span> <span class="k">if</span> <span class="n">flag</span> <span class="p">{</span> <span class="nf">Some</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nb">None</span> <span class="p">},</span>
+        <span class="p">)),</span>
     <span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h4 id="算法评价-3">算法评价</h4>
+<h3 id="算法改进">算法改进</h3>
 
-<p>性能在增量筛里还算可以。</p>
+<p>但是与其去构造奇数，不如直接检测所有奇数，这样还避免了很多 $i + j + 2ij \gt k$ 时的空转。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">sundaram_sieve_improved</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="k">dyn</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="nd">sieve_spec_case!</span><span class="p">(</span><span class="n">n</span><span class="p">;</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]);</span>
+
+    <span class="k">let</span> <span class="n">k</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bits</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="n">odd1</span> <span class="k">in</span> <span class="p">(</span><span class="mi">3</span><span class="o">..=</span><span class="n">n</span><span class="nf">.isqrt</span><span class="p">())</span><span class="nf">.step_by</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// for c in (odd1 * odd1..=n).step_by(2 * odd1) {</span>
+        <span class="c1">//     bits.set((c - 1) / 2, false);</span>
+        <span class="c1">// }</span>
+
+        <span class="k">for</span> <span class="n">odd2</span> <span class="k">in</span> <span class="p">(</span><span class="n">odd1</span><span class="o">..</span><span class="p">)</span><span class="nf">.step_by</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">odd1</span> <span class="o">*</span> <span class="n">odd2</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">bits</span><span class="nf">.set</span><span class="p">((</span><span class="n">odd1</span> <span class="o">*</span> <span class="n">odd2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span>
+        <span class="nf">once</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="nf">.chain</span><span class="p">(</span><span class="n">bits</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span><span class="nf">.skip</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="nf">.filter_map</span><span class="p">(</span>
+            <span class="p">|(</span><span class="n">i</span><span class="p">,</span> <span class="n">flag</span><span class="p">)|</span> <span class="k">if</span> <span class="n">flag</span> <span class="p">{</span> <span class="nf">Some</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nb">None</span> <span class="p">},</span>
+        <span class="p">)),</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里注解了一段乘法改加法的代码，在一些经典算法论文，通常是上世纪九十年代以前的那些，很喜欢搞乘法变加法的优化，但现在应该被视为过早优化，因为乘法很容易，也很普遍地在更低层次的软件和硬件上做优化，在应用端算法上做加法替代实现反而构成了一种明显的反优化。</p>
+
+<p>另一方面，除法倒是还有算法上优化的必要。</p>
+
+<h3 id="复杂度分析-2">复杂度分析</h3>
+
+<p>时间复杂度 $O(N\log\log N)$ ，空间复杂度 $O(N)$ 。</p>
+
+<h3 id="算法评价-2">算法评价</h3>
+
+<p>实践时间性能非常好，是最快的一档，特别是改进的版本，甚至比 SFWS 还要快一点点。</p>
 
 <h2 id="mairson-筛子">Mairson 筛子（√）</h2>
 
 <p>仔细考虑下，前面E-筛子的计算过程还有重复的操作，就是有一些合数比如 $C = p_m^i\cdot p_n^j\cdot p_q^k,\ (p_m\neq p_n\neq p_q)$ 它会被不同的质数 $p_m, p_n, p_q$ 重复标记，这也是它超线性时间复杂的原因。</p>
 
-<p>Mairson 筛子<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的实质是取消这些重复标记的过程，把问题转化为线性，为此每用一个质数 $p$ 标记完一些合数后，就要把这些合数排除在后续的标记范围里。</p>
+<p>Mairson 筛子<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup>的实质是取消这些重复标记的过程，把问题转化为线性，为此每用一个质数 $p$ 标记完一些合数后，就要把这些合数排除在后续的标记范围里。</p>
 
 <p>道理都懂，问题是怎么排除，Mairson 很实在地给出了具体的数据结构，也是大家根据这个具体情况自然而然能想到的，即，一个基于数组的双向链表：</p>
 
@@ -416,7 +430,7 @@
 
 <p>这样整个算法过程的其他部分和之前的 E-筛子一样。</p>
 
-<h3 id="样例代码-2">样例代码</h3>
+<h3 id="样例代码-3">样例代码</h3>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mairson_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span>
@@ -466,9 +480,9 @@
 
 <p>需要注意得是，不能标记一个合数 $f$ 就立刻把它删除，因为还需要依靠它去标记 $p\cdot f$ 以及其它后续的合数。所以必须要先收集一个质数 $p$ 标记的所有合数，然后再把它们删除。</p>
 
-<h3 id="算法改进">算法改进</h3>
+<h3 id="算法改进-1">算法改进</h3>
 
-<p>如果可以从由 $p$ 组成的最大的那个合数开始逆序标记，那么就可以立刻删除 $p\cdot f$ 而不需要先收集起来。<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></p>
+<p>如果可以从由 $p$ 组成的最大的那个合数开始逆序标记，那么就可以立刻删除 $p\cdot f$ 而不需要先收集起来。<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">4</a></sup></p>
 
 <p>这可以带来一些性能的提升和空间的节省。</p>
 
@@ -503,7 +517,7 @@
 <span class="c1">//...</span>
 </code></pre></div></div>
 
-<p>有一个推论，但是还无法证明，链表上相邻的两个数不会被同一个 $p$ 标记<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">4</a></sup>，那么下一轮的 <code class="language-plaintext highlighter-rouge">f_max = backward[f_max]</code> 。</p>
+<p>有一个观察，但是还无法证明，链表上相邻的两个数不会被同一个 $p$ 标记<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">5</a></sup>，那么下一轮的 <code class="language-plaintext highlighter-rouge">f_max = backward[f_max]</code> 。</p>
 
 <p>这样改进后的完整算法如下：</p>
 
@@ -550,33 +564,1171 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h3 id="复杂度分析-2">复杂度分析</h3>
+<h3 id="复杂度分析-3">复杂度分析</h3>
 
 <p>显然，时间复杂度和空间复杂度均为 $O(N)$ 。</p>
 
-<h3 id="算法评价-4">算法评价</h3>
+<h3 id="算法评价-3">算法评价</h3>
 
 <p>一般，跑得不快，内存占用在线性算法里也属于常数比较大的。</p>
 
-<h2 id="轮筛骗局">轮筛骗局（×）</h2>
+<h2 id="轮子与轮筛-">轮子与轮筛（-）</h2>
 
-<p>轮筛<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">5</a></sup><sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">6</a></sup> 是假的，但轮子是真的。</p>
+<p>（纯）轮筛<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">6</a></sup><sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">7</a></sup> 是假的，<strong>但轮子（族）是真的</strong>。</p>
 
-<h2 id="分段固定轮筛">分段固定轮筛<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">7</a></sup>（√√√）</h2>
+<h3 id="定义轮子">定义轮子</h3>
 
-<p>SFWS</p>
+<p><strong>轮子（wheel）</strong>是由头几个质数的乘积构成的一个空间，空间里的数都与这些质数互质。</p>
 
-<h2 id="mairson-对偶筛">Mairson 对偶筛<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>（√√）</h2>
+<p>这头几个质数的乘积叫做质数阶乘，记作 $p_k\sharp = \displaystyle\prod_{i=1}^{k}{p_i} = p_1\times  p_2 \ \times ..\ p_k$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">8</a></sup>，在前面<a href="/algs/Prime0.html">质数基础</a>的<a href="/algs/Prime0.html#质性测试">质性测试</a>一节已经接触过这个概念，于是有轮子 $W_k$（第 $k$ 个轮子）：</p>
 
-<h2 id="bengelloun-增量筛">Bengelloun 增量筛<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">9</a></sup><sup id="fnref:8:1" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>（√√√）</h2>
+\[W_k = \lbrace x\vert\  x \bot p_k\sharp,\ (1\leqslant x \leqslant p_k\sharp)  \rbrace\]
 
-<h2 id="gpf-筛子">GPF 筛子<sup id="fnref:8:2" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>（√√）</h2>
+<p>和 $W_k$ 的模 $p_k\sharp$ 的同余数集 $W_k^*$ ：</p>
 
-<h2 id="gpf-增量筛">GPF 增量筛<sup id="fnref:8:3" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>（√√）</h2>
+\[W_k^* = \lbrace x\vert\ x \pmod {p_k\sharp} \in W_k \rbrace\]
 
-<p>为此引入了最小质因数因子 $\text{lpf}$ ，表示一个数它的唯一质因数分解里最小的那个质数，因此有一个递归定义：</p>
+<p>显然，任何一个 $x \in W_k^*$ 都和 $p_1,\ p_2\ ..,\ p_k$ 互质，这可以用来把很多非质数提前筛出去，并且如果 $x \lt p_{k+1}^2$ ，那么 $x$ 一定是个质数。</p>
 
-\[\text{lpf}(x)\]
+<p>自然可以想到，如果能构造一个更大的轮子，那么显然可以更有效地筛选质数，可以在更大范围内直接确保 $x$ 就是个质数。</p>
+
+<h3 id="构造轮子">构造轮子</h3>
+
+<p>首先，我们知道 $W_1 = \lbrace 1 \rbrace$；</p>
+
+<p>其次，Pritchard 给出了一个非常形象的示意图来演示如何通过“滚动”和删除一些点，从 $W_k$ 构造出 $W_{k+1}$<sup id="fnref:5:1" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">7</a></sup></p>
+
+<h4 id="图-轮子" align="center">图-轮子</h4>
+<p align="center">
+  <div class="sx-center">
+<img src="/assets/img/prime_sieves/wheel.png" style="zoom:50%;" /></div>
+</p>
+
+<p>直接看图有些不明所以，让我们慢慢解释。</p>
+
+<p>可以定义周长为 $p_k \sharp$ 的圆圈 $C_k$，$x \in W_k$ 则是它上面沿顺时针标记的点。</p>
+
+<p>从 $W_k$ 构造出 $W_{k+1}$：</p>
+
+<ol>
+  <li>
+    <p>$W_k$ “滚动” $p_{k+1}$ 圈就可以得到下一个轮子 $W_{k+1}$ 轮廓；</p>
+  </li>
+  <li>
+    <p>再根据 $W_{k+1}$ 定义，删除满足 $x’ = p_{k+1}\cdot x,\ (x\in W_k)$ 的“同辐条点”，因为 $x’ \vert p_{k+1}$</p>
+  </li>
+</ol>
+
+<h3 id="轮子性质">轮子性质</h3>
+
+<h4 id="性质-1">性质 1</h4>
+
+<p>如上图所示，通过 $C_k$ 滚动构建 $C_{k+1}$ 后根据 $W_{k+1}$ 定义需要删除的点 $x’$，与原先 $C_k$ 上的点在同一根辐条上，或者说它们弧度相同。</p>
+
+<p><em>因为 $x’ = p_{k+1}\cdot x$ 。</em></p>
+
+<h5 id="性质-11">性质 1.1</h5>
+
+<p>这样我们知道 $\vert W_{k+1}\vert = (p_{k+1}-1)\cdot \vert W_k \vert$。</p>
+
+<p>而我们知道 $\vert W_1\vert = 1$  ，通过递推，可以得到 $\vert W_k\vert = \displaystyle\prod_{i=1}^{k} (p_{i+1}-1)$ 。</p>
+
+<h5 id="性质-12">性质 1.2</h5>
+
+<p>进一步地，我们也可以得到轮子的筛选效率 $E_k =\large \frac{\vert W_k\vert}{p_k\sharp} = 1 - \displaystyle\prod_{i=0}^{k} \frac{p_{i+1}-1}{p_{i+1}}$</p>
+
+<p>下图即为轮子筛选效率的曲线图。</p>
+
+<p align="center">
+  <div class="sx-center">
+<img src="/assets/img/prime_sieves/wheel_eff.svg" style="zoom:100%;" /></div>
+</p>
+
+<p>虽然总体趋势是存在边际效用，但前几个轮子的“费效比”都很好，这启发我们可以用一个比较小的轮子先做粗筛，然后用其他方法做进一步检测。</p>
+
+<p><em>前面“试除法”检测质数实际就用了 $W_2$ 轮子。</em></p>
+
+<h4 id="性质-2">性质 2</h4>
+
+<p>轮子上第一个点是 $1$。</p>
+
+<p><em>从 <strong>性质 1</strong> 也可以推出，因为在构建新轮子过程中它永远不会被删除；或者根据轮子的定义，$1$ 与任何数互质，所以永远在轮子里。</em></p>
+
+<h4 id="性质-3">性质 3</h4>
+
+<p>轮子 $W_k$ 上的第二个点是 $p_{k+1}$ 。</p>
+
+<p><em>首先根据质数分布规律，我们可以确定 $p_{k+1} \lt p_k\sharp$ ，也就是 $p_{k+1} \in W_k$；其次，如果有任何 $x \in W_k$，满足 $1\lt x \lt p_{k+1}$， 那么它就是最小的 $\gt p_k$ 的质数，这就与 $p_{k+1}$ 的定义矛盾了。</em></p>
+
+<h4 id="性质-4">性质 4</h4>
+
+<p>轮子上的点具有对称性。</p>
+
+<p>如<a href="#图-轮子">图-轮子</a>所示，轮子上点沿着 $0\degree-180\degree$ 中心轴几何对称。</p>
+
+<p>证明如下：</p>
+
+<p>使用诱导推理，</p>
+
+<ol>
+  <li>对于 $W_1$ 只有一个 $1$ 在周长为 $p_1=2$ 的圆圈上，对称性成立；</li>
+  <li>假设 $W_k$ 对称性成立，那么由于 $C_{k+1}$ 由 $C_k$ 滚动而成，原来 $C_k$ 上标记的点滚动出的“印记”也因为 $C_k$ 的对称性而对称，而之后删除的“辐条点”也是对称的，所以剩下的“印记”仍然保持对称性，因此 $W_{k+1}$ 对称性也成立。</li>
+</ol>
+
+<p>证毕。</p>
+
+<p><em>利用对称性，可以构造更节省空间的半轮（semi-wheel），但连 Pritchard 都指出这么做有失优雅、高效。</em></p>
+
+<h5 id="性质-41">性质 4.1</h5>
+
+<p>每个轮子上最后一个点是 $\vert W \vert - 1$ 。</p>
+
+<p>因为 <strong>性质 2</strong> ，每个轮子上第一个点都是 $1$ ，根据对称性有最后一个点是 $\vert W \vert - 1$ 。</p>
+
+<h3 id="轮筛骗局">轮筛骗局（×）</h3>
+
+<p>Pritchard 可能为他的轮筛小发现高兴坏了，竟然昏了头，提出了一个纯轮筛的算法。</p>
+
+<p>他的想法是这样的，既然 $W_k$ 可以直接发现 $\lt p_{k+1}^2$ 范围内的所有质数，那么只要造一个足够大的轮子，使得 $N \lt p_{k+1}^2$，然后让它滚起来，滚到 $N$，是不是就可以解决问题了。<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">9</a></sup></p>
+
+<p>Pritchard 还引用了他心爱的 $p\cdot f$  的“乘法改加法”（下面会讲）的算法（负）优化，指出在结合了此等优化的前提下，算法操作的平均时间复杂度可以达到 $\Theta(\frac{N}{\log\log N}) $ 。</p>
+
+<h4 id="样例代码-4">样例代码</h4>
+
+<p>因为要应付更多的功能，使用了一个比前面 Mairson 筛子更复杂的基于数组的紧凑型双头列表。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Sublinear additive sieve by Paul Pritchard</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">wheel_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// saving 1/3 time compared with vector (each turn create new vector).</span>
+    <span class="cd">///</span>
+    <span class="cd">/// space cost about 3/5 N.</span>
+    <span class="k">struct</span> <span class="n">CompactDoubleArrayList</span> <span class="p">{</span>
+        <span class="cd">/// 0 for nil</span>
+        <span class="n">tail</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+        <span class="cd">/// [value, forward, backward]</span>
+        <span class="n">arr</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">3</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">impl</span> <span class="n">CompactDoubleArrayList</span> <span class="p">{</span>
+        <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">tail</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">list</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[[</span><span class="mi">0</span><span class="p">;</span> <span class="mi">3</span><span class="p">]];</span>
+
+            <span class="k">Self</span> <span class="p">{</span> <span class="n">tail</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">list</span> <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">fn</span> <span class="nf">push</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="k">self</span><span class="py">.tail</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="k">self</span><span class="py">.tail</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="n">new_node</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">self</span><span class="py">.tail</span><span class="p">];</span>
+
+            <span class="k">if</span> <span class="k">self</span><span class="py">.tail</span> <span class="o">==</span> <span class="k">self</span><span class="py">.arr</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.arr</span><span class="nf">.push</span><span class="p">(</span><span class="n">new_node</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="k">self</span><span class="py">.tail</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_node</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">self</span><span class="py">.tail</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">fn</span> <span class="n">filter</span><span class="o">&lt;</span><span class="n">P</span><span class="p">:</span> <span class="nf">Fn</span><span class="p">(</span><span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">P</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+
+            <span class="k">while</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="o">!</span><span class="nf">pred</span><span class="p">(</span><span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">prev</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+                    <span class="k">let</span> <span class="n">next</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+
+                    <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">prev</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">next</span><span class="p">;</span>
+                    <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">next</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">prev</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">fn</span> <span class="nf">nth</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+            <span class="k">while</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">index</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+                <span class="p">}</span>
+
+                <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+                <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="nd">unreachable!</span><span class="p">(</span><span class="s">"{index} &gt; {c}"</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">fn</span> <span class="nf">into_iter</span><span class="p">(</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+            <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span>
+                <span class="nd">#[coroutine]</span>
+                <span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+
+                    <span class="k">while</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+                        <span class="k">yield</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+                        <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">fn</span> <span class="nf">rolling</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+
+            <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+
+            <span class="k">while</span> <span class="n">l</span> <span class="o">+</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="k">self</span><span class="nf">.push</span><span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="k">self</span><span class="py">.arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">fn</span> <span class="nf">delete_multiple_p</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.filter</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">v</span> <span class="o">%</span> <span class="n">p</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span>
+        <span class="nd">#[coroutine]</span>
+        <span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="p">{</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">3usize</span><span class="p">;</span>
+            <span class="c1">// let mut w = vec![1];  // w_1</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">w</span> <span class="o">=</span> <span class="nn">CompactDoubleArrayList</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+            <span class="n">w</span><span class="nf">.push</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+            <span class="k">yield</span> <span class="mi">2</span><span class="p">;</span>
+
+            <span class="k">while</span> <span class="n">p</span><span class="nf">.pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="n">w</span><span class="nf">.rolling</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">));</span>
+                <span class="n">w</span><span class="nf">.delete_multiple_p</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+                <span class="k">yield</span> <span class="n">p</span><span class="p">;</span>
+
+                <span class="n">l</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">w</span><span class="nf">.nth</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="n">w</span><span class="nf">.rolling</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+
+            <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">w</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.skip</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">yield</span> <span class="n">v</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="滚动加法构造轮子">滚动加法构造轮子</h4>
+
+<p>尽管算法本身没有意义，但 <code class="language-plaintext highlighter-rouge">rolling</code> 作为 Pritchard 心爱的“乘法改加法”的优化之一还要讲一下。</p>
+
+<p>按照<a href="#图-轮子">图-轮子</a>的思路，把轮子从 $W_k$ 滚动到 $W_{k+1}$ ，可以直接通过 $x = a\cdot p_k\sharp + b,\ a\in 1..(p_{k+1}-1),\ b\in W_k $ 以乘法的形式构建；</p>
+
+<p>但是也可以通过 $x = p_k\sharp + (a-1)\cdot p_k\sharp + b$ 以滚动加法的形式构建。</p>
+
+<p><code class="language-plaintext highlighter-rouge">rolling</code> 实现就是后者，保证选择的值和待插入元素总是差一个 $p_k\sharp$ 身位。</p>
+
+<p>简化的伪代码：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="n">rolling</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">b</span> <span class="o">=</span> <span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+
+    <span class="k">while</span> <span class="n">l</span> <span class="o">+</span> <span class="n">W</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="p">{</span>
+        <span class="n">W</span><span class="nf">.push</span><span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="nf">next</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">));</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="nf">next</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="骗局所在">骗局所在</h4>
+
+<p>如果了解轮子<strong>性质 1.2</strong> ，那我们可能觉得这种无限制地造大轮子地做法可能有点儿问题；</p>
+
+<p>或者如果了解质数分布规律，并具有一些基本代数的常识，也可能敏锐地察觉出其中的问题。</p>
+
+<p>没错，Pritchard 的纯轮筛隐含了一个假设，那就是 $p_{k+1}^2 \gt p_k\sharp$ ，这才有构造大轮子，再用大轮子滚一些圈，滚到 $N$ 的使用场景。</p>
+
+<p>而实际情况是 $p_{n+1}^2 \sim \frac{(n+1)^2}{\log^2(n+1)}$ 而 $n\sharp = e^{n(1+o(1))} \sim e^n$ ，根据微分知识有</p>
+
+\[\lim_{n\rightarrow\infty} \frac{p_{n+1}^2}{n\sharp} = 0\\\]
+
+<p>也就是说，长远看  $p_{k+1}^2$ 是绝对跑不过 $p_k\sharp$ 的，下图是二者的变化曲线</p>
+
+<p align="center">
+  <div class="sx-center">
+<img src="/assets/img/prime_sieves/p2_psharp_diff.svg" style="zoom:100%;" /></div>
+</p>
+
+<p><em>为了方便可视化地比较，图上曲线只取到了 $k=5$ ，事实上后面 $p_{k+1}^2$ 的函数曲线相比于 $p_k\sharp$ 已经近乎为水平线了。</em></p>
+
+<p>图上可以看出，只在 $k\leqslant 3$ 时才有轮子周长小于它有效筛选范围，之后一个轮子的有效筛选范围远远小于它自身的周长，单就这一点算法就不成立。</p>
+
+<p>更不用说，这种 $e^n$ 的增长速度使得根本没有空间去储存一个完整的轮子。</p>
+
+<h2 id="分段固定轮筛">分段固定轮筛（√√√√）</h2>
+
+<p>分段固定轮筛（SFWS，Segmented Fixed-Wheel Sieve）<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">10</a></sup>顾名思义，是在一个固定大小的轮子粗筛后的结果上再做第二步筛选，过程使用了分段技术。</p>
+
+<h4 id="具体思路">具体思路</h4>
+
+<p>设定给定正整数 $N$ ，求取 $\leqslant N$ 范围内所有质数。</p>
+
+<p>首先定义 $p_{np} = \max(\lbrace p \vert\ p^2 \leqslant N \rbrace)$ ，也就说 $\leqslant N$ 范围内的合数最大质因子是第 $np$ 个质数。</p>
+
+<p>假设使用了一个 $W_k$ 的轮筛，那么显然只需要再筛除从第 $k+1$ 到第 $np$ 个质因子构成的合数就可以完成质数筛选。</p>
+
+<p>令 $c = p \cdot f \leqslant N,\ (p\in p_{k+1}..p_{np})$ ，在“粗筛”的结果上选取 $f \in W_k^*$ （这一步过程仍然利用粗筛的结果），将这些 $c$ 标记为非质数。</p>
+
+<p>过程采取分段技术并没有让任何东西变得复杂。</p>
+
+<h4 id="计算-np">计算 $np$</h4>
+
+<p>假如取分片大小 $\Delta = \lfloor\sqrt {N}\rfloor $ ，计算 $ \leqslant \Delta$ 的所有质数，于是有 $\max^2 \lbrace p \leqslant \Delta \rbrace \leqslant \Delta^2 \leqslant N $ 。</p>
+
+<p>显然有 $\max \lbrace p \leqslant \Delta \rbrace = p_{np}$ ，即 $np = \vert \lbrace p \leqslant \Delta \rbrace \vert$ 。</p>
+
+<p>反证法证明，如果存在 $p_{np} \gt \Delta$ ，那么 $\lfloor\sqrt {N}\rfloor \geqslant p_{np} \gt \Delta$ ，这就与 $\Delta$ 的定义自相矛盾了。</p>
+
+<h4 id="预备轮子">预备轮子</h4>
+
+<p>一个 $W_7$ 的固定轮子就够大了，$\vert W_7 \vert = \displaystyle\prod_{i=1}^{7} p_i = 510,510$ ，光空间占用就已经有 4 MB 了。</p>
+
+<p>轮子的计算可以参考前面章节<a href="#滚动加法构造轮子">滚动加法构造轮子</a>，过程中可以顺便构造轮子 $W$ 的增量表示 $\textit{WG}$</p>
+
+\[\textit{WG}[i] = W^*[i+1] - W^*[i], \quad 0 \leqslant i \leqslant |W|-1\]
+
+<h4 id="引导程序">引导程序</h4>
+
+<p>如上所述，SFWS 需要先计算一个$ \Delta$ 范围内的质数，推荐直接使用简单的 <a href="#eratosthenes-筛子">Eratosthenes 筛子</a> 。</p>
+
+<p>当然也可以“自举”，只是效能差一点点。</p>
+
+<p>递归调用就要设置结束条件，可以设置当 $N \lt p_{k+1}^2$ 时，直接通过滚动轮子计算出所有目标质数。</p>
+
+<p>但是轮子无法计算 $0..(p_{k+1}-1)$ 范围内的质数，仍然需要预先计算 $p_1 .. p_k$ 。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// bootstrapping</span>
+<span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">k</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">yield</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="k">mut</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">wg</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="k">let</span> <span class="k">mut</span> <span class="n">vi</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+<span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="p">{</span>
+        <span class="k">yield</span> <span class="n">v</span><span class="p">;</span>
+
+        <span class="n">v</span> <span class="o">+=</span> <span class="n">wg</span><span class="p">[</span><span class="n">vi</span><span class="p">];</span>
+        <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">vi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">wg</span><span class="nf">.len</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">n</span><span class="nf">.isqrt</span><span class="p">();</span>
+<span class="k">let</span> <span class="n">pris</span> <span class="o">=</span> <span class="nf">fixed_wheel_seg_sieve</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="样例代码-5">样例代码</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// AKA SFWS (segmented fixed-wheel sieve)</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">fixed_wheel_seg_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
+    <span class="k">let</span> <span class="n">WStruct</span> <span class="p">{</span>
+        <span class="n">wheel</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span>
+        <span class="n">wheel_gap</span><span class="p">:</span> <span class="n">wg</span><span class="p">,</span>
+        <span class="n">prod</span><span class="p">,</span>
+        <span class="c1">// ipm,</span>
+        <span class="o">..</span>
+    <span class="p">}</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">W</span><span class="p">[</span><span class="n">k</span><span class="p">];</span>
+
+    <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span>
+        <span class="nd">#[coroutine]</span>
+        <span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">n</span><span class="nf">.isqrt</span><span class="p">();</span>
+
+            <span class="k">let</span> <span class="n">pris</span> <span class="o">=</span> <span class="nf">e_sieve</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">();</span>
+            
+            <span class="k">let</span> <span class="n">np</span> <span class="o">=</span> <span class="n">pris</span><span class="nf">.len</span><span class="p">();</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">wg</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">vi</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="n">np</span> <span class="o">&lt;=</span> <span class="n">k</span> <span class="p">{</span>
+                <span class="c1">// Just rolling to n</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">k</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                        <span class="k">return</span><span class="p">;</span>
+                    <span class="p">}</span>
+
+                    <span class="k">yield</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+                <span class="p">}</span>
+
+                <span class="k">while</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="p">{</span>
+                    <span class="k">yield</span> <span class="n">v</span><span class="p">;</span>
+
+                    <span class="n">v</span> <span class="o">+=</span> <span class="n">wg</span><span class="p">[</span><span class="n">vi</span><span class="p">];</span>
+                    <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">vi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">wg</span><span class="nf">.len</span><span class="p">();</span>
+                <span class="p">}</span>
+
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">pris</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">yield</span> <span class="n">pris</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+            <span class="p">}</span>
+
+
+            <span class="cm">/* Init v0, vi */</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">l</span> <span class="o">=</span> <span class="n">delta</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="n">v_raw</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="n">prod_rem</span> <span class="o">=</span> <span class="n">v_raw</span> <span class="o">%</span> <span class="n">prod</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">prod_base</span> <span class="o">=</span> <span class="n">v_raw</span> <span class="o">-</span> <span class="n">prod_rem</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="p">(</span><span class="n">v0</span><span class="p">,</span> <span class="k">mut</span> <span class="n">vi</span><span class="p">)</span> <span class="o">=</span> <span class="k">match</span> <span class="n">w</span><span class="nf">.binary_search</span><span class="p">(</span><span class="o">&amp;</span><span class="n">prod_rem</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nf">Ok</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">),</span>
+                <span class="nf">Err</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">),</span> <span class="c1">// prod-1 is prime</span>
+            <span class="p">};</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">v</span> <span class="o">=</span> <span class="n">prod_base</span> <span class="o">+</span> <span class="n">v0</span><span class="p">;</span>
+
+            <span class="cm">/* Init factors */</span>
+            <span class="c1">// absolute value</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">factors</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">np</span> <span class="o">-</span> <span class="n">k</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">pris</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="n">i</span><span class="p">];</span>
+                <span class="k">let</span> <span class="n">f_raw</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="n">p</span> <span class="o">-</span> <span class="n">l</span> <span class="o">%</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span><span class="p">;</span>
+
+                <span class="k">let</span> <span class="n">prod_rem</span> <span class="o">=</span> <span class="n">f_raw</span> <span class="o">%</span> <span class="n">prod</span><span class="p">;</span>
+                <span class="k">let</span> <span class="n">prod_base</span> <span class="o">=</span> <span class="n">f_raw</span> <span class="o">-</span> <span class="n">prod_rem</span><span class="p">;</span>
+
+                <span class="k">let</span> <span class="p">(</span><span class="n">f0</span><span class="p">,</span> <span class="n">fi</span><span class="p">)</span> <span class="o">=</span> <span class="k">match</span> <span class="n">w</span><span class="nf">.binary_search</span><span class="p">(</span><span class="o">&amp;</span><span class="n">prod_rem</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nf">Ok</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">),</span>
+                    <span class="nf">Err</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">),</span>
+                <span class="p">};</span>
+
+                <span class="k">let</span> <span class="n">f</span> <span class="o">=</span> <span class="n">prod_base</span> <span class="o">+</span> <span class="n">f0</span><span class="p">;</span>
+
+                <span class="n">factors</span><span class="nf">.push</span><span class="p">((</span><span class="n">f</span><span class="p">,</span> <span class="n">fi</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="cm">/* Run the algorithm */</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">bits</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+            <span class="k">while</span> <span class="n">l</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="cm">/* sift for p_k..p_np */</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">np</span> <span class="o">-</span> <span class="n">k</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="n">pris</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="n">i</span><span class="p">];</span>
+                    <span class="k">let</span> <span class="p">(</span><span class="k">mut</span> <span class="n">f</span><span class="p">,</span> <span class="k">mut</span> <span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">factors</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+                    <span class="k">while</span> <span class="n">p</span> <span class="o">*</span> <span class="n">f</span> <span class="o">&lt;=</span> <span class="n">l</span> <span class="o">+</span> <span class="n">delta</span> <span class="p">{</span>
+                        <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">f</span> <span class="o">-</span> <span class="n">l</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+
+                        <span class="n">f</span> <span class="o">+=</span> <span class="n">wg</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+                        <span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">wg</span><span class="nf">.len</span><span class="p">();</span>
+                    <span class="p">}</span>
+
+                    <span class="n">factors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">j</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="cm">/* accumulate primes */</span>
+
+                <span class="k">while</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="n">l</span> <span class="o">+</span> <span class="n">delta</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="n">v</span> <span class="o">-</span> <span class="n">l</span><span class="p">]</span> <span class="p">{</span>
+                        <span class="k">yield</span> <span class="n">v</span><span class="p">;</span>
+                    <span class="p">}</span>
+
+                    <span class="n">v</span> <span class="o">+=</span> <span class="n">wg</span><span class="p">[</span><span class="n">vi</span><span class="p">];</span>
+                    <span class="n">vi</span> <span class="o">=</span> <span class="p">(</span><span class="n">vi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">wg</span><span class="nf">.len</span><span class="p">();</span>
+                <span class="p">}</span>
+
+                <span class="cm">/* reset for next segment */</span>
+
+                <span class="n">l</span> <span class="o">+=</span> <span class="n">delta</span><span class="p">;</span>
+                <span class="n">bits</span><span class="nf">.set_all</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="在-w-上的定位-v-和-f">在 $W^*$ 上的定位 $v$ 和 $f$</h4>
+
+<p>$v \in W^*$ 是轮子滚到每个分段上时第一个点的位置，$vi$ 是 $v \mod p_k\sharp$ 在 $W$ 上的编号。</p>
+
+<p>$f_{p_i}$ 是轮子滚在每个分段上时第一个 $c = p \cdot f$ ，对应 $p_i$ 的 $f$，$fi$ 是 $f \mod p_k\sharp$ 在 $W$ 上的编号。</p>
+
+<p>在 $W^*$ 上的定位 $v$ 和 $f$ 的原理是一样的，不妨就以 $v$ 为例做介绍：</p>
+
+<p>先计算了模 $\vert W \vert$ 的余数 $\textit{prod_rem}$ 和轮子周长整数倍的轨迹长度 $\textit{prod_base}$ ：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="n">v_raw</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+<span class="k">let</span> <span class="n">prod_rem</span> <span class="o">=</span> <span class="n">v_raw</span> <span class="o">%</span> <span class="n">prod</span><span class="p">;</span>
+<span class="k">let</span> <span class="n">prod_base</span> <span class="o">=</span> <span class="n">v_raw</span> <span class="o">-</span> <span class="n">prod_rem</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>然后直接在 $W$ 上做二分查找，找到第一个 $ \geqslant \textit{prod_rem}$ 的值作为 $v$ 的初始值（$模\vert W \vert$ ）：</p>
+
+<p><em>因为 $1, \vert W \vert-1 \in W$ ，所以不存在余数 $ \textit{prod_rem}$ 落在轮子外的情况</em></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="p">(</span><span class="n">v0</span><span class="p">,</span> <span class="k">mut</span> <span class="n">vi</span><span class="p">)</span> <span class="o">=</span> <span class="k">match</span> <span class="n">w</span><span class="nf">.binary_search</span><span class="p">(</span><span class="o">&amp;</span><span class="n">prod_rem</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">),</span>
+    <span class="nf">Err</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">),</span> <span class="c1">// prod-1 is prime</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>补上轨迹长度 $\textit{prod_base}$ 得到 $v$ 完整初始值：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">v</span> <span class="o">=</span> <span class="n">prod_base</span> <span class="o">+</span> <span class="n">v0</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h4 id="对计算-pcdot-f-的优化">对计算 $p\cdot f$ 的“优化”</h4>
+
+<p>来了，Pritchard 心爱的“乘法改加法”的优化之二，$p\cdot f$ 的“乘法改加法”。</p>
+
+<p>原理是轮子上两个点的距离 $\textit{WG}[i] = \Delta f$ 的值域比较小，可以为轮子计算一个 $\lbrace \textit{WG}[i] \rbrace$ ，这样对于每个 $p$ 也可以预计算一个 $p\cdot \Delta f =  \Delta (p\cdot f)$ 。</p>
+
+<p>这样 $p\cdot f = (p\cdot f)’ + \Delta (p\cdot f)$ ，就可以实现乘法改加法。</p>
+
+<p>除此之外，可以观察到 $\textit{WG}[i]$ 总是偶数，利用这个性质可以节约一半的预计算值的存储空间。</p>
+
+<p><em>但是显见地在代码里我们没用这个优化，因为在付出了代码复杂化、空间占用地代价后，得到了一个更慢的时间性能上的表现。</em></p>
+
+<h3 id="复杂度分析-4">复杂度分析</h3>
+
+<p>时间复杂度 $O(N)$ ，空间复杂度 $O(\sqrt{N})$ 。</p>
+
+<h3 id="算法评价-4">算法评价</h3>
+
+<p>虽然经常吐槽 Pritchard ，但他搞的 SFWS 思路还是对的，是我目前为止最推崇的一款筛子，是时间性能和空间性能的双料冠军！</p>
+
+<h3 id="算法外延">算法外延</h3>
+
+<p>按照分段固定轮筛的模式，抽象出 $(\Delta,k)$ 的参数二元组，可以把很多筛子算法归类进来。</p>
+
+<p><em>详见原文</em></p>
+
+<h2 id="mairson-对偶筛">Mairson 对偶筛（√√√）</h2>
+
+<p>Mairson 对偶筛<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">11</a></sup>，对偶（dual）意指把原来算法外层对 $p$ 的遍历和内层对 $f$ 的遍历对调，变成外层对 $f$ 遍历内层对 $p$ 遍历。<sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">12</a></sup></p>
+
+<p>基于最小质因数分解，$c = \texttt{lpf}(c) \cdot f$  做筛选。</p>
+
+<p>外层 $f$ 是连续的正整数，在 $2..\lfloor\frac{N}{2}\rfloor $ 上迭代；</p>
+
+<p>内层 $p$ 是质数，在 $p_1 .. \texttt{lpf}(f)$ 上迭代 。</p>
+
+<h3 id="样例代码-6">样例代码</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mairson_dual_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="k">dyn</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="nd">sieve_spec_case!</span><span class="p">(</span><span class="n">n</span> <span class="p">;</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bits</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pris</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="k">in</span> <span class="mi">2</span><span class="o">..=</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="p">{</span>
+            <span class="n">pris</span><span class="nf">.push</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="k">in</span> <span class="n">pris</span><span class="nf">.iter</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="o">*</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">p</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+
+            <span class="c1">// if f % p == 0 {</span>
+            <span class="c1">//     break;</span>
+            <span class="c1">// }</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span>
+        <span class="n">pris</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.chain</span><span class="p">(</span>
+            <span class="n">bits</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.enumerate</span><span class="p">()</span><span class="nf">.skip</span><span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="nf">.flat_map</span><span class="p">(</span>
+                <span class="p">|(</span><span class="n">i</span><span class="p">,</span> <span class="n">flag</span><span class="p">)|</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="n">flag</span> <span class="p">{</span>
+                        <span class="nf">Some</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="nb">None</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="边缘情况">边缘情况</h4>
+
+<p>因为外循环 $f$ 从 $2$ 开始，因此 $N \lt 2$ 的情况需要特别处理。</p>
+
+<h4 id="质数判断">质数判断</h4>
+
+<p>如果发现 $f$ 未被标记，则它一定是质数。</p>
+
+<p>使用反证法，假如它不是质数，那么它一定可以表示为 $f = p \cdot f’$ ，而 $f’ \lt f$ ，那么 $f$ 一定会被标记，这就与前提矛盾了。</p>
+
+<h4 id="质数迭代">质数迭代</h4>
+
+<p>如果从最小的质数开始增序迭代，直到第一个能整除 $f$ 的质数，这就是所有 $\leqslant \texttt{lpf}(f)$ 的质数。</p>
+
+<p>但是另一方面我们其实注解了检测整除的代码，这是因为相对于乘法和加法，除法还是一种代价较高的算术运算，提前跳出的好处比不上一直做取余检测的代价，注掉代码不影响正确性却会使得性能获得可察觉的改善。</p>
+
+<h3 id="算法变种">算法变种</h3>
+
+<p>这个算法更大的价值可能在于它的副产品，最小质因子数组 $\texttt{lpf}$，以用来做质因数分解。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// 一鱼两吃，既返回值质数列表，也返回质因数分解列表 (lpf)</span>
+<span class="cd">/// 这种 API 风格倒也正好是 Rust 推荐的风格</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">mairson_dual_sieve_factorization</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">lpf</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">];</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pris</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">pris</span><span class="p">,</span> <span class="n">lpf</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="k">in</span> <span class="mi">2</span><span class="o">..=</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">lpf</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="n">lpf</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">;</span>
+            <span class="n">pris</span><span class="nf">.push</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="k">in</span> <span class="n">pris</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="o">*</span> <span class="n">f</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">lpf</span><span class="p">[</span><span class="n">p</span> <span class="o">*</span> <span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">lpf</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="o">..=</span><span class="n">n</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">lpf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="n">lpf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+            <span class="n">pris</span><span class="nf">.push</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="p">(</span><span class="n">pris</span><span class="p">,</span> <span class="n">lpf</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>此时为了 $\texttt{lpf}$ 的正确性，必须严格限制 $p$ 在超过 $f$ 的最小质因子时退出，不过有了 $\texttt{lpf}$ 也省去了取余的代价。</p>
+
+<h3 id="复杂度分析-5">复杂度分析</h3>
+
+<p>显见内外层的时间复杂度均为 $O(\sqrt N)$ ，因此总时间复杂度为 $O(N)$ 。</p>
+
+<p>空间复杂度 $O(N)$ 。</p>
+
+<h3 id="算法评价-5">算法评价</h3>
+
+<p>原始算法时间性能也非常好，比 Eratosthenes 筛子快一点，比 Sundram 筛子慢一点。</p>
+
+<p>变种算法也即 <a href="https://cp-algorithms.com/algebra/prime-sieve-linear.html">cp-algorithms</a> 里介绍的线性筛子算法，在算法比较的结论上没有变化，但比原始算法要快。</p>
+
+<h2 id="gpf-筛子">GPF 筛子（√√）</h2>
+
+<p>GPF 筛子<sup id="fnref:8:1" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">11</a></sup>，是基于最大质因数分解， $c = f\cdot \texttt{gpf(c)}$ 的质数筛子。</p>
+
+<p>从最小的质数 $p = 2$ 开始，收集所有使得 $ f \cdot p \leqslant N$ ，并且 $\texttt{gpf}(f) \leqslant p$ 的 $f$ ，划掉对应的 $c = f \cdot p$ ，最后得到质数。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">gpf_sieve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="k">dyn</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="nd">sieve_spec_case!</span><span class="p">(</span><span class="n">n</span><span class="p">;</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]);</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bits</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">factors</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">pris</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">while</span> <span class="n">p</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">/</span> <span class="mi">2</span> <span class="p">{</span>
+        <span class="n">pris</span><span class="nf">.push</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+        <span class="n">factors</span><span class="nf">.push</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">f_stack</span> <span class="o">=</span> <span class="n">factors</span><span class="p">;</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+        <span class="k">while</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">=</span> <span class="n">f_stack</span><span class="nf">.pop</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="o">*</span> <span class="n">f</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">f</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+
+                <span class="n">f_stack</span><span class="nf">.push</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">f</span><span class="p">);</span>
+                <span class="n">factors</span><span class="nf">.push</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">while</span> <span class="o">!</span><span class="n">bits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="p">}</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span>
+        <span class="n">pris</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.chain</span><span class="p">(</span>
+            <span class="n">bits</span><span class="nf">.into_iter</span><span class="p">()</span>
+                <span class="nf">.enumerate</span><span class="p">()</span>
+                <span class="nf">.skip</span><span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="nf">.filter_map</span><span class="p">(|(</span><span class="n">i</span><span class="p">,</span> <span class="n">flag</span><span class="p">)|</span> <span class="k">if</span> <span class="n">flag</span> <span class="p">{</span> <span class="nf">Some</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nb">None</span> <span class="p">}),</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="边缘情况-1">边缘情况</h4>
+
+<p>因为外循环从 $p=2\leqslant \lfloor \frac{N}{2}\rfloor$ 开始， ，因此 $N \lt 4$ 的情况需要特别处理。</p>
+
+<h3 id="复杂度分析-6">复杂度分析</h3>
+
+<p>由于每个 $c$ 只会被计算一次，因此时间复杂度可被认为是 $O(N)$ 。</p>
+
+<p>空间复杂度为 $O(N)$ 。</p>
+
+<h3 id="算法评价-6">算法评价</h3>
+
+<p>时间性能还算可以，比分段 Eratosthenes 筛慢一点。</p>
+
+<h2 id="atkin-筛子">Atkin 筛子（?）</h2>
+
+<p>Atkin 筛子<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">13</a></sup>，是一种二元二次型筛子。</p>
+
+<p>它的思路还是挺先进的，先用一个 2-3-5 筛子在模 60 的余数上，得到</p>
+
+\[\lbrace 1,7,11,13,17,19,23,29,31,37,41,43,47,49,53,59 \rbrace\]
+
+<p>然后在这些余数上，可以分别应用三个二元二次方程，通过解数量的奇偶性做进一步筛选（要求奇数个解）；</p>
+
+<p>最后做质数平方因子的检查（确保 squarefree）完成质数确认。</p>
+
+<h4 id="方程-1">方程-1</h4>
+
+<p>对于  $\delta \in \lbrace 1, 13, 17, 29, 37, 41, 49, 53 \rbrace$ ，执行 $ 4x^2 + y^2 = 60k + \delta \equiv 1 \mod 4$ 。</p>
+
+<h4 id="方程-2">方程-2</h4>
+
+<p>对于  $\delta \in \lbrace 1, 7, 13, 19, 31, 37, 43, 49 \rbrace$ ，执行 $ 3x^2 + y^2 = 60k + \delta \equiv 1 \mod 6$ 。</p>
+
+<p>为了不和<strong>方程-1</strong>检查的范围重叠，可以只检查在 $\delta \in \lbrace 7,19,31,43 \rbrace$ ，也就是 $7 \mod 12$ 。</p>
+
+<h4 id="方程-3">方程-3</h4>
+
+<p>对于  $\delta \in \lbrace 11, 23, 47, 59 \rbrace$ ，执行 $ 3x^2 - y^2 = 60k + \delta \equiv 11 \mod 12$ 。</p>
+
+<h4 id="一点解释">一点解释</h4>
+
+<p>首先，这三个方程里的 $(x, y)$ ，就像 <a href="#sundaram-筛子">Sundaram 筛子</a> 一样，都是实在的正整数；</p>
+
+<p>其次，为什么是这三个方程，为什么是奇数个解，为什么<strong>方程-3</strong>要求 $x \gt y$，为什么还要校验不含质数平方因子，原文里有解释<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">14</a></sup> 。</p>
+
+<h3 id="原始实现">原始实现（×）</h3>
+
+<p>原始论文的主要价值在于（宣称）突破了 Pritchard 的<em>质数筛子算法空间复杂度和时间复杂度不能同时为亚线性</em>的猜想，提出了一种理论分析在时间复杂度为 $O(\large\frac{N}{\log\log N})$ ，而空间复杂度为 $O(\sqrt N)$ 的新算法。</p>
+
+<p>但这是一种诈骗，因为：</p>
+
+<ol>
+  <li>实际上根本不可能在规定时间复杂度内枚举完任意一个方程的解，而且按照论文里对<strong>方程-3</strong>解的枚举算法根本就是错的，不能枚举全部符合条件的解；</li>
+  <li>检查质数平方因子也无法同时满足亚线性的时间和空间复杂度。</li>
+</ol>
+
+<p>但无论如何，我们试着按照原文的思路实现了一版出来。</p>
+
+<h4 id="样例代码-7">样例代码</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">mod</span> <span class="n">atkin</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="n">min</span><span class="p">;</span>
+
+    <span class="k">use</span> <span class="nn">lazy_static</span><span class="p">::</span><span class="n">lazy_static</span><span class="p">;</span>
+
+    <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">fn</span> <span class="nf">algs1</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="mi">4</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">fn</span> <span class="nf">algs2</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="mi">3</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">fn</span> <span class="nf">enable_algs3</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="n">x</span> <span class="o">&gt;</span> <span class="n">y</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">fn</span> <span class="nf">algs3</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="mi">3</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="p">}</span>
+
+    <span class="nd">lazy_static!</span> <span class="p">{</span>
+        <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">static</span> <span class="k">ref</span> <span class="n">DELTA16</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">16</span><span class="p">]</span> <span class="o">=</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span> <span class="mi">41</span><span class="p">,</span> <span class="mi">43</span><span class="p">,</span> <span class="mi">47</span><span class="p">,</span> <span class="mi">49</span><span class="p">,</span> <span class="mi">53</span><span class="p">,</span> <span class="mi">59</span><span class="p">];</span>
+
+        <span class="c1">// {1,13,17,29,37,41,49,53}</span>
+        <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">static</span> <span class="k">ref</span> <span class="n">DELTA16_ALGS1</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">8</span><span class="p">]</span> <span class="o">=</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">];</span>
+
+        <span class="c1">// trim duplicated delta number campared with 1</span>
+        <span class="c1">// {7,19,31,43}</span>
+        <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">static</span> <span class="k">ref</span> <span class="n">DELTA16_ALGS2</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">];</span>
+
+        <span class="c1">// {11, 23, 47, 59}</span>
+        <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">static</span> <span class="k">ref</span> <span class="n">DELTA16_ALGS3</span><span class="p">:</span> <span class="p">[</span><span class="nb">usize</span><span class="p">;</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">];</span>
+
+        <span class="k">pub</span><span class="p">(</span><span class="k">super</span><span class="p">)</span> <span class="k">static</span> <span class="k">ref</span> <span class="n">DELTA16_GRPS</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">delta16_grps</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nd">vec!</span><span class="p">[];</span> <span class="mi">16</span><span class="p">];</span>
+
+            <span class="cm">/* algorithm 1. 4x^2 + y^2 = n */</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="n">DELTA16_ALGS1</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="mi">15</span> <span class="p">{</span>
+                    <span class="k">for</span> <span class="n">g</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="mi">30</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="nf">algs1</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                            <span class="k">continue</span><span class="p">;</span>
+                        <span class="p">}</span>
+
+                        <span class="k">if</span> <span class="p">(</span><span class="nf">algs1</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">-</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">%</span> <span class="mi">60</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                            <span class="n">delta16_grps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.push</span><span class="p">((</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">));</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="cm">/* algorithm 2. 3x^2 + y^2 = n */</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="n">DELTA16_ALGS2</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="mi">15</span> <span class="p">{</span>
+                    <span class="k">for</span> <span class="n">g</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="mi">30</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="nf">algs2</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                            <span class="k">continue</span><span class="p">;</span>
+                        <span class="p">}</span>
+
+                        <span class="k">if</span> <span class="p">(</span><span class="nf">algs2</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">-</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">%</span> <span class="mi">60</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                            <span class="n">delta16_grps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.push</span><span class="p">((</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">));</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="cm">/* algorithm 3. 3x^2 - y^2 = 60k + delta */</span>
+            <span class="c1">// FIXME: incorrect algoriuthm</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="n">DELTA16_ALGS3</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="k">in</span> <span class="mi">3</span><span class="o">..=</span><span class="mi">10</span> <span class="p">{</span>
+                    <span class="k">for</span> <span class="n">g</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="nf">min</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="n">f</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="nf">algs3</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                            <span class="k">continue</span><span class="p">;</span>
+                        <span class="p">}</span>
+
+                        <span class="k">if</span> <span class="p">(</span><span class="nf">algs3</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">-</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">%</span> <span class="mi">60</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                            <span class="n">delta16_grps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.push</span><span class="p">((</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">));</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="n">delta16_grps</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">atkin_sieve_enum_lattice</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nn">atkin</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+
+    <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span>
+        <span class="nd">#[coroutine]</span>
+        <span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="c1">// P[17] = 59</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="mi">17</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                    <span class="k">return</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">yield</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">59</span> <span class="p">{</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="n">n_k</span> <span class="o">=</span> <span class="n">n</span><span class="nf">.div_ceil</span><span class="p">(</span><span class="mi">60</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">delta_k</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="nf">.isqrt</span><span class="p">();</span>
+            <span class="k">let</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">delta_k</span> <span class="o">*</span> <span class="mi">60</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">bits_k</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">delta_k</span> <span class="o">*</span> <span class="mi">16</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">pri_square</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="mi">17</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+                <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="p">(</span><span class="n">r</span><span class="o">..=</span><span class="n">n</span><span class="p">)</span><span class="nf">.step_by</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">pri_square</span><span class="nf">.insert</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">60</span><span class="p">;</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">l_k</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">while</span> <span class="n">l</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="p">{</span>
+                <span class="cm">/* algorithm 1 4x^2 + y^2 = n */</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="n">DELTA16_ALGS1</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="k">mut</span> <span class="n">pairs</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+                    <span class="k">for</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="k">in</span> <span class="n">DELTA16_GRPS</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="k">let</span> <span class="k">mut</span> <span class="n">x</span> <span class="o">=</span> <span class="n">f</span><span class="p">;</span>
+                        <span class="k">let</span> <span class="k">mut</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">g</span><span class="p">;</span>
+                        <span class="k">let</span> <span class="k">mut</span> <span class="n">k0</span> <span class="o">=</span> <span class="p">(</span><span class="nf">algs1</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">-</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="mi">60</span><span class="p">;</span>
+
+                        <span class="k">while</span> <span class="n">k0</span> <span class="o">&lt;</span> <span class="n">l_k</span> <span class="o">+</span> <span class="n">delta_k</span> <span class="p">{</span>
+                            <span class="n">k0</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">15</span><span class="p">;</span>
+                            <span class="n">x</span> <span class="o">+=</span> <span class="mi">15</span><span class="p">;</span>
+                        <span class="p">}</span>
+
+                        <span class="k">while</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">15</span> <span class="p">{</span>
+                            <span class="n">x</span> <span class="o">-=</span> <span class="mi">15</span><span class="p">;</span>
+                            <span class="n">k0</span> <span class="o">-=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">15</span><span class="p">;</span>
+
+                            <span class="k">while</span> <span class="n">k0</span> <span class="o">&lt;</span> <span class="n">l_k</span> <span class="p">{</span>
+                                <span class="n">k0</span> <span class="o">+=</span> <span class="n">y0</span> <span class="o">+</span> <span class="mi">15</span><span class="p">;</span>
+                                <span class="n">y0</span> <span class="o">+=</span> <span class="mi">30</span><span class="p">;</span>
+                            <span class="p">}</span>
+
+                            <span class="k">let</span> <span class="k">mut</span> <span class="n">k</span> <span class="o">=</span> <span class="n">k0</span><span class="p">;</span>
+                            <span class="k">let</span> <span class="k">mut</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y0</span><span class="p">;</span>
+
+                            <span class="k">while</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">l_k</span> <span class="o">+</span> <span class="n">delta_k</span> <span class="p">{</span>
+                                <span class="k">if</span> <span class="n">pairs</span><span class="nf">.insert</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span> <span class="p">{</span>
+                                    <span class="k">let</span> <span class="n">bi</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="n">l_k</span><span class="p">)</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">i</span><span class="p">;</span>
+
+                                    <span class="n">bits_k</span><span class="nf">.set</span><span class="p">(</span><span class="n">bi</span><span class="p">,</span> <span class="o">!</span><span class="n">bits_k</span><span class="nf">.get</span><span class="p">(</span><span class="n">bi</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">());</span>
+                                <span class="p">}</span>
+
+                                <span class="n">k</span> <span class="o">+=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">15</span><span class="p">;</span>
+                                <span class="n">y</span> <span class="o">+=</span> <span class="mi">30</span><span class="p">;</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+                <span class="cm">/* algorithm 2 3x^2 + y^2 = n */</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="n">DELTA16_ALGS2</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="k">mut</span> <span class="n">pairs</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+                    <span class="k">for</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="k">in</span> <span class="n">DELTA16_GRPS</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="k">let</span> <span class="k">mut</span> <span class="n">x</span> <span class="o">=</span> <span class="n">f</span><span class="p">;</span>
+                        <span class="k">let</span> <span class="k">mut</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">g</span><span class="p">;</span>
+                        <span class="k">let</span> <span class="k">mut</span> <span class="n">k0</span> <span class="o">=</span>
+                            <span class="p">((</span><span class="nf">algs2</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">-</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">;</span>
+
+                        <span class="k">while</span> <span class="n">k0</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">||</span> <span class="p">(</span><span class="n">k0</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">l_k</span> <span class="o">+</span> <span class="n">delta_k</span> <span class="p">{</span>
+                            <span class="n">k0</span> <span class="o">+=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">;</span>
+                            <span class="n">x</span> <span class="o">+=</span> <span class="mi">10</span><span class="p">;</span>
+                        <span class="p">}</span>
+
+                        <span class="k">while</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="p">{</span>
+                            <span class="n">x</span> <span class="o">-=</span> <span class="mi">10</span><span class="p">;</span>
+                            <span class="n">k0</span> <span class="o">-=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">;</span>
+
+                            <span class="k">while</span> <span class="n">k0</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">||</span> <span class="p">(</span><span class="n">k0</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">l_k</span> <span class="p">{</span>
+                                <span class="n">k0</span> <span class="o">+=</span> <span class="p">(</span><span class="n">y0</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">;</span>
+                                <span class="n">y0</span> <span class="o">+=</span> <span class="mi">30</span><span class="p">;</span>
+                            <span class="p">}</span>
+
+                            <span class="k">let</span> <span class="k">mut</span> <span class="n">k</span> <span class="o">=</span> <span class="n">k0</span><span class="p">;</span>
+                            <span class="k">let</span> <span class="k">mut</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y0</span><span class="p">;</span>
+
+                            <span class="k">while</span> <span class="p">(</span><span class="n">k</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">l_k</span> <span class="o">+</span> <span class="n">delta_k</span> <span class="p">{</span>
+                                <span class="k">if</span> <span class="n">pairs</span><span class="nf">.insert</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span> <span class="p">{</span>
+                                    <span class="k">let</span> <span class="n">bi</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="k">as</span> <span class="nb">usize</span> <span class="o">-</span> <span class="n">l_k</span><span class="p">)</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">i</span><span class="p">;</span>
+
+                                    <span class="n">bits_k</span><span class="nf">.set</span><span class="p">(</span><span class="n">bi</span><span class="p">,</span> <span class="o">!</span><span class="n">bits_k</span><span class="nf">.get</span><span class="p">(</span><span class="n">bi</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">());</span>
+                                <span class="p">}</span>
+
+                                <span class="n">k</span> <span class="o">+=</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="k">as</span> <span class="nb">isize</span><span class="p">;</span>
+                                <span class="n">y</span> <span class="o">+=</span> <span class="mi">30</span><span class="p">;</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+                <span class="cm">/* algorithm 3 3x^2 - y^2 = 60k + delta */</span>
+                <span class="cm">/* NOTE: There is a bug for origin formula-3
+                enumerate lattice point */</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="n">DELTA16_ALGS3</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="c1">// let mut pairs = HashSet::&lt;(usize, usize)&gt;::new();</span>
+
+                    <span class="k">for</span> <span class="n">k</span> <span class="k">in</span> <span class="n">l_k</span><span class="o">..</span><span class="n">l_k</span> <span class="o">+</span> <span class="n">delta_k</span> <span class="p">{</span>
+                        <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="n">k</span> <span class="o">+</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+                        <span class="k">for</span> <span class="n">x</span> <span class="k">in</span> <span class="nd">isqrt_ceil!</span><span class="p">((</span><span class="n">c</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span><span class="o">..=</span><span class="n">n</span><span class="nf">.isqrt</span><span class="p">()</span> <span class="p">{</span>
+                            <span class="k">let</span> <span class="n">y2</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">-</span> <span class="n">c</span><span class="p">;</span>
+                            <span class="k">let</span> <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span><span class="nf">.isqrt</span><span class="p">();</span>
+
+                            <span class="k">if</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">==</span> <span class="n">y2</span> <span class="o">&amp;&amp;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="p">{</span>
+                                <span class="k">let</span> <span class="n">bi</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="k">as</span> <span class="nb">usize</span> <span class="o">-</span> <span class="n">l_k</span><span class="p">)</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">i</span><span class="p">;</span>
+
+                                <span class="n">bits_k</span><span class="nf">.set</span><span class="p">(</span><span class="n">bi</span><span class="p">,</span> <span class="o">!</span><span class="n">bits_k</span><span class="nf">.get</span><span class="p">(</span><span class="n">bi</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">());</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+                <span class="cm">/* remove p^2 */</span>
+
+                <span class="k">for</span> <span class="n">k</span> <span class="k">in</span> <span class="n">l_k</span><span class="o">..</span><span class="n">l_k</span> <span class="o">+</span> <span class="n">delta_k</span> <span class="p">{</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="mi">16</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="n">bits_k</span><span class="p">[(</span><span class="n">k</span> <span class="o">-</span> <span class="n">l_k</span><span class="p">)</span> <span class="o">*</span> <span class="mi">16</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                            <span class="k">let</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="n">k</span> <span class="o">+</span> <span class="n">DELTA16</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+                            <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="p">{</span>
+                                <span class="k">break</span><span class="p">;</span>
+                            <span class="p">}</span>
+
+                            <span class="k">if</span> <span class="o">!</span><span class="n">pri_square</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="k">yield</span> <span class="n">c</span><span class="p">;</span>
+
+                                <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">c</span><span class="p">;</span>
+
+                                <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="p">(</span><span class="n">r</span><span class="o">..=</span><span class="n">n</span><span class="p">)</span><span class="nf">.step_by</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+                                    <span class="n">pri_square</span><span class="nf">.insert</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
+                                <span class="p">}</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+                <span class="cm">/* update */</span>
+
+                <span class="n">bits_k</span><span class="nf">.clear</span><span class="p">();</span>
+
+                <span class="n">l</span> <span class="o">+=</span> <span class="n">delta</span><span class="p">;</span>
+                <span class="n">l_k</span> <span class="o">+=</span> <span class="n">delta_k</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="算法评价-7">算法评价</h4>
+
+<p>仅正确，性能上实际不可用。</p>
+
+<h3 id="简单实现">简单实现（√√）</h3>
+
+<p>除了原始版本外，还有一个不知道为何在网上广泛流传的简单实现版本，它直接遍历了所有二元组，先为三个方程计算值，反过来通过余数进行筛选。</p>
+
+<p>相对于原始实现，它是一个可以接受的算法（实现），但这样时间复杂度和空间复杂度都成了 $O(N)$ 。</p>
+
+<h4 id="样例代码-8">样例代码</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">atkin_sieve_simple</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">use</span> <span class="nn">atkin</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+
+    <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_coroutine</span><span class="p">(</span>
+        <span class="nd">#[coroutine]</span>
+        <span class="k">move</span> <span class="p">||</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="k">mut</span> <span class="n">bits</span> <span class="o">=</span> <span class="nn">BitVec</span><span class="p">::</span><span class="nf">from_elem</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">{</span>
+                <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">{</span>
+                <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+            <span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">x</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">n</span><span class="nf">.isqrt</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">n</span><span class="nf">.isqrt</span><span class="p">()</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">c1</span> <span class="o">=</span> <span class="nf">algs1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+
+                    <span class="c1">// not using 2-3-5 wheel sieve for efficiency</span>
+                    <span class="k">if</span> <span class="n">c1</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">c1</span> <span class="o">%</span> <span class="mi">12</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">||</span> <span class="n">c1</span> <span class="o">%</span> <span class="mi">12</span> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="o">!</span><span class="n">bits</span><span class="p">[</span><span class="n">c1</span><span class="p">]);</span>
+                    <span class="p">}</span>
+
+                    <span class="k">let</span> <span class="n">c2</span> <span class="o">=</span> <span class="nf">algs2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+
+                    <span class="c1">// 1 mod 6 =&gt; 7 mod 12</span>
+                    <span class="c1">// trim duplicate element with algs1</span>
+                    <span class="k">if</span> <span class="n">c2</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="n">c2</span> <span class="o">%</span> <span class="mi">12</span> <span class="o">==</span> <span class="mi">7</span> <span class="p">{</span>
+                        <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="o">!</span><span class="n">bits</span><span class="p">[</span><span class="n">c2</span><span class="p">]);</span>
+                    <span class="p">}</span>
+
+                    <span class="k">if</span> <span class="nf">enable_algs3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">let</span> <span class="n">c3</span> <span class="o">=</span> <span class="nf">algs3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">);</span>
+
+                        <span class="k">if</span> <span class="n">c3</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="n">c3</span> <span class="o">%</span> <span class="mi">12</span> <span class="o">==</span> <span class="mi">11</span> <span class="p">{</span>
+                            <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">c3</span><span class="p">,</span> <span class="o">!</span><span class="n">bits</span><span class="p">[</span><span class="n">c3</span><span class="p">]);</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="cm">/* trim p^2 */</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">5</span><span class="o">..=</span><span class="n">n</span><span class="nf">.isqrt</span><span class="p">()</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">r</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">i</span><span class="p">;</span>
+
+                    <span class="k">for</span> <span class="n">j</span> <span class="k">in</span> <span class="p">(</span><span class="n">r</span><span class="o">..=</span><span class="n">n</span><span class="p">)</span><span class="nf">.step_by</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">bits</span><span class="nf">.set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="k">false</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..=</span><span class="n">n</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">{</span>
+                    <span class="k">yield</span> <span class="n">i</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="算法评价-8">算法评价</h4>
+
+<p>速度很快算是第二档，但本身既无法分片又不如 Eratosthenes 筛子那么简单直观，这就使得它实际没有任何可提之处，权列在此，以为参考。</p>
 
 <h2 id="注解">注解</h2>
 
@@ -585,29 +1737,47 @@
     <li id="fn:1" role="doc-endnote">
       <p>G. H. Hardy and E. M. Wright. An Introduction to the Theory of Numbers. 1962. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
+    <li id="fn:12" role="doc-endnote">
+      <p>好家伙，论文都到二战前了，原始作者是印度学生 Sundaram ，找不到电子版，实际参考的是 <a href="https://en.wikipedia.org/wiki/Sieve_of_Sundaram">wiki</a> 。 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
     <li id="fn:2" role="doc-endnote">
       <p>Harry G. Mairson. Some new upper bounds on the generation of prime numbers. 1977. <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:3" role="doc-endnote">
       <p>J.Misra. An Exercise in Program Explanation.  1979. <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:10" role="doc-endnote">
-      <p>形式地说，任意两个相邻的最小质因数为 $p_i$ 的自然数之间，至少存在一个最小质因数为 $p_j \gt p_i$ 的自然数。 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    <li id="fn:11" role="doc-endnote">
+      <p>形式地说，任意两个相邻的最小质因数为 $p_i$ 的自然数之间，至少存在一个最小质因数为 $p_j \gt p_i$ 的自然数。 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:4" role="doc-endnote">
       <p>Paul Pritchard. A Sublinear Additive Sieve for Finding Prime Numbers. 1981. <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:5" role="doc-endnote">
-      <p>Paul Pritchard. Explaining the Wheel Sieve. 1982. <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>Paul Pritchard. Explaining the Wheel Sieve. 1982. <sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">15</a></sup> <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:5:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+    </li>
+    <li id="fn:14" role="doc-endnote">
+      <p>这里使用 量词 $k$ 而不是上下文惯用的 $n$ 有两方面考虑，一方面是和 <em>Explaining the Wheel Sieve</em> 原文的用法保持一致；另一方面 有些终结的意味的 $n$ ，$k$ 是更能暗示处于中间过程的一个“量词”，在轮子上和质数阶乘上使用更合适。 <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:16" role="doc-endnote">
+      <p>这简直就是经典科幻小说家会干的事 <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:6" role="doc-endnote">
       <p>Paul Pritchard. Fast Compact Prime Number Sieves (among Others). 1983. <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:8" role="doc-endnote">
-      <p>Paul Pritchard. LINEAR PRIME-NUMBER SIEVES: A FAMILY TREE. 1987. <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:8:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a> <a href="#fnref:8:2" class="reversefootnote" role="doc-backlink">&#8617;<sup>3</sup></a> <a href="#fnref:8:3" class="reversefootnote" role="doc-backlink">&#8617;<sup>4</sup></a></p>
+      <p>Paul Pritchard. LINEAR PRIME-NUMBER SIEVES: A FAMILY TREE. 1987. <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:8:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
     </li>
-    <li id="fn:7" role="doc-endnote">
-      <p>S.A. Bengelloun. An Incremental Primal Sieve. 1986. <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    <li id="fn:17" role="doc-endnote">
+      <p>原文作者会为每个既有算法考虑它的对偶算法。 <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>A. O. L. Atkin and D. J. Bernstein. Prime Sieves Using Binary Quadratic Forms. 2003. <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:13" role="doc-endnote">
+      <p>但它使用了我不熟悉的数学工具（抽象代数等），所不了解的数学知识（数论），而且写得看起来也并不打算真的想让人了解。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:15" role="doc-endnote">
+      <p>这个论文里数学符号的排版字体真的抽象，首先这个字符 <img src="/assets/img/prime_sieves/charR.png" alt="" /> 是什么？ 版上打眼一看都缩缩成一团了，还以为是个花体 $A$ 呢，仔细看不是，难道是什么大写希腊字母的花体么，因为拜占庭作为中世纪西方数学教育翻译的主要材料来源地之一，使得作为传统，西方人写数学符号都好整个希腊字母，但仔细对了一遍也不像，后来通过谷歌识图对比类似结果，算是确认这是个 $R$ 。 如果提前知道它是个 $R$ ，那它看起来还挺像个 $R$ 的，可这个字符<img src="/assets/img/prime_sieves/charS.png" alt="" />又是什么？它看起来像 $y$ 又像 $g$ ，这下谷歌识图也识不出来了，只能在专门的字体网站做 AI 识图，然后发现这居然是个 $S$ ，S 它是你么，它说它舅（就) 是我。这个字体名叫 <em>OriginalScriptStd</em> ，英文草书说是。 <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>
@@ -616,7 +1786,7 @@
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/algs/Prime1.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

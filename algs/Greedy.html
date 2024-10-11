@@ -17,7 +17,7 @@
     property="og:title"
     content="
         
-            Why Greedy？
+            质数基础
         
     "
 />
@@ -34,7 +34,7 @@
 
 <title>
     
-        Why Greedy？
+        质数基础
     
 </title>
 
@@ -104,7 +104,7 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">Why Greedy？</h1>
+    <h1 class="post__title__text">质数基础</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
@@ -119,7 +119,7 @@
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      August 01, 2023
+      December 29, 2023
     </div>
     
   </div>
@@ -127,116 +127,222 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="前言">前言</h2>
+    <div class="post__content"><h2 id="定义">定义</h2>
 
-<p>“贪心”的这个概念根本就有问题：</p>
+<p>质数（prime），指大于 $1$ 的自然数里，不能拆解为比它严格更小两个的自然数乘积的数。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
 
-<ol>
-  <li>从适用条件上讲，它过于地宽泛而没有用；</li>
-  <li>从内容上讲，它只是机械地总结了结果，而缺乏提示最关键的思考过程</li>
-</ol>
+<p>互质（co-prime），两个整数 $a$，$b$ 没有除了 $1$ 以外的作为正整数的共同除数（divisor），则说 $a$ 质于 $b$ ，或者 $a,b$ 互质<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup>。<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">3</a></sup></p>
 
-<p>真正地问题在于为什么 Greedy 成立，以及成立的内在核心条件是什么？<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">1</a></sup></p>
+<h2 id="性质">性质</h2>
 
-<p>这是一个两步递进的问题，首先是证明 Greedy 成立，Greedy 形式上总是由一个阶段的局部最优解来得到全局最优解，这天然适合用归纳法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>来进行证明，只要证明初始条件的成立<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup>和前一个阶段的局部最优解能够导出下一个阶段的局部最优解。</p>
+<h3 id="欧几里得引理">欧几里得引理<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">4</a></sup></h3>
 
-<p>然后可以发现 Greedy 成立的条件会有类似之处，进行真正有意义地总结。</p>
+<p><del><strong>原始版本</strong>：如果质数 $p$ 能够除 $a\cdot b$ <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">5</a></sup>，并且 $p$ 不能除 $a$ ，则 $p$ 能够除 $b$ 。</del></p>
 
-<p>下面我们介绍一些贪心算法的实例，来进行观察。</p>
+<p><strong>现代版本</strong>：如果一个整数 $n$ 能够除 $a\cdot b$ ，并且 $n$ 与 $a$ 互质，则 $n$ 能够除 $b$ 。</p>
 
-<h2 id="树上直径">树上直径</h2>
+<h4 id="证明">证明</h4>
 
-<p>求解非负权树形图的直径。</p>
+<p>现代版是对把原始欧几里得引理推广到一般整数上，我们直接对此进行证明。</p>
 
-<p>树形图（Tree Graph），就是像树一样的无向连通图，也就是无环地无向连通图。</p>
+<p>不妨假设 $n$ 是非负数：</p>
 
-<p>树上的直径就是两点间最长的简单路径<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">4</a></sup>。</p>
+<h5 id="证初始条件">证初始条件</h5>
 
-<h3 id="算法推论">算法推论</h3>
+<p>对于初始情况，比如 $ab = 0$ ，此时 $a=0$ 或 $b=0$ 。</p>
 
-<p>这时图上任意一点 $v_0$ ，以它为起点，距离最远的一个点是 $v_1$，则 $v_1$ 一定是直径的两个端点之一，然后再以 $v_1$ 为起点寻找距它最远的点 $v_2$ 就得到了直径。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">5</a></sup></p>
+<p>假设 $a=0$ ，因为 $n\perp a$ ，那么显然有 $n = 1$ ，而 $1$ 可以除任何数，当然能够除 $b$ ，结论成立；</p>
 
-<h3 id="贪心证明">贪心证明</h3>
+<p>假设 $b=0$，$b$ 能够被任何数整除，当然能被 $n$ 整除，条件成立。</p>
 
-<p>考虑树的直径一定横跨左右子树<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">6</a></sup>，而 $P_{v_0\rightarrow v_1}$ 只有两种可能：  与直径有交点或者没有交点 。</p>
+<h5 id="证递推关系">证递推关系</h5>
 
-<p>如果没有交点，就是 $P_{v_0\rightarrow v_1}$ 只在一侧的子树上的情况，那么如果连接树的根节点和 $P_{v_0\rightarrow v_1}$ 上最近根的一个点 $v_1’$ ，假设根节点是 $v_R$ ，同侧子树的直径的端点是 $v_d$ ，那么根据直径的性质，$|v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_1’ \rightarrow v_1| \leqslant |v_R\rightarrow v_d|$ ，这样就有 $|v_0\rightarrow v_1’ \rightarrow v_1| \leqslant |v_0\rightarrow v_R\rightarrow v_d|$ 。</p>
+<p>假设结论对于所有积在 $[0, ab)$ 的情况结论都成立：</p>
 
-<ol>
-  <li>如果 $|v_0\rightarrow v_1’ \rightarrow v_1| \lt |v_0\rightarrow v_R\rightarrow v_d|$ ，构造出的新路径 $P_{v_0\rightarrow v_R\rightarrow v_d}$ 就是更长的距离 $v_0$ 的路径，这就与前提条件相悖；</li>
-  <li>否则 $|v_0\rightarrow v_1’ \rightarrow v_1| = |v_0\rightarrow v_R\rightarrow v_d|$ ，这意味着 $P_{v_R\rightarrow v_0\rightarrow v_1’\rightarrow v_1}$ 要么比原路径 $P_{v_R\rightarrow v_d}$ 更长，这就和前提条件相悖，要么相等<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">7</a></sup>，$|v_1’ \rightarrow v_1| = |v_R\rightarrow v_1’ \rightarrow v_1| = |v_R\rightarrow v_d|$ 这就说明 $P_{v_R\rightarrow v_1’\rightarrow v_1}$ 也是一条可选的直径（的一部分），此时 $v_1$ 当然就是直径的一个端点。</li>
-</ol>
+<p>因为 $n \vert a\cdot b$ ，不妨令</p>
 
-<p>如果存在交点，假设交点是 $v_1’$ ，直径的与 $v_0$ 异侧的端点是 $v_{d}$ ，假如 $v_1 \neq v_d$，那么总能构造出更长的距离 $v_0$ 的路径或者树的直径，否则就是存在多条相等的直径，$v_1$ 是另一条直径的端点。</p>
+\[贪心证明\]
 
-<p>因此证明了 $v_1$ 总是直径的一个端点，当然也证明了 $v_2$ 也是直径的一个端点<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">8</a></sup>。</p>
+<p>如果 $n=a$ ，因为 $n\perp a$ ，那么显然有 $\vert n \vert = 1$ ，那么 $n$ 一定可以除 $b$ ；</p>
 
-<h3 id="成立条件">成立条件</h3>
+<p>如果 $n\lt a$ ，两边减去 $n\cdot b$ ，得到 $nq - nb = ab - nb$ ，也就是 $n(q-b) = (a-n)b$ 。又因为 $n\perp a$ ，所以有 $n\perp a-n$ <sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">6</a></sup> ，而 $0 \leqslant (a-n)b \lt ab$ ，按照假设，有 $n \vert b$ ；</p>
 
-<p>这个贪心算法能够成立的核心条件有两个：</p>
+<p>否则 $n \gt a$，两边减去 $a\cdot q$ ，得到 $nq-aq = ab-aq$ ，也即</p>
 
-<ol>
-  <li>树形图不存在环，两个点之间的简单路径有且只有一条；</li>
-  <li>非负权边，这让数学上的“不等式缩放”（scaling）能够成立。</li>
-</ol>
+\[\]
 
-<h2 id="dijkstra-最短路径">Dijkstra 最短路径</h2>
+<p>类似地， 因为 $n-a\perp a$ ，而 $0 \leqslant a(b-q) \lt ab$ ，所以有 $n-a \vert b-q $ 。不妨令 $b-q = r(n-a)$ ，代回式 $\texttt{(2)}$ 得到 $(n-a)q=(n-a)ar$ ，于是有 $q=ar$ ，代回式 $\texttt{(1)}$ 有 $nar=ab$，$b=nr$ ，也就是 $n \vert b$ 。</p>
 
-<p>一提到贪心算法，可能是很多人第一时间想到 dijkstra 算法，以前在学校时，数据结构课的老师总是喜欢强调它是一种贪心算法，当时就觉得这是句干话，因为我们完全不会因为它是贪心算法就理解它的原理或者清楚它的工作过程，现在我们来重新回顾下<a href="/algs/GraphSP.html">这个算法</a>：</p>
+<p>于是我们证明了递推关系的成立。</p>
 
-<p>非负权边的无向连通图，求解从某个点 $v_0$ 出发到其他所有点的最短路径。</p>
+<p>欧几里得引理证毕。</p>
 
-<h3 id="算法推论-1">算法推论</h3>
+<h3 id="算式基本定理">算式基本定理<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">7</a></sup></h3>
 
-<p>可以依次求出距离 $v_0$ 最短、次短、第三短。。。。。。的点的路径，每求出一个点，就用这个最短路径更新与它直接相连的那些点。</p>
+<p>每一个大于 $1$ 的正整数都可以，而且唯一地分解为一组质数的乘积。</p>
 
-<p>初始可以认为与 $v_0$ 直接相连点的最短路径就它们的直接路径长度，而其他点的最短路径是无穷大。</p>
+<h3 id="证明-1">证明</h3>
 
-<h3 id="贪心证明-1">贪心证明</h3>
+<h5 id="存在性证明">存在性证明</h5>
 
-<ol>
-  <li>由于是非负路径，初始时首先可以依次确定与 $v_0$ 直接相连的那些点的最短距离</li>
-  <li>同样由于是非负路径，到某个点 $v_1$ 的最短路径上的前驱点 $v_1’$ 的最短路径一定更小，首先会被求出，而 $v_1$ 的最短路径因此会被正确更新<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup></li>
-</ol>
+<p>这很容易理解，假如一个大于 $1$ 的正整数的因式分解不是质数就是合数，因式分解后，如果存在合数，那么合数本身也一定可以继续分解，直到只剩下质数为止。</p>
 
-<h3 id="成立条件-1">成立条件</h3>
+<h5 id="唯一性证明">唯一性证明</h5>
 
-<p>显然最重要的就是边的权重是非负值，这再次允许我们进行非比较地不等式缩放。</p>
+<p>反证法，假设 $s$ 是最小的、至少有两个质数分解组合的正整数：$s = \prod p_m = \prod q_n$ 。</p>
 
-<h2 id="jump-games">Jump Games</h2>
+<p>既然 $p_1 \perp q_k$ ，根据上文欧式引理，有 $p_1 \vert \prod_{1}^{n-1} q$；同理，$p_1 \perp p_{k=n-1}$ ，可得 $p_1 \vert \prod_{1}^{n-2} q$ ；直到 $p_1 \vert q_1$ 。又因为 $p_1 \perp q_1$ ，所以只能是 $p_1 = q_1$ ，这样就得到了比 $s$ 更小的能分解为至少两个质数组合的正整数 $\prod_{2}^{m} p = \prod_{2}^{n} q$ ，与前提假设相悖，于是反证成立。</p>
 
-<p><a href="/oth/LeetCodeJumpGames.html"></a></p>
+<h5 id="唯一性证明独立">唯一性证明（独立）</h5>
+
+<p>这里通过不依赖欧几里得引理来独立证明。</p>
+
+<p>仍然通过反证法，假设 $s$ 是最小的、至少有两个质数分解组合的正整数 $s = \prod p_m = \prod q_n$ 。</p>
+
+<p>如果两个组合里存在一对儿相等的质数 $p_i = q_j$ ，则两边约掉相等的数后会出现一个比 $s$ 更小的多质数分解的整数，与前提相悖。</p>
+
+<p>因此不妨可以假设 $p_1 \lt q_1$ ，令 $P=\prod_{2}^{m} p$ ，$Q=\prod_{2}^{n} q$ ，则有 $s=p_1P=q_1Q$ 。</p>
+
+<p>又有 $p_1 \lt q_1$ ，所以 $P \gt Q$ ，不妨令 $s’$ 等于 $s$ 减去 $p_1Q$ ，得到 $s’ = p_1(P-Q) = Q(q_1-p_1)$ 。因为 $ s’ \lt s$ ，所以 $s’$ 只有唯一的质因数分解，那么 $p_1$ 要么在 $q_1 - p_1$ 的部分，要么在 $Q$ 的部分。</p>
+
+<p>如果 $p_1$ 在 $q_1-p_1$ 的部分，则有 $p_1 \vert q_1$ ，与 $p_1$ 、$q_1$ 都是质数相悖；</p>
+
+<p>如果 $p_1$ 在 $Q$ 的部分，由于前面的结论，$p_1 \not\in \lbrace q \rbrace$ ，因此就有两对儿质因数分解，这样就发现了比 $s$ 更小的多组质因数分解的正整数 $Q$ ，与假设相悖。</p>
+
+<p>反证证毕。</p>
+
+<h2 id="质数分布">质数分布</h2>
+
+<h3 id="质数定理">质数定理<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">8</a></sup></h3>
+
+<p>首先定义一个用于质数计数的函数 $\pi(N)$ ，表示 $\leqslant N$ 范围内的质数个数，那么有：</p>
+
+\[同样由于是非负路径，到某个点 $v_1$ 的最短路径上的前驱点 $v_1'$ 的最短路径一定更小，首先会被求出，而 $v_1$ 的最短路径因此会被正确更新[^9]\]
+
+<p>据此，也可以推出第 $n$ 个质数 $p_n$ 的渐进表示：</p>
+
+\[显然最重要的就是边的权重是非负值，这再次允许我们进行非比较地不等式缩放。\]
+
+<p>推理过程：</p>
+
+<p>首先这实质是在求 $\pi(x)$ 的反函数（的渐进表示），已知 $y\sim\large\frac{x}{\log x}$ ，两边取 $\log$ 得到 $ \log y \sim \log x - \log\log x \sim \log x$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，带回 $\pi(x)$ 原式得到 $x \sim y\log y$ ，也即 $p_n \sim \large\frac{n}{\log n}$ ，证毕。</p>
+
+<h3 id="伯特兰-切比雪夫定理">伯特兰-切比雪夫定理<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">10</a></sup></h3>
+
+<p>对于 $n &gt; 3$ ，至少存在一个质数 $p$ ，满足 $n \lt p \lt 2n-2$ 。</p>
+
+<p>更宽松、但更适用的形式是对于 $n\geqslant 2$：</p>
+
+\[这通常是显而易见的\]
+
+<p>证明很简单，首先对于 $n\gt 3$ 的情况，显然由于更宽松的形式，上式是成立的；而对于 $n=2$ 和 $n=3$ 的特殊情况，分别有 $2 \lt 3\lt 4$ 和 $3 \lt 5\lt 6$ ，也使得上式成立。</p>
+
+<p>通过反证法还可以得出对于 $n\geqslant 1$ ，也就是所有质数：</p>
+
+\[不这样的话，假如只在其中一棵子树上，通过连接另一侧子树上的点、根节点和直径的近端的点，就能构造出更长的直径\]
+
+<p>这里将介绍简单的测试方法<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">11</a></sup> – 试除法（trial division），其中使用的技巧将在后面查找范围内所有质数的方法里得到进一步的拓展。</p>
+
+<p>被测试的整数记为 $n$ ，试除法，顾名思义就是检查所有 $2\dots n-1$ 的值能否除 $n$ ，也就是根据原始定义进行测试。这里主要介绍常见的优化技巧：</p>
+
+<p>首先，因数测试的上限不需要到 $n-1$ ，而只需要到 $\lfloor \sqrt{n} \rfloor$ <sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">12</a></sup> ，因为因数如果存在，一定是一大一小或者相等大小，只需要检查所有较小或者相等的数就行。</p>
+
+<p>其次，可以先检测大多数情况下最常见的质因数：$2, 3$ 来快速失败。</p>
+
+<p>更进一步地，可以排除所有与 $2,3$ 不互质的数，实质上我们是在尝试寻找 $n$ 的质因数，可以用 $3\sharp\cdot k+i = 6k+i$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">13</a></sup>的形式表示后面的数字，其中 $k \in N^+, 0\leqslant i \lt 3\sharp$ 。之所以选择 $3\sharp$ 作为周期长度，是因为它是这些质因子的最小公倍数，在此基础上排除那些与 $2$ 或 $3$ 不互质的 $i$ ，比如 $i=0, 2, 4$ ，也就是只需要检查 $6k+1, 6k+5$ 。如果从数字 $5$ <sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">14</a></sup>开始检查是否能除 $n$ ，那么为了方便起见，周期内的这两个位置 $x$ 可以表示为 $x \mod{6} \equiv \pm1$ 。</p>
+
+<p>有了这样三个主要地优化，现在就可以写下试除法的代码：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[macro_export]</span>
+<span class="nd">macro_rules!</span> <span class="n">is_prime</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$n:expr</span><span class="p">;</span> <span class="nv">$ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="nv">$n</span><span class="p">;</span>
+​
+            <span class="nv">'ret</span><span class="p">:</span> <span class="k">loop</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="p">{</span>
+                    <span class="k">break</span> <span class="kc">false</span><span class="p">;</span>
+                <span class="p">}</span>
+                
+                <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">||</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">3</span> <span class="p">{</span>
+                    <span class="k">break</span> <span class="kc">true</span><span class="p">;</span>
+                <span class="p">}</span>
+​
+                <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                    <span class="k">break</span> <span class="kc">false</span><span class="p">;</span>
+                <span class="p">}</span>
+​
+                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="p">(</span><span class="mi">5</span><span class="o">..=&lt;</span><span class="nv">$ty</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">isqrt</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="nf">.step_by</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">n</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                        <span class="k">break</span> <span class="nv">'ret</span> <span class="kc">false</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+​
+                <span class="k">break</span> <span class="kc">true</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里使用宏只是因为 Rust 缺乏统一描述常见基本数字类型的 Trait ，而使用 <code class="language-plaintext highlighter-rouge">loop</code> 是为了在宏里模拟函数体行为。</p>
+
+<h2 id="查找质数">查找质数</h2>
+
+<p>具体来说，是这样一个问题：给定一个正整数 $n$ ，查找所有质数 $p\leqslant n$ 。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">15</a></sup></p>
+
+<p>方法论是通过“筛子” （Sieves）来排除合数，直到只剩质数，这种缩减问题规模的办法，也是数学上对此类问题的通解。</p>
+
+<p>详见专篇：<a href="/algs/Prime1.html">质数筛子</a></p>
 
 <h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:10" role="doc-endnote">
-      <p>贪心算法就总是第一眼看上去感觉好像是对的，但是又不能 100% 确定，证明它或者理解它为什么是对的比实现它要复杂得多 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>Inductive Reasoning，也许用诱导推理这个词更能把握它的内核，而且总是可以联想到后缀数组的诱导排序（Induced Sorting）算法，反过来归纳一词总让人误以为这是一种经验猜测而不是逻辑推理 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>这通常是显而易见的 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
     <li id="fn:1" role="doc-endnote">
-      <p>没有重复点的路径 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>或者另一种说法，只能被 $1$ 和 它自己整除的数字。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:4" role="doc-endnote">
-      <p>两步地贪心算法 QAQ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>记作 $a \perp b$ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:5" role="doc-endnote">
-      <p>不这样的话，假如只在其中一棵子树上，通过连接另一侧子树上的点、根节点和直径的近端的点，就能构造出更长的直径 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>质数的要求是正整数，而互质的两个数里显然可以存在负整数，其中 $1$ 和 $-1$ 是唯一的两个和所有数都互质的数，也是唯一和 $0$ 互质的数；除了 $1$ 以外，自己与自己不互质。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
-      <p>存在零权重的边 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    <li id="fn:2" role="doc-endnote">
+      <p>Euclid’s lemma，以下简称欧式引理 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:3" role="doc-endnote">
+      <p>除，divide， $p$ 能被除 $a\cdot b$ 也即 $a\cdot b$ 能被 $p$ 整除，记作 $p\vert a\cdot b$ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:7" role="doc-endnote">
-      <p>Deductive Reasoning，诱导推理的反过程–演绎推理 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>反证法，若 $n\not\perp a-n$ ，则 $n \not\perp a-n + n$ ，与前提条件相悖。 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:8" role="doc-endnote">
+      <p>Fundamental theorem of arithmetic，也可以形象地叫做正整数唯一分解定理，某种程度我更倾向于这个名字，因为这个名字一点儿都不故弄玄虚，是自解释的，但是作为章节标题它有点儿长了 :(，其他名字还有 Unique factorization theorem、 Prime factorization theorem 等等. 。 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:15" role="doc-endnote">
+      <p>Prime Number Theory，简称 PNT 。 <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:14" role="doc-endnote">
+      <p>$\log\log x = o(\log x) $ <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:16" role="doc-endnote">
+      <p>Bertrand-Chebyshev Theorem，一开始是由伯特兰提的猜想（postulate），最先被切比雪夫证明。 <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:9" role="doc-endnote">
-      <p>如果存在零权边，那么总可以等价地交换这些零权边连接的点的位置，并不影响结论 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>还有更复杂的经验算法、概率测试算法、快速确定性测试算法等一系列计算较为复杂的方法 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:12" role="doc-endnote">
+      <p>在现代编程语言里应该有名字诸如 <code class="language-plaintext highlighter-rouge">isqrt</code> 的数学函数来实现向下取整的平分根计算。 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:10" role="doc-endnote">
+      <p>$c\sharp$ 指得是质数的阶乘（primorial），它可以指所有小于等于正整数 $c$ 的质数的乘积。对它的估算是 $c\sharp \leqslant 4^n$ <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:11" role="doc-endnote">
+      <p>$2, 3$ 前面在前面作为快速失败的优化已经提前测过，$4$ 是 $2$ 的倍数直接跳过，于是从 $5$ 开始检测。 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:13" role="doc-endnote">
+      <p>实质上是查找 $[2\dots n]$ 范围内的所有质数。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>
@@ -245,7 +351,7 @@
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/algs/Greedy.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

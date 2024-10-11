@@ -127,9 +127,7 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>像水面上打漂儿出的石头，只是“一击就弹出“地了解关于最短路径（Shortest Path，以下简称SP）问题。</p>
-
-<h2 id="前言">前言</h2>
+    <div class="post__content"><h2 id="前言">前言</h2>
 
 <p>介绍的最短路径的算法以<strong>有向图（强连通）</strong>为基础，但也适用于无向图的情况，只是在涉及负环时情况略有不同<sup id="fnref:undir-graph" role="doc-noteref"><a href="#fn:undir-graph" class="footnote" rel="footnote">1</a></sup>。</p>
 
@@ -213,7 +211,7 @@ P \gets \varnothing\\
 
 <p>所以我们下面讨论的<strong>有向图负边权情况下探测负环的问题</strong> 。</p>
 
-<p>方法是检查对角线上元素，也就是 $w[i][i], i \in |V|$ ，是否小于 $0$ ，如果是，意味着存在 $i\rightarrow i$ 的负环。</p>
+<p>方法是检查对角线上元素，也就是 $w[i][i], i \in \vert V\vert$ ，是否小于 $0$ ，如果是，意味着存在 $i\rightarrow i$ 的负环。</p>
 
 <h4 id="负环路径构造">负环路径构造</h4>
 
@@ -483,7 +481,7 @@ p \gets y \\
 
 <h2 id="so-called-spfa-算法">so-called ‘SPFA’ 算法</h2>
 
-<p>这个 Bellman-Ford 的改进算法在 OI 界可谓大名鼎鼎，对于随机图的实际运行很快，而且实现方便。它是中国的研究员提出的，被认为本质上是 Tarjan 的图上广度优先遍历的一般化版本<sup id="fnref:wiki-spfa" role="doc-noteref"><a href="#fn:wiki-spfa" class="footnote" rel="footnote">2</a></sup> ，虽然从算法思想上没有什么直接的关系。</p>
+<p>这个 Bellman-Ford 的改进算法在 OI 界可谓大名鼎鼎，对于随机图的实际运行很快，而且实现方便。它是中国的研究员提出的，被认为本质上是 Tarjan 的图上广度优先遍历的一般化版本<sup id="fnref:wiki-spfa" role="doc-noteref"><a href="#fn:wiki-spfa" class="footnote" rel="footnote">2</a></sup> ，尽管二者从算法思想上没什么直接关系。</p>
 
 <h3 id="算法思想-2">算法思想</h3>
 
@@ -610,7 +608,7 @@ R \gets \lbrace s \rbrace\\
 
 <p>最坏时间复杂度不变，仍是 $O(nm)$ ，但实际运行是很好的（相对于其他能处理负边权的算法）。另外对于特定情况的一些进一步的优化，主要是关于如何根据有关条件把点加到对头还是队尾，这里就不展开了。</p>
 
-<p>但接下来介绍的是有限制条件的更最快的算法：Dijkstra 算法 。</p>
+<p>但接下来介绍的是有限制条件的更快算法：Dijkstra 算法 。</p>
 
 <h2 id="dijkstra-算法">Dijkstra 算法</h2>
 
@@ -861,13 +859,7 @@ T \gets |V|\\
 
 <p>$O(nm) + O(nm) = O(nm)$ ，这样在负权图上也实现了最坏时间复杂度为 $O(nm)$ 的最短路径算法！</p>
 
-<h2 id="尾声">尾声</h2>
-
-<p>用力地掷出 SP 问题这一块飞石，最终在时间的河流上打出了一串儿的涟漪，虽然感觉花的时间长，但实际比想象花的时间还要长一点。特别是和 <a href="/algs/GraphMST.html">无向图上最小生成树问题</a> ，还有树上问题等比较，图上的算法思想还是有很多相通之处，有一些人名也串来串去，比如 Tarjan，有点儿图界 Knuth 的意思。</p>
-
-<p>凡事总是勃勃兴起，忽而结束。</p>
-
-<h2 id="引用">引用</h2>
+<h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
@@ -890,7 +882,7 @@ T \gets |V|\\
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/algs/GraphSP.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

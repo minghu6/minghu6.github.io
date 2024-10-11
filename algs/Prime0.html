@@ -135,7 +135,9 @@
 
 <h2 id="性质">性质</h2>
 
-<h3 id="欧几里得引理">欧几里得引理<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">4</a></sup></h3>
+<h3 id="欧几里得引理">欧几里得引理</h3>
+
+<p><strong>欧几里得引理</strong><sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">4</a></sup>，</p>
 
 <p><del><strong>原始版本</strong>：如果质数 $p$ 能够除 $a\cdot b$ <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">5</a></sup>，并且 $p$ 不能除 $a$ ，则 $p$ 能够除 $b$ 。</del></p>
 
@@ -143,7 +145,7 @@
 
 <h4 id="证明">证明</h4>
 
-<p>现代版是对把原始欧几里得引理推广到一般整数上，我们直接对此进行证明。</p>
+<p>现代版是把原始欧式引理推广到一般整数上，我们直接对此进行证明。</p>
 
 <p>不妨假设 $n$ 是非负数：</p>
 
@@ -159,27 +161,27 @@
 
 <p>假设结论对于所有积在 $[0, ab)$ 的情况结论都成立：</p>
 
-<p>因为 $n | a\cdot b$ ，不妨令</p>
+<p>因为 $n \vert a\cdot b$ ，不妨令</p>
 
 \[n\cdot q=ab \qquad\qquad \texttt{(1)}\]
 
-<p>如果 $n=a$ ，因为 $n\perp a$ ，那么显然有 $|n| = 1$ ，那么 $n$ 一定可以除 $b$ ；</p>
+<p>如果 $n=a$ ，因为 $n\perp a$ ，那么显然有 $\vert n \vert = 1$ ，那么 $n$ 一定可以除 $b$ ；</p>
 
-<p>如果 $n\lt a$ ，两边减去 $n\cdot b$ ，得到 $nq - nb = ab - nb$ ，也就是 $n(q-b) = (a-n)b$ 。又因为 $n\perp a$ ，所以有 $n\perp a-n$ <sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">6</a></sup> ，而 $0 \leqslant (a-n)b \lt ab$ ，按照假设，有 $n | b$ ；</p>
+<p>如果 $n\lt a$ ，两边减去 $n\cdot b$ ，得到 $nq - nb = ab - nb$ ，也就是 $n(q-b) = (a-n)b$ 。又因为 $n\perp a$ ，所以有 $n\perp a-n$ <sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">6</a></sup> ，而 $0 \leqslant (a-n)b \lt ab$ ，按照假设，有 $n \vert b$ ；</p>
 
 <p>否则 $n \gt a$，两边减去 $a\cdot q$ ，得到 $nq-aq = ab-aq$ ，也即</p>
 
 \[(n-a)q=a(b-q) \qquad\qquad \texttt{(2)}\]
 
-<p>类似地， 因为 $n-a\perp a$ ，而 $0 \leqslant a(b-q) \lt ab$ ，所以有 $n-a | b-q $ 。不妨令 $b-q = r(n-a)$ ，代回式 $\texttt{(2)}$ 得到 $(n-a)q=(n-a)ar$ ，于是有 $q=ar$ ，代回式 $\texttt{(1)}$ 有 $nar=ab$，$b=nr$ ，也就是 $n|b$ 。</p>
+<p>类似地， 因为 $n-a\perp a$ ，而 $0 \leqslant a(b-q) \lt ab$ ，所以有 $(n-a)\ \vert\ (b-q) $ 。不妨令 $b-q = r(n-a)$ ，代回式 $\texttt{(2)}$ 得到 $(n-a)q=(n-a)ar$ ，于是有 $q=ar$ ，代回式 $\texttt{(1)}$ 有 $nar=ab$，$b=nr$ ，也就是 $n \vert b$ 。</p>
 
 <p>于是我们证明了递推关系的成立。</p>
 
-<p>欧几里得引理证毕。</p>
+<p>证毕。</p>
 
-<h3 id="算式基本定理">算式基本定理<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">7</a></sup></h3>
+<h3 id="算式基本定理">算式基本定理</h3>
 
-<p>每一个大于 $1$ 的正整数都可以，而且唯一地分解为一组质数的乘积。</p>
+<p><strong>算式基本定理</strong><sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">7</a></sup>，每一个大于 $1$ 的正整数都可以，而且唯一地分解为一组质数的乘积。</p>
 
 <h4 id="证明-1">证明</h4>
 
@@ -191,7 +193,9 @@
 
 <p>反证法，假设 $s$ 是最小的、至少有两个质数分解组合的正整数：$s = \prod p_m = \prod q_n$ 。</p>
 
-<p>既然 $p_1 \perp q_k$ ，根据上文欧式引理，有 $p_1 |\prod_{1}^{n-1} q$；同理，$p_1 \perp p_{k=n-1}$ ，可得 $p_1 | \prod_{1}^{n-2} q$ ；直到 $p_1 | q_1$ 。又因为 $p_1 \perp q_1$ ，所以只能是 $p_1 = q_1$ ，这样就得到了比 $s$ 更小的能分解为至少两个质数组合的正整数 $\prod_{2}^{m} p = \prod_{2}^{n} q$ ，与前提假设相悖，于是反证成立。</p>
+<p>既然 $p_1 \perp q_k$ ，根据上文欧式引理，有 $p_1 \vert\prod_{1}^{n-1} q$；同理，$p_1 \perp p_{k=n-1}$ ，可得 $p_1 \vert \prod_{1}^{n-2} q$ ；直到 $p_1 \vert q_1$ 。</p>
+
+<p>又因为 $p_1 \perp q_1$ ，所以只能是 $p_1 = q_1$ ，这样就得到了比 $s$ 更小的能分解为至少两个质数组合的正整数 $\prod_{2}^{m} p = \prod_{2}^{n} q$ ，与前提假设相悖，于是反证成立。</p>
 
 <h5 id="唯一性证明独立">唯一性证明（独立）</h5>
 
@@ -205,7 +209,7 @@
 
 <p>又有 $p_1 \lt q_1$ ，所以 $P \gt Q$ ，不妨令 $s’$ 等于 $s$ 减去 $p_1Q$ ，得到 $s’ = p_1(P-Q) = Q(q_1-p_1)$ 。因为 $ s’ \lt s$ ，所以 $s’$ 只有唯一的质因数分解，那么 $p_1$ 要么在 $q_1 - p_1$ 的部分，要么在 $Q$ 的部分。</p>
 
-<p>如果 $p_1$ 在 $q_1-p_1$ 的部分，则有 $p_1 | q_1$ ，与 $p_1$ 、$q_1$ 都是质数相悖；</p>
+<p>如果 $p_1$ 在 $q_1-p_1$ 的部分，则有 $p_1 \vert q_1$ ，与 $p_1$ 、$q_1$ 都是质数相悖；</p>
 
 <p>如果 $p_1$ 在 $Q$ 的部分，由于前面的结论，$p_1 \not\in \lbrace q \rbrace$ ，因此就有两对儿质因数分解，这样就发现了比 $s$ 更小的多组质因数分解的正整数 $Q$ ，与假设相悖。</p>
 
@@ -213,9 +217,9 @@
 
 <h2 id="质数分布">质数分布</h2>
 
-<h3 id="质数定理">质数定理<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">8</a></sup></h3>
+<h3 id="质数定理">质数定理</h3>
 
-<p>首先定义一个用于质数计数的函数 $\pi(N)$ ，表示 $\leqslant N$ 范围内的质数个数，那么有：</p>
+<p><strong>质数定理</strong><sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">8</a></sup>，首先定义一个用于质数计数的函数 $\pi(N)$ ，表示 $\leqslant N$ 范围内的质数个数，那么有：</p>
 
 \[\pi(x) \sim \frac{x}{\log x}\]
 
@@ -227,9 +231,9 @@
 
 <p>首先这实质是在求 $\pi(x)$ 的反函数（的渐进表示），已知 $y\sim\large\frac{x}{\log x}$ ，两边取 $\log$ 得到 $ \log y \sim \log x - \log\log x \sim \log x$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，带回 $\pi(x)$ 原式得到 $x \sim y\log y$ ，也即 $p_n \sim \large\frac{n}{\log n}$ ，证毕。</p>
 
-<h3 id="伯特兰-切比雪夫定理">伯特兰-切比雪夫定理<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">10</a></sup></h3>
+<h3 id="伯特兰-切比雪夫定理">伯特兰-切比雪夫定理</h3>
 
-<p>对于 $n &gt; 3$ ，至少存在一个质数 $p$ ，满足 $n \lt p \lt 2n-2$ 。</p>
+<p><strong>伯特兰-切比雪夫定理</strong><sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">10</a></sup>，对于 $n &gt; 3$ ，至少存在一个质数 $p$ ，满足 $n \lt p \lt 2n-2$ 。</p>
 
 <p>更宽松、但更适用的形式是对于 $n\geqslant 2$：</p>
 
@@ -237,7 +241,7 @@
 
 <p>证明很简单，首先对于 $n\gt 3$ 的情况，显然由于更宽松的形式，上式是成立的；而对于 $n=2$ 和 $n=3$ 的特殊情况，分别有 $2 \lt 3\lt 4$ 和 $3 \lt 5\lt 6$ ，也使得上式成立。</p>
 
-<p>通过反证法还可以得出对于 $n\geqslant 1$ ，也就是所有质数：</p>
+<p>通过反证法还可以得出对于 $n\geqslant 1$ ，也就是<strong>所有质数</strong>：</p>
 
 \[p_{n+1} \lt 2p_n\]
 
@@ -251,7 +255,9 @@
 
 <p>其次，可以先检测大多数情况下最常见的质因数：$2, 3$ 来快速失败。</p>
 
-<p>更进一步地，可以排除所有与 $2,3$ 不互质的数，实质上我们是在尝试寻找 $n$ 的质因数，可以用 $3\sharp\cdot k+i = 6k+i$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">13</a></sup>的形式表示后面的数字，其中 $k \in N^+, 0\leqslant i \lt 3\sharp$ 。之所以选择 $3\sharp$ 作为周期长度，是因为它是这些质因子的最小公倍数，在此基础上排除那些与 $2$ 或 $3$ 不互质的 $i$ ，比如 $i=0, 2, 4$ ，也就是只需要检查 $6k+1, 6k+5$ 。如果从数字 $5$ <sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">14</a></sup>开始检查是否能除 $n$ ，那么为了方便起见，周期内的这两个位置 $x$ 可以表示为 $x \mod{6} \equiv \pm1$ 。</p>
+<p>更进一步地，可以排除所有与 $2,3$ 不互质的数，实质上我们是在尝试寻找 $n$ 的质因数，可以用 $3\sharp\cdot k+i = 6k+i$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">13</a></sup>的形式表示后面的数字，其中 $k \in N^+, 0\leqslant i \lt 3\sharp$ 。</p>
+
+<p>之所以选择 $3\sharp$ 作为周期长度，是因为它是这些质因子的最小公倍数，在此基础上排除那些与 $2$ 或 $3$ 不互质的 $i$ ，比如 $i=0, 2, 4$ ，也就是只需要检查 $6k+1, 6k+5$ 。假如从数字 $5$ <sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">14</a></sup>开始检查是否能除 $n$ ，那么为了方便起见，周期内的这两个位置 $x$ 可以表示为 $x \mod{6} \equiv \pm1$ 。</p>
 
 <p>有了这样三个主要地优化，现在就可以写下试除法的代码：</p>
 
@@ -287,11 +293,11 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>这里使用宏只是因为 Rust 缺乏统一描述常见基本数字类型的 Trait ，而使用 <code class="language-plaintext highlighter-rouge">loop</code> 是为了在宏里模拟函数体行为。</p>
+<p><em>这里使用宏只是因为 Rust 缺乏统一描述常见基本数字类型的 Trait ，而使用 <code class="language-plaintext highlighter-rouge">loop</code> 是为了在宏里模拟函数体行为。</em></p>
 
 <h2 id="查找质数">查找质数</h2>
 
-<p>具体来说，是这样一个问题：给定一个正整数 $n$ ，查找所有质数 $p\leqslant n$ 。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">15</a></sup></p>
+<p>具体来说，是这样一个问题：给定一个正整数 $N$ ，查找所有质数 $p\leqslant N$ 。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">15</a></sup></p>
 
 <p>方法论是通过“筛子” （Sieves）来排除合数，直到只剩质数，这种缩减问题规模的办法，也是数学上对此类问题的通解。</p>
 
@@ -311,10 +317,10 @@
       <p>质数的要求是正整数，而互质的两个数里显然可以存在负整数，其中 $1$ 和 $-1$ 是唯一的两个和所有数都互质的数，也是唯一和 $0$ 互质的数；除了 $1$ 以外，自己与自己不互质。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:2" role="doc-endnote">
-      <p>Euclid’s lemma，以下简称欧式引理 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>Euclid’s lemma，以下简称欧式引理。 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:3" role="doc-endnote">
-      <p>除，divide， $p$ 能被除 $a\cdot b$ 也即 $a\cdot b$ 能被 $p$ 整除，记作 $p| a\cdot b$ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>除，divide， $p$ 能被除 $a\cdot b$ 也即 $a\cdot b$ 能被 $p$ 整除，记作 $p\vert a\cdot b$ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:7" role="doc-endnote">
       <p>反证法，若 $n\not\perp a-n$ ，则 $n \not\perp a-n + n$ ，与前提条件相悖。 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
@@ -322,8 +328,8 @@
     <li id="fn:8" role="doc-endnote">
       <p>Fundamental theorem of arithmetic，也可以形象地叫做正整数唯一分解定理，某种程度我更倾向于这个名字，因为这个名字一点儿都不故弄玄虚，是自解释的，但是作为章节标题它有点儿长了 :(，其他名字还有 Unique factorization theorem、 Prime factorization theorem 等等. 。 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:15" role="doc-endnote">
-      <p>Prime Number Theory，简称 PNT 。 <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    <li id="fn:17" role="doc-endnote">
+      <p>Prime Number Theory，简称 PNT 。 <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:14" role="doc-endnote">
       <p>$\log\log x = o(\log x) $ <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
@@ -353,7 +359,7 @@
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/algs/Prime0.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

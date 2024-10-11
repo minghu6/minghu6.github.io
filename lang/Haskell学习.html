@@ -17,7 +17,7 @@
     property="og:title"
     content="
         
-            Haskell 学习
+            Haskell 学习小记
         
     "
 />
@@ -34,7 +34,7 @@
 
 <title>
     
-        Haskell 学习
+        Haskell 学习小记
     
 </title>
 
@@ -104,7 +104,7 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">Haskell 学习</h1>
+    <h1 class="post__title__text">Haskell 学习小记</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
@@ -207,6 +207,10 @@
 
 <h2 id="函子">函子</h2>
 
+<p><em>在这里我们不讨论这些接口的范畴论（category theory）相应概念的起源，也许有一天我研究了范畴论后，可以在函数式语言的进阶讨论中讨论这些概念，而现在这至少与我们理解这些接口的实际工作无关。</em></p>
+
+<p><em>另一方面范畴论属于哲学数学，可以这么地在抽象地抽象上看问题，但这样有特别的意义吗，它好像还缺乏一个能特别证明它价值的领域。</em></p>
+
 <h3 id="所谓函子functor">所谓函子（Functor）</h3>
 
 <div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="kr">where</span>
@@ -299,22 +303,64 @@
 <span class="n">liftA2</span> <span class="n">f</span> <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">fmap</span> <span class="n">f</span> <span class="n">x</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>相比于前面的 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> ， <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 是说把 <code class="language-plaintext highlighter-rouge">a -&gt; b</code> 也放进上下文 <code class="language-plaintext highlighter-rouge">f</code> 里，这样做的好处是可以利用函数柯里化，在上下文里连接多个参数。</p>
+<p>相比于前面的 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> ， <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 是说把 <code class="language-plaintext highlighter-rouge">a -&gt; b</code> 也放进上下文 <code class="language-plaintext highlighter-rouge">f</code> 里，<strong>这样做的好处是可以利用函数柯里化，在上下文里连接多个参数，这也是应用函子的本质。</strong></p>
 
 <p>比如有一个多参函数 <code class="language-plaintext highlighter-rouge">a -&gt; b -&gt; c -&gt; d</code> ，那么可以结合 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> 操作符，用 <code class="language-plaintext highlighter-rouge">(a -&gt; b -&gt; c -&gt; d) &lt;$&gt; f a &lt;*&gt; f b &lt;*&gt; f c</code> 的形式在上下文里传参。<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup></p>
 
 <p>而 <code class="language-plaintext highlighter-rouge">liftA2</code> 则像是多一个参数的 <code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> 。</p>
 
-<p>因为这就是[]对Applicative的实现</p>
+<p>再来看看  <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 的默认实现，按照形参实参一一对应的原则有：</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">id</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">a</span>
+
+<span class="n">liftA2</span> <span class="n">id</span> 
+<span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">))</span>      <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">c</span>
+<span class="o">=&gt;</span> <span class="p">((</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">c</span>
+                        <span class="o">=&gt;</span> <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 的默认实现就有点儿隐晦了，至于 <code class="language-plaintext highlighter-rouge">liftA2</code> 的默认实现，那更是神中神，直接不演了，表明定义的实质就是模式匹配：</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">liftA2</span> <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">c</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span>  <span class="o">::</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+<span class="n">fmap</span>   <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+
+            <span class="n">liftA2</span> <span class="n">f</span> <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">fmap</span> <span class="n">f</span> <span class="n">x</span><span class="p">)</span>
+<span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="p">((</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span><span class="p">)</span>
+             <span class="n">fb</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="n">f</span> <span class="p">(</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span>
+                     <span class="kr">_</span> <span class="o">=</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">c</span>
+</code></pre></div></div>
+
+<p>注意函数实现里的实参是单独的，而函数签名里的形参则与它所在的 <code class="language-plaintext highlighter-rouge">class</code> 同名对应。</p>
+
+<h4 id="-和-"><code class="language-plaintext highlighter-rouge">&lt;*</code> 和 <code class="language-plaintext highlighter-rouge">*&gt;</code></h4>
+
+<p>在上下文的环境里 ，分别只保留左边参数和只保留右边参数</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">infixl</span> <span class="mi">4</span> <span class="o">&lt;*</span><span class="p">,</span> <span class="o">*&gt;</span><span class="p">,</span>
+
+<span class="p">(</span><span class="o">&lt;*</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
+<span class="p">(</span><span class="o">&lt;*</span><span class="p">)</span> <span class="o">=</span> <span class="n">liftA2</span> <span class="n">const</span>
+
+<span class="p">(</span><span class="o">*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+<span class="n">a1</span> <span class="o">*&gt;</span> <span class="n">a2</span> <span class="o">=</span> <span class="p">(</span><span class="n">id</span> <span class="o">&lt;$</span> <span class="n">a1</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">a2</span>
+
+<span class="n">const</span>                   <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">a</span>
+<span class="n">const</span> <span class="n">x</span> <span class="kr">_</span>               <span class="o">=</span>  <span class="n">x</span>
+</code></pre></div></div>
+
+<h4 id="applicative-实例">Applicative 实例</h4>
+
+<p><strong><code class="language-plaintext highlighter-rouge">[]</code></strong></p>
 
 <div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">instance</span> <span class="kt">Applicative</span> <span class="kt">[]</span> <span class="kr">where</span>
     <span class="n">pure</span> <span class="n">x</span>    <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
-    <span class="n">fs</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="n">x</span> <span class="o">|</span> <span class="n">f</span> <span class="o">&lt;-</span> <span class="n">fs</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">xs</span><span class="p">]</span>  <span class="c1">-- 定义在这里</span>
+    <span class="n">fs</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="n">x</span> <span class="o">|</span> <span class="n">f</span> <span class="o">&lt;-</span> <span class="n">fs</span><span class="p">,</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">xs</span><span class="p">]</span>
     <span class="n">liftA2</span> <span class="n">f</span> <span class="n">xs</span> <span class="n">ys</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="n">x</span> <span class="n">y</span> <span class="o">|</span> <span class="n">x</span> <span class="o">&lt;-</span> <span class="n">xs</span><span class="p">,</span> <span class="n">y</span> <span class="o">&lt;-</span> <span class="n">ys</span><span class="p">]</span>
     <span class="n">xs</span> <span class="o">*&gt;</span> <span class="n">ys</span>  <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="o">|</span> <span class="kr">_</span> <span class="o">&lt;-</span> <span class="n">xs</span><span class="p">,</span> <span class="n">y</span> <span class="o">&lt;-</span> <span class="n">ys</span><span class="p">]</span>
 </code></pre></div></div>
 
-<p>下面例子针对构造器Maybe</p>
+<p><strong><code class="language-plaintext highlighter-rouge">Maybe</code></strong></p>
 
 <div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">instance</span> <span class="kt">Applicative</span> <span class="kt">Maybe</span> <span class="kr">where</span>  
     <span class="n">pure</span> <span class="o">=</span> <span class="kt">Just</span>  
@@ -328,44 +374,9 @@
 <span class="o">&gt;</span> <span class="kt">Nothing</span>
 </code></pre></div></div>
 
-<p>可以看出<code class="language-plaintext highlighter-rouge">pure</code>是指明构造器，<code class="language-plaintext highlighter-rouge">(&lt;*&gt;)</code>核心算法解构逻辑。</p>
+<h4 id="alternative">Alternative</h4>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">pure</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
-<span class="o">=</span> <span class="p">(</span><span class="kt">Just</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Just</span> <span class="mi">2</span> <span class="c1">-- pure of Maybe is Just </span>
-</code></pre></div></div>
-
-<p>从定义上看，</p>
-
-<p><code class="language-plaintext highlighter-rouge">pure f &lt;*&gt; x</code> 等价于 <code class="language-plaintext highlighter-rouge">fmap f x</code></p>
-
-<p><strong>lift函数</strong></p>
-
-<p>Module Control.Applicative</p>
-
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">liftA2</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="o">&gt;</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-
-<span class="n">liftA2</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span> <span class="p">(</span><span class="kt">Just</span> <span class="mi">1</span><span class="p">)</span>  <span class="p">(</span><span class="kt">Just</span> <span class="mi">2</span><span class="p">)</span>
-<span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">3</span>
-</code></pre></div></div>
-
-<p>计算第一个参数但忽略结果，返回第二个：(*&gt;)</p>
-
-<p>相反地返回第一个参数 的是 (&lt;*)</p>
-
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="o">*&gt;</span><span class="p">)</span> <span class="o">=</span> <span class="n">liftA2</span> <span class="p">(</span><span class="n">const</span> <span class="n">id</span><span class="p">)</span>  <span class="c1">-- const 1 2 =》 1</span>
-
-<span class="kt">Just</span> <span class="mi">1</span> <span class="o">*&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
-<span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
-
-<span class="p">(</span><span class="o">&lt;*</span><span class="p">)</span> <span class="o">=</span> <span class="n">liftA2</span> <span class="n">const</span>
-<span class="kt">Just</span> <span class="mi">1</span> <span class="o">&lt;*</span> <span class="kt">Just</span> <span class="mi">2</span>
-<span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">1</span>
-</code></pre></div></div>
-
-<h4 id="alternative-functor">Alternative Functor</h4>
-
-<p>Module Control.Applicative</p>
+<p>应用函子的一个继承</p>
 
 <div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">infixl</span> <span class="mi">3</span> <span class="o">&lt;|&gt;</span>
 <span class="kr">class</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="kt">Alternative</span> <span class="n">f</span> <span class="kr">where</span>
@@ -373,20 +384,131 @@
     <span class="p">(</span><span class="o">&lt;|&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
 </code></pre></div></div>
 
-<table>
-  <tbody>
-    <tr>
-      <td>&lt;</td>
-      <td>&gt; ：其他的选择</td>
-    </tr>
-  </tbody>
-</table>
+<p>下面举一个最常见的例子：</p>
 
-<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="kt">Nothing</span> <span class="o">&lt;|&gt;</span> <span class="kt">Nothing</span> <span class="o">&lt;|&gt;</span> <span class="kt">Just</span> <span class="mi">1</span> <span class="o">&lt;|&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">instance</span> <span class="kt">Alternative</span> <span class="kt">Maybe</span> <span class="kr">where</span>
+    <span class="n">empty</span> <span class="o">::</span> <span class="n">forall</span> <span class="n">a</span><span class="o">.</span> <span class="kt">Maybe</span> <span class="n">a</span>
+<span class="n">empty</span> <span class="o">=</span> <span class="kt">Nothing</span>
+    <span class="kt">Nothing</span> <span class="o">&lt;|&gt;</span> <span class="n">r</span> <span class="o">=</span> <span class="n">r</span>
+    <span class="n">l</span>       <span class="o">&lt;|&gt;</span> <span class="kr">_</span> <span class="o">=</span> <span class="n">l</span>
+
+<span class="o">&gt;</span> <span class="kt">Nothing</span> <span class="o">&lt;|&gt;</span> <span class="kt">Nothing</span> <span class="o">&lt;|&gt;</span> <span class="kt">Just</span> <span class="mi">1</span> <span class="o">&lt;|&gt;</span> <span class="kt">Just</span> <span class="mi">2</span>
 <span class="o">&gt;</span> <span class="kt">Just</span> <span class="mi">1</span>
 </code></pre></div></div>
 
 <h3 id="单子应用monad">单子应用（Monad）</h3>
+
+<p>醋来了，可以说整篇学习笔记就是为了搞明白 Monad 是什么而包的饺子。</p>
+
+<p>经常地，在某个新生的编程语言的相关论坛上，当提到函数式特别是纯函数式的编程语言范式的时候，总会有一些人，不问自答、不清自来地问：“ xx（该编程语言）能从 Haskell 的 Monad 里学到什么？”，每次看到这儿我就会想，这个 Monad 到底是什么，怎么来不来的就要从它那儿学什么东西。</p>
+
+<p>而找的一般教程总是把 Monad 搞得玄而又玄，并不清楚明白，于是有了这个学习笔记， 于是来到了这里。</p>
+
+<p><code class="language-plaintext highlighter-rouge">Monad</code> <sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">12</a></sup> 和  <code class="language-plaintext highlighter-rouge">Alternative</code> 一样，它也是对应用函子的一个继承。</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">class</span> <span class="kt">Applicative</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="kt">Monad</span> <span class="n">m</span> <span class="kr">where</span>
+    <span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span>       <span class="o">::</span> <span class="n">forall</span> <span class="n">a</span> <span class="n">b</span><span class="o">.</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+
+    <span class="p">(</span><span class="o">&gt;&gt;</span><span class="p">)</span>        <span class="o">::</span> <span class="n">forall</span> <span class="n">a</span> <span class="n">b</span><span class="o">.</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+    <span class="n">m</span> <span class="o">&gt;&gt;</span> <span class="n">k</span> <span class="o">=</span> <span class="n">m</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="n">k</span>
+
+    <span class="n">return</span>      <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span>
+    <span class="n">return</span>      <span class="o">=</span> <span class="n">pure</span>
+    
+<span class="kr">infixl</span> <span class="mi">1</span>  <span class="o">&gt;&gt;</span><span class="p">,</span> <span class="o">&gt;&gt;=</span>
+</code></pre></div></div>
+
+<p>从定义上也看出来了，<code class="language-plaintext highlighter-rouge">class Monad</code> 主要就是 <code class="language-plaintext highlighter-rouge">&gt;&gt;=</code> 的实现，是从一个上下文里的值 <code class="language-plaintext highlighter-rouge">m a</code>，传一个从内部值变换到另一个内部值并把它包装回上下文的函数 <code class="language-plaintext highlighter-rouge">a -&gt; m b</code>，最后得到一个上下文的值 <code class="language-plaintext highlighter-rouge">m b</code>。</p>
+
+<p>从 <code class="language-plaintext highlighter-rouge">&gt;&gt;=</code> 的函数签名上很容易发现，它的返回类型和首参类型是一样，这必然意味着必然可以有 <code class="language-plaintext highlighter-rouge">M a &gt;&gt;= f1 &gt;&gt;= f2 &gt;&gt;= 2 ... &gt;&gt;= fn</code> 这样的形式。</p>
+
+<p><strong>如果说 <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 是在上下文环境里连接多个参数，那么 Monad 提供的 <code class="language-plaintext highlighter-rouge">&gt;&gt;=</code> 就是在上下文里连接多个操作。</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">&gt;&gt;=</code> 也有个 Haskell 里的名字叫 “bind” ，相对地 <code class="language-plaintext highlighter-rouge">&gt;&gt;</code> 是忽略之前上下文的值。</p>
+
+<p>Haskell 里有个特殊语法 <code class="language-plaintext highlighter-rouge">do</code> 用来简化这种 <code class="language-plaintext highlighter-rouge">Monad</code> 上下文的函数连接。</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">do</span>
+	<span class="n">m</span> <span class="n">a</span>
+	<span class="n">f1</span>
+	<span class="n">f2</span>
+	<span class="n">f3</span>
+</code></pre></div></div>
+
+<p>还可以用特殊语法 <code class="language-plaintext highlighter-rouge">x &lt;- f1</code> 来从某一步的上下文里取值。</p>
+
+<p>还有一个常用的工具 <code class="language-plaintext highlighter-rouge">guard</code> ， 功能如其名：</p>
+
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">guard</span>           <span class="o">::</span> <span class="p">(</span><span class="kt">Alternative</span> <span class="n">f</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="kt">Bool</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="nb">()</span>
+<span class="n">guard</span> <span class="kt">True</span>      <span class="o">=</span>  <span class="n">pure</span> <span class="nb">()</span>
+<span class="n">guard</span> <span class="kt">False</span>     <span class="o">=</span>  <span class="n">empty</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">empty</code> 是 <code class="language-plaintext highlighter-rouge">Alternative</code> 实现时定义的，是一个明确的表示失败的值。</p>
+
+<h4 id="从-monad-里学到什么">从 <code class="language-plaintext highlighter-rouge">Monad</code> 里学到什么</h4>
+
+<p>与其说从 <code class="language-plaintext highlighter-rouge">Monad</code> 里学到什么，不如说从 <code class="language-plaintext highlighter-rouge">Functor</code> 里学到什么，这一系列都是在探讨在某个上下文环境里做操作的语义。</p>
+
+<p>对于纯函数式语言来说，有其在具体实现上的普遍意义。</p>
+
+<p>而我关心的是非纯函数式语言（的设计）能从中获得什么意义？</p>
+
+<p>应该是提供一种在非确定性上下文里操作的语义。</p>
+
+<p>首先，明确下非确定性上下文的特征，它应该有成功的，可以继续执行下去的结果；和一种或多种失败的，没有继续执行下去意义的结果。就像经典的 IO 操作，如果前面操作没有成功，那么后面继续也就没有意义；或者连续查询的操作，如果前面是空的，后面在空集上继续查询也没有意义。</p>
+
+<p>这么看来 Rust 的 <code class="language-plaintext highlighter-rouge">Result</code> 和 <code class="language-plaintext highlighter-rouge">?</code> 机制已经把这个语义利用得到位了，也不能指望更多了。</p>
+
+<p>在编写编译器的 parser 部分，就大量使用到这种语义，使得我们的代码只需要呈现主要的逻辑，也为程序员节省宝贵的精力。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="nf">parse_fn</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Fn</span><span class="p">,</span> <span class="n">SomeError</span><span class="o">&gt;</span> <span class="p">{</span>    
+    <span class="nf">Ok</span><span class="p">(</span><span class="nb">Fn</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nf">parse_fn_name</span><span class="p">()</span><span class="o">?</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="nf">parse_fn_params</span><span class="p">()</span><span class="o">?</span><span class="p">,</span>
+        <span class="n">ret</span><span class="p">:</span> <span class="nf">parse_fn_ret</span><span class="p">()</span><span class="o">?</span><span class="p">,</span>
+        <span class="n">body</span><span class="p">:</span> <span class="nf">parse_fn_body</span><span class="p">()</span><span class="o">?</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>而普通程序就要写如下</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">parse_fn</span><span class="p">()</span> <span class="p">(</span><span class="n">Fn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">name</span><span class="p">,</span> <span class="n">name_err</span> <span class="o">=</span> <span class="n">parse_fn_name</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">name_err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">..</span><span class="p">,</span> <span class="n">name_err</span>
+    <span class="p">}</span>
+    
+    <span class="n">params</span><span class="p">,</span> <span class="n">params_err</span> <span class="o">=</span> <span class="n">parse_params</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">params_err</span> <span class="o">!=</span> <span class="n">nill</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">..</span><span class="p">,</span> <span class="n">params_err</span>
+    <span class="p">}</span>
+    
+    <span class="n">ret</span><span class="p">,</span> <span class="n">ret_error</span> <span class="o">=</span> <span class="n">parse_ret</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">ret_err</span> <span class="o">!=</span> <span class="n">nill</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">..</span><span class="p">,</span> <span class="n">ret_err</span>
+    <span class="p">}</span>
+    
+    <span class="n">body</span><span class="p">,</span> <span class="n">body_err</span> <span class="o">=</span> <span class="n">parse_body</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">body_err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">..</span><span class="p">,</span> <span class="n">body_err</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">Fn</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">,</span>
+        <span class="n">ret</span><span class="p">,</span>
+        <span class="n">body</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><em>还有一个关于 <a href="https://langdev.stackexchange.com/questions/2675/why-does-haskell-use-the-bind-operation-instead-of-kleisli-composition">Haskell使用 bind 而不是 kleisli-构成</a> 的进阶讨论，回答很深入，但只是标记在这里，不做进一步讨论。</em></p>
 
 <h2 id="注解">注解</h2>
 
@@ -425,6 +547,9 @@
     <li id="fn:11" role="doc-endnote">
       <p><code class="language-plaintext highlighter-rouge">&lt;$&gt;</code> 和 <code class="language-plaintext highlighter-rouge">&lt;*&gt;</code> 虽然优先级相同，但都是左结合 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
+    <li id="fn:13" role="doc-endnote">
+      <p>注意和名字相近的 <code class="language-plaintext highlighter-rouge">Monoid</code> 的区别，二者只是在范畴论上有单子可以作为 Monoid 的范化概念的关系，但从编程实际来看，二者没什么直接关系，只是名称有点儿容易搞混。<code class="language-plaintext highlighter-rouge">Monoid</code> 本身是一个经典代数结构，指的是有“幺元”的半群，在 Haskell 里也是一个接口（<code class="language-plaintext highlighter-rouge">class</code>），继承了另一个接口 <code class="language-plaintext highlighter-rouge">semigroup</code> 。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
   </ol>
 </div>
 </div>
@@ -432,7 +557,7 @@
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="#">
+        <a href="/lang/Haskell%E5%AD%A6%E4%B9%A0.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>
