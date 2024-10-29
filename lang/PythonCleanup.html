@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            疑难杂症备忘录
+            Python Cleanup
         
     "
 />
 
-<meta property="og:url" content="//oth/BackNotes.html" />
+<meta property="og:url" content="//lang/PythonCleanup.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        疑难杂症备忘录
+        Python Cleanup
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">疑难杂症备忘录</h1>
+    <h1 class="post__title__text">Python Cleanup</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
-            Other
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            Language
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      February 20, 2023
+      October 16, 2024
     </div>
     
   </div>
@@ -127,17 +127,81 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h4 id="q1">Q1:</h4>
+    <div class="post__content"><p><em>截止于 Python 3.13</em></p>
 
-<p>Ubuntu 22.04 叠加几次需要重启的更新后重启发现WiFi模块找不到了</p>
+<h2 id="前言">前言</h2>
 
-<p>A: 再次重启或关机重启都没有用，最后是重新关闭和启用了WiFi驱动（在软件更新里）解决的问题</p>
+<p>Python 资源自动释放的机制就是四种：<code class="language-plaintext highlighter-rouge">with</code>,  <code class="language-plaintext highlighter-rouge">__del__</code>, <code class="language-plaintext highlighter-rouge">atexit</code> , <code class="language-plaintext highlighter-rouge">weakref.finalize</code></p>
+
+<h2 id="with"><code class="language-plaintext highlighter-rouge">with</code></h2>
+
+<p>适用于局部资源管理，是主流的资源自动释放手段，还有方便编写的 <a href="https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager"><code class="language-plaintext highlighter-rouge">contextlib.contextmanager</code></a> 装饰器。</p>
+
+<p>但是对于经典的单例、全局资源类不适用。</p>
+
+<h2 id="__del__"><code class="language-plaintext highlighter-rouge">__del__</code></h2>
+
+<p>即编写对象的<a href="https://docs.python.org/3/reference/datamodel.html#object.__del__">钩子函数 <code class="language-plaintext highlighter-rouge">__del__</code></a> ，但是 Python 没有为它提供任何有力的保证，语义实现的机制非常脆弱，是一种早期失败的设计。</p>
+
+<p>它有以下几个特点：</p>
+
+<h3 id="苏生-ub">苏生 UB</h3>
+
+<p>在方法内部创建新的对象，从而为它的指针计数器加一，这个做法称为苏生（resurrection），但当这个新的对象被销毁时 <code class="language-plaintext highlighter-rouge">__del__</code> 是否会被调用是 Implement Dependent 。</p>
+
+<h3 id="非确定性执行">非确定性执行</h3>
+
+<p>不保证解释器退出的时候会被执行。</p>
+
+<h3 id="用户负责">用户负责</h3>
+
+<p>用户代码里注意不要申请可能会造成死锁的资源。</p>
+
+<p>用户自己注意不要引用可能已被销毁的全局变量。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+
+<h3 id="结论">结论</h3>
+
+<p>总之就是失败设计，不如不不用。</p>
+
+<h2 id="atexit"><code class="language-plaintext highlighter-rouge">atexit</code></h2>
+
+<p>确定在解释器退出时会被调用，是静态生命周期、全局资源类选项。</p>
+
+<p><code class="language-plaintext highlighter-rouge">atexit.register(Callable[[], Any])</code></p>
+
+<p>没有提供针对资源类的方法装饰器，只能在 <code class="language-plaintext highlighter-rouge">__init___</code> 里手动加上一行类似 <code class="language-plaintext highlighter-rouge">register(self.cleanup)</code>  的代码。</p>
+
+<p>而注册了类方法之后，相当于让这个资源类永远有一个引用在那里，导致它永远不会被回收，相当于把资源类的生命周期提高到了 <code class="language-plaintext highlighter-rouge">static</code> 。</p>
+
+<h2 id="weakreffinalize"><code class="language-plaintext highlighter-rouge">weakref.finalize</code></h2>
+
+<p>作为 <code class="language-plaintext highlighter-rouge">__del__</code> 的上位替代，在资源回收（gc）的时候调用，解决了  <code class="language-plaintext highlighter-rouge">__del__</code> 的在解释器退出时不确定执行的问题，但几乎也就仅此而已。</p>
+
+<h2 id="尾声">尾声</h2>
+
+<p><strong>从编程角度，资源管理只有两个模式，一个是在局部上下文里使用-释放；另一个是使用全局单例模式。</strong></p>
+
+<p>前者是最推荐的设计模式， <code class="language-plaintext highlighter-rouge">with</code> 机制已经处理很好了；而后者里是设计上的反模式，是传统上的 tradeoff 的做法，需要自己实现一个机制。</p>
+
+<p>这样全局资源类的资源释放，实际上应该在单例模式的机制里顺便实现。</p>
+
+<p>如下展示如何通过标记 cleanup 方法和使用 atexit.register ，在一个单例模式里实现资源自动释放。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>Python guarantees that globals whose name begins with a single underscore are deleted from their module before other globals are deleted. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="/oth/BackNotes.html#">
+        <a href="/lang/PythonCleanup.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

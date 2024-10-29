@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            Hy Usage
+            Setup Ruby Environment
         
     "
 />
 
-<meta property="og:url" content="//lang/hy-usage.html" />
+<meta property="og:url" content="//oth/SetupRuby.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        Hy Usage
+        Setup Ruby Environment
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">Hy Usage</h1>
+    <h1 class="post__title__text">Setup Ruby Environment</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/lang.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
-            Language
+        <a href="/category/oth.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
+            Other
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      January 05, 2018
+      November 08, 2022
     </div>
     
   </div>
@@ -127,26 +127,31 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>package hy module:</p>
+    <div class="post__content"><h2 id="前言">前言</h2>
 
-<ol>
-  <li>build a normal python package</li>
-  <li>write .hy file, and add <code class="language-plaintext highlighter-rouge">import hy</code> in toplevel or just <code class="language-plaintext highlighter-rouge">__init__.py</code> (to enable compile pyc using hy)</li>
-  <li>write package data in setup on <code class="language-plaintext highlighter-rouge">setup.py</code>
-    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">setup</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">package_data</span><span class="o">=</span><span class="p">{</span>
-            <span class="s">'minghu6.text'</span><span class="p">:</span> <span class="p">[</span><span class="s">'*.hy'</span><span class="p">,</span> <span class="s">'__pycache__/*'</span><span class="p">],</span>
-        <span class="p">},</span>
-<span class="p">)</span>
-</code></pre></div>    </div>
-  </li>
-</ol>
+<p>Ruby的应用就像Go、NodeJS一样，通常<strong>非常不体面</strong>，缺乏对各种情况的详细考虑，也无法灵活配置，运行错误信息不完整（甚至没有错误信息），这时候把环境尽可能地配置得和他们默认得一样就很重要。</p>
+
+<p>比如 <code class="language-plaintext highlighter-rouge">gem install</code> 不能有admin权限的限制，<code class="language-plaintext highlighter-rouge">bundle update</code> 显然要有一个本地的bundle环境等等。</p>
+
+<p>这时候有一个Ruby版本环境管理器就是<strong>必须</strong>的</p>
+
+<h2 id="ruby版本环境管理器">Ruby版本环境管理器</h2>
+
+<h3 id="rbenv"><a href="https://github.com/rbenv/rbenv">RbEnv</a></h3>
+
+<p>是<code class="language-plaintext highlighter-rouge">PyEnv</code>的Fork源。</p>
+
+<p>为保持安装较新版本的Ruby，有必要从仓库克隆最新的版本。  ruby安装器被分离为单独一个插件 <a href="https://github.com/rbenv/ruby-build">ruby-build</a>, 同样从仓库克隆。</p>
+
+<h3 id="rvm">RVM</h3>
+
+<p><code class="language-plaintext highlighter-rouge">rvm</code> 不太行，生态不行（虽然名字和网站界面看起来挺行的），从源代码安装Ruby第一步失败了也没人反馈，支持安装的Ruby版本还很落后，启动就劝退。</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="/lang/hy-usage.html#">
+        <a href="/oth/SetupRuby.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

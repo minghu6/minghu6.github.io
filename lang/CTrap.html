@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            图理论基础
+            C/C++ 陷阱
         
     "
 />
 
-<meta property="og:url" content="//algs/GraphTheoryBasic.html" />
+<meta property="og:url" content="//lang/CTrap.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        图理论基础
+        C/C++ 陷阱
     
 </title>
 
@@ -104,22 +104,22 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">图理论基础</h1>
+    <h1 class="post__title__text">C/C++ 陷阱</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
       
         
-        <a href="/category/algs.html">
-          <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
-            Algorithm
+        <a href="/category/lang.html">
+          <p class="post__meta__category__title" style="background: var(--c-themeHuePurple)">
+            Language
           </p>
         </a>
       
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      October 09, 2022
+      April 22, 2022
     </div>
     
   </div>
@@ -127,102 +127,22 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="概念">概念</h2>
+    <div class="post__content"><ol>
+  <li>
+    <p>变量初始化</p>
 
-<p>假设图 G = {V, E}， V是顶点集，E是边集</p>
-
-<ol>
-  <li>
-    <p>边，无向边（edge）</p>
+    <p>在Java里面基本变量都有一个初始化的值，但在C里并不是，而是脏数据</p>
   </li>
   <li>
-    <p>有向边（arc）
-tail(起点) -&gt; head（终点）</p>
-  </li>
-  <li>
-    <p>$\vert V\vert$: 点的个数，图的阶（order）</p>
-  </li>
-  <li>
-    <p>无根树，连通无向图</p>
-  </li>
-  <li>
-    <p><strong>简单图 (simple graph)</strong>：若一个图中没有自环和重边，它被称为简单图。具有至少两个顶点的简单无向图中一定存在度相同的结点。因为最多n-1个不同的度，而有n个点，这叫做抽屉原理或者鸽巢原理。</p>
-
-    <p>反过来，如果一张图中有自环或重边，则称它为 <strong>多重图 (multigraph)</strong>。</p>
+    <p>结构体初始化注意要在堆上手动分配内存，否则是栈上的会被回收， 这与Rust使用习惯又不一样</p>
   </li>
 </ol>
-
-<p>参考<a href="/lang/CTrap.html">这里</a></p>
-
-<h2 id="实现">实现</h2>
-
-<p>本篇实现是诸多相关算法基础数据结构：</p>
-
-<p>额外依赖<a href="https://gist.github.com/minghu6/e8b6236c745489be489317088e70e24f">EasyColl gist</a></p>
-
-<script src="https://gist.github.com/minghu6/e8b6236c745489be489317088e70e24f.js"></script>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Adjacent link formed simple (directed) connected graph</span>
-<span class="nd">#[derive(Default)]</span>
-<span class="k">pub</span> <span class="k">struct</span> <span class="n">Graph</span> <span class="p">{</span>
-    <span class="k">pub</span> <span class="n">e</span><span class="p">:</span> <span class="n">MV</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="k">pub</span> <span class="n">w</span><span class="p">:</span> <span class="n">M1</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="p">}</span>
-
-
-<span class="k">impl</span> <span class="n">Graph</span> <span class="p">{</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
-        <span class="nn">Default</span><span class="p">::</span><span class="nf">default</span><span class="p">()</span>
-    <span class="p">}</span>
-
-    <span class="cd">/// The length of the shortest path between the most distanced nodes.</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">diameter</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">isize</span> <span class="p">{</span>
-        <span class="nf">diameter_dp</span><span class="p">(</span><span class="k">self</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="cd">/// O(|E|)</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">vertexs</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">vertexs</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
-
-        <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_w</span><span class="p">)</span> <span class="k">in</span> <span class="k">self</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
-            <span class="n">vertexs</span><span class="nf">.insert</span><span class="p">(</span><span class="n">u</span><span class="p">);</span>
-            <span class="n">vertexs</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
-        <span class="p">}</span>
-
-        <span class="n">vertexs</span><span class="nf">.into_iter</span><span class="p">()</span>
-    <span class="p">}</span>
-
-    <span class="k">pub</span> <span class="k">fn</span> <span class="n">edges</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span><span class="p">(</span>
-        <span class="o">&amp;</span><span class="nv">'a</span> <span class="k">self</span><span class="p">,</span>
-    <span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">edges</span> <span class="o">=</span> <span class="k">self</span><span class="py">.e</span><span class="na">.0</span><span class="nf">.iter</span><span class="p">();</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">subedges</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
-
-        <span class="nn">std</span><span class="p">::</span><span class="nn">iter</span><span class="p">::</span><span class="nf">from_fn</span><span class="p">(</span><span class="k">move</span> <span class="p">||</span> <span class="k">loop</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">subedges</span><span class="nf">.pop</span><span class="p">()</span> <span class="p">{</span>
-                <span class="k">return</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="nd">get!</span><span class="p">(</span><span class="k">self</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))));</span>
-            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-                <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">from</span><span class="p">,</span> <span class="n">tos</span><span class="p">))</span> <span class="o">=</span> <span class="n">edges</span><span class="nf">.next</span><span class="p">()</span> <span class="p">{</span>
-                    <span class="n">subedges</span> <span class="o">=</span> <span class="n">tos</span>
-                        <span class="nf">.into_iter</span><span class="p">()</span>
-                        <span class="nf">.cloned</span><span class="p">()</span>
-                        <span class="nf">.map</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="p">(</span><span class="o">*</span><span class="n">from</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
-                        <span class="nf">.rev</span><span class="p">()</span>
-                        <span class="py">.collect</span><span class="p">::</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">();</span>
-                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-                    <span class="k">return</span> <span class="nb">None</span><span class="p">;</span>
-                <span class="p">}</span>
-            <span class="p">}</span>
-        <span class="p">})</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="/algs/GraphTheoryBasic.html#">
+        <a href="/lang/CTrap.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>

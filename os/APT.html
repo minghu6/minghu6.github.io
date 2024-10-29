@@ -17,12 +17,12 @@
     property="og:title"
     content="
         
-            kernel crash dump
+            APT
         
     "
 />
 
-<meta property="og:url" content="//os/kernel-crash-dump.html" />
+<meta property="og:url" content="//os/APT.html" />
 
     <meta property="og:type" content="article" />
 
@@ -34,7 +34,7 @@
 
 <title>
     
-        kernel crash dump
+        APT
     
 </title>
 
@@ -104,7 +104,7 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">kernel crash dump</h1>
+    <h1 class="post__title__text">APT</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
@@ -119,7 +119,7 @@
     </div>
     <p class="post__meta__divider">·</p>
     <div class="post__meta__date">
-      September 01, 2022
+      January 04, 2018
     </div>
     
   </div>
@@ -127,24 +127,31 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="ubuntu">Ubuntu</h2>
+    <div class="post__content"><h3 id="查找包安装那些文件">查找包安装那些文件</h3>
 
-<p><a href="https://ubuntu.com/server/docs/kernel-crash-dump">install linux-crashdump</a></p>
+<p><code class="language-plaintext highlighter-rouge">dpkg -L $package</code></p>
 
-<h2 id="dump-output">Dump Output</h2>
+<h3 id="查找文件被哪个包安装的">查找文件被哪个包安装的</h3>
 
-<p><code class="language-plaintext highlighter-rouge">alias crash="crash /usr/lib/debug/boot/vmlinux-$(uname -r)"</code></p>
+<p><code class="language-plaintext highlighter-rouge">dpkg -S /path/to/file</code></p>
 
-<p><code class="language-plaintext highlighter-rouge">crash /var/crash/&lt;yyyymmmmhhmm&gt;/dump.&lt;yyyymmmmhhmm&gt;</code></p>
+<h3 id="版本解读">版本解读</h3>
 
-<p>bt: backtrace
-log: kernel log</p>
+<h4 id="1-1211-8">1. <code class="language-plaintext highlighter-rouge">1:2.11-8</code></h4>
+
+<p>参考 <a href="https://stackoverflow.com/questions/9612901/what-does-the-colon-and-dash-in-an-ubuntu-dpkg-version-number-mean">stacloverflow</a> 和 <code class="language-plaintext highlighter-rouge">man deb-version</code></p>
+
+<p><code class="language-plaintext highlighter-rouge">:</code> 前面的数字 <code class="language-plaintext highlighter-rouge">1</code> 是 <code class="language-plaintext highlighter-rouge">epoch</code> 省略是 0 ，用作版本排序。</p>
+
+<h4 id="2-package-xubuntuy_amd64">2. <code class="language-plaintext highlighter-rouge">package-XubuntuY*_amd64</code></h4>
+
+<p>参考 <a href="https://askubuntu.com/questions/620533/what-is-the-meaning-of-the-xubuntuy-string-in-ubuntu-package-names">Ask Ubuntu</a></p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
       <nav id="toc" data-toggle="toc"></nav>
       <span>
-        <a href="/os/kernel-crash-dump.html#">
+        <a href="/os/APT.html#">
           <img src="/assets/img/icons/move-up.png" class="pl-0 pr-4 mb-5" >
         </a>
       </span>
