@@ -135,7 +135,7 @@
 
 <p><a href="https://github.com/minghu6/leet-code/tree/v0.1.15/0072_edit_distance">源代码</a></p>
 
-<p>典型地套题，这类题目几乎只有一种解法，而且不太容易从直觉算法推出，如果不得要领误入歧途就会觉得很难，但如果找到路径，就很容易，缺乏变化。就像对待前面的另一个套题： <a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a> 一样，LeetCode 也给它 Medium 难度，而我总是认为应当放到 Hard 难度，因为并不是题目本身简单，而只是著名、流行、有模板。</p>
+<p>典型地套题，这类题目几乎只有一种解法，而且不太容易从直觉算法推出，如果不得要领、误入歧途，就会觉得很难，但如果找到路径，就很容易，缺乏变化。就像对待前面的另一个套题： <a href="/algs/LeetCode0053.html">0053 - Maximum Subarray</a> 一样，LeetCode 也给它 Medium 难度，而我总是认为应当放到 Hard 难度，因为并不是题目本身简单，而只是著名、流行、有模板。</p>
 
 <h2 id="解dp">解①DP：</h2>
 
@@ -171,8 +171,8 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">word1</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">word2</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">word2</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">word1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">word2</span><span class="p">:</span>  <span class="c1"># both empty
+</span>        <span class="k">return</span> <span class="mi">0</span>
 
     <span class="k">return</span> <span class="nb">min</span><span class="p">(</span>
         <span class="c1"># insert char
