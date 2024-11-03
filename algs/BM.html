@@ -147,9 +147,7 @@
 &amp;\qquad\ \ \ \, \Uparrow
 \end{aligned}\]
 
-<p>$\texttt{pat}$ 的长度为 $\texttt{\texttt{patlen}}$</p>
-
-<p>$\texttt{string}$ 的长度 $\texttt{stringlen}$。</p>
+<p>$\texttt{pat}$ 的长度为 $\texttt{patlen}$ ，$\texttt{string}$ 的长度 $\texttt{stringlen}$。</p>
 
 <p><em>按照算法惯例，设定字符串的基底为 $1$</em></p>
 
@@ -219,7 +217,7 @@
 &amp;\qquad\ \ \, \qquad\qquad\qquad \Uparrow
 \end{aligned}\]
 
-<p>现在$\texttt{char:\ T}$ 匹配了，把指针向前一步，继续匹配：</p>
+<p>现在 $\texttt{char: T}$ 匹配了，把指针向前一步，继续匹配：</p>
 
 \[\begin{aligned}
 \texttt{pat}:\qquad\qquad &amp;\qquad\qquad\quad\ \ \, \texttt{AT-THAT} \\
@@ -1496,7 +1494,7 @@ p^{\texttt{patlen}-k} &amp; \text{for} &amp; \texttt{patlen} - m \leqslant k \le
     <span class="n">categories_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">bm_rate</span><span class="p">,</span> <span class="s">'BoyerMoore'</span><span class="p">),</span>
                        <span class="p">(</span><span class="n">sbm_rate</span><span class="p">,</span> <span class="s">'S BoyerMoore'</span><span class="p">),</span>
                        <span class="p">(</span><span class="n">kmp_rate</span><span class="p">,</span> <span class="s">'KMP'</span><span class="p">),</span>
-                       <span class="p">(</span><span class="k">lambda</span> <span class="n">patlen</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">patlen</span><span class="p">,</span> <span class="s">'$</span><span class="se">\\</span><span class="s">frac{1}{</span><span class="se">\t</span><span class="s">exttt{patlen}}$'</span><span class="p">)]</span>
+                       <span class="p">(</span><span class="k">lambda</span> <span class="n">patlen</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">patlen</span><span class="p">,</span> <span class="s">'$</span><span class="se">\\</span><span class="s">frac{1}{patlen}$'</span><span class="p">)]</span>
 
     <span class="k">for</span> <span class="n">alg_fun</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">categories_list</span><span class="p">:</span>
         <span class="n">data</span><span class="p">[</span><span class="s">'rate'</span><span class="p">].</span><span class="n">extend</span><span class="p">([</span><span class="n">alg_fun</span><span class="p">(</span>\<span class="n">texttt</span><span class="p">{</span><span class="n">patlen</span><span class="p">},</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">patlen</span> <span class="ow">in</span> <span class="n">model_range</span><span class="p">])</span>
@@ -1508,7 +1506,7 @@ p^{\texttt{patlen}-k} &amp; \text{for} &amp; \texttt{patlen} - m \leqslant k \le
     <span class="k">return</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s">'patlen'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'rate'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'alg'</span><span class="p">))</span>
             <span class="o">+</span> <span class="n">geom_point</span><span class="p">()</span>
             <span class="o">+</span> <span class="n">geom_smooth</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'gpr'</span><span class="p">)</span>
-            <span class="o">+</span> <span class="n">labs</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s">'Algs'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'$</span><span class="se">\t</span><span class="s">exttt{patlen}$'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'$</span><span class="se">\\</span><span class="s">frac{cost}{skip}$'</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">labs</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s">'Algs'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'$patlen$'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'$</span><span class="se">\\</span><span class="s">frac{cost}{skip}$'</span><span class="p">))</span>
 </code></pre></div></div>
 
 <p><code class="language-plaintext highlighter-rouge">plot(1/256, '$p= \\frac{1}{256}$')</code>：</p>
