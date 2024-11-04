@@ -42,7 +42,22 @@
 <body class="index" data-spy="scroll" data-target="#toc" tabindex="0">
 
     <div class="header">
-    <div id="topbar" class="d-flex align-items-center justify-content-between h-100">
+    <div id="topbar" class="align-items-center justify-content-between h-100">
+  <span class="logo" id="topbar-logo">
+    <a href="/" class="logo__link">
+      
+      <img class="logo__link__img" src="/d3.jpg" />
+      
+    </a>
+  </span>
+
+  <span id="search-wrapper" class="align-items-center">
+    <!-- <i class="fas fa-search fa-fw"></i> -->
+    <img src="/assets/img/icons/search.png">
+    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
+      placeholder="Search...">
+  </span>
+  <span id="search-cancel">Cancel</span>
   <span id="breadcrumb">
 
     
@@ -52,42 +67,7 @@
     
 
     
-    <span>
-      <a href="/">
-        <img src="/assets/img/icons/home.png">
-      </a>
-    </span>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
   </span><!-- endof #breadcrumb -->
-
-  <section class="logo">
-    <a href="/" class="logo__link">
-      
-      <img class="logo__link__img" src="/d3.jpg" />
-      
-    </a>
-  </section>
-
-  <span id="search-wrapper" class="align-items-center">
-    <!-- <i class="fas fa-search fa-fw"></i> -->
-    <img src="/assets/img/icons/search.png">
-    <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off"
-      placeholder="Search...">
-  </span>
-  <span id="search-cancel">Cancel</span>
-
 </div>
 
 
@@ -246,6 +226,11 @@
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
+      <span>
+        <a href="/">
+          <img src="/assets/img/icons/home.png" class="pl-4 pb-4">
+        </a>
+      </span>
       <nav id="toc" data-toggle="toc"></nav>
       <span>
         <a href="/oth/LeetCode0072.html#">
