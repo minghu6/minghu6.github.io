@@ -1,4 +1,819 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2024-11-04T18:22:43+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">0264 - Ugly Number II</title><link href="/oth/LeetCode0264.html" rel="alternate" type="text/html" title="0264 - Ugly Number II" /><published>2024-10-28T00:00:00+08:00</published><updated>2024-10-28T00:00:00+08:00</updated><id>/oth/LeetCode0264</id><content type="html" xml:base="/oth/LeetCode0264.html"><![CDATA[<h2 id="题干">题干</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2024-12-11T11:59:38+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Rust 包内资源管理</title><link href="/lang/RustResourceCode.html" rel="alternate" type="text/html" title="Rust 包内资源管理" /><published>2024-12-10T00:00:00+08:00</published><updated>2024-12-10T00:00:00+08:00</updated><id>/lang/RustResourceCode</id><content type="html" xml:base="/lang/RustResourceCode.html"><![CDATA[<h2 id="问题引入">问题引入</h2>
+
+<p>有时候在一个 Cargo package/workspace 需要放一些供内部使用的非代码文件，这些文件往往是从硬编码的代码里分离出来的，变成可配置的文件，比如测试数据。</p>
+
+<p>这时候就需要这些资源文件进行管理，传统的方法是把每一个从目录到文件的名字作为常量（<code class="language-plaintext highlighter-rouge">&amp;'static str</code>）写到一个专门定义常量的文件里，但这样至少有三个缺点：</p>
+
+<ol>
+  <li>没有目录层次，如果在名字上加目录前缀，就会让名字特别长，严重影响人机交互，不加目录前缀就会让人用起来一头雾水，还会导致命名冲突；</li>
+  <li>虽然单个目录或文件的名字是常量，但它们之间的层次关系仍然需要手动组合，这根本不能说是一种完备的资源管理方法，而且本身的这种组合字符串变成 <code class="language-plaintext highlighter-rouge">Path</code> ，然后在进行文件读取的冗余代码实在令人恶心，破坏了美感；</li>
+  <li>代码和资源文件之间缺乏耦合，如果资源文件发生了改变，那么拼接常量字符串的一端根本就无从得到。</li>
+</ol>
+
+<p>从这些缺点里总结出我们对资源管理“工具”的需求：它应该是结构化的、具有语义感知功能的一个“东西”。</p>
+
+<h2 id="分析和设计">分析和设计</h2>
+
+<p>从设计哲学的角度我们考虑，这个“东西”应该是代码与数据之间的“粘合剂”，它不应该是纯粹的代码，也不可能是纯粹的数据，它应该有“二相性”，而 Rust 本身是高度类型化的语言，任何结构化的信息都可以通过一个 Structure / Enum 来表现，那么首先我们考虑使用一个动态定义的结构体来表现一个目录或者文件；进一步地，对于表示目录的结构体应该是嵌套定义的，然后通过 <code class="language-plaintext highlighter-rouge">.</code> 访问层级目录。</p>
+
+<p>这样的话显然手写这样的结构体太反人体工学了，需要一个宏来辅助工作，而且这个宏应该是以一种配置语言比如 Json 的形式使用，才能尽可能直观、简单和便于维护。</p>
+
+<p><em>当然递归定义给宏的实现带来了麻烦，但我们相信总是能实现的，所以先不管这些。</em></p>
+
+<h2 id="配置和使用">配置和使用</h2>
+
+<h3 id="配置示例">配置示例</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">resources!</span> <span class="p">{</span>
+    <span class="n">graph</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">sp</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">sp_5_csv</span><span class="p">:</span> <span class="s">"sp5.csv"</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="n">test_suites</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">mutable_mapping_toml</span><span class="p">:</span> <span class="s">"mutable_mapping.toml"</span><span class="p">,</span>
+        <span class="n">bpt_toml</span><span class="p">:</span> <span class="s">"bpt.toml"</span>
+    <span class="p">},</span>
+    <span class="n">zh_en_poems_txt</span><span class="p">:</span> <span class="s">"zh_en_poems.txt"</span>
+<span class="p">}</span>
+
+<span class="nd">lazy_static!</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">static</span> <span class="k">ref</span> <span class="n">RES</span><span class="p">:</span> <span class="n">Res</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nn">Res</span><span class="p">::</span><span class="nf">new</span><span class="p">()</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="使用示例">使用示例</h3>
+
+<h4 id="case-1">case-1</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1">// 加载 Toml (String) </span>
+  
+  <span class="k">let</span> <span class="n">toml_str</span> <span class="o">=</span> <span class="n">RES</span><span class="nf">.test_suites</span><span class="p">()</span><span class="nf">.mutable_mapping_toml</span><span class="p">()</span><span class="nf">.load_to_string</span><span class="p">();</span>
+  
+  <span class="k">match</span> <span class="nn">TestDataTable</span><span class="p">::</span><span class="nf">deserialize</span><span class="p">(</span><span class="nn">toml</span><span class="p">::</span><span class="nn">Deserializer</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="o">&amp;</span><span class="n">toml_str</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nf">Ok</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">tbl</span><span class="p">,</span>
+      <span class="nf">Err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nd">panic!</span><span class="p">(</span><span class="s">"{err}"</span><span class="p">),</span>
+  <span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="case-2">case-2</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1">// 打开一个 CSV (File)</span>
+  
+  <span class="k">let</span> <span class="k">mut</span> <span class="n">g</span> <span class="o">=</span> <span class="nn">Graph</span><span class="p">::</span><span class="nf">read_from_csv</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">RES</span><span class="nf">.graph</span><span class="p">()</span><span class="nf">.sp</span><span class="p">()</span><span class="nf">.sp_5_csv</span><span class="p">()</span><span class="nf">.open</span><span class="p">())</span><span class="nf">.unwrap</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h4 id="case-3">case-3</h4>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1">// 读取原始字节 (Vec&lt;u8&gt;)</span>
+  
+  <span class="k">let</span> <span class="k">mut</span> <span class="n">bytes</span> <span class="o">=</span> <span class="n">RES</span><span class="nf">.zh_en_poems_txt</span><span class="p">()</span><span class="nf">.load</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h2 id="实现预处理宏">实现（预处理宏）</h2>
+
+<h3 id="依赖">依赖</h3>
+
+<div class="language-toml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">proc-macro2</span> <span class="p">=</span> <span class="s">"1"</span>
+<span class="py">quote</span> <span class="p">=</span> <span class="s">"1"</span>
+<span class="nn">syn</span> <span class="o">=</span> <span class="p">{</span> <span class="py">version</span> <span class="p">=</span> <span class="s">"2"</span> <span class="p">}</span>
+<span class="py">derive-syn-parse</span> <span class="p">=</span> <span class="s">"0.2.0"</span>
+<span class="py">paste</span> <span class="p">=</span> <span class="s">"1"</span>
+<span class="py">derive-quote-to-tokens</span> <span class="p">=</span> <span class="s">"0.1.1"</span>
+<span class="py">either</span> <span class="p">=</span> <span class="s">"1.13"</span>
+<span class="py">convert_case</span> <span class="p">=</span> <span class="s">"0.6"</span>
+</code></pre></div></div>
+
+<h3 id="代码">代码</h3>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">convert_case</span><span class="p">::{</span><span class="n">Case</span><span class="p">,</span> <span class="n">Casing</span><span class="p">};</span>
+<span class="k">use</span> <span class="nn">either</span><span class="p">::{</span><span class="nb">Left</span><span class="p">,</span> <span class="nb">Right</span><span class="p">};</span>
+<span class="k">use</span> <span class="nn">proc_macro2</span><span class="p">::{</span><span class="n">Span</span><span class="p">,</span> <span class="n">TokenStream</span><span class="p">};</span>
+<span class="k">use</span> <span class="nn">quote</span><span class="p">::{</span><span class="n">quote</span><span class="p">,</span> <span class="n">ToTokens</span><span class="p">};</span>
+<span class="k">use</span> <span class="nn">syn</span><span class="p">::{</span><span class="n">Ident</span><span class="p">,</span> <span class="n">LitStr</span><span class="p">};</span>
+
+<span class="k">use</span> <span class="k">crate</span><span class="p">::{</span>
+    <span class="n">EitherResourceFileOrResourceDir</span><span class="p">,</span> <span class="n">ResourceDir</span><span class="p">,</span> <span class="n">ResourceFile</span><span class="p">,</span> <span class="n">Resources</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="nd">#[proc_macro]</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">resources</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">TokenStream</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">TokenStream</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">resources</span> <span class="o">=</span> <span class="nd">parse_macro_input!</span><span class="p">(</span><span class="n">input</span> <span class="k">as</span> <span class="n">Resources</span><span class="p">);</span>
+
+    <span class="nn">TokenStream</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="nd">quote!</span> <span class="p">{</span> #<span class="n">resources</span> <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">Resources</span> <span class="p">{</span>
+    <span class="n">items</span><span class="p">:</span> <span class="n">Punctuated</span><span class="o">&lt;</span><span class="n">EitherResourceFileOrResourceDir</span><span class="p">,</span> <span class="nd">Token!</span><span class="p">[,]</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Clone)]</span>
+<span class="k">struct</span> <span class="n">ResourceDir</span> <span class="p">{</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Ident</span><span class="p">,</span>
+    <span class="n">colon_token</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nd">Token!</span><span class="p">[:]</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">brace_token</span><span class="p">:</span> <span class="n">Brace</span><span class="p">,</span>
+    <span class="n">fields</span><span class="p">:</span> <span class="n">Punctuated</span><span class="o">&lt;</span><span class="nb">Box</span><span class="o">&lt;</span><span class="n">EitherResourceFileOrResourceDir</span><span class="o">&gt;</span><span class="p">,</span> <span class="nd">Token!</span><span class="p">[,]</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Parse,</span> <span class="nd">Clone)]</span>
+<span class="k">struct</span> <span class="n">ResourceFile</span> <span class="p">{</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Ident</span><span class="p">,</span>
+    <span class="n">maybe_colon_token</span><span class="p">:</span> <span class="nd">Token!</span><span class="p">[:],</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">LitStr</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">either_wrapper!</span><span class="p">(</span><span class="n">ResourceFile</span><span class="p">,</span> <span class="n">ResourceDir</span><span class="p">);</span>
+
+<span class="nd">macro_rules!</span> <span class="n">ident</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$name:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nn">Ident</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nv">$name</span><span class="nf">.as_str</span><span class="p">(),</span> <span class="nn">Span</span><span class="p">::</span><span class="nf">call_site</span><span class="p">())</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">litstr</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$name:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nn">LitStr</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nv">$name</span><span class="p">,</span> <span class="nn">Span</span><span class="p">::</span><span class="nf">call_site</span><span class="p">())</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">either_wrapper</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$left:ident</span><span class="p">,</span> <span class="nv">$right:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nn">paste</span><span class="p">::</span><span class="nd">paste!</span> <span class="p">{</span>
+            <span class="nd">#[derive(Clone)]</span>
+            <span class="nd">#[repr(transparent)]</span>
+            <span class="k">struct</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">Either</span> <span class="nv">$left</span> <span class="n">Or</span> <span class="nv">$right</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">{</span>
+                <span class="n">value</span><span class="p">:</span> <span class="nb">Either</span><span class="o">&lt;</span><span class="nv">$left</span><span class="p">,</span> <span class="nv">$right</span><span class="o">&gt;</span>
+            <span class="p">}</span>
+
+            <span class="k">impl</span> <span class="n">Parse</span> <span class="k">for</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">Either</span> <span class="nv">$left</span> <span class="n">Or</span> <span class="nv">$right</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">{</span>
+                <span class="k">fn</span> <span class="nf">parse</span><span class="p">(</span><span class="n">input</span><span class="p">:</span> <span class="n">ParseStream</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">forked</span> <span class="o">=</span> <span class="n">input</span><span class="nf">.fork</span><span class="p">();</span>
+
+                    <span class="nf">Ok</span><span class="p">(</span><span class="k">Self</span> <span class="p">{</span>
+                        <span class="n">value</span><span class="p">:</span> <span class="k">if</span> <span class="k">let</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">left</span><span class="p">)</span> <span class="o">=</span> <span class="n">forked</span><span class="nf">.parse</span><span class="p">()</span> <span class="p">{</span>
+                            <span class="n">input</span><span class="nf">.advance_to</span><span class="p">(</span><span class="o">&amp;</span><span class="n">forked</span><span class="p">);</span>
+
+                            <span class="nf">Left</span><span class="p">(</span><span class="n">left</span><span class="p">)</span>
+                        <span class="p">}</span>
+                        <span class="k">else</span> <span class="p">{</span>
+                            <span class="nf">Right</span><span class="p">(</span><span class="n">input</span><span class="nf">.parse</span><span class="p">()</span><span class="o">?</span><span class="p">)</span>
+                        <span class="p">}</span>
+                    <span class="p">})</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$left:ident</span><span class="p">,</span> <span class="nv">$right:ident</span> <span class="nv">$</span><span class="p">(,)</span><span class="o">?</span> <span class="o">+</span><span class="n">ToTokens</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="nd">either_wrapper!</span><span class="p">(</span><span class="nv">$left</span><span class="p">,</span> <span class="nv">$right</span><span class="p">);</span>
+
+        <span class="nn">paste</span><span class="p">::</span><span class="nd">paste!</span> <span class="p">{</span>
+            <span class="k">impl</span> <span class="n">ToTokens</span> <span class="k">for</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">Either</span> <span class="nv">$left</span> <span class="n">Or</span> <span class="nv">$right</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">{</span>
+                <span class="k">fn</span> <span class="nf">to_tokens</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nn">proc_macro2</span><span class="p">::</span><span class="n">TokenStream</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">tokens</span><span class="nf">.extend</span><span class="p">(</span><span class="k">match</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.value</span> <span class="p">{</span>
+                        <span class="nf">Left</span><span class="p">(</span><span class="n">left</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nd">quote!</span> <span class="p">{</span>
+                            #<span class="n">left</span>
+                        <span class="p">},</span>
+                        <span class="nf">Right</span><span class="p">(</span><span class="n">right</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="nd">quote!</span> <span class="p">{</span>
+                            #<span class="n">right</span>
+                        <span class="p">}</span>
+                    <span class="p">});</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span> <span class="n">ToTokens</span> <span class="k">for</span> <span class="n">Resources</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">to_tokens</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">TokenStream</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">braced_content</span> <span class="o">=</span> <span class="nd">quote!</span> <span class="p">{};</span>
+        <span class="k">let</span> <span class="n">prefix_name</span> <span class="o">=</span> <span class="s">"Res"</span><span class="nf">.to_string</span><span class="p">();</span>
+
+        <span class="k">for</span> <span class="n">either_file_or_dir</span> <span class="k">in</span> <span class="k">self</span><span class="py">.items</span><span class="nf">.iter</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">def_method</span> <span class="o">=</span> <span class="k">match</span> <span class="o">&amp;</span><span class="n">either_file_or_dir</span><span class="py">.value</span> <span class="p">{</span>
+                <span class="nf">Left</span><span class="p">(</span><span class="n">resfile</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="n">tokens</span><span class="nf">.extend</span><span class="p">(</span><span class="nf">resource_file</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resfile</span><span class="p">));</span>
+                    <span class="nf">def_resource_file_method</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resfile</span><span class="p">)</span>
+                <span class="p">}</span>
+                <span class="nf">Right</span><span class="p">(</span><span class="n">resdir</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                    <span class="n">tokens</span><span class="nf">.extend</span><span class="p">(</span><span class="nf">resource_dir</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resdir</span><span class="p">));</span>
+                    <span class="nf">def_resource_dir_method</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resdir</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">};</span>
+
+            <span class="n">braced_content</span><span class="nf">.extend</span><span class="p">(</span><span class="n">def_method</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">tokens</span><span class="nf">.extend</span><span class="p">(</span><span class="nd">quote!</span> <span class="p">{</span>
+            <span class="k">pub</span> <span class="k">struct</span> <span class="n">Res</span> <span class="p">{</span>
+                <span class="n">path</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">path</span><span class="p">::</span><span class="n">PathBuf</span>
+            <span class="p">}</span>
+
+            <span class="k">impl</span> <span class="n">Res</span> <span class="p">{</span>
+                <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+                    <span class="k">let</span> <span class="n">config_dir</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">path</span><span class="p">::</span><span class="nn">PathBuf</span><span class="p">::</span><span class="nf">from</span><span class="p">(</span><span class="nd">env!</span><span class="p">(</span><span class="s">"CARGO_MANIFEST_DIR"</span><span class="p">));</span>
+
+                    <span class="k">Self</span> <span class="p">{</span>
+                        <span class="n">path</span><span class="p">:</span> <span class="n">config_dir</span><span class="nf">.with_file_name</span><span class="p">(</span><span class="s">"res"</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+
+                #<span class="n">braced_content</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">resource_dir</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">resdir</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">ResourceDir</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">TokenStream</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">tokens</span> <span class="o">=</span> <span class="nd">quote!</span> <span class="p">{};</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">braced_content</span> <span class="o">=</span> <span class="nd">quote!</span> <span class="p">{};</span>
+
+    <span class="k">for</span> <span class="n">either_file_or_dir</span> <span class="k">in</span> <span class="o">&amp;</span><span class="n">resdir</span><span class="py">.fields</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">def_method</span> <span class="o">=</span> <span class="k">match</span> <span class="o">&amp;</span><span class="n">either_file_or_dir</span><span class="py">.value</span> <span class="p">{</span>
+            <span class="nf">Left</span><span class="p">(</span><span class="n">resfile</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="n">tokens</span><span class="nf">.extend</span><span class="p">(</span><span class="nf">resource_file</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resfile</span><span class="p">));</span>
+                <span class="nf">def_resource_file_method</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resfile</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="nf">Right</span><span class="p">(</span><span class="n">resdir</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+                <span class="n">tokens</span><span class="nf">.extend</span><span class="p">(</span><span class="nf">resource_dir</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resdir</span><span class="p">));</span>
+                <span class="nf">def_resource_dir_method</span><span class="p">(</span><span class="n">prefix_name</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">resdir</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+
+        <span class="n">braced_content</span><span class="nf">.extend</span><span class="p">(</span><span class="n">def_method</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">let</span> <span class="n">ResourceDir</span> <span class="p">{</span> <span class="n">name</span><span class="p">,</span> <span class="o">..</span> <span class="p">}</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">resdir</span><span class="p">;</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">long_name_ident</span><span class="p">,</span> <span class="o">..</span> <span class="p">)</span><span class="o">=</span> <span class="nf">assemble_name</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+    <span class="n">tokens</span><span class="nf">.extend</span><span class="p">(</span><span class="nd">quote!</span> <span class="p">{</span>
+        <span class="k">pub</span> <span class="k">struct</span> #<span class="n">long_name_ident</span> <span class="p">{</span>
+            <span class="n">path</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">path</span><span class="p">::</span><span class="n">PathBuf</span>
+        <span class="p">}</span>
+
+        <span class="k">impl</span> #<span class="n">long_name_ident</span> <span class="p">{</span>
+            #<span class="n">braced_content</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+
+    <span class="n">tokens</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">resource_file</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">resfile</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">ResourceFile</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">TokenStream</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">ResourceFile</span> <span class="p">{</span> <span class="n">name</span><span class="p">,</span> <span class="o">..</span> <span class="p">}</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">resfile</span><span class="p">;</span>
+    <span class="k">let</span> <span class="p">(</span><span class="n">long_name_ident</span><span class="p">,</span> <span class="o">..</span> <span class="p">)</span><span class="o">=</span> <span class="nf">assemble_name</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+    <span class="nd">quote!</span><span class="p">{</span>
+        <span class="k">pub</span> <span class="k">struct</span> #<span class="n">long_name_ident</span> <span class="p">{</span>
+            <span class="n">path</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">path</span><span class="p">::</span><span class="n">PathBuf</span>
+        <span class="p">}</span>
+
+        <span class="k">impl</span> #<span class="n">long_name_ident</span> <span class="p">{</span>
+            <span class="k">pub</span> <span class="k">fn</span> <span class="nf">path</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="nn">std</span><span class="p">::</span><span class="nn">path</span><span class="p">::</span><span class="n">Path</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.path</span><span class="nf">.as_path</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="k">pub</span> <span class="k">fn</span> <span class="nf">open</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nn">std</span><span class="p">::</span><span class="nn">fs</span><span class="p">::</span><span class="n">File</span> <span class="p">{</span>
+                <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.path</span><span class="nf">.is_file</span><span class="p">(),</span> <span class="s">"{:#?}"</span><span class="p">,</span> <span class="k">self</span><span class="py">.path</span><span class="p">);</span>
+
+                <span class="nn">std</span><span class="p">::</span><span class="nn">fs</span><span class="p">::</span><span class="nn">File</span><span class="p">::</span><span class="nf">open</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.path</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="k">pub</span> <span class="k">fn</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span> <span class="p">{</span>
+                <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.path</span><span class="nf">.is_file</span><span class="p">(),</span> <span class="s">"{:#?}"</span><span class="p">,</span> <span class="k">self</span><span class="py">.path</span><span class="p">);</span>
+
+                <span class="nn">std</span><span class="p">::</span><span class="nn">fs</span><span class="p">::</span><span class="nf">read</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.path</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="k">pub</span> <span class="k">fn</span> <span class="nf">load_to_string</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
+                <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="py">.path</span><span class="nf">.is_file</span><span class="p">(),</span> <span class="s">"{:#?}"</span><span class="p">,</span> <span class="k">self</span><span class="py">.path</span><span class="p">);</span>
+
+                <span class="nn">std</span><span class="p">::</span><span class="nn">fs</span><span class="p">::</span><span class="nf">read_to_string</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.path</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">def_resource_dir_method</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">resdir</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">ResourceDir</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">TokenStream</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">ResourceDir</span> <span class="p">{</span> <span class="n">name</span><span class="p">,</span> <span class="o">..</span> <span class="p">}</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">resdir</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="p">(</span><span class="n">long_name_ident</span><span class="p">,</span> <span class="n">name_litstr</span><span class="p">,</span> <span class="o">..</span> <span class="p">)</span><span class="o">=</span> <span class="nf">assemble_name</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+    <span class="nd">quote!</span> <span class="p">{</span>
+        <span class="k">pub</span> <span class="k">fn</span> #<span class="nf">name</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> #<span class="n">long_name_ident</span> <span class="p">{</span>
+            #<span class="n">long_name_ident</span> <span class="p">{</span>
+                <span class="n">path</span><span class="p">:</span> <span class="k">self</span><span class="py">.path</span><span class="nf">.join</span><span class="p">(</span>#<span class="n">name_litstr</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">def_resource_file_method</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">resfile</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">ResourceFile</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">TokenStream</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">ResourceFile</span> <span class="p">{</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">..</span> <span class="p">}</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">resfile</span><span class="p">;</span>
+
+    <span class="k">let</span> <span class="p">(</span><span class="n">long_name_ident</span><span class="p">,</span> <span class="o">..</span> <span class="p">)</span><span class="o">=</span> <span class="nf">assemble_name</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+
+    <span class="nd">quote!</span> <span class="p">{</span>
+        <span class="k">pub</span> <span class="k">fn</span> #<span class="nf">name</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> #<span class="n">long_name_ident</span> <span class="p">{</span>
+            #<span class="n">long_name_ident</span> <span class="p">{</span>
+                <span class="n">path</span><span class="p">:</span> <span class="k">self</span><span class="py">.path</span><span class="nf">.join</span><span class="p">(</span>#<span class="n">path</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cd">/// (long_name_ident, name_litstr, next_prefix_name = long_name_str)</span>
+<span class="k">fn</span> <span class="nf">assemble_name</span><span class="p">(</span><span class="k">mut</span> <span class="n">prefix_name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Ident</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="p">(</span><span class="n">Ident</span><span class="p">,</span> <span class="n">LitStr</span><span class="p">,</span> <span class="nb">String</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// snake style name</span>
+    <span class="k">let</span> <span class="n">name_str</span> <span class="o">=</span> <span class="n">name</span><span class="nf">.to_string</span><span class="p">();</span>
+    <span class="nd">assert_eq!</span><span class="p">(</span><span class="n">name_str</span><span class="p">,</span> <span class="n">name_str</span><span class="nf">.to_case</span><span class="p">(</span><span class="nn">Case</span><span class="p">::</span><span class="n">Snake</span><span class="p">));</span>
+
+    <span class="c1">// upper camel style prefix name</span>
+    <span class="nd">assert_eq!</span><span class="p">(</span><span class="n">prefix_name</span><span class="p">,</span> <span class="n">prefix_name</span><span class="nf">.to_case</span><span class="p">(</span><span class="nn">Case</span><span class="p">::</span><span class="n">UpperCamel</span><span class="p">));</span>
+    <span class="n">prefix_name</span><span class="nf">.push_str</span><span class="p">(</span><span class="o">&amp;</span><span class="n">name_str</span><span class="nf">.to_case</span><span class="p">(</span><span class="nn">Case</span><span class="p">::</span><span class="n">UpperCamel</span><span class="p">));</span>
+
+    <span class="p">(</span><span class="nd">ident!</span><span class="p">(</span><span class="o">&amp;</span><span class="n">prefix_name</span><span class="p">),</span> <span class="nd">litstr!</span><span class="p">(</span><span class="o">&amp;</span><span class="n">name_str</span><span class="p">),</span> <span class="n">prefix_name</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h2 id="总结">总结</h2>
+
+<p>还可以，比如在一个 Cargo workspace 里面可以专门用一个 Crate 来持有资源文件的配置（看起来就像 Micro Service 框架一样）。</p>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[问题引入]]></summary></entry><entry><title type="html">探讨 Rust 实现自引用结构</title><link href="/lang/BT-3-Extra-FlatBPT.html" rel="alternate" type="text/html" title="探讨 Rust 实现自引用结构" /><published>2024-12-05T00:00:00+08:00</published><updated>2024-12-05T00:00:00+08:00</updated><id>/lang/BT-3-Extra-FlatBPT</id><content type="html" xml:base="/lang/BT-3-Extra-FlatBPT.html"><![CDATA[<p><strong>别名：BT(3-extra) - Flat B+树（Vec like）</strong></p>
+
+<p><strong>– 探索 Rust 编程模型下传统自引用数据结构的最佳实现</strong></p>
+
+<p><strong>– 实验一种基于数组的扁平化节点和键值分离的 B+ 树实现</strong></p>
+
+<h2 id="问题引入">问题引入</h2>
+
+<p><strong>自引用数据结构（Self Referential Structures）</strong>，指存在递归定义的结构体，最简单的比如链表里的节点，</p>
+
+<p>在 C 里使用<em>指针（Pointer）</em>实现这种定义</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">Node</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">Node</span> <span class="o">*</span><span class="n">next</span><span class="p">,</span>
+    <span class="p">..</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在传统的面向对象的语言比如 Java 里，直接使用<em>引用（Reference）</em></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">Node</span> <span class="o">{</span>
+    <span class="nc">Node</span> <span class="n">next</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>但对于 Rust 而言，引入 <em>指针</em> 就破坏了内存安全（Memory safety），使用 <em>引用</em> 就面临可变性检查。</p>
+
+<p>实在是进退失据，不知如何是好；或者说，按照 Rust 哲学自引用数据结构是一种反模式，事实上它也确实存在内存安全或并发编程方面的脆弱性。</p>
+
+<p>但不管怎样，因为有大量的历史算法沉淀在自引用的结构里（树和图），无论如何都要找到一个在 Rust 里应付这种数据结构的办法，因为缺乏来自语言机制上的大力支持，这并不容易，实际变成了一个考验对 Rust 熟悉程度的一个门槛，像我自己用了 Rust 好几年了，到今天才算找到一点儿感觉，在此写下一个总结性的心得体会。</p>
+
+<h2 id="两种常规方法">两种常规方法</h2>
+
+<p>一般地讲，有两种常规的方法来实现自引用结构，一种是使用<strong>“官方指定”</strong>的“作弊器”，另一种是使用<strong>“官方使用”</strong>的“作弊器”。</p>
+
+<h3 id="官方指定">官方指定</h3>
+
+<p><strong>“官方指定”</strong>的作弊器指的是 <code class="language-plaintext highlighter-rouge">Rc&lt;RefCell&lt;T&gt;&gt;</code> 套装。</p>
+
+<p>其中，<code class="language-plaintext highlighter-rouge">RefCell</code> 提供了一种通过不可变引用进行可变修改的办法，没有什么特别的，就是直接跳过了可变性检查。</p>
+
+<p><strong>RefCell</strong></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">RefCell</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">borrow</span><span class="p">:</span> <span class="n">Cell</span><span class="o">&lt;</span><span class="n">BorrowFlag</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="c1">// Stores the location of the earliest currently active borrow.</span>
+    <span class="c1">// This gets updated whenever we go from having zero borrows</span>
+    <span class="c1">// to having a single borrow. When a borrow occurs, this gets included</span>
+    <span class="c1">// in the generated `BorrowError`/`BorrowMutError`</span>
+    <span class="nd">#[cfg(feature</span> <span class="nd">=</span> <span class="s">"debug_refcell"</span><span class="nd">)]</span>
+    <span class="n">borrowed_at</span><span class="p">:</span> <span class="n">Cell</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">'static</span> <span class="k">crate</span><span class="p">::</span><span class="nn">panic</span><span class="p">::</span><span class="n">Location</span><span class="o">&lt;</span><span class="k">'static</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">UnsafeCell</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">Cell</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">UnsafeCell</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">UnsafeCell</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">UnsafeCell</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">#[rustc_never_returns_null_ptr]</span>
+    <span class="k">pub</span> <span class="k">const</span> <span class="k">fn</span> <span class="nf">get</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">*</span><span class="k">mut</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="c1">// We can just cast the pointer from `UnsafeCell&lt;T&gt;` to `T` because of</span>
+        <span class="c1">// #[repr(transparent)]. This exploits std's special status, there is</span>
+        <span class="c1">// no guarantee for user code that this will work in future versions of the compiler!</span>
+        <span class="k">self</span> <span class="k">as</span> <span class="o">*</span><span class="k">const</span> <span class="n">UnsafeCell</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="k">as</span> <span class="o">*</span><span class="k">const</span> <span class="n">T</span> <span class="k">as</span> <span class="o">*</span><span class="k">mut</span> <span class="n">T</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="o">!</span><span class="nb">Sync</span> <span class="k">for</span> <span class="n">UnsafeCell</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+
+<span class="c1">// Positive values represent the number of `Ref` active. Negative values</span>
+<span class="c1">// represent the number of `RefMut` active. Multiple `RefMut`s can only be</span>
+<span class="c1">// active at a time if they refer to distinct, nonoverlapping components of a</span>
+<span class="c1">// `RefCell` (e.g., different ranges of a slice).</span>
+<span class="c1">//</span>
+<span class="c1">// `Ref` and `RefMut` are both two words in size, and so there will likely never</span>
+<span class="c1">// be enough `Ref`s or `RefMut`s in existence to overflow half of the `usize`</span>
+<span class="c1">// range. Thus, a `BorrowFlag` will probably never overflow or underflow.</span>
+<span class="c1">// However, this is not a guarantee, as a pathological program could repeatedly</span>
+<span class="c1">// create and then mem::forget `Ref`s or `RefMut`s. Thus, all code must</span>
+<span class="c1">// explicitly check for overflow and underflow in order to avoid unsafety, or at</span>
+<span class="c1">// least behave correctly in the event that overflow or underflow happens (e.g.,</span>
+<span class="c1">// see BorrowRef::new).</span>
+<span class="k">type</span> <span class="n">BorrowFlag</span> <span class="o">=</span> <span class="nb">isize</span><span class="p">;</span>
+<span class="k">const</span> <span class="n">UNUSED</span><span class="p">:</span> <span class="n">BorrowFlag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">Location</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">file</span><span class="p">:</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">line</span><span class="p">:</span> <span class="nb">u32</span><span class="p">,</span>
+    <span class="n">col</span><span class="p">:</span> <span class="nb">u32</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Rc</code> 是引用计数器（Reference counter），是一种代表性的 GC 方法。</p>
+
+<p><strong>Rc</strong></p>
+
+<p>其中 <code class="language-plaintext highlighter-rouge">NonNull</code> 更多意义上是文档作用，表明这个指针不应被设为 <code class="language-plaintext highlighter-rouge">null</code>。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="nb">Rc</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">ptr</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">RcInner</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">Weak</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="c1">// This is a `NonNull` to allow optimizing the size of this type in enums,</span>
+    <span class="c1">// but it is not necessarily a valid pointer.</span>
+    <span class="c1">// `Weak::new` sets this to `usize::MAX` so that it doesn’t need</span>
+    <span class="c1">// to allocate space on the heap. That's not a value a real pointer</span>
+    <span class="c1">// will ever have because RcInner has alignment at least 2.</span>
+    <span class="c1">// This is only possible when `T: Sized`; unsized `T` never dangle.</span>
+    <span class="n">ptr</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">RcInner</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">pointer</span><span class="p">:</span> <span class="o">*</span><span class="k">const</span> <span class="n">T</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1">// This is repr(C) to future-proof against possible field-reordering, which</span>
+<span class="c1">// would interfere with otherwise safe [into|from]_raw() of transmutable</span>
+<span class="c1">// inner types.</span>
+<span class="nd">#[repr(C)]</span>
+<span class="k">struct</span> <span class="n">RcInner</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">strong</span><span class="p">:</span> <span class="n">Cell</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">weak</span><span class="p">:</span> <span class="n">Cell</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Rc</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">#[cfg(not(no_global_oom_handling))]</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Rc</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="c1">// There is an implicit weak pointer owned by all the strong</span>
+        <span class="c1">// pointers, which ensures that the weak destructor never frees</span>
+        <span class="c1">// the allocation while the strong destructor is running, even</span>
+        <span class="c1">// if the weak pointer is stored inside the strong one.</span>
+        <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="k">Self</span><span class="p">::</span><span class="nf">from_inner</span><span class="p">(</span>
+                <span class="c1">// get 'static lifetimes raw pointer</span>
+                <span class="nn">Box</span><span class="p">::</span><span class="nf">leak</span><span class="p">(</span>
+                    <span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span>
+                        <span class="n">RcInner</span> <span class="p">{</span> <span class="n">strong</span><span class="p">:</span> <span class="nn">Cell</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">weak</span><span class="p">:</span> <span class="nn">Cell</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">value</span> <span class="p">}))</span>
+                    <span class="nf">.into</span><span class="p">(),</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">downgrade</span><span class="p">(</span><span class="n">this</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">Weak</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="n">this</span><span class="nf">.inner</span><span class="p">()</span><span class="nf">.inc_weak</span><span class="p">();</span>
+        <span class="n">Weak</span> <span class="p">{</span> <span class="n">ptr</span><span class="p">:</span> <span class="n">this</span><span class="py">.ptr</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+   
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="nb">Rc</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="nd">#[inline]</span>
+    <span class="k">unsafe</span> <span class="k">fn</span> <span class="nf">from_inner</span><span class="p">(</span><span class="n">ptr</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">RcInner</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">ptr</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="nb">Drop</span> <span class="k">for</span> <span class="nb">Rc</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">drop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="k">self</span><span class="nf">.inner</span><span class="p">()</span><span class="nf">.dec_strong</span><span class="p">();</span>
+            <span class="k">if</span> <span class="k">self</span><span class="nf">.inner</span><span class="p">()</span><span class="nf">.strong</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="nn">ptr</span><span class="p">::</span><span class="nf">drop_in_place</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="p">(</span><span class="o">*</span><span class="k">self</span><span class="py">.ptr</span><span class="nf">.as_ptr</span><span class="p">())</span><span class="py">.value</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="nb">Drop</span> <span class="k">for</span> <span class="n">Weak</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">A</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">drop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">inner</span> <span class="o">=</span> <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">inner</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="nf">.inner</span><span class="p">()</span> <span class="p">{</span> <span class="n">inner</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">};</span>
+
+        <span class="n">inner</span><span class="nf">.dec_weak</span><span class="p">();</span>
+        <span class="c1">// the weak count starts at 1, and will only go to zero if all</span>
+        <span class="c1">// the strong pointers have disappeared.</span>
+        <span class="k">if</span> <span class="n">inner</span><span class="nf">.weak</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">unsafe</span> <span class="p">{</span>
+                <span class="k">self</span><span class="py">.alloc</span><span class="nf">.deallocate</span><span class="p">(</span>
+                    <span class="k">self</span><span class="py">.ptr</span><span class="nf">.cast</span><span class="p">(),</span> 
+                    <span class="nn">Layout</span><span class="p">::</span><span class="nf">for_value_raw</span><span class="p">(</span><span class="k">self</span><span class="py">.ptr</span><span class="nf">.as_ptr</span><span class="p">()</span>
+                <span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这两种个组件都非常鸡肋，前者是假装解决问题，后者更是庸人自扰。</p>
+
+<p><code class="language-plaintext highlighter-rouge">RefCell</code> 只是在用户端代码的级别上对指针进行了封装，没有能力提供任何有实质意义的安全保证，它唯一做的事情就是<strong>形式上</strong>封装了“不安全”的代码，使它变成“安全”的代码。</p>
+
+<p><code class="language-plaintext highlighter-rouge">Rc</code> 的问题就更大，属于设计上就没想清楚，实验性的一个东西。首先，看代码的时候就思考一个问题，为什么要单独搞一个 <code class="language-plaintext highlighter-rouge">Weak</code> ，它不就是不“拥有”对象所有权的普通指针吗，搞到最后怎么那么复杂，先让 <code class="language-plaintext highlighter-rouge">Rc</code> 持有数据 <code class="language-plaintext highlighter-rouge">T</code>，再让 <code class="language-plaintext highlighter-rouge">Weak</code> 持有<code class="language-plaintext highlighter-rouge">T</code> 的容器 <code class="language-plaintext highlighter-rouge">RcInner</code> 😅；</p>
+
+<p>其次，进一步考虑这个引用计数器本身到底有什么用？它自身的计数机制就依赖于生命周期，那么这个计数到底有什么用呢？且不说本身就额外破坏了单一所有权的原则，还要再引入弱引用机制来给循环引用打补丁（补丁还不能从根本上解决问题）。<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup></p>
+
+<p>不仅如此，这两个组件的套装还有严重的人体工程学的问题。</p>
+
+<h4 id="人工学问题">人工学问题</h4>
+
+<p>这实际是个更广泛的问题，因为 Rust 的类型系统实际上是纯函数式的<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">2</a></sup>，而承载类型语义的是结构体，这导致增加一个特性就要套一层结构体，虽然都是 Zero Cost Abstraction<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup>，但实在不适合人机交互，这种条件下，实际上是需要做一些扁平化结构来利于人读人写。</p>
+
+<p>回到 <code class="language-plaintext highlighter-rouge">Rc&lt;RefCell&lt;T&gt;&gt;</code> ，任何一个在 <code class="language-plaintext highlighter-rouge">T</code> 上的访问，对于 <code class="language-plaintext highlighter-rouge">Rc</code> 要 <code class="language-plaintext highlighter-rouge">as_ref</code> ，对于 <code class="language-plaintext highlighter-rouge">RefCell</code> 要 <code class="language-plaintext highlighter-rouge">borrow</code> ，最后结果上还要面临二段 Borrow 的可变性和生命周期检查的问题，特别是早期的版本。</p>
+
+<p>而不管什么原因，总之就是官方自己标准库的各种实现都不用这个东西。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+
+<h3 id="官方使用">官方使用</h3>
+
+<p>标准库里的自引用数据结构都是特化类型的指针，比如以下是标准库 <code class="language-plaintext highlighter-rouge">BTreeMap</code> 里的“树节点”类型</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">LeafNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// We want to be covariant in `K` and `V`.</span>
+    <span class="n">parent</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">NonNull</span><span class="o">&lt;</span><span class="n">InternalNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span>
+
+    <span class="cd">/// This node's index into the parent node's `edges` array.</span>
+    <span class="cd">/// `*node.parent.edges[node.parent_idx]` should be the same thing as `node`.</span>
+    <span class="cd">/// This is only guaranteed to be initialized when `parent` is non-null.</span>
+    <span class="n">parent_idx</span><span class="p">:</span> <span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="nb">u16</span><span class="o">&gt;</span><span class="p">,</span>
+
+    <span class="cd">/// The number of keys and values this node stores.</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">u16</span><span class="p">,</span>
+
+    <span class="cd">/// The arrays storing the actual data of the node. Only the first `len` elements of each</span>
+    <span class="cd">/// array are initialized and valid.</span>
+    <span class="n">keys</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">K</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">CAPACITY</span><span class="p">],</span>
+    <span class="n">vals</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">CAPACITY</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(C)]</span>
+<span class="c1">// gdb_providers.py uses this type name for introspection.</span>
+<span class="k">struct</span> <span class="n">InternalNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">LeafNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+
+    <span class="cd">/// The pointers to the children of this node. `len + 1` of these are considered</span>
+    <span class="cd">/// initialized and valid, except that near the end, while the tree is held</span>
+    <span class="cd">/// through borrow type `Dying`, some of these pointers are dangling.</span>
+    <span class="n">edges</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">NonNull</span><span class="o">&lt;</span><span class="n">LeafNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;&gt;</span><span class="p">;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">B</span><span class="p">],</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="更好的示范">更好的示范</h3>
+
+<p>可以合并 <code class="language-plaintext highlighter-rouge">Rc</code> 和 <code class="language-plaintext highlighter-rouge">RefCell</code> 的功能，并且去掉对于 Rust 来说莫名奇妙的计数指针，改为单一所有权的指针和由它衍生出的普通指针。</p>
+
+<p>这样做不仅优化了人机交互，而且不但没有损失任何之前 <code class="language-plaintext highlighter-rouge">Rc&lt;RefCell&lt;T&gt;&gt;</code> 对内存安全所作的所有担保，也就是堆上内存的自动释放，并且从根本上消除了循环引用带来的内存泄漏的可能性。<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">value</span><span class="p">:</span> <span class="nn">NonNull</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">Box</span><span class="p">::</span><span class="nf">into_raw</span><span class="p">(</span><span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span><span class="nf">.unwrap</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">as_ref</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="n">T</span> <span class="p">{</span>
+        <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span> <span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">as_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="o">*</span><span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">ptr</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nb">Ptr</span> <span class="p">{</span> <span class="n">value</span><span class="p">:</span> <span class="k">self</span><span class="py">.value</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Drop</span> <span class="k">for</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">drop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">unsafe</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">_</span> <span class="o">=</span> <span class="nn">Box</span><span class="p">::</span><span class="nf">from_raw</span><span class="p">(</span><span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">());</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">as_ref</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="n">T</span> <span class="p">{</span>
+        <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span> <span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">as_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="o">*</span><span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Clone</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">value</span><span class="p">:</span> <span class="k">self</span><span class="py">.value</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Copy</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>这样我们自己实现的 B+ 树可能就是如下这样：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">enum</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">Leaf</span> <span class="p">{</span>
+        <span class="n">entries</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span>
+        <span class="n">next</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+        <span class="n">_marker</span><span class="p">:</span> <span class="n">PhantomData</span><span class="o">&lt;</span><span class="p">[();</span> <span class="n">M</span><span class="p">]</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="n">Internal</span> <span class="p">{</span>
+        <span class="n">children</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+        <span class="n">_marker</span><span class="p">:</span> <span class="n">PhantomData</span><span class="o">&lt;</span><span class="p">[();</span> <span class="n">M</span><span class="p">]</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">BPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">32</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="第三种方法放弃指针">第三种方法：放弃指针</h2>
+
+<p>在现行编程框架下仍然可以避免使用指针来实现自引用结构，方法是在根部持有所有节点，使用索引（比如下标）作为传统指针的替代，不过这样有一个限制，就是节点的索引不能变。</p>
+
+<p>首先如果索引是一个 Map ，比如 HashMap 里 Key，那么这是一个方便解决的问题，但是使用 Map 就引入了额外的依赖，这是我们很多时候想要避免的事情，同时也会损失一些性能；</p>
+
+<p>这样的话，考虑一个简单的基于向量的实现，用它的下标作为索引，得到一个惰性删除向量，这样当删除节点的时候不会改变既有节点的位置，而当插入新数据时可以复用被标记为删除的位置。</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Default,</span> <span class="nd">Clone)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">LazyDeleteVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="n">deleted</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">LazyDeleteVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">const</span> <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="k">self</span><span class="py">.deleted</span><span class="nf">.len</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">const</span> <span class="k">fn</span> <span class="nf">is_empty</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">with_capacity</span><span class="p">(</span><span class="n">capacity</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">data</span><span class="p">:</span> <span class="nn">Vec</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">capacity</span><span class="p">),</span>
+            <span class="n">deleted</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[],</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">from_parts</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">deleted</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">data</span><span class="p">,</span> <span class="n">deleted</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">=</span> <span class="k">self</span><span class="py">.deleted</span><span class="nf">.pop</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">(</span><span class="n">val</span><span class="p">);</span>
+            <span class="n">idx</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.data</span><span class="nf">.push</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="n">val</span><span class="p">));</span>
+            <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">remove</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="nd">debug_assert!</span><span class="p">(</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">(),</span> <span class="s">"{idx} &gt; len {}"</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">());</span>
+
+        <span class="k">let</span> <span class="n">old</span> <span class="o">=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="nf">.take</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="n">old</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">self</span><span class="py">.deleted</span><span class="nf">.push</span><span class="p">(</span><span class="n">idx</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">old</span>
+    <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">iter</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.data</span>
+            <span class="nf">.iter</span><span class="p">()</span>
+            <span class="nf">.filter</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="nf">.is_some</span><span class="p">())</span>
+            <span class="nf">.map</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="n">x</span><span class="nf">.as_ref</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样的实现虽然多了一层间接访问，但在一个综合了插入、删除和查询的综合测试看，这样结构的一个 B+ 树实现与标准库里的 <code class="language-plaintext highlighter-rouge">BTreeMap</code> 的性能几乎一致。</p>
+
+<p><strong>测试的配置</strong></p>
+
+<p><em>元组第一个数字是概率权重，第二个是操作名</em></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">roller</span> <span class="o">=</span> <span class="nn">RandomRoller</span><span class="p">::</span><span class="nf">with_candicates</span><span class="p">(</span><span class="nd">vec!</span><span class="p">[</span>
+    <span class="c1">// get</span>
+    <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="nf">Q</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span>
+    <span class="c1">// range</span>
+    <span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="nf">R</span><span class="p">(</span><span class="n">Unbounded</span><span class="p">,</span> <span class="n">Unbounded</span><span class="p">)),</span>
+    <span class="c1">// insert</span>
+    <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="nf">A</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="c1">// remove </span>
+    <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nf">D</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span>
+<span class="p">]);</span>
+</code></pre></div></div>
+
+<p><strong>示例片段</strong></p>
+
+<p><a href="https://github.com/minghu6/rust-minghu6/blob/v0.1.12/coll_st/src/bt/flatbpt.rs">完整代码</a></p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Debug,</span> <span class="nd">Clone,</span> <span class="nd">Copy)]</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">Leaf</span> <span class="p">{</span>
+        <span class="cd">/// (key, dataid)</span>
+        <span class="n">entries</span><span class="p">:</span> <span class="n">PartialInitArray</span><span class="o">&lt;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">next</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="cd">/// *NOTE:* For root node, `paren` is nonsense.</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">Internal</span> <span class="p">{</span>
+        <span class="cd">/// (min-key of child, nodeid)</span>
+        <span class="n">children</span><span class="p">:</span> <span class="n">PartialInitArray</span><span class="o">&lt;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+
+<span class="nd">#[derive(Clone)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">FlatBPT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">32</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// uncouple data manage (avoid unnecessary mutability check)</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">LazyDeleteVec</span><span class="o">&lt;*</span><span class="k">mut</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+
+    <span class="cd">/// nodes[0] would be root and should always not to be deleted</span>
+    <span class="n">nodes</span><span class="p">:</span> <span class="n">LazyDeleteVec</span><span class="o">&lt;</span><span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="nd">#[derive(Debug)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">PartialInitArray</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="k">const</span> <span class="n">C</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">arr</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">C</span><span class="p">],</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:3" role="doc-endnote">
+      <p>这个东西看起来就是对 C++ 或者其他传统系统编程语言的不假思索的模仿 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:1" role="doc-endnote">
+      <p>在纯函数语言的世界里，它还远不够强大（也许 Rust 2.0 能改进），但对于传统的系统编程语言的世界已经是一种巨大的冲击 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>苦了编译器和代码静态分析的工具，但这也是随着计算机性能的提高，编程语言发展的应有之义 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>如果他们开始使用就会发现那是真的难用，无用而且折磨，折磨而且无用 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>在标准库里的 <code class="language-plaintext highlighter-rouge">XXCell</code>，特别地 <code class="language-plaintext highlighter-rouge">impl !Send</code> 和 <code class="language-plaintext highlighter-rouge">impl !Sync</code> ，来确保这种在可变性上的“作弊”手段不会被滥用导致 race condition，而对于我们用户端代码，只要不声明实现这两个 trait，本来就不会自动实现 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[别名：BT(3-extra) - Flat B+树（Vec like）]]></summary></entry><entry><title type="html">0264 - Ugly Number II</title><link href="/oth/LeetCode0264.html" rel="alternate" type="text/html" title="0264 - Ugly Number II" /><published>2024-10-28T00:00:00+08:00</published><updated>2024-10-28T00:00:00+08:00</updated><id>/oth/LeetCode0264</id><content type="html" xml:base="/oth/LeetCode0264.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/ugly-number-ii/description">问题描述</a></p>
 
@@ -3462,335 +4277,4 @@
       <p>这个论文里数学符号的排版字体真的抽象，首先这个字符 <img src="/assets/img/prime_sieves/charR.png" alt="" /> 是什么？ 版上打眼一看都缩缩成一团了，还以为是个花体 $A$ 呢，仔细看不是，难道是什么大写希腊字母的花体么，因为拜占庭作为中世纪西方数学教育翻译的主要材料来源地之一，使得作为传统，西方人写数学符号都好整个希腊字母，但仔细对了一遍也不像，后来通过谷歌识图对比类似结果，算是确认这是个 $R$ 。 如果提前知道它是个 $R$ ，那它看起来还挺像个 $R$ 的，可这个字符<img src="/assets/img/prime_sieves/charS.png" alt="" />又是什么？它看起来像 $y$ 又像 $g$ ，这下谷歌识图也识不出来了，只能在专门的字体网站做 AI 识图，然后发现这居然是个 $S$ ，S 它是你么，它说它舅（就) 是我。这个字体名叫 <em>OriginalScriptStd</em> ，英文草书说是。 <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[质数筛子的原理是质因数分解。]]></summary></entry><entry><title type="html">算法复杂度分析的标记符号</title><link href="/algs/ComplexityNotations.html" rel="alternate" type="text/html" title="算法复杂度分析的标记符号" /><published>2024-07-28T00:00:00+08:00</published><updated>2024-07-28T00:00:00+08:00</updated><id>/algs/ComplexityNotations</id><content type="html" xml:base="/algs/ComplexityNotations.html"><![CDATA[<p>介绍下在分析算法复杂度时用到的标记符号，及其数学来源。</p>
-
-<p>这些标记符号开始源于德国数学家 <a href="https://en.wikipedia.org/wiki/Paul_Gustav_Heinrich_Bachmann">Paul Bachmann</a> 和 <a href="https://en.wikipedia.org/wiki/Edmund_Landau">Edmund Landau</a> 的发明，后经 <a href="https://en.wikipedia.org/wiki/Donald_Knuth">Knuth</a> 的整理，形成了现在熟悉的这些渐进符号（<strong>asymptotic notation</strong>）。</p>
-
-<h2 id="o-记号">$O$ 记号</h2>
-
-<p>开始叫做 big-O<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，后经过 Knuth 整理，也可以表示为 big Omicron 。</p>
-
-<h3 id="形式化描述">形式化描述</h3>
-
-<p>$f(x) = O(g(x)),\quad x\to \infty $</p>
-
-<p>等价于：</p>
-
-<p>$\exists (M\gt0, x_0)$ ，使得所有 $x \geqslant x_0$ ，都有 $\vert f(x)\vert \leqslant M g(x)$ ， 其中函数 $g(x)$ 对于足够大的 $x$ 来说总是正数。</p>
-
-<h2 id="o-记号-1">$o$ 记号</h2>
-
-<p>叫做 little-o ，也可以叫做 little omicron 。相比于 big-O ，little-o 的限制更加严格。</p>
-
-<h3 id="形式化描述-1">形式化描述</h3>
-
-<p>$f(x) = o(g(x)),\quad x\to \infty $</p>
-
-<p>等价于：</p>
-
-<p>$\forall \epsilon \gt 0,\ \exists x_0$ ，使得所有 $x \geqslant x_0$ ，都有 $\vert f(x)\vert \leqslant \epsilon g(x)$ ， 其中函数 $g(x)$ 对于足够大的 $x$ 来说总是正数。<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
-
-<p>这个定义形式上就类似微分里面的上极限的定义。</p>
-
-<h3 id="另一种形式">另一种形式</h3>
-
-<p>按照定义高阶无穷小的方式，它还可以写作：</p>
-
-<p>$\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = 0$</p>
-
-<p>也就是说，$g(x)$ 是更高阶的一个函数，是 $f(x)$ 的严格上限。这种 little-o 的记号在泰勒展开式里作为余项也用到过。</p>
-
-<h3 id="与-o-的关系">与 $O$ 的关系</h3>
-
-<p>记号描述得其实是一种集合成员与集合的概念，这样我们就清楚了 big-O 实际上就是同阶函数和更高阶函数 $o$ 两个不相交集合的并集 <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>。</p>
-
-<h2 id="omega--omega-记号">$\Omega$ &amp; $\omega$ 记号</h2>
-
-<p>分别叫做 big Omega 和 little omega ，根据 Knuth 的归纳调整，big Omega 成为了：</p>
-
-<p>$f(x) = \Omega(g(x)) \Leftrightarrow g(x) = O(f(x))$</p>
-
-<p>而 little omega 则对应了：</p>
-
-<p>$f(x) = \omega(g(x)) \Leftrightarrow g(x) = o(f(x))$</p>
-
-<p>但是按照函数阶的集合的观点更直观，big Omega 代表小于或等于这个阶的函数集合，而 little omega 则代表了；严格小于这个阶的函数集合。</p>
-
-<h2 id="theta-记号">$\Theta$ 记号</h2>
-
-<p>叫做 big Theta。根据 Knuth 的定义：</p>
-
-<p>$f(x) = \Theta(g(x)) \Leftrightarrow f(x) = O(g(x)) = \Omega(g(x))$</p>
-
-<p>是说给出的 $g(x)$ 同时满足了 big-O 和 big Omega 这两个集合的定义。</p>
-
-<h2 id="总结">总结</h2>
-
-<p>可以按照如下表对复杂度记号进行理解：</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>记号</th>
-      <th>逻辑关系</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>$O$</td>
-      <td>$\leqslant$</td>
-    </tr>
-    <tr>
-      <td>$o$</td>
-      <td>$\lt$</td>
-    </tr>
-    <tr>
-      <td>$\Theta$</td>
-      <td>$\simeq$</td>
-    </tr>
-    <tr>
-      <td>$\Omega$</td>
-      <td>$\geqslant$</td>
-    </tr>
-    <tr>
-      <td>$\omega$</td>
-      <td>$\gt$</td>
-    </tr>
-  </tbody>
-</table>
-
-<p><a href="https://en.wikipedia.org/wiki/Time_complexity#Table_of_common_time_complexities">备查时间复杂度表</a></p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>根据 <a href="https://en.wikipedia.org/wiki/Big_O_notation#History_(Bachmann%E2%80%93Landau,_Hardy,_and_Vinogradov_notations)">wiki</a> 的说法， big-O 来源于德语 “Ordnung”，用来表示近似阶的意思。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>显然这里的 $\epsilon$ 和 big-O 形式化定义里面的 $M$ 是一样的，只是作为一种对使用传统的尊重，大写英文字母用作某个常数而 $\epsilon$ 用作任意（小）的数字。 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>很容易搞混得是 $f(x)\sim g(x)$ 描述得是等价关系 $\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = 1$ 而不是同阶关系 $\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = C \gt 0 $，缺少一个描述同阶关系的记号有点儿别扭。 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[介绍下在分析算法复杂度时用到的标记符号，及其数学来源。]]></summary></entry><entry><title type="html">质数基础</title><link href="/algs/Greedy.html" rel="alternate" type="text/html" title="质数基础" /><published>2023-12-29T00:00:00+08:00</published><updated>2023-12-29T00:00:00+08:00</updated><id>/algs/Greedy</id><content type="html" xml:base="/algs/Greedy.html"><![CDATA[<h2 id="定义">定义</h2>
-
-<p>质数（prime），指大于 $1$ 的自然数里，不能拆解为比它严格更小两个的自然数乘积的数。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
-
-<p>互质（co-prime），两个整数 $a$，$b$ 没有除了 $1$ 以外的作为正整数的共同除数（divisor），则说 $a$ 质于 $b$ ，或者 $a,b$ 互质<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup>。<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">3</a></sup></p>
-
-<h2 id="性质">性质</h2>
-
-<h3 id="欧几里得引理">欧几里得引理<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">4</a></sup></h3>
-
-<p><del><strong>原始版本</strong>：如果质数 $p$ 能够除 $a\cdot b$ <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">5</a></sup>，并且 $p$ 不能除 $a$ ，则 $p$ 能够除 $b$ 。</del></p>
-
-<p><strong>现代版本</strong>：如果一个整数 $n$ 能够除 $a\cdot b$ ，并且 $n$ 与 $a$ 互质，则 $n$ 能够除 $b$ 。</p>
-
-<h4 id="证明">证明</h4>
-
-<p>现代版是对把原始欧几里得引理推广到一般整数上，我们直接对此进行证明。</p>
-
-<p>不妨假设 $n$ 是非负数：</p>
-
-<h5 id="证初始条件">证初始条件</h5>
-
-<p>对于初始情况，比如 $ab = 0$ ，此时 $a=0$ 或 $b=0$ 。</p>
-
-<p>假设 $a=0$ ，因为 $n\perp a$ ，那么显然有 $n = 1$ ，而 $1$ 可以除任何数，当然能够除 $b$ ，结论成立；</p>
-
-<p>假设 $b=0$，$b$ 能够被任何数整除，当然能被 $n$ 整除，条件成立。</p>
-
-<h5 id="证递推关系">证递推关系</h5>
-
-<p>假设结论对于所有积在 $[0, ab)$ 的情况结论都成立：</p>
-
-<p>因为 $n \vert a\cdot b$ ，不妨令</p>
-
-\[贪心证明\]
-
-<p>如果 $n=a$ ，因为 $n\perp a$ ，那么显然有 $\vert n \vert = 1$ ，那么 $n$ 一定可以除 $b$ ；</p>
-
-<p>如果 $n\lt a$ ，两边减去 $n\cdot b$ ，得到 $nq - nb = ab - nb$ ，也就是 $n(q-b) = (a-n)b$ 。又因为 $n\perp a$ ，所以有 $n\perp a-n$ <sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">6</a></sup> ，而 $0 \leqslant (a-n)b \lt ab$ ，按照假设，有 $n \vert b$ ；</p>
-
-<p>否则 $n \gt a$，两边减去 $a\cdot q$ ，得到 $nq-aq = ab-aq$ ，也即</p>
-
-\[\]
-
-<p>类似地， 因为 $n-a\perp a$ ，而 $0 \leqslant a(b-q) \lt ab$ ，所以有 $n-a \vert b-q $ 。不妨令 $b-q = r(n-a)$ ，代回式 $\texttt{(2)}$ 得到 $(n-a)q=(n-a)ar$ ，于是有 $q=ar$ ，代回式 $\texttt{(1)}$ 有 $nar=ab$，$b=nr$ ，也就是 $n \vert b$ 。</p>
-
-<p>于是我们证明了递推关系的成立。</p>
-
-<p>欧几里得引理证毕。</p>
-
-<h3 id="算式基本定理">算式基本定理<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">7</a></sup></h3>
-
-<p>每一个大于 $1$ 的正整数都可以，而且唯一地分解为一组质数的乘积。</p>
-
-<h3 id="证明-1">证明</h3>
-
-<h5 id="存在性证明">存在性证明</h5>
-
-<p>这很容易理解，假如一个大于 $1$ 的正整数的因式分解不是质数就是合数，因式分解后，如果存在合数，那么合数本身也一定可以继续分解，直到只剩下质数为止。</p>
-
-<h5 id="唯一性证明">唯一性证明</h5>
-
-<p>反证法，假设 $s$ 是最小的、至少有两个质数分解组合的正整数：$s = \prod p_m = \prod q_n$ 。</p>
-
-<p>既然 $p_1 \perp q_k$ ，根据上文欧式引理，有 $p_1 \vert \prod_{1}^{n-1} q$；同理，$p_1 \perp p_{k=n-1}$ ，可得 $p_1 \vert \prod_{1}^{n-2} q$ ；直到 $p_1 \vert q_1$ 。又因为 $p_1 \perp q_1$ ，所以只能是 $p_1 = q_1$ ，这样就得到了比 $s$ 更小的能分解为至少两个质数组合的正整数 $\prod_{2}^{m} p = \prod_{2}^{n} q$ ，与前提假设相悖，于是反证成立。</p>
-
-<h5 id="唯一性证明独立">唯一性证明（独立）</h5>
-
-<p>这里通过不依赖欧几里得引理来独立证明。</p>
-
-<p>仍然通过反证法，假设 $s$ 是最小的、至少有两个质数分解组合的正整数 $s = \prod p_m = \prod q_n$ 。</p>
-
-<p>如果两个组合里存在一对儿相等的质数 $p_i = q_j$ ，则两边约掉相等的数后会出现一个比 $s$ 更小的多质数分解的整数，与前提相悖。</p>
-
-<p>因此不妨可以假设 $p_1 \lt q_1$ ，令 $P=\prod_{2}^{m} p$ ，$Q=\prod_{2}^{n} q$ ，则有 $s=p_1P=q_1Q$ 。</p>
-
-<p>又有 $p_1 \lt q_1$ ，所以 $P \gt Q$ ，不妨令 $s’$ 等于 $s$ 减去 $p_1Q$ ，得到 $s’ = p_1(P-Q) = Q(q_1-p_1)$ 。因为 $ s’ \lt s$ ，所以 $s’$ 只有唯一的质因数分解，那么 $p_1$ 要么在 $q_1 - p_1$ 的部分，要么在 $Q$ 的部分。</p>
-
-<p>如果 $p_1$ 在 $q_1-p_1$ 的部分，则有 $p_1 \vert q_1$ ，与 $p_1$ 、$q_1$ 都是质数相悖；</p>
-
-<p>如果 $p_1$ 在 $Q$ 的部分，由于前面的结论，$p_1 \not\in \lbrace q \rbrace$ ，因此就有两对儿质因数分解，这样就发现了比 $s$ 更小的多组质因数分解的正整数 $Q$ ，与假设相悖。</p>
-
-<p>反证证毕。</p>
-
-<h2 id="质数分布">质数分布</h2>
-
-<h3 id="质数定理">质数定理<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">8</a></sup></h3>
-
-<p>首先定义一个用于质数计数的函数 $\pi(N)$ ，表示 $\leqslant N$ 范围内的质数个数，那么有：</p>
-
-\[同样由于是非负路径，到某个点 $v_1$ 的最短路径上的前驱点 $v_1'$ 的最短路径一定更小，首先会被求出，而 $v_1$ 的最短路径因此会被正确更新[^9]\]
-
-<p>据此，也可以推出第 $n$ 个质数 $p_n$ 的渐进表示：</p>
-
-\[显然最重要的就是边的权重是非负值，这再次允许我们进行非比较地不等式缩放。\]
-
-<p>推理过程：</p>
-
-<p>首先这实质是在求 $\pi(x)$ 的反函数（的渐进表示），已知 $y\sim\large\frac{x}{\log x}$ ，两边取 $\log$ 得到 $ \log y \sim \log x - \log\log x \sim \log x$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，带回 $\pi(x)$ 原式得到 $x \sim y\log y$ ，也即 $p_n \sim \large\frac{n}{\log n}$ ，证毕。</p>
-
-<h3 id="伯特兰-切比雪夫定理">伯特兰-切比雪夫定理<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">10</a></sup></h3>
-
-<p>对于 $n &gt; 3$ ，至少存在一个质数 $p$ ，满足 $n \lt p \lt 2n-2$ 。</p>
-
-<p>更宽松、但更适用的形式是对于 $n\geqslant 2$：</p>
-
-\[这通常是显而易见的\]
-
-<p>证明很简单，首先对于 $n\gt 3$ 的情况，显然由于更宽松的形式，上式是成立的；而对于 $n=2$ 和 $n=3$ 的特殊情况，分别有 $2 \lt 3\lt 4$ 和 $3 \lt 5\lt 6$ ，也使得上式成立。</p>
-
-<p>通过反证法还可以得出对于 $n\geqslant 1$ ，也就是所有质数：</p>
-
-\[不这样的话，假如只在其中一棵子树上，通过连接另一侧子树上的点、根节点和直径的近端的点，就能构造出更长的直径\]
-
-<p>这里将介绍简单的测试方法<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">11</a></sup> – 试除法（trial division），其中使用的技巧将在后面查找范围内所有质数的方法里得到进一步的拓展。</p>
-
-<p>被测试的整数记为 $n$ ，试除法，顾名思义就是检查所有 $2\dots n-1$ 的值能否除 $n$ ，也就是根据原始定义进行测试。这里主要介绍常见的优化技巧：</p>
-
-<p>首先，因数测试的上限不需要到 $n-1$ ，而只需要到 $\lfloor \sqrt{n} \rfloor$ <sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">12</a></sup> ，因为因数如果存在，一定是一大一小或者相等大小，只需要检查所有较小或者相等的数就行。</p>
-
-<p>其次，可以先检测大多数情况下最常见的质因数：$2, 3$ 来快速失败。</p>
-
-<p>更进一步地，可以排除所有与 $2,3$ 不互质的数，实质上我们是在尝试寻找 $n$ 的质因数，可以用 $3\sharp\cdot k+i = 6k+i$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">13</a></sup>的形式表示后面的数字，其中 $k \in N^+, 0\leqslant i \lt 3\sharp$ 。之所以选择 $3\sharp$ 作为周期长度，是因为它是这些质因子的最小公倍数，在此基础上排除那些与 $2$ 或 $3$ 不互质的 $i$ ，比如 $i=0, 2, 4$ ，也就是只需要检查 $6k+1, 6k+5$ 。如果从数字 $5$ <sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">14</a></sup>开始检查是否能除 $n$ ，那么为了方便起见，周期内的这两个位置 $x$ 可以表示为 $x \mod{6} \equiv \pm1$ 。</p>
-
-<p>有了这样三个主要地优化，现在就可以写下试除法的代码：</p>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[macro_export]</span>
-<span class="nd">macro_rules!</span> <span class="n">is_prime</span> <span class="p">{</span>
-    <span class="p">(</span><span class="nv">$n:expr</span><span class="p">;</span> <span class="nv">$ty:ty</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="p">{</span>
-            <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="nv">$n</span><span class="p">;</span>
-​
-            <span class="nv">'ret</span><span class="p">:</span> <span class="k">loop</span> <span class="p">{</span>
-                <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="p">{</span>
-                    <span class="k">break</span> <span class="kc">false</span><span class="p">;</span>
-                <span class="p">}</span>
-                
-                <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">||</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">3</span> <span class="p">{</span>
-                    <span class="k">break</span> <span class="kc">true</span><span class="p">;</span>
-                <span class="p">}</span>
-​
-                <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-                    <span class="k">break</span> <span class="kc">false</span><span class="p">;</span>
-                <span class="p">}</span>
-​
-                <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="p">(</span><span class="mi">5</span><span class="o">..=&lt;</span><span class="nv">$ty</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">isqrt</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="nf">.step_by</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">||</span> <span class="n">n</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-                        <span class="k">break</span> <span class="nv">'ret</span> <span class="kc">false</span>
-                    <span class="p">}</span>
-                <span class="p">}</span>
-​
-                <span class="k">break</span> <span class="kc">true</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<p>这里使用宏只是因为 Rust 缺乏统一描述常见基本数字类型的 Trait ，而使用 <code class="language-plaintext highlighter-rouge">loop</code> 是为了在宏里模拟函数体行为。</p>
-
-<h2 id="查找质数">查找质数</h2>
-
-<p>具体来说，是这样一个问题：给定一个正整数 $n$ ，查找所有质数 $p\leqslant n$ 。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">15</a></sup></p>
-
-<p>方法论是通过“筛子” （Sieves）来排除合数，直到只剩质数，这种缩减问题规模的办法，也是数学上对此类问题的通解。</p>
-
-<p>详见专篇：<a href="/algs/Prime1.html">质数筛子</a></p>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:1" role="doc-endnote">
-      <p>或者另一种说法，只能被 $1$ 和 它自己整除的数字。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>记作 $a \perp b$ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>质数的要求是正整数，而互质的两个数里显然可以存在负整数，其中 $1$ 和 $-1$ 是唯一的两个和所有数都互质的数，也是唯一和 $0$ 互质的数；除了 $1$ 以外，自己与自己不互质。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>Euclid’s lemma，以下简称欧式引理 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:3" role="doc-endnote">
-      <p>除，divide， $p$ 能被除 $a\cdot b$ 也即 $a\cdot b$ 能被 $p$ 整除，记作 $p\vert a\cdot b$ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:7" role="doc-endnote">
-      <p>反证法，若 $n\not\perp a-n$ ，则 $n \not\perp a-n + n$ ，与前提条件相悖。 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:8" role="doc-endnote">
-      <p>Fundamental theorem of arithmetic，也可以形象地叫做正整数唯一分解定理，某种程度我更倾向于这个名字，因为这个名字一点儿都不故弄玄虚，是自解释的，但是作为章节标题它有点儿长了 :(，其他名字还有 Unique factorization theorem、 Prime factorization theorem 等等. 。 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:15" role="doc-endnote">
-      <p>Prime Number Theory，简称 PNT 。 <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:14" role="doc-endnote">
-      <p>$\log\log x = o(\log x) $ <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:16" role="doc-endnote">
-      <p>Bertrand-Chebyshev Theorem，一开始是由伯特兰提的猜想（postulate），最先被切比雪夫证明。 <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:9" role="doc-endnote">
-      <p>还有更复杂的经验算法、概率测试算法、快速确定性测试算法等一系列计算较为复杂的方法 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:12" role="doc-endnote">
-      <p>在现代编程语言里应该有名字诸如 <code class="language-plaintext highlighter-rouge">isqrt</code> 的数学函数来实现向下取整的平分根计算。 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:10" role="doc-endnote">
-      <p>$c\sharp$ 指得是质数的阶乘（primorial），它可以指所有小于等于正整数 $c$ 的质数的乘积。对它的估算是 $c\sharp \leqslant 4^n$ <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:11" role="doc-endnote">
-      <p>$2, 3$ 前面在前面作为快速失败的优化已经提前测过，$4$ 是 $2$ 的倍数直接跳过，于是从 $5$ 开始检测。 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:13" role="doc-endnote">
-      <p>实质上是查找 $[2\dots n]$ 范围内的所有质数。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[定义]]></summary></entry></feed>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[质数筛子的原理是质因数分解。]]></summary></entry></feed>

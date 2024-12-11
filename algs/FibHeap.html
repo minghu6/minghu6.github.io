@@ -109,13 +109,13 @@
   <div class="post__content_container">
     <div class="post__content"><p>Fibonacci Heap<sup id="fnref:fib" role="doc-noteref"><a href="#fn:fib" class="footnote" rel="footnote">1</a></sup><sup id="fnref:fib2" role="doc-noteref"><a href="#fn:fib2" class="footnote" rel="footnote">2</a></sup> <sup id="fnref:fib-wiki" role="doc-noteref"><a href="#fn:fib-wiki" class="footnote" rel="footnote">3</a></sup>是一个基于链表结构的，理论时间复杂度很优的数据结构。</p>
 
-<p>常用于Dijkstra最短路径、Prim最小生成树等贪心算法，使用 <code class="language-plaintext highlighter-rouge">push</code> - <code class="language-plaintext highlighter-rouge">decrease-key</code>，都是 $O(1)$ 的时间复杂度。</p>
+<p>常用于 Dijkstra 最短路径、Prim 最小生成树等贪心算法，使用 <code class="language-plaintext highlighter-rouge">push</code> - <code class="language-plaintext highlighter-rouge">decrease-key</code>，都是 $O(1)$ 的时间复杂度。</p>
 
 <h2 id="前言">前言</h2>
 
 <p>一点儿啰嗦，可以跳过。说实话本来看图例， 看着各种相比最优的时间复杂度颇为心动但仔细看下去，发现完全是典型的基于链表结构的算法，代意词是理论很好但实际性能和最好的比要差一到两个数量级。那谁是最好的？</p>
 
-<p>其中之一就是Rust标准库里本家实现的堆–<a href="https://doc.rust-lang.org/src/alloc/collections/binary_heap.rs.html#268">BinaryHeap</a> 。这个堆不看不知道，一看我的天，整个基础结构就是一块儿连续内存，什么叫完美？！！你一看这个就知道性能比较可以不用做了，你 Fib 堆拿什么跟人家比，比都没法儿比！除非说，使用的CPU没有碗口大的高速缓存，否则你链表结构，就一个字，拉！</p>
+<p>其中之一就是 Rust 标准库里本家实现的堆–<a href="https://doc.rust-lang.org/src/alloc/collections/binary_heap.rs.html#268">BinaryHeap</a> 。这个堆不看不知道，一看我的天，整个基础结构就是一块儿连续内存，什么叫完美？！！你一看这个就知道性能比较可以不用做了，你 Fib 堆拿什么跟人家比，比都没法儿比！除非说，使用的CPU没有碗口大的高速缓存，否则你链表结构，就一个字，拉！</p>
 
 <h2 id="预备知识">预备知识</h2>
 

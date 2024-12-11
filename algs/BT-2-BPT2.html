@@ -652,6 +652,7 @@
                 <span class="nd">succ!</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nd">succ!</span><span class="p">(</span><span class="n">sib_rh</span><span class="p">));</span>
 
                 <span class="k">let</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">sib_rh</span><span class="p">)</span><span class="nf">.pop_first</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">();</span>
+                <span class="nd">children_mut!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">k</span><span class="p">);</span>
                 <span class="nd">entries_mut!</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="nf">.insert</span><span class="p">(</span><span class="n">k</span><span class="nf">.clone</span><span class="p">(),</span> <span class="n">v</span><span class="p">);</span>
 
                 <span class="c1">// remove x from p</span>
@@ -1033,7 +1034,7 @@
 <p>$10 \leqslant M \leqslant 20$</p>
 
 <ol>
-  <li>查询性能非常好，<strong>比 Rust 标准库里 HashMap 的查询速度还要快25%！</strong>但是这种加速不是 B+ 树结构本身所导致的，而是 Map 的使用使得节点的内存布局在缓存上更有利，也就是单一数组的 TreeMap 比起分离的两个数组更有利，换言之，<strong>直接使用单一数组实现<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的 Map 性能会更好！</strong></li>
+  <li>查询性能非常好，<strong>比 Rust 标准库里 HashMap 的查询速度还要快 25%！</strong>但是这种加速不是 B+ 树结构本身所导致的，而是 Map 的使用使得节点的内存布局在缓存上更有利，也就是单一数组的 TreeMap 比起分离的两个数组更有利，换言之，<strong>直接使用单一数组实现<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的 Map 性能会更好！</strong></li>
   <li>插、删的性能介于传统 BST 和 B 树、B+ 树之间</li>
 </ol>
 
