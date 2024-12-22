@@ -219,9 +219,9 @@
 
 <p>这样如果我们查找 $q=45$ ，发现落到 $46$ 的位置，就直接使用 $46$ 的索引统计 $q=45$ 的索引结果即可。</p>
 
-<p>这种做法，花费 $(k-1)n\text{log}(n)$ 的预处理时间，和 $kN$ <sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>的空间，以实现 $O(\text{log}N)$ 时间复杂度的单次查询。</p>
+<p>这种做法，花费 $kn \cdot (k-1)\log n$ 的预处理时间，和 $kN$ <sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>的空间，以实现 $O(\text{log}N)$ 时间复杂度的单次查询。</p>
 
-<p>这样，单次查询的时间复杂度，从 $O(k\text{log}n)$ 变为 $O(\text{log}kn)$ , 相当于把 $k$ 放进了 log 里，性能得到了提升。</p>
+<p>这样，单次查询的时间复杂度，从 $O(k\log n)$ 变为 $O(\log kn)$ , 相当于把 $k$ 放进了 log 里，性能得到了提升。</p>
 
 <p>但是空间上 $kN$ 是非常的昂贵。</p>
 
@@ -351,7 +351,7 @@
     <p>但另一方面，如果 $k$ 相对 $n$ 较大，那分片级联相比于原始算法就没有优势，甚至更慢。</p>
   </li>
   <li>
-    <p>而在几乎所有的情况下，只要 $k$ 不是特别小，改进算法还是最快的，是快好几倍的<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup> ：很明显，对于 $\text{log}N$ ,即使 $N$ 取一个 <code class="language-plaintext highlighter-rouge">u64</code> 能表示的最大值，也就是相当于 $k=64$ 的大小，因此只要稍微大一点的 $k$ 都会使得查询性能不如改进算法</p>
+    <p>而在几乎所有的情况下，只要 $k$ 不是特别小，改进算法还是最快的，是快好几倍的<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup> 。因为很明显，对于 $\text{log}N$ ,即使 $N$ 取一个 <code class="language-plaintext highlighter-rouge">u64</code> 能表示的最大值，也就是相当于 $k=64$ 的大小，因此只要稍微大一点的 $k$ 都会使得查询性能不如改进算法</p>
   </li>
 </ol>
 

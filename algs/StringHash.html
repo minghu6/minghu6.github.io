@@ -134,7 +134,7 @@
 
 <p>$s[i]$ 是在位置 $i$ 处字符的值，这个值是字符在字母表里的排名，而一般空串的哈希值为 $0$ ，因此字符的排名最好从 $1$ 开始，来避免字母表里最小字符与与空串的值相同。</p>
 
-<p>这样串 $s$ 的前缀可以通过 $\text{hash}(s[0..i]) = \text{hash}(s[0..i-1]) \cdot p + s[i] \mod m$ 计算得到，而任意子串的哈希值则有如下的关系：</p>
+<p>子串的哈希值则有如下的关系：</p>
 
 \[p^{l}\cdot \text{hash}(s[l..r]) \pmod m =\text{hash}(s[0..r]) - \text{hash}(s[0..l-1]) \pmod m\]
 
@@ -142,7 +142,7 @@
 
 <p>可以通过换一下多项式滚动哈希的计算方向，来避免求解模乘逆元这一步操作。</p>
 
-<h4 id="msb-型算法">MSB 型算法</h4>
+<h4 id="反向计算">反向计算</h4>
 
 <p>可以认为串 $s$ 的哈希是一个由串上每个字符组成的 $p$ 进制的数字，前面的计算方法是小端序（LSB，Least Significant Bit)</p>
 
@@ -153,17 +153,29 @@
 &amp;= \displaystyle\sum_{i=0}^{n-1} s[i] \cdot p^{n-1-i} \pmod m
 \end{array}\]
 
-<p>这样子串哈希与前缀哈希就有如下的关系：</p>
+<p>左端点前缀哈希：</p>
 
-\[\text{hash}(s[l..r]) =\text{hash}(s[0..r]) - \text{hash}(s[0..l-1]) \cdot p^{r-(l-1)} \pmod m\]
+\[\text{hash}(s[0..l-1]) = s[0]\cdot p^{l-1} + \dots+ s[l-1]\cdot p^0 \pmod m\]
 
-<p>另外在计算前缀时，MSB 需要从后开始遍历串。</p>
+<p>右端点前缀哈希：</p>
+
+\[\begin{array}{l}
+\text{hash}(s[0..r]) &amp;= s[0]\cdot p^{r} + \dots + s[l-1]\cdot p^{r-(l-1)} + s[l]\cdot p^{r-l} +\dots+ s[r]\cdot p^0  \pmod m\\
+&amp;= s[0]\cdot p^{r} + \dots + s[l-1]\cdot p^{r-(l-1)} + \text{hash}(s[l..r])  \pmod m\\
+&amp;= \text{hash}(s[0..l-1])\cdot p^{r-(l-1)} + \text{hash}(s[l..r])  \pmod m
+\end{array}\]
+
+<p>于是子串哈希与前缀哈希就有如下的关系：</p>
+
+\[\text{hash}(s[l..r]) = \text{hash}(s[0..r]) - \text{hash}(s[0..l-1]) \cdot p^{r-(l-1)} \pmod m\]
 
 <p><em>对子串哈希的查询总让人想起树状数组（BIT）里面用前缀来计算区间的类似操作</em></p>
 
+<p><em>当然实际上也可以用后缀哈希来计算小端哈希串，这和大端哈希串与前缀哈希是等价的</em></p>
+
 <h3 id="哈希碰撞">哈希碰撞</h3>
 
-<p>用哈希来做串的映射时总要考虑哈希碰撞，也就是串不同但哈希值相同的情况，在广泛地基于概率的算法与数据结构<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>中也习惯用假阳性（False Positive）来表示这种情况。</p>
+<p>用哈希来做串的映射时总要考虑串不同但哈希值相同的情况，在广泛地基于概率的算法与数据结构<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>中习惯用假阳性（False Positive）来表示这种情况。</p>
 
 <h4 id="大量比较">大量比较</h4>
 
@@ -433,7 +445,7 @@
       <p>$2^{64} \approx 2^4 \cdot (10^3)^6 = 16 \cdot 10^{18} $ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:5" role="doc-endnote">
-      <p>比如前面<a href="/algs/BM.html">Boyer-Moore算法</a>里介绍过的Bloom Filter <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>比如前面<a href="/algs/BM.html">Boyer-Moore算法</a>里介绍过的 Bloom Filter <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>

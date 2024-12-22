@@ -144,11 +144,13 @@
 
 <h3 id="官方指定">官方指定</h3>
 
-<p><strong>“官方指定”</strong>的作弊器指的是 <code class="language-plaintext highlighter-rouge">Rc&lt;RefCell&lt;T&gt;&gt;</code> 套装。</p>
+<p><strong>“官方指定”</strong>的作弊器指的是官方文档里推荐的 <code class="language-plaintext highlighter-rouge">Rc&lt;RefCell&lt;T&gt;&gt;</code> 套装。</p>
 
-<p>其中，<code class="language-plaintext highlighter-rouge">RefCell</code> 提供了一种通过不可变引用进行可变修改的办法，没有什么特别的，就是直接跳过了可变性检查。</p>
+<p>这个套装的两个组件 <code class="language-plaintext highlighter-rouge">RefCell</code> 和 <code class="language-plaintext highlighter-rouge">Rc</code> 的设计可谓“卧龙凤雏”、“一时瑜亮”。</p>
 
-<p><strong>RefCell</strong></p>
+<h4 id="refcell"><code class="language-plaintext highlighter-rouge">RefCell</code></h4>
+
+<p><code class="language-plaintext highlighter-rouge">RefCell</code> 提供了一种通过不可变引用进行可变修改的办法，原理是直接跳过可变性检查。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">RefCell</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="n">borrow</span><span class="p">:</span> <span class="n">Cell</span><span class="o">&lt;</span><span class="n">BorrowFlag</span><span class="o">&gt;</span><span class="p">,</span>
@@ -206,11 +208,19 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">Rc</code> 是引用计数器（Reference counter），是一种代表性的 GC 方法。</p>
+<p>这个成系列的 <code class="language-plaintext highlighter-rouge">XXCell</code> 结构体的设计质量很糟，本来像这样既不能 <code class="language-plaintext highlighter-rouge">Send</code> 也不能 <code class="language-plaintext highlighter-rouge">Sync</code> ，只是为了绕过可变性检查而设计的结构体根本就没有计划外的使用风险，也不知道它在外部接口的设计上抠抠搜搜些什么 😅，还要分好几个结构体，像这个 <code class="language-plaintext highlighter-rouge">Cell</code> 和 <code class="language-plaintext highlighter-rouge">RefCell</code> 唯一区别就是 <code class="language-plaintext highlighter-rouge">RefCell</code> 可以 Borrow（而 <code class="language-plaintext highlighter-rouge">Cell</code> 只能 <code class="language-plaintext highlighter-rouge">replace</code> ）。</p>
 
-<p><strong>Rc</strong></p>
+<p>再说这个 <code class="language-plaintext highlighter-rouge">BorrowFlag</code> ，可能就是为了这点儿醋才包的饺子，简直昏了头， 本身设计的目的就是为了绕过可变性检查，结果又在这里做 Borrow check ，不是你检查些什么呀 😓？</p>
 
-<p>其中 <code class="language-plaintext highlighter-rouge">NonNull</code> 更多意义上是文档作用，表明这个指针不应被设为 <code class="language-plaintext highlighter-rouge">null</code>。</p>
+<p>特别地，为了简短篇幅而没在代码里列出来的 <code class="language-plaintext highlighter-rouge">RefCell</code> 的 Borrow 实现也有“巧思”，我一直以为 Borrow 的返回值是 <code class="language-plaintext highlighter-rouge">&amp;T</code> 或 <code class="language-plaintext highlighter-rouge">&amp;mut T</code> ，结果发现是一层包装： <code class="language-plaintext highlighter-rouge">Ref</code> 和 <code class="language-plaintext highlighter-rouge">RefMut</code> ，当然标准库的实现一贯如此，这也罢了，那么 <code class="language-plaintext highlighter-rouge">Rc</code>，<code class="language-plaintext highlighter-rouge">Ref</code>，<code class="language-plaintext highlighter-rouge">RefMut</code> 都实现了自动解包（<code class="language-plaintext highlighter-rouge">Deref</code> 和 <code class="language-plaintext highlighter-rouge">DerefMut</code> ），偏偏 <code class="language-plaintext highlighter-rouge">RefCell</code> 不实现又是什么原因呢，喜欢多写一个 <code class="language-plaintext highlighter-rouge">.borrow()</code> ，表明显式 Borrow 🤓？</p>
+
+<p>整个标准库里没有任何地方使用 <code class="language-plaintext highlighter-rouge">RefCell</code> ，相反其他地方还要为适配它写额外的代码。</p>
+
+<h4 id="rc"><code class="language-plaintext highlighter-rouge">Rc</code></h4>
+
+<p><code class="language-plaintext highlighter-rouge">Rc</code> 是引用计数器（Reference counter）。</p>
+
+<p>其中 <code class="language-plaintext highlighter-rouge">NonNull</code> 技术上的意义是为非 <code class="language-plaintext highlighter-rouge">null</code> 指针提供普通对象的语义，比如<a href="https://doc.rust-lang.org/reference/subtyping.html#variance">协变性</a>，比如派生 trait。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="nb">Rc</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="n">ptr</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">RcInner</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">,</span>
@@ -301,23 +311,13 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>这两种个组件都非常鸡肋，前者是假装解决问题，后者更是庸人自扰。</p>
+<p>看代码的时候我就在思考一个问题，为什么要单独搞一个 <code class="language-plaintext highlighter-rouge">Weak</code> ，它不就是不“拥有”对象所有权的普通指针吗，怎么机制搞那么复杂，先让 <code class="language-plaintext highlighter-rouge">Rc</code> 持有数据 <code class="language-plaintext highlighter-rouge">T</code>，再让 <code class="language-plaintext highlighter-rouge">Weak</code> 持有<code class="language-plaintext highlighter-rouge">T</code> 的容器 <code class="language-plaintext highlighter-rouge">RcInner</code> ？</p>
 
-<p><code class="language-plaintext highlighter-rouge">RefCell</code> 只是在用户端代码的级别上对指针进行了封装，没有能力提供任何有实质意义的安全保证，它唯一做的事情就是<strong>形式上</strong>封装了“不安全”的代码，使它变成“安全”的代码。</p>
+<p>其次，这个引用计数器到底有什么用，计数的机制本身还是生命周期，那直接用生命周期的机制不就行了？要知道引用计数器，是破坏了单一所有权原则的，并且为了给循环引用打补丁，才引入弱引用的机制（补丁还不能从根本上解决问题）。</p>
 
-<p><code class="language-plaintext highlighter-rouge">Rc</code> 的问题就更大，属于设计上就没想清楚，实验性的一个东西。首先，看代码的时候就思考一个问题，为什么要单独搞一个 <code class="language-plaintext highlighter-rouge">Weak</code> ，它不就是不“拥有”对象所有权的普通指针吗，搞到最后怎么那么复杂，先让 <code class="language-plaintext highlighter-rouge">Rc</code> 持有数据 <code class="language-plaintext highlighter-rouge">T</code>，再让 <code class="language-plaintext highlighter-rouge">Weak</code> 持有<code class="language-plaintext highlighter-rouge">T</code> 的容器 <code class="language-plaintext highlighter-rouge">RcInner</code> 😅；</p>
+<p>把这个问题延展开，因为 Rust 是单一所有权，所以可以静态分析生命周期，所以实际既不需要 Tracing 方式的 GC ，也不需要引用计数器这种方式的 GC 。</p>
 
-<p>其次，进一步考虑这个引用计数器本身到底有什么用？它自身的计数机制就依赖于生命周期，那么这个计数到底有什么用呢？且不说本身就额外破坏了单一所有权的原则，还要再引入弱引用机制来给循环引用打补丁（补丁还不能从根本上解决问题）。<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup></p>
-
-<p>不仅如此，这两个组件的套装还有严重的人体工程学的问题。</p>
-
-<h4 id="人工学问题">人工学问题</h4>
-
-<p>这实际是个更广泛的问题，因为 Rust 的类型系统实际上是纯函数式的<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">2</a></sup>，而承载类型语义的是结构体，这导致增加一个特性就要套一层结构体，虽然都是 Zero Cost Abstraction<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup>，但实在不适合人机交互，这种条件下，实际上是需要做一些扁平化结构来利于人读人写。</p>
-
-<p>回到 <code class="language-plaintext highlighter-rouge">Rc&lt;RefCell&lt;T&gt;&gt;</code> ，任何一个在 <code class="language-plaintext highlighter-rouge">T</code> 上的访问，对于 <code class="language-plaintext highlighter-rouge">Rc</code> 要 <code class="language-plaintext highlighter-rouge">as_ref</code> ，对于 <code class="language-plaintext highlighter-rouge">RefCell</code> 要 <code class="language-plaintext highlighter-rouge">borrow</code> ，最后结果上还要面临二段 Borrow 的可变性和生命周期检查的问题，特别是早期的版本。</p>
-
-<p>而不管什么原因，总之就是官方自己标准库的各种实现都不用这个东西。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+<p>标准库在 ThreadLocal 的实现里仅此一处的使用了 <code class="language-plaintext highlighter-rouge">Rc</code> 。</p>
 
 <h3 id="官方使用">官方使用</h3>
 
@@ -353,13 +353,20 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h3 id="更好的示范">更好的示范</h3>
+<h3 id="更好的方法">更好的方法</h3>
 
 <p>可以合并 <code class="language-plaintext highlighter-rouge">Rc</code> 和 <code class="language-plaintext highlighter-rouge">RefCell</code> 的功能，并且去掉对于 Rust 来说莫名奇妙的计数指针，改为单一所有权的指针和由它衍生出的普通指针。</p>
 
-<p>这样做不仅优化了人机交互，而且不但没有损失任何之前 <code class="language-plaintext highlighter-rouge">Rc&lt;RefCell&lt;T&gt;&gt;</code> 对内存安全所作的所有担保，也就是堆上内存的自动释放，并且从根本上消除了循环引用带来的内存泄漏的可能性。<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></p>
+<p>这种设计和实现优化了人机交互，重新确立了单一所有权原则，从根本上消除了循环引用带来的内存泄漏的可能性。[^5]</p>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[repr(transparent)]</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Debug,</span> <span class="nd">PartialEq,</span> <span class="nd">Eq,</span> <span class="nd">PartialOrd,</span> <span class="nd">Ord,</span> <span class="nd">Hash)]</span>
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[derive(Debug,</span> <span class="nd">PartialEq,</span> <span class="nd">Eq,</span> <span class="nd">PartialOrd,</span> <span class="nd">Ord,</span> <span class="nd">Hash)]</span>
+<span class="nd">#[repr(transparent)]</span>
 <span class="k">pub</span> <span class="k">struct</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">}</span>
@@ -368,6 +375,14 @@
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
         <span class="k">Self</span> <span class="p">{</span>
             <span class="n">value</span><span class="p">:</span> <span class="nn">NonNull</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">Box</span><span class="p">::</span><span class="nf">into_raw</span><span class="p">(</span><span class="nn">Box</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span><span class="nf">.unwrap</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">from_box</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
+        <span class="k">Self</span> <span class="p">{</span>
+            <span class="n">value</span><span class="p">:</span> <span class="nn">NonNull</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nn">Box</span><span class="p">::</span><span class="nf">into_raw</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="nf">.unwrap</span><span class="p">(),</span>
         <span class="p">}</span>
     <span class="p">}</span>
 
@@ -384,7 +399,7 @@
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Drop</span> <span class="k">for</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="nb">Drop</span> <span class="k">for</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">fn</span> <span class="nf">drop</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">unsafe</span> <span class="p">{</span>
             <span class="k">let</span> <span class="n">_</span> <span class="o">=</span> <span class="nn">Box</span><span class="p">::</span><span class="nf">from_raw</span><span class="p">(</span><span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">());</span>
@@ -392,12 +407,33 @@
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="nd">#[repr(transparent)]</span>
-<span class="k">pub</span> <span class="k">struct</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="n">value</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">Deref</span> <span class="k">for</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">Target</span> <span class="o">=</span> <span class="n">T</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">deref</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Target</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_ref</span><span class="p">()</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">DerefMut</span> <span class="k">for</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">deref_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="k">Self</span><span class="p">::</span><span class="n">Target</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_mut</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">borrow</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="n">T</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_ref</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">BorrowMut</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">borrow_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_mut</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">as_ref</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="n">T</span> <span class="p">{</span>
         <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;*</span> <span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
     <span class="p">}</span>
@@ -405,16 +441,59 @@
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">as_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">T</span> <span class="p">{</span>
         <span class="k">unsafe</span> <span class="p">{</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="o">*</span><span class="k">self</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">()</span> <span class="p">}</span>
     <span class="p">}</span>
+
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">ptr_eq</span><span class="p">(</span><span class="n">this</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="nn">std</span><span class="p">::</span><span class="nn">ptr</span><span class="p">::</span><span class="nf">eq</span><span class="p">(</span><span class="n">this</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">(),</span> <span class="n">other</span><span class="py">.value</span><span class="nf">.as_ptr</span><span class="p">())</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Clone</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="nb">Clone</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">fn</span> <span class="nf">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
         <span class="k">Self</span> <span class="p">{</span> <span class="n">value</span><span class="p">:</span> <span class="k">self</span><span class="py">.value</span> <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Copy</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="nb">Copy</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">Deref</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">Target</span> <span class="o">=</span> <span class="n">T</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">deref</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">Target</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_ref</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">DerefMut</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">deref_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="k">Self</span><span class="p">::</span><span class="n">Target</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_mut</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">borrow</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="n">T</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_ref</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="n">BorrowMut</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="k">for</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">fn</span> <span class="nf">borrow_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.as_mut</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
 </code></pre></div></div>
+
+<p>其中有几点需要解释：</p>
+
+<ol>
+  <li>自动派生的那些 trait 实际上就是 <code class="language-plaintext highlighter-rouge">NonNull</code> 自动实现的 trait ，也是最常用的几个用于只读属性的 trait ；</li>
+  <li>为 <code class="language-plaintext highlighter-rouge">Ptr</code> 实现了 <code class="language-plaintext highlighter-rouge">Copy</code> trait ，因为它并不拥有数据，我们把它当一个既不为 NULL 也不悬空的有效指针一样使用，反过来 <code class="language-plaintext highlighter-rouge">OwnedPtr</code> 连 <code class="language-plaintext highlighter-rouge">Clong</code> trait 都没有实现，它应该像一个暴露出指针接口的 <code class="language-plaintext highlighter-rouge">Unique</code> 指针，即使实现克隆也应该是是在克隆一个新的值放到堆上；</li>
+  <li>为 <code class="language-plaintext highlighter-rouge">Ptr&lt;T&gt;</code> 和 <code class="language-plaintext highlighter-rouge">OwnedPtr&lt;T&gt;</code> 实现了 <code class="language-plaintext highlighter-rouge">Deref</code> 和 <code class="language-plaintext highlighter-rouge">DerefMut</code> ，这样使用它们就好像直接在 <code class="language-plaintext highlighter-rouge">T</code> 上使用一样；</li>
+  <li>为 <code class="language-plaintext highlighter-rouge">Ptr&lt;T&gt;</code> 实现了 <code class="language-plaintext highlighter-rouge">Borrow</code> 和 <code class="language-plaintext highlighter-rouge">BorrowMut</code> ，因为标准库的数据结构的 <code class="language-plaintext highlighter-rouge">get</code> 类方法需要实现这类 trait；</li>
+  <li>我们没有实现 <code class="language-plaintext highlighter-rouge">Send</code> 和 <code class="language-plaintext highlighter-rouge">Sync</code>，这意味着它们不会被跨线程的使用。</li>
+</ol>
+
+<h4 id="使用示例">使用示例</h4>
 
 <p>这样我们自己实现的 B+ 树可能就是如下这样：</p>
 
@@ -559,28 +638,6 @@
     <span class="n">arr</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">C</span><span class="p">],</span>
 <span class="p">}</span>
 </code></pre></div></div>
-
-<h2 id="注解">注解</h2>
-
-<div class="footnotes" role="doc-endnotes">
-  <ol>
-    <li id="fn:3" role="doc-endnote">
-      <p>这个东西看起来就是对 C++ 或者其他传统系统编程语言的不假思索的模仿 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:1" role="doc-endnote">
-      <p>在纯函数语言的世界里，它还远不够强大（也许 Rust 2.0 能改进），但对于传统的系统编程语言的世界已经是一种巨大的冲击 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:2" role="doc-endnote">
-      <p>苦了编译器和代码静态分析的工具，但这也是随着计算机性能的提高，编程语言发展的应有之义 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:4" role="doc-endnote">
-      <p>如果他们开始使用就会发现那是真的难用，无用而且折磨，折磨而且无用 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>在标准库里的 <code class="language-plaintext highlighter-rouge">XXCell</code>，特别地 <code class="language-plaintext highlighter-rouge">impl !Send</code> 和 <code class="language-plaintext highlighter-rouge">impl !Sync</code> ，来确保这种在可变性上的“作弊”手段不会被滥用导致 race condition，而对于我们用户端代码，只要不声明实现这两个 trait，本来就不会自动实现 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-    </li>
-  </ol>
-</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

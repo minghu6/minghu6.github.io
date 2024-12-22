@@ -194,9 +194,9 @@
 
 <p>定义下结构，这里继续使用了前面分段树里定义的抽象组件：</p>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span> <span class="o">=</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="n">_note</span><span class="p">:</span> <span class="n">PhantomData</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
@@ -219,35 +219,43 @@
     <span class="p">};</span>
 <span class="p">}</span>
 
-<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span> <span class="p">{</span>
+        <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">Sum</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;</span><span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">AddAssign</span><span class="p">,</span>
+<span class="p">{</span>
     <span class="k">pub</span> <span class="k">fn</span> <span class="n">new</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">U</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="k">Self</span>
     <span class="k">where</span>
-        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="n">C</span><span class="p">,</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Into</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="p">{</span>
         <span class="nd">assert!</span><span class="p">(</span><span class="o">!</span><span class="n">raw</span><span class="nf">.is_empty</span><span class="p">());</span>
 
         <span class="k">let</span> <span class="n">data</span> <span class="o">=</span> <span class="k">Self</span><span class="p">::</span><span class="nf">build</span><span class="p">(</span><span class="n">raw</span><span class="p">);</span>
 
-        <span class="k">Self</span> <span class="p">{</span>
-            <span class="n">data</span><span class="p">,</span>
-            <span class="n">_note</span><span class="p">:</span> <span class="nn">PhantomData</span><span class="p">::</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="p">}</span>
+        <span class="k">Self</span> <span class="p">{</span> <span class="n">data</span> <span class="p">}</span>
     <span class="p">}</span>
 
     <span class="k">fn</span> <span class="n">build</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">U</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
     <span class="k">where</span>
-        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="n">RawIntoStats</span><span class="o">&lt;</span><span class="n">C</span><span class="p">,</span> <span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">U</span><span class="p">:</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Into</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="p">{</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span> <span class="n">raw</span><span class="nf">.len</span><span class="p">()];</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">data</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="nd">zero!</span><span class="p">();</span> <span class="n">raw</span><span class="nf">.len</span><span class="p">()];</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..</span><span class="n">raw</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-            <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">raw</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">()</span><span class="nf">.raw_into_stats</span><span class="p">());</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">raw</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">()</span><span class="nf">.into</span><span class="p">();</span>
 
             <span class="c1">// direct parent</span>
             <span class="k">let</span> <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="nd">range_len!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
 
             <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">raw</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-                <span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+                <span class="k">let</span> <span class="n">data_i</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
+
+                <span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">data_i</span><span class="p">;</span>
             <span class="p">}</span>
         <span class="p">}</span>
 
@@ -262,14 +270,17 @@
 
 <p>计算前缀和也只需统计查询位置前面的区间，方法是每次向前跳索引代表的一个区间的长度：</p>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>    
-	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">prefix</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">Sum</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;</span><span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">AddAssign</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">prefix</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span> <span class="p">{</span>
         <span class="n">i</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="nf">min</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
 
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">();</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="nd">zero!</span><span class="p">();</span>
 
         <span class="k">loop</span> <span class="p">{</span>
-            <span class="n">acc</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">acc</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="nf">.clone</span><span class="p">();</span>
 
             <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nd">range_len!</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
                 <span class="k">break</span><span class="p">;</span>
@@ -285,14 +296,19 @@
 
 <p>计算两个端点的前缀和，就可以求出给定区间的区间和：</p>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>        
-	<span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">Sum</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;</span><span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">AddAssign</span><span class="p">,</span>
+<span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">T</span>
     <span class="k">where</span>
-        <span class="n">T</span><span class="p">:</span> <span class="nb">Sub</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">Sub</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="p">{</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">());</span>
+        <span class="k">let</span> <span class="n">Range</span> <span class="p">{</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="p">}</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">slice</span><span class="p">::</span><span class="nf">range</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="o">..</span><span class="k">self</span><span class="nf">.len</span><span class="p">());</span>
 
-        <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nn">C</span><span class="p">::</span><span class="nf">e</span><span class="p">()</span> <span class="p">}</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nd">zero!</span><span class="p">()</span> <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -315,11 +331,14 @@
 
 <p>当对给定区间 $[l, r]$ 累加 $x$ 时，就在 $l$ 点处增加 $x$ ，并在 $r+1$ 点处减少 $x$ ，来取消对后面点的前缀和的影响。</p>
 
-<p><em>为了省事儿，我们不再对此概念进行抽象，而是直接假定操作对象就是数字类型</em></p>
-
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="n">range_add_for_origin</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">());</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">range_add_for_origin</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span>
+        <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span>
+        <span class="n">addend</span><span class="p">:</span> <span class="nb">i32</span><span class="p">,</span>
+    <span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">Range</span> <span class="p">{</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="p">}</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">slice</span><span class="p">::</span><span class="nf">range</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="o">..</span><span class="k">self</span><span class="nf">.len</span><span class="p">());</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
 
         <span class="k">self</span><span class="nf">.add</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">addend</span><span class="p">);</span>
         <span class="k">self</span><span class="nf">.add</span><span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">addend</span><span class="p">);</span>
@@ -329,10 +348,13 @@
 
 <p>对 BIT 某点上进行更新的时候，需要连带更新它的所有父节点</p>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">Count</span><span class="o">&lt;</span><span class="n">Stats</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span> <span class="p">{</span>            
-	<span class="k">pub</span> <span class="k">fn</span> <span class="nf">add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+<span class="k">where</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">Sum</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Add</span><span class="o">&lt;</span><span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">AddAssign</span><span class="p">,</span>
+<span class="p">{</span>          
+    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">add</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="k">mut</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="k">self</span><span class="py">.data</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
-            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nn">C</span><span class="p">::</span><span class="nf">combine</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">addend</span><span class="p">);</span>
+            <span class="k">self</span><span class="py">.data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">addend</span><span class="nf">.clone</span><span class="p">();</span>
 
             <span class="n">i</span> <span class="o">+=</span> <span class="nd">range_len!</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
         <span class="p">}</span>
@@ -411,13 +433,9 @@ x \cdot (l-1) - x\cdot r &amp; r \lt i \\
 <p><strong>实现</strong></p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[repr(transparent)]</span>
-<span class="k">pub</span> <span class="k">struct</span> <span class="n">RangeAddQuerySum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">)</span>
-<span class="k">where</span>
-    <span class="n">T</span><span class="p">:</span> <span class="nb">Default</span><span class="p">,</span>
-    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">:</span> <span class="nb">Add</span><span class="o">&lt;&amp;</span><span class="nv">'a</span> <span class="n">T</span><span class="p">,</span> <span class="n">Output</span> <span class="o">=</span> <span class="n">T</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nv">'a</span><span class="p">,</span>
-    <span class="k">for</span><span class="o">&lt;</span><span class="nv">'a</span><span class="o">&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="nv">'a</span><span class="p">,;</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">RangeAddQuerySum</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">BIT</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">);</span>
 
-<span class="k">impl</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="p">,</span> <span class="n">Sum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+<span class="k">impl</span> <span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">create_range_add_query_sum_aux</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span>
     <span class="k">-&gt;</span> <span class="n">RangeAddQuerySum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span>
     <span class="p">{</span>
@@ -427,24 +445,27 @@ x \cdot (l-1) - x\cdot r &amp; r \lt i \\
 
 <span class="k">impl</span> <span class="n">RangeAddQuerySum</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">cap</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
-        <span class="k">Self</span><span class="p">(</span><span class="n">BIT</span> <span class="p">{</span>
-            <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">cap</span><span class="p">],</span>
-            <span class="n">_note</span><span class="p">:</span> <span class="n">PhantomData</span><span class="p">,</span>
-        <span class="p">})</span>
+        <span class="k">Self</span><span class="p">(</span><span class="n">BIT</span> <span class="p">{</span> <span class="n">data</span><span class="p">:</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">cap</span><span class="p">]</span> <span class="p">})</span>
     <span class="p">}</span>
 
     <span class="k">pub</span> <span class="k">fn</span> <span class="n">add</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">addend</span><span class="p">:</span> <span class="nb">i32</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="na">.0</span><span class="nf">.len</span><span class="p">());</span>
+        <span class="k">let</span> <span class="n">Range</span> <span class="p">{</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="p">}</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">slice</span><span class="p">::</span><span class="nf">range</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="o">..</span><span class="k">self</span><span class="na">.0</span><span class="nf">.len</span><span class="p">());</span>
 
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
         <span class="k">self</span><span class="na">.0</span><span class="nf">.add</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">addend</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="k">as</span> <span class="nb">i32</span> <span class="o">-</span> <span class="mi">1</span><span class="p">));</span>
-        <span class="k">self</span><span class="na">.0</span><span class="nf">.add</span><span class="p">(</span><span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">addend</span> <span class="o">*</span> <span class="n">r</span> <span class="k">as</span> <span class="nb">i32</span><span class="p">);</span>
+        <span class="k">self</span><span class="na">.0</span><span class="nf">.add</span><span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">addend</span> <span class="o">*</span> <span class="n">r</span> <span class="k">as</span> <span class="nb">i32</span><span class="p">);</span>
     <span class="p">}</span>
 
     <span class="cd">/// Get update accumulation</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">bit1</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nd">parse_range!</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="k">self</span><span class="na">.0</span><span class="nf">.len</span><span class="p">());</span>
+    <span class="k">pub</span> <span class="k">fn</span> <span class="n">query</span><span class="o">&lt;</span><span class="n">R</span><span class="p">:</span> <span class="n">RangeBounds</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="p">,</span>
+        <span class="n">range</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span>
+        <span class="n">bit1</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">Range</span> <span class="p">{</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="p">}</span> <span class="o">=</span> <span class="nn">std</span><span class="p">::</span><span class="nn">slice</span><span class="p">::</span><span class="nf">range</span><span class="p">(</span><span class="n">range</span><span class="p">,</span> <span class="o">..</span><span class="k">self</span><span class="na">.0</span><span class="nf">.len</span><span class="p">());</span>
 
-        <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">bit1</span><span class="p">)</span> <span class="o">-</span> <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">bit1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">}</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">bit1</span><span class="p">)</span> <span class="o">-</span> <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span> <span class="k">self</span><span class="nf">.prefix</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bit1</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">}</span>
     <span class="p">}</span>
 
     <span class="k">fn</span> <span class="nf">prefix</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">bit1</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">BIT</span><span class="o">&lt;</span><span class="nb">i32</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">i32</span> <span class="p">{</span>

@@ -698,7 +698,7 @@
     <span class="n">U</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span>
 </code></pre></div></div>
 
-<p>这个笼统实现是说任何 <code class="language-plaintext highlighter-rouge">T.as_ref() -&gt; &amp;U</code> 都有 <code class="language-plaintext highlighter-rouge">&amp;T.as_ref() -&gt; &amp;U</code> ，但其中 <code class="language-plaintext highlighter-rouge">AsRef&lt;U&gt;</code> 与 <code class="language-plaintext highlighter-rouge">AsRef&lt;T&gt;</code> 存在语义重叠的部分，而现有的类型系统没法儿进行区分（这非常可惜，也极大地限制了 Rust 充满想法的类型系统的生态发展）</p>
+<p>这个笼统实现是说任何 <code class="language-plaintext highlighter-rouge">T.as_ref() -&gt; &amp;U</code> 都有 <code class="language-plaintext highlighter-rouge">&amp;T.as_ref() -&gt; &amp;U</code> ，但其中 <code class="language-plaintext highlighter-rouge">AsRef&lt;U&gt;</code> 与 <code class="language-plaintext highlighter-rouge">AsRef&lt;T&gt;</code> 存在语义重叠的部分，而现有的类型系统没法儿进行区分</p>
 
 <ol>
   <li><code class="language-plaintext highlighter-rouge">Borrow</code> 需要保证 <code class="language-plaintext highlighter-rouge">Hash, Eq, Ord</code> 与原类型的一致性</li>
@@ -1080,7 +1080,7 @@
 
 <ol>
   <li>如果被删节点的右孩子没有左孩子，也就是右孩子本身就是直接后继，这样直接做右孩子对被删节点的 <code class="language-plaintext highlighter-rouge">subtree-shift</code> ，然后右孩子的左枝连接到被删节点的左孩子（重平衡点为右孩子）；</li>
-  <li>如果有右孩子有左孩子，那么直接后驱就是右孩子的 Left-most 假设为 <code class="language-plaintext highlighter-rouge">y</code>，这样相比第一种情况，首先还要额外处理 <code class="language-plaintext highlighter-rouge">y</code> 节点的右孩子的（Left-most 没有左孩子），<code class="language-plaintext highlighter-rouge">subtree-shift(y, y.right)</code>，而让 <code class="language-plaintext highlighter-rouge">y</code> 的右枝连接被删节点的右孩子（重平衡点为 <code class="language-plaintext highlighter-rouge">y</code> 节点）</li>
+  <li>如果右孩子有左孩子，那么直接后驱就是右孩子的 Left-most 假设为 <code class="language-plaintext highlighter-rouge">y</code>，这样相比第一种情况，首先还要额外处理 <code class="language-plaintext highlighter-rouge">y</code> 节点的右孩子的（Left-most 没有左孩子），<code class="language-plaintext highlighter-rouge">subtree-shift(y, y.right)</code>，而让 <code class="language-plaintext highlighter-rouge">y</code> 的右枝连接被删节点的右孩子（重平衡点为 <code class="language-plaintext highlighter-rouge">y</code> 节点）</li>
 </ol>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Return retracing node</span>

@@ -111,17 +111,17 @@
 
 <p>红黑树是一种对平衡的要求比前面介绍的 <code class="language-plaintext highlighter-rouge">AVL树</code> 宽松一些的自平衡二叉搜索树，因此虽然查询性能稍差，但有更少的 插/删 所需要的旋转次数，也就是写的性能更加优秀。它是在在 1978 年由 <a href="https://en.wikipedia.org/wiki/Leonidas_J._Guibas">Leonidas J. Guibas</a> and <a href="https://en.wikipedia.org/wiki/Robert_Sedgewick_(computer_scientist)">Robert Sedgewick</a> 联合提出，用红黑色标识区分主要是考虑到排版系统和手写方面的好处。（它模仿了 $4$ 阶 <code class="language-plaintext highlighter-rouge">B树</code>）</p>
 
-<p>它把节点分为红色和黑色（空节点视为黑色），规定新增的节点都是红色，而红色节点的父节点不能也是红色节点，在这种情况下保持每个节点的所有叶子节点到该节点的路径上黑色结点数相等，或者简称黑高相等，这样就能保持树的平衡性。另外应该是出于减少不必要重平衡的操作，特别规定根节点应设为黑色。</p>
+<p>红黑树把节点分为红色和黑色（空节点视为黑色），规定新增的节点都是红色，而红色节点的父节点不能也是红色节点，在这种情况下保持每个节点的所有<strong>叶子节点</strong>到该节点的路径上黑色结点数相等，或者简称黑高相等，这样就能保持树的平衡性。另外应该是出于减少不必要重平衡的操作，特别规定根节点应设为黑色。</p>
 
 <p>在红色节点不能连续的情况下，如果黑高相等，那意味着最大的树高的差距不超过 $1$ 倍。</p>
 
 <h3 id="系列展望">系列展望</h3>
 
-<p>红黑树，由于一些历史原因很流行，在工程领域有众多的应用，在学术领域衍生出了很多变种。比如 Linux 上的 CFS（ <a href="https://en.wikipedia.org/wiki/Completely_Fair_Scheduler">Completely Fair Scheduler</a>）任务调度系统、系统调用 <code class="language-plaintext highlighter-rouge">epoll</code> 的实现，Java 8 的 HashMap 里组织哈希碰撞的元素用了红黑树代替链表，TreeMap 很多都是红黑树的变种。而在后面还会介绍几个有名的红黑树变种。</p>
+<p>红黑树，由于一些历史原因很流行，在工程领域有众多的应用，在学术领域衍生出了很多变种。比如 Linux 上的 CFS（ <a href="https://en.wikipedia.org/wiki/Completely_Fair_Scheduler">Completely Fair Scheduler</a>）任务调度系统、系统调用 <code class="language-plaintext highlighter-rouge">epoll</code> 的实现，Java 8 的 HashMap 里组织哈希碰撞的元素用了红黑树代替链表，很多旧的 TreeMap 实现也都是红黑树的变种。在后面会介绍几个有名的红黑树变种。</p>
 
-<p>这里可以保证，不管是类比 <code class="language-plaintext highlighter-rouge">2-4树</code> 还是学习了前面的红黑树（或变种）对于后面的红黑树变种在实现上的理解没有任何帮助。归根结底红黑树就不是一个和我们之前或之后介绍的所有自平衡二叉树那样概念很清楚，实现很简单的一个东西。这个数据结构就是非常的怪。</p>
+<p>然而可以保证，不管是类比 2-4 树还是学习了前面的红黑树（或变种）对于后面的红黑树变种在实现上的理解没有任何帮助。归根结底红黑树就不是一个和我们之前或之后介绍的所有自平衡二叉树那样概念很清楚，实现很简单的一个东西，它的红黑约束一方面记录了平衡关系，从而可以确认重平衡开始的时机；另一方面又需要维护这种红黑约束，阻碍了重平衡的实现，除了节点上的红黑元数据可以压缩到 1 bit 然后嵌入其他数据里，从而实现 0 cost 存储，实在找不到其它特别的优点，而在现代存储计算机系统里面已经不需要那么极限地节省内存，在这种情况下红黑树完全不如 B+ 树。</p>
 
-<p>由于红黑树的这种不简单的、怪的设计，使得结构变化后修复它变得过于复杂，特别是按照传统在二叉搜索树删除节点的做法，当被删节点左右子树都不为空的时候，情况复杂到难以处理，这导致几乎所有的实现都在使用一个<strong>非常非常 Tricky 的方法：假交换</strong>，来规避这种过于复杂的情况，使得可以只处理一个孩子为空的情况，即使这样仍然相当复杂。</p>
+<p>特别地，在删除节点的时候，如果被删节点左右子树都不为空的时候，对红黑约束的修复非常困难，这导致几乎所有的实现都在使用一个<strong>非常 Tricky 的方法：假交换</strong>，来规避这种过于复杂的情况，使得可以只处理一个孩子为空的情况，（但即使这样仍然相当复杂）。</p>
 
 <h4 id="假交换">假交换</h4>
 
@@ -129,7 +129,7 @@
 
 <p>但是正如它所做的事情客观的展示那样，<strong>假交换非常的不体面</strong>，它彻底破坏了节点引用与键值对的固定关系，引入了潜在的 Bug （比如你可能保存了之前查询到的某个节点的引用，然后对另外节点进行操作时，意外地发现之前持有的节点的 <code class="language-plaintext highlighter-rouge">key</code>， <code class="language-plaintext highlighter-rouge">val</code> 字段也发生了改变）</p>
 
-<p><em>我个人是非常非常不喜欢这种糟糕的 tricky 的方式，但整个红黑树系列操作的基础就是这种不体面的假交换，所以我说这个红黑树算法本身就很怪。</em></p>
+<p><em>我个人是非常非常不喜欢这种糟糕的 tricky 的方式，但整个红黑树系列操作的基础就是这种不体面的假交换，所以我说这个红黑树算法就很怪。</em></p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">swap</span> <span class="p">{</span>
     <span class="p">(</span><span class="n">node</span> <span class="p">|</span> <span class="nv">$x:expr</span><span class="p">,</span> <span class="nv">$y:expr</span><span class="p">,</span> <span class="nv">$attr:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
@@ -323,7 +323,7 @@
 
 <h2 id="重平衡">重平衡</h2>
 
-<p>在介绍具体的重平衡事务之前，先强调一下对于红黑树而言，旋转结束要<strong>额外交换新旧根的颜色</strong>，这给后面不管是插入还是删除的重平衡操作提供了便利。</p>
+<p>在介绍具体的重平衡事务之前，先强调一下对于红黑树而言，旋转结束要<strong>额外交换新旧根的颜色</strong>。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_rotate_cleanup!</span><span class="p">(</span><span class="n">RB</span> <span class="k">-&gt;</span>
     <span class="k">fn</span> <span class="nf">rotate_cleanup</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
@@ -342,7 +342,7 @@
 
 <p><em>插入思路来源于 brilliant.org 相关页面</em></p>
 
-<p>插入节点后的重平衡是比较容易的，无非是如何处理新增节点导致的<strong>红违背（red violation）</strong>，也就是父子两个节点都是红色节点的情况。</p>
+<p>插入节点后的重平衡是比较容易的，无非是如何处理新增节点导致的 <strong>红违背（red violation）</strong>，也就是父子两个节点都是红色节点的情况。</p>
 
 <p>这时主要有三种情况：</p>
 
@@ -350,7 +350,7 @@
 
 <h4 id="case-1">case-1</h4>
 
-<p>$\texttt{psib}$ 是红节点，只需要把 $\texttt{pp}$ , $\texttt{p}$ , $\texttt{psib}$ 反色，并一路向上修复，这样既修复了红违背又保持了黑平衡</p>
+<p>$\texttt{psib}$ 是红节点，只需要把 $\texttt{pp}$ , $\texttt{p}$ , $\texttt{psib}$ 反色，并一路向上修复（递归地解决问题），这样既修复了红违背又保持了黑平衡</p>
 
 <p><img src="/assets/img/bst_rb/insert_case1_start.png" alt="初始" />  <img src="/assets/img/rarrow.png" alt="" />  <img src="/assets/img/bst_rb/insert_case1_end.png" alt="修复" /></p>
 
@@ -421,16 +421,12 @@
     <span class="p">}</span>
     <span class="k">else</span> <span class="p">{</span>  <span class="c1">// psib is red</span>
         <span class="n">p</span><span class="nf">.color_flip</span><span class="p">();</span>
-        <span class="n">pp</span><span class="nf">.color_flip</span><span class="p">();</span>
         <span class="n">psib</span><span class="nf">.color_flip</span><span class="p">();</span>
 
-        <span class="k">if</span> <span class="k">self</span><span class="py">.root</span><span class="nf">.is_red</span><span class="p">()</span> <span class="p">{</span>
-            <span class="nd">color!</span><span class="p">(</span><span class="k">self</span><span class="py">.root</span><span class="p">,</span> <span class="n">Black</span><span class="p">);</span>
+        <span class="k">if</span> <span class="o">!</span><span class="n">pp</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="py">.root</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">pp</span><span class="nf">.color_flip</span><span class="p">();</span>
+            <span class="k">self</span><span class="nf">.fix_red_violation</span><span class="p">(</span><span class="n">pp</span><span class="p">);</span>
         <span class="p">}</span>
-
-        <span class="n">i</span> <span class="o">=</span> <span class="n">pp</span><span class="p">;</span>
-        <span class="k">self</span><span class="nf">.fix_red_violation</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
-
     <span class="p">}</span>
 <span class="p">}</span>
 
@@ -439,7 +435,7 @@
 
 <h3 id="合法的颜色关系">合法的颜色关系</h3>
 
-<p>在介绍仍然相当复杂的删除重平衡之前，作为一个基础，先认识一下符合红约束和黑平衡条件下的“合法“的颜色关系。</p>
+<p>在介绍仍然相当复杂的<strong>删除重平衡</strong>之前，作为一个基础，先认识一下符合红约束和黑平衡条件下的“合法“的颜色关系。</p>
 
 <p>假设父节点 $\texttt{p}$ 和它的两个孩子 $\texttt{c}_0$ , $\texttt{c}_1$ ：</p>
 
@@ -483,7 +479,9 @@
 
 <p>反过来从删除的角度讲，可以随意删除一个红色节点，而黑色节点则需要进行调整。</p>
 
-<p>另外我们还发现当黑色节点的一个孩子是红色另一个孩子是黑色时，这个黑孩子一定是 $\texttt{nil}$ 节点。这还要回到红色的性质，红色 $\texttt{c}_1$ 的两个孩子一定是黑节点，如果 $\texttt{c}_0$ 是非 $\text{nil}$ 的黑节点，那么 $\texttt{c}_0$ 子树的 $\texttt{nil}$ 节点到 $\texttt{p}$ 的黑高都一定比 $\texttt{c}_1$ 的两个黑孩子的多 $1$ 。</p>
+<p>另外我们还发现当黑色节点的一个孩子是红色另一个孩子是黑色时，这个黑孩子一定是 $\texttt{nil}$ 节点，否则就会黑失衡。</p>
+
+<p><em>在讨论红黑树平衡的情况时，nil 节点也在考虑的范围内，同时它在其他地方又沿用传统上非nil叶子节点的定义，这是红黑树自己的问题。</em></p>
 
 <h3 id="删除重平衡">删除重平衡</h3>
 
@@ -492,17 +490,17 @@
 <p>在介绍删除重平衡之前有必要先介绍以下删除操作：</p>
 
 <ol>
-  <li>使用假交换确保被删除的节点至少有一个孩子是空的；</li>
-  <li>用非空的孩子替换被删除的节点</li>
+  <li>使用假交换确保被删除的节点<strong>至少有一个孩子是空的</strong>；</li>
+  <li>（优先）用非空的孩子替换被删除的节点。</li>
 </ol>
 
-<p>如果被删节点是红色的，那删除不会造成性质的破坏；</p>
+<p>假设被删节点是 $\texttt{z}$ ，替换它的子节点是 $\texttt{child}$</p>
 
-<p>如果被删除的节点是黑色的，但如果替换节点是红色的，可以把红色染黑，这样黑平衡仍然得到了维护；</p>
+<p>如果 $\texttt{z}$ 是红色，或者 $\texttt{child}$ 是红色（此时只需把 $\texttt{child}$ 染黑），那删除操作不会造成对黑平衡的破坏；</p>
 
-<p>但如果被删除节点是黑色的，替换节点也是黑色的，但是它们已经是根节点了，这样当然也不影响黑平衡；</p>
+<p>但如果 $\texttt{z}$ 是黑色， $\texttt{child}$ 也是黑色（包括 NIL 节点），除非 $\texttt{z}$ 是根节点，否则，以它为根的子树的黑高就会少 $1$ ，有的地方把这种 <strong>黑失衡</strong> 的情况称为 <strong>double black</strong> ，因为好像是两个黑节点被压到了一个节点上。</p>
 
-<p>否则，以替换节点为根的子树的黑高少 $1$ ，我们可以形象地把这种情况称为 <strong>double black</strong> ，好像是两个黑节点被压到了一个节点上，表明这里黑高少了 $1$ 。处理这个双重黑节点就是删除重平衡要做的事情。</p>
+<p>删除操作的情况如下所示：</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl RB</span>
 
@@ -540,13 +538,13 @@
         <span class="nf">Some</span><span class="p">(</span><span class="nd">unwrap_into!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.into_value</span><span class="p">())</span>
     <span class="p">}</span>
 <span class="p">}</span>
-
-<span class="c1">// ...</span>
 </code></pre></div></div>
 
-<p>由于双黑节点不是根节点，并且由于黑高少 $1$ ，它的邻居节点必然也不能是空节点，这样我们就有了以下的基本节点关系：</p>
+<p>而处理这个双重黑节点就是删除重平衡要做的事情。</p>
 
-<p>不妨设双黑节点为 $\texttt{n}$ ，父节点为 $\texttt{p}$ ，邻居节点为 $\texttt{sib}$ ，邻居节点中与 $\texttt{n}$ 同向的孩子节点为 $\texttt{sib}_c$ ，反向的孩子节点为 $\texttt{sib}_d$ ，则所有的情况考虑的就是 $\texttt{p}$, $\texttt{sib}$ , $\texttt{sib}_c$ , $\texttt{sib}_d$ 这四个节点。</p>
+<p>由上可得双黑节点不是根节点，并且由于删除前黑平衡的保证，它的邻居节点也不能是空节点，这样我们就有了一个讨论节点的关系的前提。</p>
+
+<p>设双黑节点为 $\texttt{n}$ ，父节点为 $\texttt{p}$ ，邻居节点为 $\texttt{sib}$ ，邻居节点中与 $\texttt{n}$ 同向的孩子节点为 $\texttt{sib}_c$ ，反向的孩子节点为 $\texttt{sib}_d$ ，则所有的情况考虑的就是 $\texttt{p}$, $\texttt{sib}$ , $\texttt{sib}_c$ , $\texttt{sib}_d$ 这四个节点。</p>
 
 <p>对 <strong>double black</strong> 的修复可以把这四个节点的颜色关系分为 $5$ 种情况，其中有三种是基础情况，剩下两种可以通过转换为基本情况来处理。</p>
 
@@ -554,13 +552,13 @@
 
 <p>$\texttt{p}$, $\texttt{sib}$ , $\texttt{sib}_c$ , $\texttt{sib}_d$  全是黑色：</p>
 
-<p>$\texttt{sib}$ 反色为红，这样 $\texttt{n}$ 和 $\texttt{sib}$ 树的节点的黑高就都少了 $1$ 。但它们是（在 $\texttt{p}$ 上）平衡了，但 $\texttt{p}$ 整体黑高就少了 $\texttt{1}$ ，双黑圈就套到了 $\texttt{p}$上，问题没有直接解决，但是可以推后，什么问题可以留给后代解决（在 $\texttt{p}$ 上继续递归），那也就相当于解决了。</p>
+<p>$\texttt{sib}$ 反色为红，这样子树 $\texttt{n}$ 和 $\texttt{sib}$ 的黑高就都少了 $1$ ，于是虽然 $\texttt{p}$ 整体黑高少了 $\texttt{1}$ ，但至少在子树 $\texttt{p}$ 上重新达到了黑平衡，这样只需递归调用自身，一路向上修复即可（就像插入时修复红违背的 <strong>case-1</strong> 那样）。</p>
 
 <p><img src="/assets/img/bst_rb/remove_case_1_1.png" alt="" />  <img src="/assets/img/rarrow.png" alt="" />  <img src="/assets/img/bst_rb/remove_case_1_2.png" alt="" /></p>
 
 <h4 id="case-2-1">(case-2)</h4>
 
-<p>$\texttt{p}$ 是<span style="color:#cd0404">红色</span>，$\texttt{sib}$ , $\texttt{sib}_c$ , $\texttt{sib}_d$  全是<span style="color:black">黑色</span>：</p>
+<p>$\texttt{p}$是<span style="color:#cd0404">红色</span>，$\texttt{sib}$ , $\texttt{sib}_c$ , $\texttt{sib}_d$  全是<span style="color:black">黑色</span>：</p>
 
 <p>交换 $\texttt{p}$ 与 $\texttt{sib}$ 的颜色，这样 $\texttt{sib}$ 的黑高没有变化，而 $\texttt{sib}$ 的黑高增加了 $1$ ，这样双黑节点就直接解决了，这是一种完美的情况。</p>
 
@@ -568,7 +566,7 @@
 
 <h4 id="case-3-1">(case-3)</h4>
 
-<p>$\texttt{sib}$ 是<span style="color:black">黑色</span>， $\texttt{sib}_d$ 是<span style="color:#cd0404">红色</span>，（按照前述， $\texttt{sib}_c$  <span style="color:#cd0404">红色</span>或者<span style="color:black">黑色</span>，保持原状），$\texttt{p}$ 是任意颜色：</p>
+<p>$\texttt{sib}$ 是<span style="color:black">黑色</span>， $\texttt{sib}_d$ 是<span style="color:#cd0404">红色</span>，（按照前述，此时 $\texttt{sib}_c$  可以是<span style="color:#cd0404">红色</span>或者<span style="color:black">黑色</span>），$\texttt{p}$ 是任意颜色：</p>
 
 <ol>
   <li>$\texttt{p}\leftrightarrow\texttt{sib}$ 旋转交换位置和颜色</li>
@@ -577,7 +575,7 @@
 
 <p>对于 $\texttt{n}$ ，增加了一个黑节点，黑高补全了；</p>
 
-<p>对于 $\texttt{sib}_c$ 叶子的黑高不变，$\texttt{sib}_d$ 路径上的黑节点少了 $\texttt{sib}$ 但自己变成了黑节点，对于自己的叶子黑高也是不变的（自己原来是红节点，不可能是叶子节点）这样双黑节点也解决了，这是另一种完美情况。</p>
+<p>对于子树 $\texttt{sib}_c$ 黑高保持不变，子树 $\texttt{sib}_d$ 路径上的黑节点少了一个 $\texttt{sib}$ 但自己从红变黑，黑高也是不变的，这样双黑节点也解决了，这是另一种完美情况。</p>
 
 <p><img src="/assets/img/bst_rb/remove_case_3_1.png" alt="" />  <img src="/assets/img/rarrow.png" alt="" />  <img src="/assets/img/bst_rb/remove_case_3_3.png" alt="" /></p>
 
@@ -591,29 +589,27 @@
 
 <p>$\texttt{p}$ 的右子树的叶子节点的黑高不变（ $\texttt{sib}_c$ 两个孩子的叶子黑高不变，$\texttt{sib}_d$ 的叶子黑高不变）</p>
 
-<p>这样情况就变成了，<strong>(case-3)</strong> （新 $\texttt{sib}$ 黑色，新 $\texttt{sib}_d$ 红色）的情况 。</p>
+<p>这样情况就变成了 <strong>(case-3)</strong> （新 $\texttt{sib}$ 黑色，新 $\texttt{sib}_d$ 红色）的情况 。</p>
 
 <p><img src="/assets/img/bst_rb/remove_case_4_1.png" alt="" />  <img src="/assets/img/rarrow.png" alt="" />  <img src="/assets/img/bst_rb/remove_case_4_3.png" alt="" /></p>
 
 <h4 id="case-5">[case-5]</h4>
 
-<p>$\texttt{sib}$ 是<span style="color:#cd0404">红色</span> （$\texttt{sib}_d$ ，$\texttt{sib}_c$ 都是<span style="color:black">黑色</span>）</p>
+<p>$\texttt{sib}$是<span style="color:#cd0404">红色</span>（此时根据红黑约束条件，$\texttt{sib}_d$ ，$\texttt{sib}_c$ 必然是<span style="color:black">黑色</span>）</p>
 
 <ol>
   <li>$\texttt{p}\leftrightarrow\texttt{sib}$ 旋转交换位置和颜色</li>
 </ol>
 
-<p>$\texttt{sib}_c$ , $\texttt{sib}_d$ 的黑高不变，$\texttt{n}$ 也还是双黑节点。</p>
+<p>$\texttt{sib}_c$ 和 $\texttt{sib}_d$ 的黑高不变，$\texttt{n}$ 也还是双黑节点。</p>
 
-<p>这时新的 $\texttt{sib}$ 变为 $\texttt{sib}_c$ （新的 $\texttt{sib}$ 为黑色）。根据新 $\texttt{sib}$ 的颜色关系选择 <strong>(case-2)</strong> 、 <strong>(case-3)</strong> 、 <strong>(case-4)</strong> 继续处理</p>
+<p>这时 $\texttt{sib}_c$ 变为新的 $\texttt{sib}$ 。然后根据新的 $\texttt{sib}$ 的子代的颜色进入 <strong>(case-2)</strong>，<strong>(case-3)</strong>， <strong>(case-4)</strong> 继续处理。</p>
 
 <p><img src="/assets/img/bst_rb/remove_case_5_1.png" alt="" />  <img src="/assets/img/rarrow.png" alt="" />  <img src="/assets/img/bst_rb/remove_case_5_3.png" alt="" /></p>
 
 <h4 id="流程图">流程图</h4>
 
-<p>上述列举的情况虽然多且繁，有些复杂，但通过流程图还是能看得很清楚的。</p>
-
-<p><em>用 dot 画图的时候因为一个边指定 portPos后导致 dir 、arrowtail、arrowhead 属性设置都失效的问题，浪费一天时间，没解决，不知道这是什么特性还是 bug ，只能凑活一个图</em></p>
+<p>上述列举的情况虽然多且繁，有些复杂，但通过流程图还是能看得很清楚的。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
 
 <p><img src="/assets/img/bst_rb/remove_control_flow.png" alt="" /></p>
 
@@ -662,6 +658,7 @@
         <span class="n">sib</span><span class="nf">.color_flip</span><span class="p">();</span>
 
         <span class="k">let</span> <span class="n">pp</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
+
         <span class="k">if</span> <span class="n">pp</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span>
             <span class="k">self</span><span class="nf">.fix_double_black</span><span class="p">(</span><span class="nd">index_of_child!</span><span class="p">(</span><span class="n">pp</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">pp</span><span class="p">);</span>
         <span class="p">}</span>
@@ -678,9 +675,21 @@
   <li>最后的尾递归也实在漂亮，而且在现代编译器的优化里，递归调用通常还会快于手写的循环！</li>
 </ol>
 
-<p>与之相比的是另一个业界广为流传的版本比如 <a href="https://github.com/openjdk/jdk/blob/6f9106e0d0d9f082f0a61009f95d1b8663dd8d4f/src/java.base/share/classes/java/util/TreeMap.java#L2676">OpenJDK TreeMap实现</a> ，注释里可能暗示抄自 CLR (dot net runtime) ，但我强烈怀疑 CLR 也未必是原创，毕竟红黑树是很早就有的概念。不管原创是谁，这个版本显然看起来代码行数较少，但实在难以理解，它是混合了一部分删除的代码和合并了 $\texttt{p}$ 红 <strong>(case-2)</strong> 的情况 。</p>
+<p>与之相比的是另一个业界广为流传的版本比如 <a href="https://github.com/openjdk/jdk/blob/6f9106e0d0d9f082f0a61009f95d1b8663dd8d4f/src/java.base/share/classes/java/util/TreeMap.java#L2676">OpenJDK TreeMap 实现</a> ，注释里可能暗示抄自 CLR (dot net runtime) ，但我强烈怀疑 CLR 也不是原创，毕竟红黑树是很早就有的概念。而不管原创是谁，这个版本显然看起来代码行数较少，但实在难以理解，它混合了一部分删除的代码并合并了<strong>case-2</strong> 。</p>
 
-<p>我们强调代码一定要简单和易于理解，这绝大多数情况下都比一时的绝对性能还要重要！简单就利于机器优化，易于理解就利于人工优化，这都利于算法的演进与特化。像我们对比的版本，显然就是典型的代代相传的祖宗，谁都不敢改，全是一模一样然后注释里写，本代码抄自 xxx 。而像我们的代码不仅简单，而且有易于理解的优势，不管是调整流程还是省略掉几个宏重复的一些代码，改动都很容易。</p>
+<p>一般地讲，代码一定要简单和易于理解，这通常比一时绝对的性能还要重要！因为简单就利于机器优化，易于理解就利于人工优化，这都利于算法的演进与必要条件下的特化。</p>
+
+<p>像之前的对照版本，就是典型的传家宝，谁都不敢改，全是一模一样的代码然后在注释里写本代码抄自 xxx 。而我们的代码简单、易于理解，不管是调整流程还是省略几个宏重复的一些代码，都很容易。</p>
+
+<h2 id="注解">注解</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p><em>用 dot 画图的时候因为一个边指定 portPos后导致 dir 、arrowtail、arrowhead 属性设置都失效的问题，浪费一天时间，没解决，不知道这是什么特性还是 bug ，只能凑活一个图</em> <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">
