@@ -111,7 +111,7 @@
 
 <h2 id="前言">前言</h2>
 
-<p>本篇作为一个阶段性的总结篇，介绍一个基于前缀树（Trie）的持久化向量（Vector）的实现<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> ，以下用 TrieVec 简称。</p>
+<p>本篇作为一个阶段性的总结篇，介绍一个 Clojure 里的基于前缀树（Trie）的持久化向量（Vector）的实现<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> ，以下用 TrieVec 简称。</p>
 
 <p>一方面，Vector 作为函数式编程语言里的允许随机读写的数据结构，本身有很重要的意义，没有它，传统的用类 C 描述的算法就无法落地；</p>
 
@@ -135,7 +135,7 @@
 <div class="sx-center">
 <img src="/assets/img/trievec/trievec_exp.svg" width="65%" /></div>
 
-<p>这要求树的完全平衡，也就是每个叶子到根的高度都一样，然后把数据存储在每个叶子上，这一点又和我们在<a href="/algs/BT-1-BPT.html">B+ 树</a>上的情况相似。</p>
+<p>这要求树的完全平衡，也就是每个叶子到根的高度都一样，然后把数据存储在每个叶子上，这一点又和我们在 <a href="/algs/BT-1-BPT.html">B+ 树</a>上的情况相似。</p>
 
 <p>而对树层级的定义又和 <a href="./BST-2-RB-Tree-2-AA">AA 树</a> 是一样，用 level 的概念来描述是非常恰当的，叶子层的 level 是 $1$ ，空树的 level 是 $0$ 。</p>
 
@@ -311,7 +311,7 @@
 <span class="nd">#[repr(transparent)]</span>
 <span class="k">pub</span> <span class="k">struct</span> <span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">T</span><span class="p">);</span>
 
-<span class="cd">/// 一个自动实现Trait的宏，细节不展开了</span>
+<span class="c1">// 一个自动实现Trait的宏，细节不展开了</span>
 <span class="nd">impl_unpack!</span><span class="p">(</span><span class="n">UnsafeSendSync</span> <span class="p">|</span> <span class="nb">AsRef</span><span class="p">,</span> <span class="nb">AsMut</span><span class="p">,</span> <span class="n">Deref</span><span class="p">,</span> <span class="n">DerefMut</span><span class="p">,</span> <span class="nb">From</span><span class="p">);</span>
 
 <span class="k">unsafe</span> <span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nb">Send</span> <span class="k">for</span> <span class="n">UnsafeSendSync</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{}</span>
@@ -838,7 +838,7 @@
 <ol>
   <li>$\text{lv}=0$ ，也就是 Trie 为空的情况，把旧尾节点作为 Trie 的根；</li>
   <li>$\text{lv}=1$ ，此时发现根溢出，于是创建一个新的节点包含原来的旧根和推入的尾节点。但是更进一步地，可以推广到包含 $\text{lv}=1$ 在内的全部根溢出的情况，此时新根插入的不是原来的尾节点，而是 <code class="language-plaintext highlighter-rouge">new_path</code> 创建的包含尾节点的一整条路径；</li>
-  <li>$\text{lv} \ge 2$ ，从根节点开始复制，注意选择合适的数组容量，当中间节点超过一层时，自顶向下地复制每一层的节点，并把上一层中间节点里对本层节点的引用更新为新创建的节点，当发现新的节点在一个还未创建的路径时，可以直接使用 <code class="language-plaintext highlighter-rouge">new_path</code> 创建到叶子的新路径，然后插入到上一层节点。</li>
+  <li>$\text{lv} \geqslant 2$ ，从根节点开始复制，注意选择合适的数组容量，当中间节点超过一层时，自顶向下地复制每一层的节点，并把上一层中间节点里对本层节点的引用更新为新创建的节点，当发现新的节点在一个还未创建的路径时，可以直接使用 <code class="language-plaintext highlighter-rouge">new_path</code> 创建到叶子的新路径，然后插入到上一层节点。</li>
 </ol>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>

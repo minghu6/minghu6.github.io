@@ -116,7 +116,7 @@
 <p>但是这样的性质也导致</p>
 
 <ol>
-  <li>查询的时候也会修改自身的结构，这在多线程环境和纯函数编程语言里会造成很大的麻烦；</li>
+  <li>查询的时候也会修改自身的结构，而一般默认查询是个只读的操作，这可能会带来些范式上意想不到的麻烦；</li>
   <li>这不是很“体面“的平衡方法，依赖于数据访问的有一定的随机性，顺序访问会造成数据结构蜕化为链表（前一个根节点总是成为当前根节点的右子树）</li>
 </ol>
 
@@ -245,19 +245,9 @@
 <span class="c1">// ...</span>
 </code></pre></div></div>
 
-<p>这里对 <code class="language-plaintext highlighter-rouge">mut_self</code> 这个宏稍微展开讲一下：</p>
-
-<p>作为一门现代性的语言（发明于21世纪的第二个十年，比传统主流编程语言年轻20岁），Rust 有很多编程模型上的新的探索（或者说从先锋性语言身上吸收了很多成熟的特性），前面的博文比如 Fib 堆的Rust实作、BST基础等等都谈过这里不赘述 。</p>
-
-<p>这些特性在内存安全方面，在多线程环境下，有巨大的好处，但当编程对象是传统的树、图上的算法时，就显得非常不兼容，按照编程模型，这些传统算法都要重新设计！而另一方面， Rust 作为一门系统级编程语言，不管是出于对运行效率的极致追求还是对 C 库的向下兼容，它还是提供一种传统的，“不安全“的指针的编程模型。对指针上的操作可以绕过 Rust 诸多特性安全检查：<strong>生命周期</strong>、<strong>可变性</strong>、<strong>单一所有权</strong>等等。</p>
-
-<p>对于 Rust 标准库的实现，他们就是在内部大量使用指针（做了一定的包装）来处理我们所面临的问题，但是他们不厚道的地方在于他们不愿意把他们标准库内部实现使用的方便工具全部开放出来，结果某种程度使得第三方不得不重新发明轮子。</p>
-
-<p>前面我们把 key 和 val 两个字段都使用指针，就是为了能够创建非局部的引用，而 <code class="language-plaintext highlighter-rouge">mut_self</code> 通过把引用转换为指针再转换回引用，也是为了能把只读引用转换为可变引用 。</p>
-
 <h4 id="插入">插入</h4>
 
-<p>我们这里的插入实现，是 Rust 风格的，也就是糅合了 Push 和 Update ，需要根据插入的节点是否存在来选择 <code class="language-plaintext highlighter-rouge">splay</code> 的节点，这需要修改一下一般的插入方法。</p>
+<p>我们这里的插入实现</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// impl Splay</span>
 

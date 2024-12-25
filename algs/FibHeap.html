@@ -107,15 +107,9 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>Fibonacci Heap<sup id="fnref:fib" role="doc-noteref"><a href="#fn:fib" class="footnote" rel="footnote">1</a></sup><sup id="fnref:fib2" role="doc-noteref"><a href="#fn:fib2" class="footnote" rel="footnote">2</a></sup> <sup id="fnref:fib-wiki" role="doc-noteref"><a href="#fn:fib-wiki" class="footnote" rel="footnote">3</a></sup>是一个基于链表结构的，理论时间复杂度很优的数据结构。</p>
+    <div class="post__content"><p>Fibonacci Heap<sup id="fnref:fib" role="doc-noteref"><a href="#fn:fib" class="footnote" rel="footnote">1</a></sup><sup id="fnref:fib2" role="doc-noteref"><a href="#fn:fib2" class="footnote" rel="footnote">2</a></sup> <sup id="fnref:fib-wiki" role="doc-noteref"><a href="#fn:fib-wiki" class="footnote" rel="footnote">3</a></sup>是一个基于链表结构的，理论时间复杂度很优的堆。</p>
 
 <p>常用于 Dijkstra 最短路径、Prim 最小生成树等贪心算法，使用 <code class="language-plaintext highlighter-rouge">push</code> - <code class="language-plaintext highlighter-rouge">decrease-key</code>，都是 $O(1)$ 的时间复杂度。</p>
-
-<h2 id="前言">前言</h2>
-
-<p>一点儿啰嗦，可以跳过。说实话本来看图例， 看着各种相比最优的时间复杂度颇为心动但仔细看下去，发现完全是典型的基于链表结构的算法，代意词是理论很好但实际性能和最好的比要差一到两个数量级。那谁是最好的？</p>
-
-<p>其中之一就是 Rust 标准库里本家实现的堆–<a href="https://doc.rust-lang.org/src/alloc/collections/binary_heap.rs.html#268">BinaryHeap</a> 。这个堆不看不知道，一看我的天，整个基础结构就是一块儿连续内存，什么叫完美？！！你一看这个就知道性能比较可以不用做了，你 Fib 堆拿什么跟人家比，比都没法儿比！除非说，使用的CPU没有碗口大的高速缓存，否则你链表结构，就一个字，拉！</p>
 
 <h2 id="预备知识">预备知识</h2>
 
@@ -125,11 +119,11 @@
 
 <p>$\texttt{order}$ ，通常指允许的最大孩子数量，比如二叉树的 $\texttt{order}$ 为 $2$ ；</p>
 
-<p>$\texttt{degree}$ ，具体地某个节点的孩子的数量；</p>
+<p>$\texttt{degree}$ ，具体某个节点的孩子个数；</p>
 
 <p>$\texttt{rank}$ ，一般指排名，但这里用作 $\texttt{degree}$ 的别名；</p>
 
-<p>以下统称 $\texttt{rank}$ ，指称直接孩子的个数。</p>
+<p>以下统一用 $\texttt{rank}$ ，指代孩子个数。</p>
 
 <h4 id="性质与定义">性质与定义</h4>
 
@@ -262,17 +256,17 @@
 
 <p><img src="/assets/img/fibheap/fibheap_pop15.png" alt="" /></p>
 
-<p>发现所有节点已被扫描完，规整结束 <em>堆的数据结构里维护一个根节点数的变量，用它来指示扫描何时结束</em> 。</p>
+<p>发现所有节点已被扫描完，规整结束。<em>堆的数据结构里维护一个根节点数的变量，用它来指示扫描何时结束</em> 。</p>
 
 <h3 id="复杂度分析-1">复杂度分析</h3>
 
-<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$\texttt{H}$为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
+<p>由于每棵树都是二项式树， 扫描最小根孩子节点的实际花费为 $\texttt{rank(H)}$ ，$\texttt{H}$ 为最小根节点的树。扫描根节点链表的实际花费为根节点数，标记为 $\texttt{trees}$ ，所以有实际花费为 $O(\texttt{trees + rank})$  。</p>
 
 <p>而由于每次规整后的，不存在相同 $\texttt{rank}$ 的树，所以标记 $\texttt{H’}$ 为 $\texttt{rank}$ 最大的树，有 $\texttt{trees} \leqslant \texttt{rank(H’) + 1}$ 。</p>
 
-<p>对于不涉及 <code class="language-plaintext highlighter-rouge">decrease-key</code> 操作的F堆来说，每棵树都是严格二项式树，而根据二项式树的性质，标记 $\texttt{H’}$ 的节点数为 $n’$ ， $n’ \lt n$，有 $\texttt{rank(H’) = } {\log_2 n’ \lt log_2 n}$ 。</p>
+<p>对于不涉及 <code class="language-plaintext highlighter-rouge">decrease-key</code> 操作的F堆来说，每棵树都是严格二项式树，而根据二项式树的性质，标记 $\texttt{H’}$ 的节点数为 $n’$ ， $n’ \lt n$，有 $\texttt{rank(H’)} = \log_2 n’ \lt \log_2 n$ 。</p>
 
-<p>所以摊销时间复杂度为 $O(\text{log n})$ 。</p>
+<p>所以摊销时间复杂度为 $O(\log n)$ 。</p>
 
 <p>而对于 <code class="language-plaintext highlighter-rouge">decrease-key</code> 操作后的不严格二项式树，由于每棵孩子最多丢失一个孩子，应该仍然保持 $\texttt{rank(H’)}$ ~ ${O(\text{log n})}$ 的性质，后面的性质理论分析部分对此进行了证明，所以摊销时间复杂度仍为 ${O(\text{log n})}$ 。</p>
 
@@ -508,9 +502,9 @@ size(k) &amp;\geqslant 1 + \sum_{i=1}^{k} \texttt{size(rank(}y_i\texttt{))}\\
 
 \[\texttt{size(k)} \geqslant F_{k+2} \geqslant \varphi^{k}\ \ \ (k \geqslant 0)\]
 
-<p>根据这个性质，两边取 $log$ ，得到  $log_{\varphi}^{size(k)} \geqslant k = rank$ 。</p>
+<p>根据这个性质，两边取 $log$ ，得到  $\log_{\varphi}^\texttt{size(k)} \geqslant k = rank$ 。</p>
 
-<p>回顾前面 <code class="language-plaintext highlighter-rouge">pop</code> 的时间复杂度分析，$\texttt{rank}$ ~ $O(log_{\varphi}^{\texttt{size(k)}})$ ~ $O(log\ n)$，也就是说我们在理论上证明了 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致的不严格二项式树，仍然不影响它的 $O(\text{log n})$ 的时间复杂度。</p>
+<p>回顾前面 <code class="language-plaintext highlighter-rouge">pop</code> 的时间复杂度分析，$\texttt{rank}$ ~ $O(log_{\varphi}^{\texttt{size(k)}})$ ~ $O(\log n)$，也就是说我们在理论上证明了 <code class="language-plaintext highlighter-rouge">decrease-key</code> 导致的不严格二项式树，仍然不影响它的 $O(\text{log n})$ 的时间复杂度。</p>
 
 <h2 id="后续具体实现rust">后续：<strong><a href="/algs/FibHeapImplRust.html">具体实现（Rust）</a></strong></h2>
 

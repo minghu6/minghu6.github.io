@@ -17,7 +17,7 @@
     property="og:title"
     content="
         
-            斐波那契堆的实作 (for Rust)
+            斐波那契堆的实现（for Rust）
         
     "
 />
@@ -34,7 +34,7 @@
 
 <title>
     
-        斐波那契堆的实作 (for Rust)
+        斐波那契堆的实现（for Rust）
     
 </title>
 
@@ -84,7 +84,7 @@
         <article class="post">
 
   <div class="post__title">
-    <h1 class="post__title__text">斐波那契堆的实作 (for Rust)</h1>
+    <h1 class="post__title__text">斐波那契堆的实现（for Rust）</h1>
   </div>
   <div class="post__meta">
     <div class="post__meta__category">
@@ -107,64 +107,26 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>算法理论部分，在上一篇论文 <strong><a href="/algs/FibHeap.html">Fibonacci Heap</a></strong> 已经讲完了，下面是干活的部分<sup id="fnref:rust-impl" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">1</a></sup>：</p>
+    <div class="post__content"><p>算法理论部分，在上一篇文章 <strong><a href="/algs/FibHeap.html">Fibonacci Heap</a></strong> 已经讲完了，下面是实现的部分<sup id="fnref:rust-impl" role="doc-noteref"><a href="#fn:rust-impl" class="footnote" rel="footnote">1</a></sup>。</p>
 
-<h2 id="语言特定">语言特定</h2>
+<h2 id="关于节点索引">关于节点索引</h2>
 
-<h3 id="数据共享可变性与非null对象">数据共享、可变性与非null对象</h3>
+<p>因为我们需要为 Fibonacci Heap 实现 DecreaseKey 的方法，因此需要维护一个用于记录堆中每个节点索引的 Map 。</p>
 
-<p>Rust 是安全的系统级编译语言，不同于传统的 C/C++ 的编程模型，继承发展了函数式编程语言对数据的一贯态度，明确了单一所有权的概念。对于传统的基于链表的数据结构，使用计数指针  <code class="language-plaintext highlighter-rouge">Rc</code> (reference counter) 代替直接的指针，使用 <code class="language-plaintext highlighter-rouge">RefCell</code> 来“作弊“地绕开可变性检查，使用 <code class="language-plaintext highlighter-rouge">Option</code> 取代传统含 <code class="language-plaintext highlighter-rouge">null</code> 对象。但是这不可避免地使代码显得冗长，按说应该有语法糖或者辅助结构来做这件事，但是没有，这也是 Rust1 诸多不完美地方中的一处，好在可以通过写一点儿宏来解决这个问题。</p>
-
-<h3 id="计数指针的强弱引用">计数指针的强弱引用</h3>
-
-<p>另外的问题在于双向索引的链表结构会造成计数指针的循环引用，这会造成内存泄露的问题。Rust 提供了 <code class="language-plaintext highlighter-rouge">Weak</code> 计数指针的弱引用来解决这个问题。使用弱引用有两个方案：</p>
+<p>作为某种对比，Rust 标准库里的 <a href="https://doc.rust-lang.org/alloc/collections/binary_heap/index.html">BinaryHeap</a> 根本就没有节点索引，可它居然也宣称支持 DecreaseKey 的方法，它只是插入“同值”的新节点来一定程度地代替 DecreaseKey，这比红黑树里面用“假交换”来做树删除节点后的重平衡还要糟糕：</p>
 
 <ol>
-  <li>所有正向引用（从左到右，从上到下）是正常的强引用，而反向引用（从右到左，从下到上）是弱引用，唯一例外是根链表，这只要在释放的时候手动去掉一个强引用，打破强引用的循环就可以了。</li>
-  <li>所有引用都是弱引用，只在堆的头部的索引里保留唯一的强引用。</li>
+  <li>需要用户自己定义一个额外的结构体，然后为它实现一些必要的 Trait，非常的麻烦；</li>
+  <li>显然破坏了 DecreaseKey 的完整语义，引入潜在的Bug。</li>
 </ol>
 
-<p>方案 2 的好处是不需要在算法里区分强弱引用和做强弱转换，省事省心；但方案 1 的好处在于不依赖外部维持的强引用，每个节点都可以分型地单独使用，更符合个人美感所以暂时选择方案 1 。</p>
-
-<h3 id="宏机制">宏机制</h3>
-
-<p>最后是展开说明 Rust 的宏机制，它是 Rust 集众家之长，也是目前为止综合起来，最令我满意的宏机制的实现方案，虽然也有应有未有的地方。</p>
-
-<p>Rust 的宏分为两种 ： 预处理宏（procedure macro）和声明式宏（declare macro）。</p>
-
-<p><strong>预处理宏</strong></p>
-
-<p>预处理宏是顾名思义，展开在提前的、单独的一遍扫描过程里，可以做到声明式宏做不到的所有，比如创造新的 Token 节点，但是没有语义感知，需要放置在单独的 crate 里面，编写使用也麻烦一点。</p>
-
-<p><strong>声明式宏</strong></p>
-
-<p>声明式宏名字并没有那么直观，是嵌在源文件中，和普通代码在同一过程中展开，有特殊的 <code class="language-plaintext highlighter-rouge">$crate</code> 指名当前所属 Crate ，功能相对受限，无法创建新的 Token，另外在实现上也有一些不体面的地方，不能说很健壮，但勉强说是够用了。</p>
-
-<p>这里我们直接使用声明式宏来补充该有的语法糖。</p>
-
-<h3 id="生命周期对引用的限制">生命周期对引用的限制</h3>
-
-<p>同样不同于传统的编程模型，Rust 引入了生命周期的概念，区别于一般在安全点上动态运行的垃圾回收器，来作为一种静态的内存自动管理机制，属于从源头上解决了内存需要自动管理而传统垃圾回收器有运行期性能“毛刺“的问题。但是这又对提出了新问题：由于 <code class="language-plaintext highlighter-rouge">Rc</code> 所有权是 <code class="language-plaintext highlighter-rouge">GlobalAllocator</code> ，而不是 <code class="language-plaintext highlighter-rouge">FibHeap</code> ，因此它创建的引用，由于生命周期的限制，无法用在 <code class="language-plaintext highlighter-rouge">FibHeap</code> 返回引用的接口上。这个问题也是 <code class="language-plaintext highlighter-rouge">Rc</code> 、 <code class="language-plaintext highlighter-rouge">RefCell</code> 另一个比冗繁更要命的缺点，阅读了 Rust 和标准库内部组件的实现，看它们基本上都不使用这两个公开组件而是用 unsafe 的传统指针另写一套，功能上和这两个组件基本类似，唯一额外作用就是能绕开生命周期的限制。</p>
-
-<p>在这里我们直接使用 <code class="language-plaintext highlighter-rouge">Box</code> 把需要导出引用的数据放到堆上而不是 <code class="language-plaintext highlighter-rouge">RefCell</code> 中，在 <code class="language-plaintext highlighter-rouge">RefCell</code> 里只保留原始指针，通过这种 unsafe 操作，绕过生命周期的限制（实际也可以绕过所有权、可变性等等所有 Rust 额外的检查）</p>
-
-<h3 id="克隆clone与复制copy">克隆（clone）与复制（copy）</h3>
-
-<p>这里对应的是内存模型里的<strong>值对象</strong>与<strong>引用对象</strong>，copy 针对的是值对象，clone 针对的是引用对象。二者的区别首先是概念上的、语义上的，值对象就是它本身只是内存里的一个数值，可以任意地在任何地方使用，没有任何其他语义上或物理上的外部关系；而引用对象就像广泛的用于传统面向对象语言里的普通对象，这里二者在概念上直接构成互补的关系。</p>
-
-<p>从实现角度，copy 为了严格语义不被违反，限制了只能自动实现，基本的数值类型是可 copy 的，任何派生的可 copy 对象必须保证所有字段都是可 copy 的。从语义上讲，分配内存空间的对象都应该是不可 copy 的，什么 <code class="language-plaintext highlighter-rouge">Vec</code>，<code class="language-plaintext highlighter-rouge">array</code>， <code class="language-plaintext highlighter-rouge">String</code> … 都不行，因为分配内存本身就不能随意复制。</p>
-
-<p>注意区别于传统上世纪 90 年代的那一批面向对象语言什么 Java、Python、Ruby、C# 等等，在这种传统编程模型里，所有对象都是引用，没有值对象的概念，更重要的是前面提到的数据共享上缺乏设计，于是在对象克隆的时候有深和浅的区别，有的也称 deep “copy” 和 swallow “copy”。</p>
-
-<p>这种在数据共享上设计的匮乏是它们并发痛点的根源， 只熟悉那些语言的人可能会把这个东西和上面的 clone 与 copy 的概念错误地对应起来。实际上对于 Rust 而言并不常用到那些语言里常见的克隆深与浅的问题，因为 Rust 有一套新的安全编程模型，所有权、可变性、生命周期等等保证你要么转移对象所有权，要么克隆就是完全克隆。</p>
-
-<p>但原则的城墙大门紧闭，但在总有几扇窗户是开着的，就像 <code class="language-plaintext highlighter-rouge">Rc</code>、<code class="language-plaintext highlighter-rouge">RefCell</code> 这种“怪胎“的存在，当我们不得不用它们在更高层面模拟传统编程模型的时候，就必须考虑自己有区分的实现深浅克隆的问题了。</p>
+<p>不过另一方面，维护节点索引会显著地增加性能开销，让完美的数据结构不那么完美。</p>
 
 <h2 id="数据结构">数据结构</h2>
 
-<h3 id="heap-node">Heap Node</h3>
+<h3 id="node">Node</h3>
 
-<h4 id="structure--wrappers">Structure &amp;&amp; Wrappers</h4>
+<h4 id="structure--wrappers">Structure &amp; Wrappers</h4>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Rc</span><span class="o">&lt;</span><span class="n">RefCell</span><span class="o">&lt;</span><span class="n">Node_</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;&gt;&gt;&gt;</span><span class="p">);</span>
 
@@ -194,8 +156,6 @@
 </code></pre></div></div>
 
 <h4 id="sugar-macros">Sugar Macros</h4>
-
-<p>谈到 Rust 的声明式宏，总是离不开 <a href="https://danielkeep.github.io/tlborm/book/index.html">黑小书</a> 和 <a href="https://doc.rust-lang.org/reference/macros-by-example.html">基础文档</a></p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">////////////////////////////////////////</span>
 <span class="c1">//// Attr macros</span>
@@ -254,14 +214,14 @@
 
 </code></pre></div></div>
 
-<h3 id="heap-head">Heap Head</h3>
+<h3 id="head">Head</h3>
 
-<h3 id="structure">Structure</h3>
+<h4 id="structure">Structure</h4>
 
 <ol>
   <li>$\texttt{len}$ 和 $\texttt{rcnt}$ ，分别是节点数和根节点个数，它们只是额外的基本统计信息，可以省略；</li>
   <li>$\texttt{min}$ 是最小根；</li>
-  <li>$\texttt{nodes}$ 是索引，这里专注主要功能的使用，所以使用 HashMap ，如果要实现 $O(1)$ 的 Union 方法就需要换成别的分型结构，比如二叉搜索树或者B-树</li>
+  <li>$\texttt{nodes}$ 是索引，这里只关注主要功能的实现，所以使用 HashMap ，如果还要支持 $O(1)$ 的 Union 方法就需要换成 Ordered TreeMap，比如二叉搜索树或者B+树</li>
 </ol>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">trait</span> <span class="n">CollKey</span> <span class="o">=</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="n">Debug</span><span class="p">;</span>
@@ -276,7 +236,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h3 id="sugar-macros-1">Sugar Macros</h3>
+<h4 id="sugar-macros-1">Sugar Macros</h4>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">macro_rules!</span> <span class="n">boxptr</span> <span class="p">{</span>
     <span class="p">(</span><span class="nv">$v:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
@@ -421,7 +381,6 @@
 
 
 <span class="k">impl</span><span class="o">&lt;</span><span class="n">I</span><span class="p">:</span> <span class="n">CollKey</span> <span class="o">+</span> <span class="n">Hash</span> <span class="o">+</span> <span class="nb">Clone</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">CollKey</span><span class="o">&gt;</span> <span class="n">FibHeap</span><span class="o">&lt;</span><span class="n">I</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
-
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
         <span class="k">Self</span> <span class="p">{</span>
             <span class="n">len</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
@@ -574,7 +533,7 @@
 
 <h2 id="高空台-altitude-ground-test-facilities">高空台 （Altitude Ground Test Facilities）</h2>
 
-<p>欲要善其事，必先利其器</p>
+<p>欲要善其事，必先利其器。</p>
 
 <p><strong>任何有一定复杂度的实现都非一蹴而就，而越是复杂度高的实现，越是需要测试与调试的部分先行，越是由测试的全面性、彻底性与调试工具的效率决定其进程速度。</strong></p>
 

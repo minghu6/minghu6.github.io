@@ -259,7 +259,6 @@
         <span class="p">}</span>
     <span class="p">}</span>
 
-
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
     <span class="p">{</span>
         <span class="k">let</span> <span class="n">z</span> <span class="o">=</span> <span class="nd">node!</span><span class="p">(</span> <span class="n">BST</span> <span class="p">{</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="p">});</span>
@@ -275,7 +274,6 @@
 
         <span class="n">popped</span>
     <span class="p">}</span>
-
 
     <span class="k">pub</span> <span class="k">fn</span> <span class="n">remove</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span>
     <span class="k">where</span> <span class="n">K</span><span class="p">:</span> <span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span> <span class="o">+</span> <span class="n">Debug</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">Debug</span>
