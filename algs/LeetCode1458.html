@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="/assets/style.css"/>
-<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//algs/LeetCode1458.html" />
+<meta property="og:url" content="http://localhost:4000//algs/LeetCode1458.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="/" class="logo__link">
+    <a href="http://localhost:4000/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="/category/algs.html">
+        <a href="http://localhost:4000/category/algs.html">
           <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
             Algorithm
           </p>
@@ -115,7 +115,7 @@
 
 <p><a href="https://github.com/minghu6/leet-code/tree/v0.1.20/1458_max_dot_prod_of_two_seq/py1458">源代码</a></p>
 
-<p>一般地<a href="/algs/TwoStrDP.html">两串上的DP</a>是从两个前缀子串开始的更小规模的问题扩展到全串，从而直接解决题目要求的问题，而本题特殊的地方是子序列并不是完整的前缀子串。</p>
+<p>一般地<a href="http://localhost:4000/algs/TwoStrDP.html">两串上的DP</a>是从两个前缀子串开始的更小规模的问题扩展到全串，从而直接解决题目要求的问题，而本题特殊的地方是子序列并不是完整的前缀子串。</p>
 
 <p>不妨把前缀子串视为 border，而譬如子序列则是  content ，它和 border之间有 padding ，其他普通的问题可以通过 border 就可以直接计算出来，而对于子序列这样的问题，需要额外考虑是否需要“填充” padding。</p>
 
@@ -311,13 +311,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="/assets/js/jquery.slim.min.js"></script>
-<script src="/assets/js/lity.min.js"></script>
-<script src="/assets/js/tools.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
+<script src="http://localhost:4000/assets/js/lity.min.js"></script>
+<script src="http://localhost:4000/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -376,7 +376,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "/assets/search.json",
+    json: "http://localhost:4000/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {

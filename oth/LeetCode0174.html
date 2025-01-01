@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="/assets/style.css"/>
-<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//oth/LeetCode0174.html" />
+<meta property="og:url" content="http://localhost:4000//oth/LeetCode0174.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="/" class="logo__link">
+    <a href="http://localhost:4000/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
+        <a href="http://localhost:4000/category/oth.html">
           <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
             Other
           </p>
@@ -115,7 +115,7 @@
 
 <p>绝对标准地 <em>Hard</em> 难度的问题。</p>
 
-<p>给一个二维的地图，从左上角走到右下角，看起来非常像之前做过的譬如 <a href="/oth/LeetCode0085.html">0085 - Maximal Rectangle</a> 这样的题目，只需要从上到下地逐行扫描，计算从起点到每一行的每个位置的子问题的解，直到最后一行的最后一个位置。</p>
+<p>给一个二维的地图，从左上角走到右下角，看起来非常像之前做过的譬如 <a href="http://localhost:4000/oth/LeetCode0085.html">0085 - Maximal Rectangle</a> 这样的题目，只需要从上到下地逐行扫描，计算从起点到每一行的每个位置的子问题的解，直到最后一行的最后一个位置。</p>
 
 <p>但是对于本题这样做是不行的，因为一般到某个位置的路线有两条，一条是从上到下的，一条是从左到右的，而有两个指标用来选择最小生命值的路线，一个是到当前位置为止整个路径上出现过的路径和的最小值，另一个是到当前位置的路径和。这两个指标可能是矛盾的，比如有一条路线的最小值较大但是路径和较小，导致选择该路线最终在后面得到了较小的最小值，从而得到了不正确的结果。</p>
 
@@ -413,13 +413,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="/assets/js/jquery.slim.min.js"></script>
-<script src="/assets/js/lity.min.js"></script>
-<script src="/assets/js/tools.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
+<script src="http://localhost:4000/assets/js/lity.min.js"></script>
+<script src="http://localhost:4000/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -478,7 +478,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "/assets/search.json",
+    json: "http://localhost:4000/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {

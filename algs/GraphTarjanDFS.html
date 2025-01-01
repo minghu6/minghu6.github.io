@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="/assets/style.css"/>
-<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//algs/GraphTarjanDFS.html" />
+<meta property="og:url" content="http://localhost:4000//algs/GraphTarjanDFS.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="/" class="logo__link">
+    <a href="http://localhost:4000/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="/category/algs.html">
+        <a href="http://localhost:4000/category/algs.html">
           <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
             Algorithm
           </p>
@@ -109,7 +109,7 @@
   <div class="post__content_container">
     <div class="post__content"><p><em>本文资料来源于<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup><sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></em></p>
 
-<p>Tarjan 其实是老朋友了，之前介绍过的<a href="/algs/FibHeap.html">斐波那契堆</a>（1986），他就是它的两位作者之一， 现在是要介绍他早期（1972、1973）发表的通过图上 DFS 来线性时间解决<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">3</a></sup>：</p>
+<p>Tarjan 其实是老朋友了，之前介绍过的<a href="http://localhost:4000/algs/FibHeap.html">斐波那契堆</a>（1986），他就是它的两位作者之一， 现在是要介绍他早期（1972、1973）发表的通过图上 DFS 来线性时间解决<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">3</a></sup>：</p>
 
 <ol>
   <li>在无向图上划分双联通分量</li>
@@ -138,7 +138,7 @@
 
 <p><img src="/assets/img/tarjandfs/dfs.png" alt="" /></p>
 
-<p>后面的算法都以 DFS 构建的有向图 $\text{P}$ 为基础，观察它的回溯边的情况。</p>
+<p>后面的算法都以 DFS 构建的有向图 $\text{P}$ 为基础，观察它的<strong>回溯边</strong>的情况。</p>
 
 <p><strong>回溯边</strong>，可以分为两种情况：</p>
 
@@ -212,7 +212,7 @@
 
 <h4 id="整体过程">整体过程</h4>
 
-<p>假设图中每个点都是连续地，并且从 $1$ 开始，使用一个数组作为 Map 保存每个点的信息。</p>
+<p>把图中每个点从 $1$ 开始编号，使用一个数组保存它们的元信息。</p>
 
 <p>对图上每个点遍历，如果该点没有被标记过，就执行 DFS 子过程，这么做是考虑到给定的图不一定是连通的，需要在不同分量上分别进行 DFS。</p>
 
@@ -250,24 +250,6 @@
 
 <h4 id="dfs-子过程">DFS 子过程</h4>
 
-<p><strong>部分参数解释</strong></p>
-
-<ol>
-  <li>$p$ ，对于无向（简单）图，需要传一个父节点参数 $p$ ，来避免对边进行重复访问；</li>
-  <li>$bccs$ 保存划分出的双连通分量的边集，用边集而不是点集是因为双连通分量之间有点是有交合的（就是衔接点），但是边集是不相交的；</li>
-  <li>$stack$ 保存 DFS 过程访问过的边，用来发现衔接点后收集新的双连通分量的边</li>
-</ol>
-
-<p><strong>过程解释</strong></p>
-
-<p>初始化被访问点的编号 $\text{index}$ 和 $\text{lowpt}$ ，其中 $\text{lowpt}$ 初始化的时候与编号一致。</p>
-
-<p>遍历访问点 $u$ 所有的出边，如果出边的头节点 $v$ 未被编号，就推边入栈，并在 $v$ 上执行 DFS 操作，之后利用 $\text{lowpt}(v)$ 更新 $\text{lowpt}(u)$ ，并检查 $\text{lowpt}(v)$ 是否不小于 $\text{index}(u)$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">9</a></sup>，如果是，就收集栈上的边，直到收集完起点为 $u$ 的边<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">10</a></sup>；</p>
-
-<p>如果 $v$ 已被编号，就用它的编号更新 $\text{lowpt}(u)$ ，当然要排除父节点的情况，避免重复访问同一条边。</p>
-
-<p>另外如果对边集里的边和边集的顺序有要求，那么这个过程还要进行一个插入排序。</p>
-
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fn</span> <span class="nf">dfs_bcc</span><span class="p">(</span>
     <span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">,</span>
     <span class="n">u</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
@@ -275,8 +257,8 @@
     <span class="k">mut</span> <span class="n">bccs</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span><span class="p">,</span>
     <span class="n">stack</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="n">index</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">usize</span><span class="p">,</span>
-    <span class="n">vertexs</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">DFSMeta</span><span class="o">&gt;</span><span class="p">)</span> 
-<span class="p">{</span>
+    <span class="n">vertexs</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">DFSMeta</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span> <span class="p">{</span>
     <span class="o">*</span><span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
 
     <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">DFSMeta</span> <span class="p">{</span>
@@ -289,8 +271,9 @@
             <span class="n">stack</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
             <span class="nf">dfs_bcc</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">bccs</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">vertexs</span><span class="p">);</span>
 
-            <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span> <span class="o">=</span>
-            <span class="nf">min</span><span class="p">(</span><span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span><span class="p">,</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.lowpt</span><span class="p">);</span>
+            <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.lowpt</span> <span class="o">&lt;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span> <span class="p">{</span>
+                <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.lowpt</span><span class="p">;</span>
+            <span class="p">}</span>
 
             <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.index</span><span class="nf">.unwrap</span><span class="p">()</span> <span class="o">==</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span> <span class="p">{</span>
                 <span class="c1">// u is cut point</span>
@@ -314,12 +297,33 @@
             <span class="p">}</span>
         <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span> <span class="o">&lt;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.index</span> <span class="o">&amp;&amp;</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">p</span> <span class="p">{</span>
             <span class="n">stack</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
-            <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span> <span class="o">=</span>
-            <span class="nf">min</span><span class="p">(</span><span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span><span class="p">,</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span><span class="nf">.unwrap</span><span class="p">());</span>
+
+            <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span><span class="nf">.unwrap</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span> <span class="p">{</span>
+                <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowpt</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span><span class="nf">.unwrap</span><span class="p">();</span>
+            <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></div>
+
+<p><strong>部分参数解释</strong></p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">p</code>，对于无向（简单）图，需要传一个父节点参数 $p$ 来标记“来边”；</li>
+  <li><code class="language-plaintext highlighter-rouge">bccs</code> 保存划分出的双连通分量的边集，用边集而不是点集是因为双连通分量之间有点是有交合的（就是衔接点），但是边集是不相交的；</li>
+  <li><code class="language-plaintext highlighter-rouge">stack</code> 保存 DFS 过程访问过的边，用来发现衔接点后收集新的双连通分量的边；</li>
+  <li><code class="language-plaintext highlighter-rouge">index</code> 点访问的顺序</li>
+</ol>
+
+<p><strong>过程解释</strong></p>
+
+<p>初始化被访问点的编号 $\text{index}$ 和 $\text{lowpt}$ ，其中 $\text{lowpt}$ 初始化的时候与编号一致。</p>
+
+<p>遍历访问点 $u$ 所有的出边，如果出边的头节点 $v$ 未被编号，就推边入栈，并在 $v$ 上执行 DFS 操作，之后利用 $\text{lowpt}(v)$ 更新 $\text{lowpt}(u)$ ，并检查 $\text{lowpt}(v)$ 是否不小于 $\text{index}(u)$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">9</a></sup>，如果是，就收集栈上的边，直到收集完起点为 $u$ 的边<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">10</a></sup>；</p>
+
+<p>如果 $v$ 已被编号，就用它的编号更新 $\text{lowpt}(u)$ ，当然要排除父节点的情况，避免重复访问同一条边。</p>
+
+<p>另外如果对边集里的边和边集的顺序有要求，那么这个过程还要额外进行一个排序。</p>
 
 <p><strong>ordered_insert</strong></p>
 
@@ -440,13 +444,16 @@
         <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
             <span class="nf">dfs_scc</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">comps</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">vertexs</span><span class="p">);</span>
 
-            <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span> <span class="o">=</span>
-            <span class="nf">min</span><span class="p">(</span><span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span><span class="p">,</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.lowlink</span><span class="p">);</span>
-        <span class="p">}</span> 
-        <span class="k">else</span> <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span> <span class="o">&lt;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.index</span> <span class="o">&amp;&amp;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.on_stack</span>
+            <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.lowlink</span> <span class="o">&lt;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span> <span class="p">{</span>
+                <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.lowlink</span><span class="p">;</span>
+            <span class="p">}</span>
+
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span> <span class="o">&lt;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.index</span>
+        <span class="o">&amp;&amp;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.on_stack</span>
         <span class="p">{</span>
-            <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span> <span class="o">=</span>
-            <span class="nf">min</span><span class="p">(</span><span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span><span class="p">,</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span><span class="nf">.unwrap</span><span class="p">());</span>
+            <span class="k">if</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span><span class="nf">.unwrap</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span> <span class="p">{</span>
+                <span class="n">vertexs</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="py">.lowlink</span> <span class="o">=</span> <span class="n">vertexs</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="py">.index</span><span class="nf">.unwrap</span><span class="p">();</span>
+            <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">}</span>
 
@@ -575,13 +582,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="/assets/js/jquery.slim.min.js"></script>
-<script src="/assets/js/lity.min.js"></script>
-<script src="/assets/js/tools.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
+<script src="http://localhost:4000/assets/js/lity.min.js"></script>
+<script src="http://localhost:4000/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -640,7 +647,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "/assets/search.json",
+    json: "http://localhost:4000/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="/assets/style.css"/>
-<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//oth/LeetCode0218.html" />
+<meta property="og:url" content="http://localhost:4000//oth/LeetCode0218.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="/" class="logo__link">
+    <a href="http://localhost:4000/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="/category/oth.html">
+        <a href="http://localhost:4000/category/oth.html">
           <p class="post__meta__category__title" style="background: var(--c-themeQuaternaryDark)">
             Other
           </p>
@@ -136,7 +136,7 @@
 
 <p><strong>分段树</strong></p>
 
-<p>使用<a href="/algs/SegmentTree.html">DFS 型的分段树</a>来节省一半的内存。</p>
+<p>使用<a href="http://localhost:4000/algs/SegmentTree.html">DFS 型的分段树</a>来节省一半的内存。</p>
 
 <p>由于实际上我们只使用批量赋值的信息，而不需要原信息，因此直接省略了树本身，只保留更新的结构。</p>
 
@@ -264,7 +264,7 @@
 
 <h2 id="解树状数组">解②：树状数组</h2>
 
-<p>如果说前面对分段树的改动还比较小<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，那么<a href="/algs/FenwickTree.html">树状数组</a>的思路里面对树状数组的改动就比较tricky了，因为普通的树状数组，以下简称 BIT（Binary Indexed Tree）， 用某个点的前缀和表示该点的高度，那么任何 $x$ 轴靠前坐标上的高度更新都会影响后面位置的高度的计算。</p>
+<p>如果说前面对分段树的改动还比较小<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，那么<a href="http://localhost:4000/algs/FenwickTree.html">树状数组</a>的思路里面对树状数组的改动就比较tricky了，因为普通的树状数组，以下简称 BIT（Binary Indexed Tree）， 用某个点的前缀和表示该点的高度，那么任何 $x$ 轴靠前坐标上的高度更新都会影响后面位置的高度的计算。</p>
 
 <p>因此我们对树状数组的改动是让它前面位置的更新不影响后面位置前缀和的计算，假如，考虑一种情况，所有建筑的右边缘都是 $\infty$ ，而更新和查询就像前面分段树一样，都是取所有相关位置值的最大：也就是更新的时候扫描所有祖先节点，取其位置既有值和当前更新值的最大，查询的时候扫描所有前缀位置，取最大值，那么此时就可以用树状数组正确地更新高度和单点查询。</p>
 
@@ -536,13 +536,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="/assets/js/jquery.slim.min.js"></script>
-<script src="/assets/js/lity.min.js"></script>
-<script src="/assets/js/tools.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
+<script src="http://localhost:4000/assets/js/lity.min.js"></script>
+<script src="http://localhost:4000/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -601,7 +601,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "/assets/search.json",
+    json: "http://localhost:4000/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {

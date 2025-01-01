@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="/assets/style.css"/>
-<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//algs/StringPalindrome.html" />
+<meta property="og:url" content="http://localhost:4000//algs/StringPalindrome.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="/" class="logo__link">
+    <a href="http://localhost:4000/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="/category/algs.html">
+        <a href="http://localhost:4000/category/algs.html">
           <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
             Algorithm
           </p>
@@ -182,7 +182,7 @@
 
 <h3 id="串哈希算法">串哈希算法</h3>
 
-<p>如果只考虑求取最长回文串，可以使用<a href="/algs/StringHash.html">串哈希</a>的方法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>，分别预处理正向的串的哈希和反向串的哈希，实现 $O(1)$ 复杂度的回文串检查，这样对于模式串上的每个位置采用<a href="/algs/BinaryLifting.html">二进制提升（Binary Lifting）</a>的方法，测试出每个位置上的<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>最长回文串，当然这需要分奇数轴和偶数轴分别求解。</p>
+<p>如果只考虑求取最长回文串，可以使用<a href="http://localhost:4000/algs/StringHash.html">串哈希</a>的方法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>，分别预处理正向的串的哈希和反向串的哈希，实现 $O(1)$ 复杂度的回文串检查，这样对于模式串上的每个位置采用<a href="http://localhost:4000/algs/BinaryLifting.html">二进制提升（Binary Lifting）</a>的方法，测试出每个位置上的<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>最长回文串，当然这需要分奇数轴和偶数轴分别求解。</p>
 
 <p>注意当检查子串 $s[i..i+d-1]$ 是否是回文时：</p>
 
@@ -316,7 +316,7 @@
 
 <h3 id="串哈希-dp">串哈希 DP<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">3</a></sup></h3>
 
-<p>介绍参考<a href="/algs/StringDP.html">串上DP</a>的相关章节</p>
+<p>介绍参考<a href="http://localhost:4000/algs/StringDP.html">串上DP</a>的相关章节</p>
 
 <h4 id="rust-实现-2">Rust 实现</h4>
 
@@ -375,7 +375,7 @@
 
 <h3 id="manacher-算法">Manacher 算法</h3>
 
-<p>同样介绍参考<a href="/algs/StringDP.html">串上DP</a>的相关章节</p>
+<p>同样介绍参考<a href="http://localhost:4000/algs/StringDP.html">串上DP</a>的相关章节</p>
 
 <h4 id="rust-实现-3">Rust 实现</h4>
 
@@ -743,13 +743,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="/assets/js/jquery.slim.min.js"></script>
-<script src="/assets/js/lity.min.js"></script>
-<script src="/assets/js/tools.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
+<script src="http://localhost:4000/assets/js/lity.min.js"></script>
+<script src="http://localhost:4000/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -808,7 +808,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "/assets/search.json",
+    json: "http://localhost:4000/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {

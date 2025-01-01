@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="/assets/style.css"/>
-<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//algs/GraphMST.html" />
+<meta property="og:url" content="http://localhost:4000//algs/GraphMST.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="/" class="logo__link">
+    <a href="http://localhost:4000/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="/category/algs.html">
+        <a href="http://localhost:4000/category/algs.html">
           <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
             Algorithm
           </p>
@@ -121,15 +121,13 @@
 
 <p>对于它们进行简单的比较</p>
 
-<p>实现基于<a href="/algs/GraphTheoryBasic.html">图论基础</a>里面提到的数据结构</p>
+<p>实现基于<a href="http://localhost:4000/algs/GraphTheoryBasic.html">图论基础</a>里面提到的数据结构</p>
 
-<h2 id="性质">性质</h2>
+<h2 id="最小生成树的性质">最小生成树的性质</h2>
 
-<p>介绍一下最小生成树相关的性质<sup id="fnref:mst-wiki" role="doc-noteref"><a href="#fn:mst-wiki" class="footnote" rel="footnote">1</a></sup>，可能让我们对算法的理解能拨其冗繁、摁其要务，看得更清楚一点。</p>
+<p>介绍一下最小生成树的性质<sup id="fnref:mst-wiki" role="doc-noteref"><a href="#fn:mst-wiki" class="footnote" rel="footnote">1</a></sup>，可能让我们对算法的理解能拨其冗繁、扼其要务，看得更清楚一些。</p>
 
-<h3 id="割的性质">割的性质</h3>
-
-<p>对于连通图 $G = (V, E)$ ，如果 $U$ 为它的非平凡子图（不是空集和它自身），则存在 $U$ 的所有出边（一头在 $U$ ,一头不在 $U$ ）中权值最小的边 $e$ 一定属于某棵 $G$ 上的最小生成树。</p>
+<p>对于连通图 $G = (V, E)$ ，如果 $U$ 为它的非平凡子图（不是空集和它自身），则存在 $U$ 的所有出边（一头在 $U$，一头不在 $U$ ）中权值最小的边 $e$ 一定属于某棵 $G$ 上的最小生成树。</p>
 
 <p>记 $T$ 为 $G$ 上的一棵最小生成树，</p>
 
@@ -138,35 +136,27 @@
     <p>如果 $e$  在 $T$ 上， 性质1成立；</p>
   </li>
   <li>
-    <p>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），并且一定存在C中e以外的一条U的出边 $f$ ，由于e是最小出边，那么f一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 是最小生成树。也就是e属于一棵生成树，性质1仍然成立。</p>
+    <p>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），并且一定存在C中$e$ 以外的一条 $U$ 的出边 $f$ ，由于 $e$ 是最小出边，那么 $f$ 一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 是最小生成树。也就是 $e$ 属于一棵生成树，性质1仍然成立。</p>
   </li>
 </ol>
 
 <p>证毕。</p>
 
-<p>进一步地，如果这条最小出边 $e$ 是唯一最小的，它一定属于所有最小生成树。</p>
+<h4 id="直接推论">直接推论</h4>
 
-<h4 id="推论1">推论1</h4>
+<p>进一步地，如果出边 $e$ 是唯一最小，它一定属于所有最小生成树，反之如果是唯一最大，那一定不属于任何最小生成树。</p>
 
-<p>对于连通图 $G = (V, E)$ ， $U$ 是 $E$ 的子图，如果 $U$ 属于某棵 $G$ 上的最小生成树，那么在加入一条最小出边后，仍然属于某棵最小生成树。</p>
+<p>子图 $U$ 上出边的性质也可适用于图上环状路径 $C$ 上的边。</p>
 
-<p>设 $U$ 属于最小生成树 $T$ ，根据性质1，加入最小出边 $e$ 后，$U$ 要么仍然属于 $T$ ，要么属于 $T-f+e$ ，都仍然属于某棵最小生成树。</p>
+<h4 id="生成性">生成性</h4>
 
-<h4 id="推论2">推论2</h4>
+<p>如果 $U$ 属于 $G$ 上的某棵最小生成树，那么在加入一条最小出边后，仍然属于一棵最小生成树。</p>
 
-<p>进一步推论，开始的时候 $G$ 中每个点构成的子图一定属于最小生成树，那么根据归纳推理，不断地加最小出边，当图中每个点都被加入后，得到一棵生成树，也就是最小生成树。这也是 Prim 算法的证明。</p>
+<p>这样，可以从 $G$ 中任意一个点开始，按照诱导推理，不断地加最小出边，当图中每个点都被加入后，就得到了一棵最小生成树。</p>
 
-<h3 id="环的性质">环的性质</h3>
-
-<p>图上的环状路径 $C$ ，如果其中一条边比其它所有边都大，那么它肯定不在任何一棵最小生成树上。</p>
-
-<p>和上面割的性质的证明是是类似的，反证如果在某棵最小生成树，则其他 $C$ 上的边可以替换产生一棵更小权重的最小生成树。</p>
-
-<h3 id="唯一性">唯一性</h3>
+<h4 id="唯一性">唯一性</h4>
 
 <p>如果 $G$ 上每条边的权重都是唯一的，那么最小生成树也是唯一的。</p>
-
-<p>证明也是反证，假设有两棵不同的最小生成树，二者的对称差集（symmetric difference set）里权重最小的那一条所在的环上的其他边，至少有一条边不属于这棵最小生成树，而属于另一棵最小生成树，由于边权重唯一，那条边必然大于这个最小的差边，因而可以构成去大边加小边的更小的最小生成树，矛盾，证毕。</p>
 
 <h2 id="kruskal-算法">Kruskal 算法</h2>
 
@@ -174,7 +164,7 @@
 
 <h3 id="描述">描述</h3>
 
-<p>最简单的，基于最小边的贪心算法</p>
+<p>最简单的，基于最小出边的贪心算法</p>
 
 <ol>
   <li>假设开始的时候每个点都是只包括自己的连通分量；</li>
@@ -220,7 +210,7 @@
 
 <h3 id="证明">证明</h3>
 
-<p>Kruskal 算法的证明并不像它看起来那么简单。</p>
+<p>Kruskal 算法完整的形式证明还是有点儿繁复的。</p>
 
 <p>假设 $G$ 是加权连通图， $Y$ 是算法应用在 $G$ 上产生的子图</p>
 
@@ -235,7 +225,7 @@
 
 <p>首先提出一个<strong>假设</strong> $P$：</p>
 
-<p>​	设 $F$（Forest）是算法在任意阶段生成的边集，则总有 $G$ 上的最小生成树包含 $F$ ，并且它（这棵生成树）里面的边之前阶段没有被算法拒绝过</p>
+<p>​	设 $F$（Forest）是算法在任意阶段生成的边集，则总有 $G$ 上的最小生成树包含 $F$ ，并且它（这棵生成树）里面的边之前阶段没有被算法拒绝过。</p>
 
 <p>用归纳法证明 $P$ 成立：</p>
 
@@ -264,23 +254,24 @@
 
 <p>假设 $n=\vert V \vert$，$m=\vert E \vert$</p>
 
-<p>复杂度等于边排序 $O(m \text{log} m)$ + 并查集操作 $O(m \text{log} n)$ ，等于 $O(m (\text{log} m+\text{log} n))$ 。</p>
+<p>复杂度等于边排序 $O(m \log m)$ + 并查集操作 $O(m \log n)$ ，等于 $O(m (\log m + \log n))$ 。</p>
 
 <h2 id="prime-算法">Prime 算法</h2>
 
-<p>类似 Dijkstra 算法，从距既有生成树最短距离的点开始加</p>
+<p>形式上类似 Dijkstra 算法，通过追踪距既有生成树最短距离的点（通过在堆上不断“Relax”的方式）来寻找最小出边。</p>
 
 <h3 id="描述-1">描述</h3>
 
 <ol>
-  <li>选取图中任意一点开始，作为生成树的根节点，把其余点到生成树的最短距离初始化为 $+\infty$ ，根节点的生成树最短距离初始化为 $0$ ，初始化每个点到生成树的最短边的对应点为 <code class="language-plaintext highlighter-rouge">None</code>，记为 $\texttt{pair}$ ，把所有点加入剩余点集 $R$；</li>
+  <li>选取图中任意一点开始，作为生成树的根节点，把其余点到生成树的最短距离初始化为 $+\infty$ ，根节点的生成树最短距离初始化为 $0$ ，初始化每个点 $u$ 到生成树的最短边的对应点 $\texttt{pair}(u)$ 为 <code class="language-plaintext highlighter-rouge">None</code> ，记录 $\texttt{pair}$ 的作用是为了方便以边的形式输出最小生成树；</li>
+  <li>把所有点加入剩余点集 $R$；</li>
   <li>每次从 R 中取出到生成树距离最小的点记为 $u$ ，把边 $(u, \texttt{pair}(u))$ 加入边集 $E$ 中。检查它的邻居中不在生成树上的点 $v$ ，如果边的权重 $w_{\large uv}$ ，与生成树最短距离 $\texttt{dis}(v)$ ，有  $w_{\large uv} &lt; \texttt{dis}(v) $  ，更新 $\texttt{dis}(v)$ 为  $w_{\large uv}$ ，也更新 $\texttt{pair}(u)$  为 $u$ ；</li>
-  <li>当$R = \varnothing$ 时，退出，得到的E即为一棵最小生成树</li>
+  <li>当 $R = \varnothing$ 时，退出，得到的 $E$ 即为一棵最小生成树</li>
 </ol>
 
 <h3 id="实现-1">实现</h3>
 
-<p>关键显然在于维护生成树距离的堆的选择，这涉及两个堆操作，<code class="language-plaintext highlighter-rouge">pop</code> 和 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，经典地是使用Fib堆（在<a href="/algs/FibHeap.html">斐波那契堆（Fibonacci Heap） </a> 一文中介绍过），这样有理论更好的 <code class="language-plaintext highlighter-rouge">decrease-key</code> 性能，但实际上，我们知道在有缓存的 CPU 架构下二叉堆实际表现好得多，如果把调整二叉堆的实现，把基数从 $2$ 提高，到比如 $32$ ，那么理论上可以认为 <code class="language-plaintext highlighter-rouge">pop</code> 和 <code class="language-plaintext highlighter-rouge">decrease-key</code> 都有线性表现，这是理论与实践上都最优的优化。</p>
+<p>关键显然在于维护生成树距离的堆的选择，这涉及两个堆操作 <code class="language-plaintext highlighter-rouge">pop</code> 和 <code class="language-plaintext highlighter-rouge">decrease-key</code> ，经典地使用 <a href="http://localhost:4000/algs/FibHeap.html">Fib 堆</a> 一文中介绍过），或者更好的替代：<a href="http://localhost:4000/algs/DaryHeap.html">多叉堆</a> 。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_prim</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
@@ -345,12 +336,11 @@
 
     <span class="n">res</span>
 <span class="p">}</span>
-
 </code></pre></div></div>
 
 <h3 id="证明-1">证明</h3>
 
-<p><a href="#推论2">割的性质推论2</a></p>
+<p>根据最小生成树的生成性质，同上，略。</p>
 
 <h3 id="时间复杂度-1">时间复杂度</h3>
 
@@ -366,11 +356,11 @@
 
 <p>对每个连通分量加最小出边，直到没有出边为止。</p>
 
-<p>这本质上和 Kruskal 算法是一样的，实际上 Kruskal 算法对所有边排序是有点儿浪费比较次数了。</p>
+<p>可以算作对 Kruskal 算法的改进，因为实际上 Kruskal 算法对所有边排序是有点儿浪费比较次数了。</p>
 
 <ol>
-  <li>开始的时候，图中每个点都是一个连通分量，对所有边遍历，选取其中两头不在同一个连通分量的，用它更新两个连通分量在这一轮迭代里的最小出边；</li>
-  <li>一轮结束后，把新选取的最小出边加入结果集，并连接两个分量，当没有新选任何最小出边的时候结束，否则进行下一轮遍历</li>
+  <li>开始的时候，图中每个点都是一个连通分量，对所有边遍历，选取其中跨两个连通分量的边，用它更新两个连通分量在这一轮迭代里的最小出边；</li>
+  <li>一轮结束后，把新选取的最小出边加入结果集，并连接两个分量，直到没有任何跨两个连通分量的边。</li>
 </ol>
 
 <p><strong>注意：</strong></p>
@@ -457,11 +447,11 @@
 
 <h3 id="时间复杂度-2">时间复杂度</h3>
 
-<p>由于每次迭代后连通分量至少减半（每个新分量都没再连通过），所以最外层迭代次数是O(logn)，每次边的遍历是 $O(m)$  ，并查询是 $O(\text{log}n)$ ，所以时间复杂度为 $O(m\text{log}n\text{log}n)$ 。</p>
+<p>由于每次迭代后连通分量至少减半（每个新分量都没再连通过），所以最外层迭代次数是 $O(\log n)$，每次边的遍历是 $O(m)$  ，并查询是 $O(\text{log}n)$ ，所以时间复杂度为 $O(m\log n\log n)$ 。</p>
 
 <h2 id="时间复杂度简单比较">时间复杂度简单比较</h2>
 
-<p>时间复杂度涉及 $n$ 和 $m$ ，按照图的稀疏度分两个维度讨论（对于连通图，$m\geqslant n-1$ ）</p>
+<p>时间复杂度涉及 $n$ 和 $m$，按照图的稀疏度分两个维度讨论（对于连通图，$m\geqslant n-1$ ）</p>
 
 <p><br /></p>
 
@@ -495,7 +485,7 @@
 
 <h2 id="后续">后续</h2>
 
-<p>关于 Prim 进一步可以看看 <a href="/algs/DaryHeap.html">d-ary 堆的实现</a>；而基于 Boruvka 的线性算法<sup id="fnref:lt-mst" role="doc-noteref"><a href="#fn:lt-mst" class="footnote" rel="footnote">2</a></sup> 复杂的部分在于一个去重（zhong）边的最小生成树的验证算法（原始提出和 Targan 最近共同祖先同一篇论文里），没有具体实现的介绍，只有原始的算法的论文，大体看了以下，应该可以弄明白，但是要花不少时间，有点儿鸡肋，就这样吧。</p>
+<p>基于 Boruvka 的线性算法<sup id="fnref:lt-mst" role="doc-noteref"><a href="#fn:lt-mst" class="footnote" rel="footnote">2</a></sup> 复杂的部分在于一个去重（zhong）边的最小生成树的验证算法（原始提出和 Targan 最近共同祖先同一篇论文里），没有具体实现的介绍，只有原始的算法的论文，大体看了以下，应该可以弄明白，但是要花不少时间，有点儿鸡肋，就这样吧。</p>
 
 <h2 id="引用">引用</h2>
 
@@ -571,13 +561,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="/assets/js/jquery.slim.min.js"></script>
-<script src="/assets/js/lity.min.js"></script>
-<script src="/assets/js/tools.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
+<script src="http://localhost:4000/assets/js/lity.min.js"></script>
+<script src="http://localhost:4000/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -636,7 +626,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "/assets/search.json",
+    json: "http://localhost:4000/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {

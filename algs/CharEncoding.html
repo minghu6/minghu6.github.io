@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="/assets/style.css"/>
-<link rel="stylesheet" href="/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
+<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="//algs/CharEncoding.html" />
+<meta property="og:url" content="http://localhost:4000//algs/CharEncoding.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="/" class="logo__link">
+    <a href="http://localhost:4000/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="/category/algs.html">
+        <a href="http://localhost:4000/category/algs.html">
           <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
             Algorithm
           </p>
@@ -119,7 +119,12 @@
   <li>大一统时期，统一的标准已经统一了应用，蛮荒时期的标准被废弃，只存在于个别非常旧的应用里</li>
 </ol>
 
-<p>对于字符编码这一领域，形成的统一标准是 Unicode<sup id="fnref:unicode-wiki" role="doc-noteref"><a href="#fn:unicode-wiki" class="footnote" rel="footnote">1</a></sup> ，它首先是一个抽象字符的码点（code point）方案，就是对每个字符编一个对应的数字编号。另外还提供了如何把字符编号转换成二进制的字节数据的官方编码方案 (Unicode Transformation Format)： UTF-8，UTF-16</p>
+<p>对于字符编码这一领域，形成的统一标准是 Unicode<sup id="fnref:unicode-wiki" role="doc-noteref"><a href="#fn:unicode-wiki" class="footnote" rel="footnote">1</a></sup> ，它</p>
+
+<ol>
+  <li>首先是一个抽象字符的码点（code point）方案，就是对每个字符编一个对应的数字编号；</li>
+  <li>其次还提供了如何把字符编号转换成二进制的字节数据的官方编码方案 (Unicode Transformation Format)： UTF-8，UTF-16</li>
+</ol>
 
 <p>Unicode 里的字符指得是“同义“而不是“同象“，“象”问题交给排版渲染系统，不过也存在为了兼容做出的特例，比如 CJK（中日韩）字符集里的宽字符标点符号等等，也就是仍然重复编码了一些抽象上同语义的字符。</p>
 
@@ -127,7 +132,7 @@
 
 <h3 id="码点空间">码点空间</h3>
 
-<p>码点编号的空间是 $[0, \text{0x10FFFF}]$ ，也就是 $[0, 16]$ 共 $17$ 个 $\text{0xFFFF}$ ，也就是 $17 * 2^{16}$ 。</p>
+<p>码点编号的空间是 $[0, \text{0x10FFFF}]$ ，也就是 $0-\text{0x10}$ 共 $17$ 个 $0-\text{0xFFFF}$ ，也就是 $17 * 2^{16}$ 。</p>
 
 <h3 id="码点平面plane">码点平面（plane）</h3>
 
@@ -135,7 +140,7 @@
 
 <h3 id="码点块block">码点块（Block）</h3>
 
-<p>每个平面又可以划分成块儿并唯一命名，每个块大小不一，但都是 $16$ 的倍数，也就是起始点都是十六进制的 $0$ ，也就是 $\text{XXX0}$ 。</p>
+<p>每个平面又可以划分成块儿并唯一命名，每个块大小不一，但都是 $16$ 的倍数，也就是起始点都是十六进制的 $0$，也就是 $\text{XXX0}$ 。</p>
 
 <h2 id="utf-8-编码">UTF-8 编码<sup id="fnref:utf8-wiki" role="doc-noteref"><a href="#fn:utf8-wiki" class="footnote" rel="footnote">2</a></sup></h2>
 
@@ -145,25 +150,25 @@
   <thead>
     <tr>
       <th>Bytes Number</th>
-      <th>Patten</th>
+      <th style="text-align: left">Patten</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>one byte</td>
-      <td>$\text{0xxxxxxx}$</td>
+      <td style="text-align: left">$\text{0xxxxxxx}$</td>
     </tr>
     <tr>
       <td>two bytes</td>
-      <td>$\text{110xxxxx 10xxxxxx}$</td>
+      <td style="text-align: left">$\text{110xxxxx 10xxxxxx}$</td>
     </tr>
     <tr>
       <td>three bytes</td>
-      <td>$\text{1110xxxx 10xxxxxx 10xxxxxx}$</td>
+      <td style="text-align: left">$\text{1110xxxx 10xxxxxx 10xxxxxx}$</td>
     </tr>
     <tr>
       <td>four bytes</td>
-      <td>$\text{11110xxx 10xxxxxx 10xxxxxx 10xxxxxx}$</td>
+      <td style="text-align: left">$\text{11110xxx 10xxxxxx 10xxxxxx 10xxxxxx}$</td>
     </tr>
   </tbody>
 </table>
@@ -255,7 +260,6 @@
 
 <span class="k">impl</span> <span class="n">UTF8Str</span> <span class="p">{</span>
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push_char</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">_c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="p">{}</span>
-
 
     <span class="k">pub</span> <span class="k">fn</span> <span class="nf">to_string</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
         <span class="k">unsafe</span> <span class="p">{</span> <span class="nn">String</span><span class="p">::</span><span class="nf">from_utf8_unchecked</span><span class="p">(</span><span class="k">self</span><span class="py">.inner</span><span class="nf">.clone</span><span class="p">())</span> <span class="p">}</span>
@@ -391,32 +395,33 @@
 
     <span class="nf">Ok</span><span class="p">(())</span>
 <span class="p">}</span>
-
 </code></pre></div></div>
 
 <h2 id="utf-16">UTF-16</h2>
 
+<p>编码方案根据码点分为两类：</p>
+
 <ol>
   <li>
-    <p>对于基本平面中的码点，可以直接用对应 16 bit 单元表示的数字代表，不过实际的表示范围要小一点，是 $\text{0000 - DFFF}$ 和 $\text{E000 - FFFF}$</p>
+    <p>对于基本平面（Basic Multilingual Plane，BMP）中的码点，可以直接用对应 $4 \times 4=16$ bit 单元表示的数字代表，不过实际的表示范围要小一点，是 $\text{0000 - D7FF}$ 和 $\text{E000 - FFFF}$；</p>
   </li>
   <li>
-    <p>对于补充平面上的码点，用两个 16 bit 单元构造，方法如下：</p>
+    <p>对于补充平面上的码点方法如下：</p>
   </li>
 </ol>
 
 \[\begin{array}{l}
 \texttt{let}\ \text{codepoint U}\\
 \texttt{let}\ \text{U'} \gets \text{U - 0x10000}\\
-\texttt{let}\ \text{yyyyyyyyyyxxxxxxxxxx} \gets \text{U'}\\
+\texttt{let}\ \text{yyyyyyyyyyxxxxxxxxxx} \gets \text{U' \\\\ 10+10 bit}  \\
 \\
 \texttt{Encode Into:} \\
 \\
-\text{110110yy yyyyyyyy} \\
-\text{110111xx xxxxxxxx}
+\text{1101\_10yy yyyyyyyy} \\
+\text{1101\_11xx xxxxxxxx}
 \end{array}\]
 
-<p>共 $20$ 位，覆盖 $16$ 个补充平面</p>
+<p>​		共 $10+10=20$ 位，覆盖 $16$ 个补充平面</p>
 
 <h3 id="实现范例-1">实现范例</h3>
 
@@ -604,12 +609,12 @@
 
 <p>首先虽然具体码点不一样，但 GB18030 毕竟编码了 Unicode 标准下的所有字符，也可以算非官方的 UTF 实现。</p>
 
-<p>比较 UTF-8、UTF-16、GB18030：</p>
+<p>比较 UTF-8，UTF-16 和 GB18030：</p>
 
 <ol>
   <li>UTF-16首先出局，它在任何情况下的空间性能都差于 GB18030；</li>
   <li>对于东亚字符 GB18030 显然是最好的选择；</li>
-  <li>其他，It depends ，如果字符在拓展 GBK 中，那么 GB18030 仍然是最好的，否则如果在 UTF-8 下能用三字节表示，那就是 UTF-8 更优，如果 UTF-8 也是四字节表示，那就相当</li>
+  <li>其他，视情况而定，如果字符在拓展 GBK 中，那么 GB18030 仍然是最好的，否则如果在 UTF-8 下能用三字节表示，那就是 UTF-8 更优，如果 UTF-8 也是四字节表示，那就相当。</li>
 </ol>
 
 <h2 id="引用">引用</h2>
@@ -689,13 +694,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="/assets/js/jquery.slim.min.js"></script>
-<script src="/assets/js/lity.min.js"></script>
-<script src="/assets/js/tools.js"></script>
+    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
+<script src="http://localhost:4000/assets/js/lity.min.js"></script>
+<script src="http://localhost:4000/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -754,7 +759,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "/assets/search.json",
+    json: "http://localhost:4000/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {
