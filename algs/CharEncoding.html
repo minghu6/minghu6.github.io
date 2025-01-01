@@ -107,7 +107,9 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><h2 id="序言">序言</h2>
+    <div class="post__content"><p><em>1st revision at 2025-01-01</em></p>
+
+<h2 id="序言">序言</h2>
 
 <p>每次谈到技术标准的问题，就一定要探究一下相关历史，这样才能搞清楚一堆相关概念到底是什么意思，才能理解这个标准的意义到底在哪儿。</p>
 
@@ -140,7 +142,7 @@
 
 <h3 id="码点块block">码点块（Block）</h3>
 
-<p>每个平面又可以划分成块儿并唯一命名，每个块大小不一，但都是 $16$ 的倍数，也就是起始点都是十六进制的 $0$，也就是 $\text{XXX0}$ 。</p>
+<p>每个平面又可以划分成块儿并唯一命名，每个块大小不一，但都是 $16$ 的倍数，也就是起始点都是十六进制的 $0$，也就是 $\text{0xXXX0}$ 。</p>
 
 <h2 id="utf-8-编码">UTF-8 编码<sup id="fnref:utf8-wiki" role="doc-noteref"><a href="#fn:utf8-wiki" class="footnote" rel="footnote">2</a></sup></h2>
 
@@ -151,249 +153,207 @@
     <tr>
       <th>Bytes Number</th>
       <th style="text-align: left">Patten</th>
+      <th>Code Point</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>one byte</td>
       <td style="text-align: left">$\text{0xxxxxxx}$</td>
+      <td>$[0, \text{0x80})$</td>
     </tr>
     <tr>
       <td>two bytes</td>
       <td style="text-align: left">$\text{110xxxxx 10xxxxxx}$</td>
+      <td>$[\text{0x80}, \text{0x800})$</td>
     </tr>
     <tr>
       <td>three bytes</td>
       <td style="text-align: left">$\text{1110xxxx 10xxxxxx 10xxxxxx}$</td>
+      <td>$[\text{0x800}, \text{0x1_0000})$</td>
     </tr>
     <tr>
       <td>four bytes</td>
       <td style="text-align: left">$\text{11110xxx 10xxxxxx 10xxxxxx 10xxxxxx}$</td>
+      <td>$[\text{0x01_0000}, \text{0x10_0000})$</td>
     </tr>
   </tbody>
 </table>
 
 <h3 id="实现范例">实现范例</h3>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="k">super</span><span class="p">::</span><span class="n">BitLen</span><span class="p">;</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">UTF8EncodeError</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
 
-<span class="nd">#[derive(Debug,</span> <span class="nd">Clone,</span> <span class="nd">Copy)]</span>
-<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF8CharSt</span> <span class="p">{</span>
-    <span class="n">First</span> <span class="p">{</span> <span class="n">partial</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span> <span class="n">nbyte</span><span class="p">:</span> <span class="nb">u8</span> <span class="p">},</span>
-    <span class="nf">Continue</span><span class="p">(</span><span class="nb">u8</span><span class="p">),</span>
+<span class="c1">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="c1">//// Macros</span>
+
+<span class="nd">macro_rules!</span> <span class="n">parse_array</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$bytes:expr</span><span class="p">,</span> <span class="nv">$n:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">cached_value</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$bytes</span><span class="p">;</span>
+        <span class="k">let</span> <span class="n">n</span> <span class="o">=</span> <span class="nv">$n</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">cached_value</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">n</span> <span class="p">{</span>
+            <span class="nf">Ok</span><span class="p">(</span><span class="n">cached_value</span><span class="p">[</span><span class="o">..</span><span class="n">n</span><span class="p">]</span><span class="nf">.try_into</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">())</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nf">Err</span><span class="p">(</span><span class="n">UnfinishedByteSeq</span> <span class="p">{</span>
+                <span class="n">expect</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+                <span class="n">found</span><span class="p">:</span> <span class="n">cached_value</span><span class="nf">.len</span><span class="p">(),</span>
+            <span class="p">})</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
 <span class="p">}</span>
+
+<span class="nd">macro_rules!</span> <span class="n">check_continuation_byte</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$b:expr</span><span class="p">,</span> <span class="n">expect</span><span class="o">=</span><span class="nv">$expect:literal</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="nv">$found:literal</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+        <span class="p">{</span>
+            <span class="k">let</span> <span class="n">b</span> <span class="o">=</span> <span class="nv">$b</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="n">b</span> <span class="o">&gt;=</span> <span class="mi">0x80</span> <span class="o">&amp;&amp;</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="mi">0xC0</span> <span class="p">{</span>
+                <span class="nf">Ok</span><span class="p">(())</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="nf">Err</span><span class="p">(</span><span class="n">UnfinishedByteSeq</span> <span class="p">{</span>
+                    <span class="n">expect</span><span class="p">:</span> <span class="nv">$expect</span><span class="p">,</span>
+                    <span class="n">found</span><span class="p">:</span> <span class="nv">$found</span><span class="p">,</span>
+                <span class="p">})</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="c1">//// Structures</span>
 
 <span class="nd">#[derive(Debug)]</span>
 <span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF8DecodeError</span> <span class="p">{</span>
-    <span class="cd">/// Invalid Unicode</span>
-    <span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
-
-    <span class="cd">/// &gt; 1111_0xxx</span>
-    <span class="nf">OutRange</span><span class="p">(</span><span class="nb">u8</span><span class="p">),</span>
-
-    <span class="cd">/// 10xx_xxxx</span>
-    <span class="nf">TrailAtCodePoint</span><span class="p">(</span><span class="nb">u8</span><span class="p">),</span>
-
-    <span class="cd">///</span>
-    <span class="n">UnexpectedCodePoint</span> <span class="p">{</span>
-        <span class="n">expect</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
-        <span class="n">found</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
-    <span class="p">},</span>
-
-    <span class="n">UnexpectedEOF</span> <span class="p">{</span>
-        <span class="n">expect</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
-        <span class="n">found</span><span class="p">:</span> <span class="nb">u8</span><span class="p">,</span>
-    <span class="p">},</span>
+    <span class="nf">InvalidStartByte</span><span class="p">(</span><span class="nb">u8</span><span class="p">),</span>
+    <span class="n">UnfinishedByteSeq</span> <span class="p">{</span> <span class="n">expect</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span> <span class="n">found</span><span class="p">:</span> <span class="nb">usize</span> <span class="p">},</span>
 <span class="p">}</span>
 
 <span class="nd">#[derive(Debug)]</span>
 <span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF8EncodeError</span> <span class="p">{</span>
-    <span class="cd">/// Invalid Unicode</span>
-    <span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="nb">u16</span><span class="p">)</span>
+    <span class="nf">Overflow</span><span class="p">(</span><span class="nb">u32</span><span class="p">),</span>
 <span class="p">}</span>
 
-<span class="k">pub</span> <span class="k">struct</span> <span class="n">UTF8Str</span> <span class="p">{</span>
-    <span class="n">inner</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="c1">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="c1">//// Functions</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf8</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">char</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">UTF8EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bytes</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="n">ch</span> <span class="k">in</span> <span class="n">chars</span> <span class="p">{</span>
+        <span class="nf">encode_utf8_cp</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">bytes</span><span class="p">,</span> <span class="n">ch</span> <span class="k">as</span> <span class="n">_</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span>
 <span class="p">}</span>
 
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf8_cp</span><span class="p">(</span>
+    <span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">ch</span><span class="p">:</span> <span class="nb">u32</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="n">UTF8EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="c1">// for U+uvwxyz</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="k">match</span> <span class="n">ch</span> <span class="p">{</span>
+        <span class="o">..</span><span class="mi">0x0080</span> <span class="k">=&gt;</span> <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="n">_</span><span class="p">),</span>
+        <span class="mi">0x0080</span><span class="o">..</span><span class="mi">0x0800</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// 110xxxyy 10yyzzzz</span>
+            <span class="c1">// 5 + 6 bit</span>
 
-<span class="k">impl</span> <span class="n">TryFrom</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">UTF8CharSt</span> <span class="p">{</span>
-    <span class="k">type</span> <span class="n">Error</span> <span class="o">=</span> <span class="n">UTF8DecodeError</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">b2</span> <span class="o">=</span> <span class="mi">0x80</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">b1</span> <span class="o">=</span> <span class="mi">0xC0</span> <span class="p">|</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x1F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
 
-    <span class="k">fn</span> <span class="nf">try_from</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="nb">u8</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="k">Self</span><span class="p">::</span><span class="n">Error</span><span class="o">&gt;</span> <span class="p">{</span>
-        <span class="nf">Ok</span><span class="p">(</span><span class="k">if</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="mi">0x007F</span> <span class="p">{</span>
-            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
-                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span><span class="p">,</span>
-                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="p">}</span>
+            <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">]);</span>
         <span class="p">}</span>
-        <span class="c1">// 10xx_xxxx, 0x80 - 0xBF</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="mi">0x80</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xBF</span> <span class="p">{</span>
-            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">Continue</span><span class="p">(</span><span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="c1">// 0011_1111</span>
+        <span class="mi">0x00_0800</span><span class="o">..</span><span class="mi">0x01_0000</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// 1110wwww 10xxxxyy 10yyzzzz</span>
+            <span class="c1">// 4 + 6 * 2 = 16</span>
+
+            <span class="k">let</span> <span class="n">b3</span> <span class="o">=</span> <span class="mi">0x80</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">b2</span> <span class="o">=</span> <span class="mi">0x80</span> <span class="p">|</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">b1</span> <span class="o">=</span> <span class="mi">0xE0</span> <span class="p">|</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x0F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+
+            <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">]);</span>
         <span class="p">}</span>
-        <span class="c1">// 110x_xxxx, 0xC0 - 0xDF</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xC0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xDF</span> <span class="p">{</span>
-            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
-                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x1F</span><span class="p">,</span> <span class="c1">// 0001_1111</span>
-                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="p">}</span>
+        <span class="mi">0x01_0000</span><span class="o">..</span><span class="mi">0x10_0000</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// 11110uvv 10vvwwww 10xxxxyy 10yyzzzz</span>
+            <span class="c1">// 3 + 6 * 3 = 21</span>
+
+            <span class="k">let</span> <span class="n">b4</span> <span class="o">=</span> <span class="mi">0x80</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">b3</span> <span class="o">=</span> <span class="mi">0x80</span> <span class="p">|</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">b2</span> <span class="o">=</span> <span class="mi">0x80</span> <span class="p">|</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+            <span class="k">let</span> <span class="n">b1</span> <span class="o">=</span> <span class="mi">0xF0</span> <span class="p">|</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">18</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x07</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
+
+            <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">b4</span><span class="p">]);</span>
         <span class="p">}</span>
-        <span class="c1">// 1110_xxxx, 0xE0 - 0xEF</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xE0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xEF</span> <span class="p">{</span>
-            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
-                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x0F</span><span class="p">,</span> <span class="c1">// 0000_1111</span>
-                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="c1">// 1111_0xxx, 0xF0 - 0xF7</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xF0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0xF7</span> <span class="p">{</span>
-            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span>
-                <span class="n">partial</span><span class="p">:</span> <span class="n">c</span> <span class="o">&amp;</span> <span class="mi">0x07</span><span class="p">,</span> <span class="c1">// 0000_0111</span>
-                <span class="n">nbyte</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="nf">OutRange</span><span class="p">(</span><span class="n">c</span><span class="p">));</span>
-        <span class="p">})</span>
-    <span class="p">}</span>
+        <span class="mi">0x10_0000</span><span class="o">..</span> <span class="k">=&gt;</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">Overflow</span><span class="p">(</span><span class="n">ch</span><span class="p">))</span><span class="o">?</span><span class="p">,</span>
+    <span class="p">})</span>
 <span class="p">}</span>
 
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf8</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="p">,</span> <span class="n">UTF8DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">s</span> <span class="o">=</span> <span class="nn">String</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
 
-<span class="k">impl</span> <span class="n">UTF8Str</span> <span class="p">{</span>
-    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">push_char</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">_c</span><span class="p">:</span> <span class="nb">char</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ptr</span> <span class="o">=</span> <span class="n">bytes</span><span class="p">;</span>
 
-    <span class="k">pub</span> <span class="k">fn</span> <span class="nf">to_string</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">String</span> <span class="p">{</span>
-        <span class="k">unsafe</span> <span class="p">{</span> <span class="nn">String</span><span class="p">::</span><span class="nf">from_utf8_unchecked</span><span class="p">(</span><span class="k">self</span><span class="py">.inner</span><span class="nf">.clone</span><span class="p">())</span> <span class="p">}</span>
+    <span class="k">while</span> <span class="o">!</span><span class="n">ptr</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">nbytes</span><span class="p">)</span> <span class="o">=</span> <span class="nf">decode_utf8_cp</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="n">s</span><span class="nf">.push</span><span class="p">(</span><span class="n">ch</span><span class="p">);</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ptr</span><span class="p">[</span><span class="n">nbytes</span><span class="o">..</span><span class="p">];</span>
     <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="p">}</span>
 
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf8_cp</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">char</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="n">UTF8DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="p">[</span><span class="n">b1</span><span class="p">]</span> <span class="o">=</span> <span class="nd">parse_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 
-<span class="cd">/// Write order (Big endian)</span>
-<span class="cd">/// -&gt; (step, char)</span>
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">next_utf8_unicode</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">u8</span><span class="p">,</span> <span class="nb">char</span><span class="p">),</span> <span class="n">UTF8DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="n">ch_1st</span> <span class="o">=</span> <span class="n">bytes</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-    <span class="nd">#[allow(unused)]</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">acc</span> <span class="o">=</span> <span class="mi">0u32</span><span class="p">;</span>
-    <span class="k">let</span> <span class="n">n</span><span class="p">;</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="k">match</span> <span class="n">b1</span> <span class="p">{</span>
+        <span class="c1">// 0yyyzzzz</span>
+        <span class="o">..</span><span class="mi">0x80</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">b1</span> <span class="k">as</span> <span class="n">_</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="mi">0x80</span><span class="o">..</span><span class="mi">0xC0</span> <span class="k">=&gt;</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">InvalidStartByte</span><span class="p">(</span><span class="n">b1</span><span class="p">))</span><span class="o">?</span><span class="p">,</span>
+        <span class="c1">// 110xxxyy 10yyzzzz</span>
+        <span class="mi">0xC0</span><span class="o">..</span><span class="mi">0xE0</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">[</span><span class="n">b2</span><span class="p">]</span> <span class="o">=</span> <span class="nd">parse_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 
-    <span class="k">match</span> <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">try_from</span><span class="p">(</span><span class="n">ch_1st</span><span class="p">)</span><span class="o">?</span> <span class="p">{</span>
-        <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span> <span class="n">partial</span><span class="p">,</span> <span class="n">nbyte</span> <span class="p">}</span> <span class="k">=&gt;</span> <span class="p">{</span>
-            <span class="n">acc</span> <span class="o">=</span> <span class="n">partial</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">;</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="n">nbyte</span><span class="p">;</span>
+            <span class="nd">check_continuation_byte!</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">expect</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="n">ch</span> <span class="o">=</span> <span class="p">((</span><span class="n">b1</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x1F</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="p">|</span> <span class="p">(</span><span class="n">b2</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">);</span>
+
+            <span class="p">(</span><span class="n">ch</span><span class="nf">.try_into</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">}</span>
-        <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">Continue</span><span class="p">(</span><span class="n">_partial</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="nf">TrailAtCodePoint</span><span class="p">(</span><span class="n">ch_1st</span><span class="p">));</span>
+        <span class="c1">// 1110wwww 10xxxxyy 10yyzzzz</span>
+        <span class="mi">0xE0</span><span class="o">..</span><span class="mi">0xF0</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">[</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">]</span> <span class="o">=</span> <span class="nd">parse_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+            <span class="nd">check_continuation_byte!</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">expect</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+            <span class="nd">check_continuation_byte!</span><span class="p">(</span><span class="n">b3</span><span class="p">,</span> <span class="n">expect</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+            <span class="k">let</span> <span class="n">ch</span> <span class="o">=</span> <span class="p">(</span><span class="n">b1</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x0F</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span>
+                <span class="p">|</span> <span class="p">(</span><span class="n">b2</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
+                <span class="p">|</span> <span class="n">b3</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">;</span>
+
+            <span class="p">(</span><span class="n">ch</span><span class="nf">.try_into</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">(),</span> <span class="mi">3</span><span class="p">)</span>
         <span class="p">}</span>
-    <span class="p">}</span>
+        <span class="c1">// 11110uvv 10vvwwww 10xxxxyy 10yyzzzz</span>
+        <span class="mi">0xF0</span><span class="o">..</span><span class="mi">0xF8</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="p">[</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">b4</span><span class="p">]</span> <span class="o">=</span> <span class="nd">parse_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 
-    <span class="k">if</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="k">as</span> <span class="nb">usize</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="n">UnexpectedEOF</span> <span class="p">{</span>
-            <span class="n">expect</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
-            <span class="n">found</span><span class="p">:</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">,</span>
-        <span class="p">});</span>
-    <span class="p">}</span>
+            <span class="nd">check_continuation_byte!</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">expect</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+            <span class="nd">check_continuation_byte!</span><span class="p">(</span><span class="n">b3</span><span class="p">,</span> <span class="n">expect</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+            <span class="nd">check_continuation_byte!</span><span class="p">(</span><span class="n">b4</span><span class="p">,</span> <span class="n">expect</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">found</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">n</span> <span class="k">as</span> <span class="nb">usize</span> <span class="p">{</span>
-        <span class="k">match</span> <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">try_from</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">?</span> <span class="p">{</span>
-            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="n">First</span> <span class="p">{</span> <span class="n">partial</span><span class="p">:</span> <span class="n">_</span><span class="p">,</span> <span class="n">nbyte</span><span class="p">:</span> <span class="n">_</span> <span class="p">}</span> <span class="k">=&gt;</span> <span class="p">{</span>
-                <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="n">UnexpectedCodePoint</span> <span class="p">{</span>
-                    <span class="n">expect</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
-                    <span class="n">found</span><span class="p">:</span> <span class="n">i</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">,</span>
-                <span class="p">});</span>
-            <span class="p">}</span>
-            <span class="nn">UTF8CharSt</span><span class="p">::</span><span class="nf">Continue</span><span class="p">(</span><span class="n">partial</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-                <span class="n">acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">acc</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="p">|</span> <span class="n">partial</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">;</span>
-            <span class="p">}</span>
+            <span class="k">let</span> <span class="n">ch</span> <span class="o">=</span> <span class="p">(</span><span class="n">b1</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x07</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span>
+                <span class="p">|</span> <span class="p">(</span><span class="n">b2</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span>
+                <span class="p">|</span> <span class="p">(</span><span class="n">b3</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span>
+                <span class="p">|</span> <span class="n">b4</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">;</span>
+
+            <span class="p">(</span><span class="n">ch</span><span class="nf">.try_into</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
         <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">acc</span> <span class="o">&amp;&amp;</span> <span class="n">acc</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8DecodeError</span><span class="p">::</span><span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="n">acc</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">))</span>
-    <span class="p">}</span>
-
-    <span class="k">let</span> <span class="n">ch</span> <span class="o">=</span> <span class="k">unsafe</span> <span class="p">{</span> <span class="nn">char</span><span class="p">::</span><span class="nf">from_u32_unchecked</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="p">};</span>
-
-    <span class="nf">Ok</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">ch</span><span class="p">))</span>
-<span class="p">}</span>
-
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf8_bytes</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">UTF8DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">chars</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
-
-    <span class="k">loop</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">nbytes</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="nf">next_utf8_unicode</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bytes</span><span class="p">[</span><span class="n">step</span><span class="o">..</span><span class="p">])</span><span class="o">?</span><span class="p">;</span>
-
-        <span class="n">step</span> <span class="o">+=</span> <span class="n">nbytes</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
-        <span class="n">chars</span><span class="nf">.push</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
-
-        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span> <span class="k">break</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">chars</span><span class="p">);</span> <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf8_char</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">ch</span><span class="p">:</span> <span class="nb">u32</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="n">UTF8EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
-
-    <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">ch</span> <span class="o">&amp;&amp;</span> <span class="n">ch</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF8EncodeError</span><span class="p">::</span><span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">))</span>
-    <span class="p">}</span>
-
-    <span class="k">let</span> <span class="n">bitlen</span> <span class="o">=</span> <span class="n">ch</span><span class="nf">.bit_len</span><span class="p">();</span>
-
-    <span class="c1">// 7</span>
-    <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">7</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">));</span>
-    <span class="p">}</span>
-
-    <span class="c1">// 5 + 6 = 11</span>
-    <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">11</span> <span class="p">{</span>
-        <span class="c1">// + 0b10xx_xxxx</span>
-        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
-
-        <span class="c1">// + 0b110x_xxxx, patch 5 bit, or 0xC0</span>
-        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x1F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0xC0</span><span class="p">;</span>
-
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="c1">// 4 + 6 * 2 = 16</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">16</span> <span class="p">{</span>
-        <span class="c1">// + 0b10xx_xxxx</span>
-        <span class="k">let</span> <span class="n">byte_3rd</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
-
-        <span class="c1">// + 0b10xx_xxxx</span>
-        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
-
-        <span class="c1">// + 0b1110_xxxx, patch 4 bit, or 0xE0</span>
-        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0xF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0xE0</span><span class="p">;</span>
-
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_3rd</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="c1">// 3 + 6 * 3 = 21</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="n">bitlen</span> <span class="o">&lt;=</span> <span class="mi">21</span> <span class="p">{</span>
-        <span class="c1">// + 0b10xx_xxxx</span>
-        <span class="k">let</span> <span class="n">byte_4th</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
-
-        <span class="c1">// + 0b10xx_xxxx</span>
-        <span class="k">let</span> <span class="n">byte_3rd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
-
-        <span class="c1">// + 0b10xx_xxxx</span>
-        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3F</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0x80</span><span class="p">;</span>
-
-        <span class="c1">// + 0b1111_1xxx, patch 4 bit, or 0xE0</span>
-        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">18</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x7</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span> <span class="p">|</span> <span class="mi">0xF8</span><span class="p">;</span>
-
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_3rd</span><span class="p">);</span>
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_4th</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">else</span> <span class="p">{</span>
-        <span class="nd">unreachable!</span><span class="p">(</span><span class="s">"ch: {}, ({})"</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">bitlen</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="nf">Ok</span><span class="p">(())</span>
+        <span class="mi">0xF8</span><span class="o">..</span> <span class="k">=&gt;</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">InvalidStartByte</span><span class="p">(</span><span class="n">b1</span><span class="p">))</span><span class="o">?</span><span class="p">,</span>
+    <span class="p">})</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
@@ -423,156 +383,239 @@
 
 <p>​		共 $10+10=20$ 位，覆盖 $16$ 个补充平面</p>
 
+<h3 id="字节序">字节序</h3>
+
+<p>一般地讲字节序（大端/小端），指的是实现内部“字”（word）的字节顺序，和某个标准的设计是无关的。</p>
+
+<p>比如前面 UTF-8 的编码方案直接使用字节（Byte）为单位，就不涉及字节序的问题；</p>
+
+<p>反过来这里的 UTF-16 的编码方案因为使用了 <code class="language-plaintext highlighter-rouge">u16</code> 为单位，那么这个 <code class="language-plaintext highlighter-rouge">u16</code> 内部的字节排列就涉及了字节序的问题。</p>
+
 <h3 id="实现范例-1">实现范例</h3>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">const</span> <span class="n">BOM_U16_LE</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xFFFE</span><span class="p">;</span>
 <span class="k">pub</span> <span class="k">const</span> <span class="n">BOM_U16_BE</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xFEFF</span><span class="p">;</span>
 
+<span class="k">use</span> <span class="nn">UTF16Char</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">UTF16EncodeError</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+<span class="k">use</span> <span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
+
+<span class="c1">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="c1">//// Macros</span>
+
 <span class="nd">macro_rules!</span> <span class="n">split_u16</span> <span class="p">{</span>
-    <span class="p">(</span><span class="nv">$name:ident</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="p">((</span><span class="nv">$name</span> <span class="o">&amp;</span> <span class="mi">0xFF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">,</span> <span class="p">(</span><span class="nv">$name</span> <span class="o">&amp;</span> <span class="mi">0xFF00</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">)</span>
-    <span class="p">};</span>
+    <span class="p">(</span><span class="nv">$expr:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">;</span>
 <span class="p">}</span>
 
+<span class="nd">macro_rules!</span> <span class="n">parse_2_array</span> <span class="p">{</span>
+    <span class="p">(</span><span class="nv">$bytes:expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="n">cached_value</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$bytes</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="n">cached_value</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="p">{</span>
+            <span class="nf">Ok</span><span class="p">(</span><span class="n">cached_value</span><span class="p">[</span><span class="o">..</span><span class="mi">2</span><span class="p">]</span><span class="nf">.try_into</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">())</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nf">Err</span><span class="p">(</span><span class="nf">MalformedLength</span><span class="p">(</span><span class="n">cached_value</span><span class="nf">.len</span><span class="p">()))</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="c1">//// Structures</span>
 
 <span class="nd">#[derive(Debug)]</span>
 <span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF16EncodeError</span> <span class="p">{</span>
-    <span class="cd">/// Invalid Unicode</span>
-    <span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
+    <span class="nf">Surrogate</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
+    <span class="cd">/// code point &gt; 0x10_FF_FF</span>
     <span class="nf">Overflow</span><span class="p">(</span><span class="nb">u32</span><span class="p">),</span>
 <span class="p">}</span>
 
 <span class="nd">#[derive(Debug)]</span>
 <span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF16DecodeError</span> <span class="p">{</span>
-    <span class="nf">Overflow</span><span class="p">(</span><span class="nb">u32</span><span class="p">),</span>
-    <span class="n">UnexpectedEOF</span><span class="p">,</span>
-    <span class="n">UnfinishedUnits</span><span class="p">,</span>
-    <span class="n">ExpectHiFoundLow</span><span class="p">,</span>
-    <span class="n">ExpectLowFoundHi</span><span class="p">,</span>
-    <span class="n">ExpectHiFoundBMP</span>
+    <span class="nf">UnpairedSurrogate</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
+    <span class="nf">MalformedLength</span><span class="p">(</span><span class="nb">usize</span><span class="p">),</span>
 <span class="p">}</span>
 
 <span class="nd">#[derive(Debug)]</span>
-<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF16UnitSt</span> <span class="p">{</span>
+<span class="k">pub</span> <span class="k">enum</span> <span class="n">UTF16Char</span> <span class="p">{</span>
     <span class="cd">/// Basic Multilingual Plane</span>
     <span class="nf">BMP</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
 
-    <span class="cd">/// Low surrogates, second unit, W2</span>
-    <span class="nf">Lo</span><span class="p">(</span><span class="nb">u16</span><span class="p">),</span>
-
-    <span class="cd">/// Hign surrogates, first unit, W1</span>
-    <span class="nf">Hi</span><span class="p">(</span><span class="nb">u16</span><span class="p">)</span>
+    <span class="cd">/// Supplementary Multilingual Plane</span>
+    <span class="cd">///</span>
+    <span class="cd">/// High surrogates, Low surrogates</span>
+    <span class="nf">SMP</span><span class="p">(</span><span class="nb">u16</span><span class="p">,</span> <span class="nb">u16</span><span class="p">),</span>
 <span class="p">}</span>
 
-<span class="k">impl</span> <span class="n">TryFrom</span><span class="o">&lt;</span><span class="nb">u16</span><span class="o">&gt;</span> <span class="k">for</span> <span class="n">UTF16UnitSt</span> <span class="p">{</span>
-    <span class="k">type</span> <span class="n">Error</span> <span class="o">=</span> <span class="n">UTF16DecodeError</span><span class="p">;</span>
-
-    <span class="k">fn</span> <span class="nf">try_from</span><span class="p">(</span><span class="n">unit</span><span class="p">:</span> <span class="nb">u16</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">,</span> <span class="k">Self</span><span class="p">::</span><span class="n">Error</span><span class="o">&gt;</span> <span class="p">{</span>
-        <span class="nf">Ok</span><span class="p">(</span><span class="k">if</span> <span class="n">unit</span> <span class="o">&lt;=</span> <span class="mi">0xD7FF</span> <span class="p">{</span>
-            <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">unit</span> <span class="o">&amp;&amp;</span> <span class="n">unit</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="n">unit</span> <span class="o">&lt;=</span> <span class="mi">0xDBFF</span> <span class="p">{</span>  <span class="c1">// 0b_1101_10xx_xxxx_xxxx</span>
-                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Lo</span><span class="p">(</span><span class="n">unit</span> <span class="o">&amp;</span> <span class="mi">0x03FF</span><span class="p">)</span>
-            <span class="p">}</span>
-            <span class="k">else</span> <span class="p">{</span>               <span class="c1">// 0b_1101_11xx_xxxx_xxxx</span>
-                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Hi</span><span class="p">(</span><span class="n">unit</span> <span class="o">&amp;</span> <span class="mi">0x03FF</span><span class="p">)</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="p">{</span>  <span class="c1">// 0xE000 &lt;= unit</span>
-            <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
-        <span class="p">})</span>
-
-    <span class="p">}</span>
-<span class="p">}</span>
+<span class="c1">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="c1">//// Functions</span>
 
 <span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf16_le</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">char</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">UTF16EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bytes</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="n">ch</span> <span class="k">in</span> <span class="n">chars</span> <span class="p">{</span>
+        <span class="nf">encode_utf16_cp_le</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">bytes</span><span class="p">,</span> <span class="n">ch</span> <span class="k">as</span> <span class="n">_</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf16_be</span><span class="p">(</span>
+    <span class="n">chars</span><span class="p">:</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="nb">char</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">UTF16EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">bytes</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+
+    <span class="k">for</span> <span class="n">ch</span> <span class="k">in</span> <span class="n">chars</span> <span class="p">{</span>
+        <span class="nf">encode_utf16_cp_be</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="n">bytes</span><span class="p">,</span> <span class="n">ch</span> <span class="k">as</span> <span class="n">_</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf16_cp_le</span><span class="p">(</span>
     <span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="n">ch</span><span class="p">:</span> <span class="nb">u32</span><span class="p">,</span>
 <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="n">UTF16EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="mi">0xD800</span> <span class="o">&lt;=</span> <span class="n">ch</span> <span class="o">&amp;&amp;</span> <span class="n">ch</span> <span class="o">&lt;=</span> <span class="mi">0xDFFF</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16EncodeError</span><span class="p">::</span><span class="nf">UTF16Surrogates</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">));</span>
+    <span class="k">match</span> <span class="nf">encode_utf16_cp_</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span><span class="o">?</span> <span class="p">{</span>
+        <span class="nf">BMP</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="nd">split_u16!</span><span class="p">(</span><span class="n">w</span><span class="p">)),</span>
+        <span class="nf">SMP</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">]</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">w1</span><span class="p">);</span>
+            <span class="k">let</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">]</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">w2</span><span class="p">);</span>
+
+            <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">]);</span>
+        <span class="p">}</span>
     <span class="p">}</span>
 
-    <span class="nf">Ok</span><span class="p">(</span><span class="k">if</span> <span class="n">ch</span> <span class="o">&lt;</span> <span class="mi">0x01_00_00</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="n">byte_1st</span> <span class="o">=</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0xFF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
-        <span class="k">let</span> <span class="n">byte_2nd</span> <span class="o">=</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0xFF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u8</span><span class="p">;</span>
-
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_1st</span><span class="p">);</span>
-        <span class="n">bytes</span><span class="nf">.push</span><span class="p">(</span><span class="n">byte_2nd</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="mi">0x1_00_00</span> <span class="o">&lt;=</span> <span class="n">ch</span> <span class="o">&amp;&amp;</span> <span class="n">ch</span> <span class="o">&lt;=</span> <span class="mi">0x10_FF_FF</span> <span class="p">{</span>
-        <span class="c1">// U' = yyyyyyyyyyxxxxxxxxxx  // U - 0x10000</span>
-        <span class="c1">// W1 = 110110yyyyyyyyyy      // 0xD800 + yyyyyyyyyy</span>
-        <span class="c1">// W2 = 110111xxxxxxxxxx      // 0xDC00 + xxxxxxxxxx</span>
-
-        <span class="c1">// low bits</span>
-        <span class="c1">// 0b_1101_10_00_0000_0000 (10 bit) ..., 0xD800</span>
-        <span class="k">let</span> <span class="n">unit_1st</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xDC00</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
-
-        <span class="c1">// high bits 0b_1101_11_00_0000_0000, 0xDC00</span>
-        <span class="k">let</span> <span class="n">unit_2nd</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xD800</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">10</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
-
-        <span class="k">let</span> <span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">unit_1st</span><span class="p">);</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">)</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">unit_2nd</span><span class="p">);</span>
-
-        <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">]);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16EncodeError</span><span class="p">::</span><span class="nf">Overflow</span><span class="p">(</span><span class="n">ch</span><span class="p">));</span>
-    <span class="p">})</span>
+    <span class="nf">Ok</span><span class="p">(())</span>
 <span class="p">}</span>
 
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">encode_utf16_cp_be</span><span class="p">(</span>
+    <span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">u8</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">ch</span><span class="p">:</span> <span class="nb">u32</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span> <span class="n">UTF16EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">match</span> <span class="nf">encode_utf16_cp_</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span><span class="o">?</span> <span class="p">{</span>
+        <span class="nf">BMP</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">]</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">w</span><span class="p">);</span>
+            <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b0</span><span class="p">]);</span>
+        <span class="p">}</span>
+        <span class="nf">SMP</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">]</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">w1</span><span class="p">);</span>
+            <span class="k">let</span> <span class="o">&amp;</span><span class="p">[</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">]</span> <span class="o">=</span> <span class="nd">split_u16!</span><span class="p">(</span><span class="n">w2</span><span class="p">);</span>
 
-<span class="k">fn</span> <span class="nf">next_u16_unit</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">UTF16UnitSt</span><span class="p">,</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">UnexpectedEOF</span><span class="p">);</span>
+            <span class="n">bytes</span><span class="nf">.extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">b1</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">b2</span><span class="p">]);</span>
+        <span class="p">}</span>
     <span class="p">}</span>
 
-    <span class="k">let</span> <span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bytes</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-
-    <span class="k">let</span> <span class="n">unit</span> <span class="o">=</span> <span class="p">((</span><span class="n">b1</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="p">|</span> <span class="n">b0</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
-
-    <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">try_from</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+    <span class="nf">Ok</span><span class="p">(())</span>
 <span class="p">}</span>
 
-<span class="cd">/// -&gt; (nbytes, utf16st)</span>
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">next_u16_le_unicode</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">u8</span><span class="p">,</span> <span class="nb">char</span><span class="p">),</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="nf">Ok</span><span class="p">(</span><span class="k">match</span> <span class="nf">next_u16_unit</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="o">?</span> <span class="p">{</span>
-        <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-            <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nn">char</span><span class="p">::</span><span class="nf">from_u32</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">())</span>
-        <span class="p">},</span>
-        <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Lo</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-            <span class="k">match</span> <span class="nf">next_u16_unit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bytes</span><span class="p">[</span><span class="mi">2</span><span class="o">..</span><span class="p">])</span><span class="o">?</span> <span class="p">{</span>
-                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">BMP</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-                    <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">ExpectHiFoundBMP</span><span class="p">);</span>
-                <span class="p">},</span>
-                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Lo</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-                    <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">ExpectHiFoundLow</span><span class="p">);</span>
-                <span class="p">},</span>
-                <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Hi</span><span class="p">(</span><span class="n">hi</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-                    <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nn">char</span><span class="p">::</span><span class="nf">from_u32</span><span class="p">((</span><span class="n">hi</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span> <span class="p">|</span> <span class="n">lo</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">())</span>
-                <span class="p">},</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="nn">UTF16UnitSt</span><span class="p">::</span><span class="nf">Hi</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nf">Err</span><span class="p">(</span><span class="nn">UTF16DecodeError</span><span class="p">::</span><span class="n">ExpectLowFoundHi</span><span class="p">);</span>
-        <span class="p">},</span>
-    <span class="p">})</span>
+<span class="k">fn</span> <span class="nf">encode_utf16_cp_</span><span class="p">(</span><span class="n">ch</span><span class="p">:</span> <span class="nb">u32</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="n">UTF16Char</span><span class="p">,</span> <span class="n">UTF16EncodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">match</span> <span class="n">ch</span> <span class="p">{</span>
+        <span class="o">..</span><span class="mi">0xD800</span> <span class="p">|</span> <span class="mi">0xE000</span><span class="o">..</span><span class="mi">0x01_0000</span> <span class="k">=&gt;</span> <span class="nf">Ok</span><span class="p">(</span><span class="nf">BMP</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="n">_</span><span class="p">)),</span>
+        <span class="mi">0xD800</span><span class="o">..</span><span class="mi">0xE000</span> <span class="k">=&gt;</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">Surrogate</span><span class="p">(</span><span class="n">ch</span> <span class="k">as</span> <span class="n">_</span><span class="p">)),</span>
+        <span class="mi">0x01_00_00</span><span class="o">..</span><span class="mi">0x11_00_00</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// U' = yyyyyyyyyyxxxxxxxxxx  // U - 0x10000</span>
+            <span class="c1">// W1 = 110110yyyyyyyyyy      // 0xD800 + yyyyyyyyyy high surrogate</span>
+            <span class="c1">// W2 = 110111xxxxxxxxxx      // 0xDC00 + xxxxxxxxxx low surrogate</span>
+
+            <span class="c1">// 0x00_00_00 - 0x0F_FF_FF</span>
+            <span class="k">let</span> <span class="n">ch</span> <span class="o">=</span> <span class="n">ch</span> <span class="o">-</span> <span class="mi">0x01_00_00</span><span class="p">;</span>
+
+            <span class="c1">// high unit 0b_1101_11_00_0000_0000, 0xDC00</span>
+            <span class="k">let</span> <span class="n">unit_hi</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xD800</span> <span class="p">|</span> <span class="p">((</span><span class="n">ch</span> <span class="o">&gt;&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
+
+            <span class="c1">// low unit</span>
+            <span class="c1">// 0b_1101_10_00_0000_0000 (10 bit) ..., 0xD800</span>
+            <span class="k">let</span> <span class="n">unit_lo</span><span class="p">:</span> <span class="nb">u16</span> <span class="o">=</span> <span class="mi">0xDC00</span> <span class="p">|</span> <span class="p">(</span><span class="n">ch</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">)</span> <span class="k">as</span> <span class="nb">u16</span><span class="p">;</span>
+
+            <span class="nf">Ok</span><span class="p">(</span><span class="nf">SMP</span><span class="p">(</span><span class="n">unit_hi</span><span class="p">,</span> <span class="n">unit_lo</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="mi">0x11_00_00</span><span class="o">..</span> <span class="k">=&gt;</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">Overflow</span><span class="p">(</span><span class="n">ch</span><span class="p">)),</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf16_le</span><span class="p">(</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf16_le</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="p">,</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">s</span> <span class="o">=</span> <span class="nn">String</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ptr</span> <span class="o">=</span> <span class="n">bytes</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="o">!</span><span class="n">ptr</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">nbytes</span><span class="p">)</span> <span class="o">=</span> <span class="nf">decode_utf16_cp_le</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="n">s</span><span class="nf">.push</span><span class="p">(</span><span class="n">ch</span><span class="p">);</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ptr</span><span class="p">[</span><span class="n">nbytes</span><span class="o">..</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf16_be</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">])</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="p">,</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">s</span> <span class="o">=</span> <span class="nn">String</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">ptr</span> <span class="o">=</span> <span class="n">bytes</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="o">!</span><span class="n">ptr</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">nbytes</span><span class="p">)</span> <span class="o">=</span> <span class="nf">decode_utf16_cp_be</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+        <span class="n">s</span><span class="nf">.push</span><span class="p">(</span><span class="n">ch</span><span class="p">);</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ptr</span><span class="p">[</span><span class="n">nbytes</span><span class="o">..</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf16_cp_le</span><span class="p">(</span>
     <span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
-<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">chars</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">char</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">w</span> <span class="o">=</span> <span class="nn">u16</span><span class="p">::</span><span class="nf">from_le_bytes</span><span class="p">(</span>
+        <span class="nd">parse_2_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+    <span class="p">);</span>
 
-    <span class="k">loop</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">nbytes</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="nf">next_u16_le_unicode</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bytes</span><span class="p">[</span><span class="n">step</span><span class="o">..</span><span class="p">])</span><span class="o">?</span><span class="p">;</span>
+    <span class="nf">Ok</span><span class="p">(</span><span class="k">match</span> <span class="n">w</span> <span class="p">{</span>
+        <span class="o">..</span><span class="mi">0xD800</span> <span class="p">|</span> <span class="mi">0xE000</span><span class="o">..</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="nf">decode_utf16_cp_</span><span class="p">(</span><span class="nf">BMP</span><span class="p">(</span><span class="n">w</span><span class="p">)),</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="c1">// high surrogate</span>
+        <span class="mi">0xD800</span><span class="o">..</span><span class="mi">0xDC00</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">w2</span> <span class="o">=</span>
+                <span class="nn">u16</span><span class="p">::</span><span class="nf">from_le_bytes</span><span class="p">(</span><span class="nd">parse_2_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="mi">2</span><span class="o">..</span><span class="p">])</span><span class="o">?</span><span class="p">);</span>
 
-        <span class="n">step</span> <span class="o">+=</span> <span class="n">nbytes</span> <span class="k">as</span> <span class="nb">usize</span><span class="p">;</span>
-        <span class="n">chars</span><span class="nf">.push</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+            <span class="p">(</span><span class="nf">decode_utf16_cp_</span><span class="p">(</span><span class="nf">SMP</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w2</span><span class="p">)),</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="c1">// low surrogate</span>
+        <span class="mi">0xDC00</span><span class="o">..</span><span class="mi">0xE000</span> <span class="k">=&gt;</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">UnpairedSurrogate</span><span class="p">(</span><span class="n">w</span><span class="p">))</span><span class="o">?</span><span class="p">,</span>
+    <span class="p">})</span>
+<span class="p">}</span>
 
-        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="n">bytes</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span> <span class="k">break</span> <span class="nf">Ok</span><span class="p">(</span><span class="n">chars</span><span class="p">);</span> <span class="p">}</span>
+<span class="k">pub</span> <span class="k">fn</span> <span class="nf">decode_utf16_cp_be</span><span class="p">(</span>
+    <span class="n">bytes</span><span class="p">:</span> <span class="o">&amp;</span><span class="p">[</span><span class="nb">u8</span><span class="p">],</span>
+<span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">char</span><span class="p">,</span> <span class="nb">usize</span><span class="p">),</span> <span class="n">UTF16DecodeError</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="n">w</span> <span class="o">=</span> <span class="nn">u16</span><span class="p">::</span><span class="nf">from_be_bytes</span><span class="p">(</span>
+        <span class="nd">parse_2_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="o">?</span><span class="p">,</span>
+    <span class="p">);</span>
+
+    <span class="nf">Ok</span><span class="p">(</span><span class="k">match</span> <span class="n">w</span> <span class="p">{</span>
+        <span class="o">..</span><span class="mi">0xD800</span> <span class="p">|</span> <span class="mi">0xE000</span><span class="o">..</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="nf">decode_utf16_cp_</span><span class="p">(</span><span class="nf">BMP</span><span class="p">(</span><span class="n">w</span><span class="p">)),</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="c1">// high surrogate</span>
+        <span class="mi">0xD800</span><span class="o">..</span><span class="mi">0xDC00</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">w2</span> <span class="o">=</span>
+                <span class="nn">u16</span><span class="p">::</span><span class="nf">from_be_bytes</span><span class="p">(</span><span class="nd">parse_2_array!</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="mi">2</span><span class="o">..</span><span class="p">])</span><span class="o">?</span><span class="p">);</span>
+
+            <span class="p">(</span><span class="nf">decode_utf16_cp_</span><span class="p">(</span><span class="nf">SMP</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w2</span><span class="p">)),</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="c1">// low surrogate</span>
+        <span class="mi">0xDC00</span><span class="o">..</span><span class="mi">0xE000</span> <span class="k">=&gt;</span> <span class="nf">Err</span><span class="p">(</span><span class="nf">UnpairedSurrogate</span><span class="p">(</span><span class="n">w</span><span class="p">))</span><span class="o">?</span><span class="p">,</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="k">fn</span> <span class="nf">decode_utf16_cp_</span><span class="p">(</span><span class="n">utf16char</span><span class="p">:</span> <span class="n">UTF16Char</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">char</span> <span class="p">{</span>
+    <span class="k">match</span> <span class="n">utf16char</span> <span class="p">{</span>
+        <span class="nf">BMP</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="n">w</span> <span class="k">as</span> <span class="nb">u32</span><span class="p">,</span>
+        <span class="nf">SMP</span><span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">w2</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
+            <span class="p">(((</span><span class="n">w1</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">)</span> <span class="p">|</span> <span class="p">(</span><span class="n">w2</span> <span class="o">&amp;</span> <span class="mi">0x3FF</span><span class="p">))</span> <span class="k">as</span> <span class="nb">u32</span> <span class="o">+</span> <span class="mi">0x01_00_00</span>
+        <span class="p">}</span>
     <span class="p">}</span>
+    <span class="nf">.try_into</span><span class="p">()</span>
+    <span class="nf">.unwrap</span><span class="p">()</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
@@ -594,20 +637,23 @@
 
 <p>GB18030：84 31 95 33</p>
 
-<p>主要有用的是 UTF-16，因为对基本平面上的码点使用了双字节的数字表示，需要明确字节序才能正确编码，而诸如 UTF-8 通常就加 BOM ，因为显然字节序可以很容易地探测出来。</p>
+<p>主要有用的是 UTF-16，因为对基本平面上的码点使用了双字节的数字表示，需要明确字节序才能正确编码，而诸如 UTF-8 通常就不加 BOM ，因为显然字节序可以很容易地探测出来。</p>
 
 <h2 id="gb18030">GB18030</h2>
+
+<p><em>具体标准可在国家<a href="https://openstd.samr.gov.cn/bzgk/gb/">标准网站查询</a></em></p>
 
 <ol>
   <li>最早的码点并编码方案是1980年的 GB2312，双字节，构成，主要是简体和部分繁体以及其他国语言<sup id="fnref:gb2312-wiki" role="doc-noteref"><a href="#fn:gb2312-wiki" class="footnote" rel="footnote">3</a></sup>；</li>
   <li>在1984年，台湾地区的五家厂商退出了繁体字编码的 Big5 ，这两个编码的转换问题是早期繁体中文游戏经常面临的问题；</li>
   <li>在1993年，随着 Unicode 1.1 的出现，国标推出了对应的 GB13000.1-93 ， GBK 就是一个利用 GB2312 未使用码点装载 GB13000.1-93 中字符的 GB2312 拓展；</li>
-  <li>在2000年，GB18030 第一版发布，到最新版，已经实现了 Unicode 所有码点： 单字节用于英欧字符，双字节用于兼容 GBK ，四字节用于 编码其他 Unicode</li>
+  <li>在2000年，GB18030 第一版发布，到最新版，已经实现了 Unicode 所有码点： 单字节用于英欧字符，双字节用于兼容 GBK ，四字节用于 编码其他 Unicode ；</li>
+  <li>也许等到这个标准进一步成熟和普及的时候可以深入地看下实现细节</li>
 </ol>
 
 <h2 id="比较">比较</h2>
 
-<p>首先虽然具体码点不一样，但 GB18030 毕竟编码了 Unicode 标准下的所有字符，也可以算非官方的 UTF 实现。</p>
+<p>首先虽然具体码点不一样，但 GB18030 毕竟编码了 Unicode 标准下的所有字符，也可以算某种非官方的 UTF 实现。</p>
 
 <p>比较 UTF-8，UTF-16 和 GB18030：</p>
 
