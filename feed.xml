@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2025-01-01T16:43:44+08:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Rust 包内资源管理</title><link href="http://localhost:4000/lang/RustResourceCode.html" rel="alternate" type="text/html" title="Rust 包内资源管理" /><published>2024-12-10T00:00:00+08:00</published><updated>2024-12-10T00:00:00+08:00</updated><id>http://localhost:4000/lang/RustResourceCode</id><content type="html" xml:base="http://localhost:4000/lang/RustResourceCode.html"><![CDATA[<h2 id="问题引入">问题引入</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2025-01-01T16:44:34+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Rust 包内资源管理</title><link href="/lang/RustResourceCode.html" rel="alternate" type="text/html" title="Rust 包内资源管理" /><published>2024-12-10T00:00:00+08:00</published><updated>2024-12-10T00:00:00+08:00</updated><id>/lang/RustResourceCode</id><content type="html" xml:base="/lang/RustResourceCode.html"><![CDATA[<h2 id="问题引入">问题引入</h2>
 
 <p>有时候在一个 Cargo package/workspace 需要放一些供内部使用的非代码文件，这些文件往往是从硬编码的代码里分离出来的，变成可配置的文件，比如测试数据。</p>
 
@@ -340,7 +340,7 @@
 
 <h2 id="总结">总结</h2>
 
-<p>还可以，比如在一个 Cargo workspace 里面可以专门用一个 Crate 来持有资源文件的配置（看起来就像 Micro Service 框架一样）。</p>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[问题引入]]></summary></entry><entry><title type="html">探讨 Rust 实现自引用结构</title><link href="http://localhost:4000/lang/BT-3-Extra-FlatBPT.html" rel="alternate" type="text/html" title="探讨 Rust 实现自引用结构" /><published>2024-12-05T00:00:00+08:00</published><updated>2024-12-05T00:00:00+08:00</updated><id>http://localhost:4000/lang/BT-3-Extra-FlatBPT</id><content type="html" xml:base="http://localhost:4000/lang/BT-3-Extra-FlatBPT.html"><![CDATA[<p><strong>别名：BT(3-extra) - Flat B+树（Vec like）</strong></p>
+<p>还可以，比如在一个 Cargo workspace 里面可以专门用一个 Crate 来持有资源文件的配置（看起来就像 Micro Service 框架一样）。</p>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[问题引入]]></summary></entry><entry><title type="html">探讨 Rust 实现自引用结构</title><link href="/lang/BT-3-Extra-FlatBPT.html" rel="alternate" type="text/html" title="探讨 Rust 实现自引用结构" /><published>2024-12-05T00:00:00+08:00</published><updated>2024-12-05T00:00:00+08:00</updated><id>/lang/BT-3-Extra-FlatBPT</id><content type="html" xml:base="/lang/BT-3-Extra-FlatBPT.html"><![CDATA[<p><strong>别名：BT(3-extra) - Flat B+树（Vec like）</strong></p>
 
 <p><strong>– 探索 Rust 编程模型下传统自引用数据结构的最佳实现</strong></p>
 
@@ -870,7 +870,7 @@
     <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
     <span class="n">arr</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">C</span><span class="p">],</span>
 <span class="p">}</span>
-</code></pre></div></div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[别名：BT(3-extra) - Flat B+树（Vec like）]]></summary></entry><entry><title type="html">0264 - Ugly Number II</title><link href="http://localhost:4000/oth/LeetCode0264.html" rel="alternate" type="text/html" title="0264 - Ugly Number II" /><published>2024-10-28T00:00:00+08:00</published><updated>2024-10-28T00:00:00+08:00</updated><id>http://localhost:4000/oth/LeetCode0264</id><content type="html" xml:base="http://localhost:4000/oth/LeetCode0264.html"><![CDATA[<h2 id="题干">题干</h2>
+</code></pre></div></div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[别名：BT(3-extra) - Flat B+树（Vec like）]]></summary></entry><entry><title type="html">0264 - Ugly Number II</title><link href="/oth/LeetCode0264.html" rel="alternate" type="text/html" title="0264 - Ugly Number II" /><published>2024-10-28T00:00:00+08:00</published><updated>2024-10-28T00:00:00+08:00</updated><id>/oth/LeetCode0264</id><content type="html" xml:base="/oth/LeetCode0264.html"><![CDATA[<h2 id="题干">题干</h2>
 
 <p><a href="https://leetcode.com/problems/ugly-number-ii/description">问题描述</a></p>
 
@@ -884,7 +884,7 @@
 
 <h3 id="轮筛陷阱">轮筛陷阱</h3>
 
-<p>这个题真是“坑”我不浅，首先 “ prime factors ” 和 Top 3 个质数 2, 3, 5 直接把我引到了“轮筛”这个概念里<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，然后发现 <a href="https://en.wikipedia.org/wiki/Wheel_factorization">轮筛 wiki</a> 里有些概念讲得一带而过、很不清楚<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，于是去查一些介绍质数筛子的教学材料，了解了一些质数筛子，但是轮筛还是不知道，又追到了 Pritchard 的原始论文，最后把他 80s-90s 所有质数筛子论文都看完了，内容详见 <a href="http://localhost:4000/algs/Prime0.html">质数基础</a>、 <a href="http://localhost:4000/algs/Prime1.html">质数筛子</a> 和 <a href="http://localhost:4000/algs/Prime2.html">质数筛子拓展</a> ，回来发现本题和轮筛、和质数筛子、甚至和质数本身就没什么关系，真是一种幽默了。</p>
+<p>这个题真是“坑”我不浅，首先 “ prime factors ” 和 Top 3 个质数 2, 3, 5 直接把我引到了“轮筛”这个概念里<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，然后发现 <a href="https://en.wikipedia.org/wiki/Wheel_factorization">轮筛 wiki</a> 里有些概念讲得一带而过、很不清楚<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，于是去查一些介绍质数筛子的教学材料，了解了一些质数筛子，但是轮筛还是不知道，又追到了 Pritchard 的原始论文，最后把他 80s-90s 所有质数筛子论文都看完了，内容详见 <a href="/algs/Prime0.html">质数基础</a>、 <a href="/algs/Prime1.html">质数筛子</a> 和 <a href="/algs/Prime2.html">质数筛子拓展</a> ，回来发现本题和轮筛、和质数筛子、甚至和质数本身就没什么关系，真是一种幽默了。</p>
 
 <h3 id="gpf-陷阱">GPF 陷阱</h3>
 
@@ -1007,7 +1007,7 @@
       <p>因为根本就有内在问题，没法儿实用；现在看了那么多论文我也学乖了，凡是有用的一定有具体实现，没有给具体实现的大概率是水论文 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">Python Cleanup</title><link href="http://localhost:4000/lang/PythonCleanup.html" rel="alternate" type="text/html" title="Python Cleanup" /><published>2024-10-16T00:00:00+08:00</published><updated>2024-10-16T00:00:00+08:00</updated><id>http://localhost:4000/lang/PythonCleanup</id><content type="html" xml:base="http://localhost:4000/lang/PythonCleanup.html"><![CDATA[<p><em>截止于 Python 3.13</em></p>
+</div>]]></content><author><name></name></author><category term="[&quot;oth&quot;]" /><summary type="html"><![CDATA[题干]]></summary></entry><entry><title type="html">Python Cleanup</title><link href="/lang/PythonCleanup.html" rel="alternate" type="text/html" title="Python Cleanup" /><published>2024-10-16T00:00:00+08:00</published><updated>2024-10-16T00:00:00+08:00</updated><id>/lang/PythonCleanup</id><content type="html" xml:base="/lang/PythonCleanup.html"><![CDATA[<p><em>截止于 Python 3.13</em></p>
 
 <h2 id="前言">前言</h2>
 
@@ -1075,7 +1075,7 @@
       <p>Python guarantees that globals whose name begins with a single underscore are deleted from their module before other globals are deleted. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[截止于 Python 3.13]]></summary></entry><entry><title type="html">微观基准测试</title><link href="http://localhost:4000/lang/Bench.html" rel="alternate" type="text/html" title="微观基准测试" /><published>2024-10-10T00:00:00+08:00</published><updated>2024-10-10T00:00:00+08:00</updated><id>http://localhost:4000/lang/Bench</id><content type="html" xml:base="http://localhost:4000/lang/Bench.html"><![CDATA[<h2 id="前言">前言</h2>
+</div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[截止于 Python 3.13]]></summary></entry><entry><title type="html">微观基准测试</title><link href="/lang/Bench.html" rel="alternate" type="text/html" title="微观基准测试" /><published>2024-10-10T00:00:00+08:00</published><updated>2024-10-10T00:00:00+08:00</updated><id>/lang/Bench</id><content type="html" xml:base="/lang/Bench.html"><![CDATA[<h2 id="前言">前言</h2>
 
 <p>这里讨论的是微观基准测试（micro-benchmarking）的实现，关心的主要问题是：</p>
 
@@ -1466,7 +1466,7 @@
       <p>Rust 的问题，或者说这是个组织结构问题，在于我们知道它的源代码结构非常地迭床架屋，里面充斥着形形色色重新发明的轮子和仅限内部使用的范用工具，从 DRY 的角度看这是双重的折磨，一方面轮子不应该重新发明，而应该使用一个范用库；另一方面，发明的范用工具，应该开放为范用库。而这二百多行代码就属于前者–重新造的轮子。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">数字类型 - 表示和编码</title><link href="http://localhost:4000/algs/NumberTypes-0.html" rel="alternate" type="text/html" title="数字类型 - 表示和编码" /><published>2024-10-09T00:00:00+08:00</published><updated>2024-10-09T00:00:00+08:00</updated><id>http://localhost:4000/algs/NumberTypes%20-%200</id><content type="html" xml:base="http://localhost:4000/algs/NumberTypes-0.html"><![CDATA[<p><em>时间有限，草稿版本，以后深入研究再修。</em></p>
+</div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">数字类型 - 表示和编码</title><link href="/algs/NumberTypes-0.html" rel="alternate" type="text/html" title="数字类型 - 表示和编码" /><published>2024-10-09T00:00:00+08:00</published><updated>2024-10-09T00:00:00+08:00</updated><id>/algs/NumberTypes%20-%200</id><content type="html" xml:base="/algs/NumberTypes-0.html"><![CDATA[<p><em>时间有限，草稿版本，以后深入研究再修。</em></p>
 
 <h2 id="前言">前言</h2>
 
@@ -1578,7 +1578,7 @@
       <p>完整说明 :<img src="/assets/img/number_types/ieee-754-2019-p19.jpg" alt="" /> <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[时间有限，草稿版本，以后深入研究再修。]]></summary></entry><entry><title type="html">质数筛子拓展</title><link href="http://localhost:4000/algs/Prime2.html" rel="alternate" type="text/html" title="质数筛子拓展" /><published>2024-09-23T00:00:00+08:00</published><updated>2024-09-23T00:00:00+08:00</updated><id>http://localhost:4000/algs/Prime2</id><content type="html" xml:base="http://localhost:4000/algs/Prime2.html"><![CDATA[<h2 id="前言">前言</h2>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[时间有限，草稿版本，以后深入研究再修。]]></summary></entry><entry><title type="html">质数筛子拓展</title><link href="/algs/Prime2.html" rel="alternate" type="text/html" title="质数筛子拓展" /><published>2024-09-23T00:00:00+08:00</published><updated>2024-09-23T00:00:00+08:00</updated><id>/algs/Prime2</id><content type="html" xml:base="/algs/Prime2.html"><![CDATA[<h2 id="前言">前言</h2>
 
 <p>介绍一种特殊形式的筛子–增量筛子以及给出使用分段技术的筛子的并行化版本的实现代码。</p>
 
@@ -1713,7 +1713,7 @@
 
 <h2 id="gpf-增量筛">GPF 增量筛（√√√）</h2>
 
-<p>GPF 增量筛<sup id="fnref:2:1" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，和<a href="http://localhost:4000/algs/Prime1.html#gpf-筛子">普通 GPF 筛子</a>一样基于最大质因数分解 $c = f\cdot\texttt{gpf}(c)$，但主要以 $f$ 为常量，以 $p \geqslant \texttt{gpf}(f)$ 为增量。</p>
+<p>GPF 增量筛<sup id="fnref:2:1" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，和<a href="/algs/Prime1.html#gpf-筛子">普通 GPF 筛子</a>一样基于最大质因数分解 $c = f\cdot\texttt{gpf}(c)$，但主要以 $f$ 为常量，以 $p \geqslant \texttt{gpf}(f)$ 为增量。</p>
 
 <h4 id="思路分析-1">思路分析</h4>
 
@@ -2099,10 +2099,10 @@
       <p>寻找 $f$ 这一步的复杂度分析本质上还要研究邻近质数的相关规律，但现在数学上好像还不能把这个规律搞得很清楚，不过根据经验判断，这一步的时间复杂度近似常量。同时这一步，只发生在遇到 $n = f’\cdot p^2,\ \texttt{gpf}(f’) = p$ 的时候。 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:5" role="doc-endnote">
-      <p>根据前文介绍过<a href="http://localhost:4000/algs/Prime0.html#伯特兰-切比雪夫定理">伯特兰-切比雪夫定理</a> <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>根据前文介绍过<a href="/algs/Prime0.html#伯特兰-切比雪夫定理">伯特兰-切比雪夫定理</a> <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">代数结构</title><link href="http://localhost:4000/algs/AbstractAlgebraic.html" rel="alternate" type="text/html" title="代数结构" /><published>2024-09-16T00:00:00+08:00</published><updated>2024-09-16T00:00:00+08:00</updated><id>http://localhost:4000/algs/AbstractAlgebraic</id><content type="html" xml:base="http://localhost:4000/algs/AbstractAlgebraic.html"><![CDATA[<p><em>我们介绍得是抽象代数（abstract algebraic, modern algebraic）的结构，相对的我们熟悉的初等代数（elementary algebraic）就是研究代数方程，而我们抽象代数，显然就是更抽象了，但还有在它之上抽象的存在，那就是范畴论（category theory），是从哲学系那边转学过来的。</em></p>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[前言]]></summary></entry><entry><title type="html">代数结构</title><link href="/algs/AbstractAlgebraic.html" rel="alternate" type="text/html" title="代数结构" /><published>2024-09-16T00:00:00+08:00</published><updated>2024-09-16T00:00:00+08:00</updated><id>/algs/AbstractAlgebraic</id><content type="html" xml:base="/algs/AbstractAlgebraic.html"><![CDATA[<p><em>我们介绍得是抽象代数（abstract algebraic, modern algebraic）的结构，相对的我们熟悉的初等代数（elementary algebraic）就是研究代数方程，而我们抽象代数，显然就是更抽象了，但还有在它之上抽象的存在，那就是范畴论（category theory），是从哲学系那边转学过来的。</em></p>
 
 <p><em>如果说初等代数是实参函数，抽象代数就是类接口，范畴论就是元类。</em></p>
 
@@ -2233,7 +2233,7 @@
       <p>又叫整域 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[我们介绍得是抽象代数（abstract algebraic, modern algebraic）的结构，相对的我们熟悉的初等代数（elementary algebraic）就是研究代数方程，而我们抽象代数，显然就是更抽象了，但还有在它之上抽象的存在，那就是范畴论（category theory），是从哲学系那边转学过来的。]]></summary></entry><entry><title type="html">Haskell 学习小记</title><link href="http://localhost:4000/lang/Haskell%E5%AD%A6%E4%B9%A0.html" rel="alternate" type="text/html" title="Haskell 学习小记" /><published>2024-09-08T00:00:00+08:00</published><updated>2024-09-08T00:00:00+08:00</updated><id>http://localhost:4000/lang/Haskell%E5%AD%A6%E4%B9%A0</id><content type="html" xml:base="http://localhost:4000/lang/Haskell%E5%AD%A6%E4%B9%A0.html"><![CDATA[<p><em>origin written at 2020-11-01</em></p>
+</div>]]></content><author><name></name></author><category term="[&quot;algs&quot;]" /><summary type="html"><![CDATA[我们介绍得是抽象代数（abstract algebraic, modern algebraic）的结构，相对的我们熟悉的初等代数（elementary algebraic）就是研究代数方程，而我们抽象代数，显然就是更抽象了，但还有在它之上抽象的存在，那就是范畴论（category theory），是从哲学系那边转学过来的。]]></summary></entry><entry><title type="html">Haskell 学习小记</title><link href="/lang/Haskell%E5%AD%A6%E4%B9%A0.html" rel="alternate" type="text/html" title="Haskell 学习小记" /><published>2024-09-08T00:00:00+08:00</published><updated>2024-09-08T00:00:00+08:00</updated><id>/lang/Haskell%E5%AD%A6%E4%B9%A0</id><content type="html" xml:base="/lang/Haskell%E5%AD%A6%E4%B9%A0.html"><![CDATA[<p><em>origin written at 2020-11-01</em></p>
 
 <h2 id="纯函数">纯函数</h2>
 
@@ -2657,7 +2657,7 @@
       <p>注意和名字相近的 <code class="language-plaintext highlighter-rouge">Monoid</code> 的区别，二者只是在范畴论上有单子可以作为 Monoid 的范化概念的关系，但从编程实际来看，二者没什么直接关系，只是名称有点儿容易搞混。<code class="language-plaintext highlighter-rouge">Monoid</code> 本身是一个经典代数结构，指的是有“幺元”的半群，在 Haskell 里也是一个接口（<code class="language-plaintext highlighter-rouge">class</code>），继承了另一个接口 <code class="language-plaintext highlighter-rouge">semigroup</code> 。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
-</div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[origin written at 2020-11-01]]></summary></entry><entry><title type="html">质数筛子</title><link href="http://localhost:4000/algs/Prime1.html" rel="alternate" type="text/html" title="质数筛子" /><published>2024-08-27T00:00:00+08:00</published><updated>2024-08-27T00:00:00+08:00</updated><id>http://localhost:4000/algs/Prime1</id><content type="html" xml:base="http://localhost:4000/algs/Prime1.html"><![CDATA[<p><em>质数筛子的原理是质因数分解</em>。</p>
+</div>]]></content><author><name></name></author><category term="[&quot;lang&quot;]" /><summary type="html"><![CDATA[origin written at 2020-11-01]]></summary></entry><entry><title type="html">质数筛子</title><link href="/algs/Prime1.html" rel="alternate" type="text/html" title="质数筛子" /><published>2024-08-27T00:00:00+08:00</published><updated>2024-08-27T00:00:00+08:00</updated><id>/algs/Prime1</id><content type="html" xml:base="/algs/Prime1.html"><![CDATA[<p><em>质数筛子的原理是质因数分解</em>。</p>
 
 <h2 id="前言">前言</h2>
 
@@ -2696,7 +2696,7 @@
   <li>这样在继续扫描的过程中发现被标记为合数的就直接跳过，直到发现下一个质数，然后重复步骤2直到 $n$</li>
 </ol>
 
-<p>实际上我们标记合数的方法是追踪所有小于它的质数，因为根据之前所讲的<a href="http://localhost:4000/algs/Prime0.html#算式基本定理">正整数唯一分解定理</a>，也就是所有的合数都可以做质因数分解，一定存在一个严格比它小的质数可以除它。这样的话，如果我们是从第一个质数开始，那么实际上：</p>
+<p>实际上我们标记合数的方法是追踪所有小于它的质数，因为根据之前所讲的<a href="/algs/Prime0.html#算式基本定理">正整数唯一分解定理</a>，也就是所有的合数都可以做质因数分解，一定存在一个严格比它小的质数可以除它。这样的话，如果我们是从第一个质数开始，那么实际上：</p>
 
 <ol>
   <li>标记合数的过程不需要从 $2p$ 开始，而是直接从 $p\cdot p$ 开始，因为所有 $\lt p$ 的合数已经被更小的质数标记过了；</li>
@@ -3110,7 +3110,7 @@
 
 <p><strong>轮子（wheel）</strong>是由头几个质数的乘积构成的一个空间，空间里的数都与这些质数互质。</p>
 
-<p>这头几个质数的乘积叫做质数阶乘，记作 $p_k\sharp = \displaystyle\prod_{i=1}^{k}{p_i} = p_1\times  p_2 \ \times ..\ p_k$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，在前面<a href="http://localhost:4000/algs/Prime0.html">质数基础</a>的<a href="http://localhost:4000/algs/Prime0.html#质性测试">质性测试</a>一节已经接触过这个概念，于是有轮子 $W_k$（第 $k$ 个轮子）：</p>
+<p>这头几个质数的乘积叫做质数阶乘，记作 $p_k\sharp = \displaystyle\prod_{i=1}^{k}{p_i} = p_1\times  p_2 \ \times ..\ p_k$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，在前面<a href="/algs/Prime0.html">质数基础</a>的<a href="/algs/Prime0.html#质性测试">质性测试</a>一节已经接触过这个概念，于是有轮子 $W_k$（第 $k$ 个轮子）：</p>
 
 \[W_k = \lbrace x\vert\  x \bot p_k\sharp,\ (1\leqslant x \leqslant p_k\sharp)  \rbrace\]
 

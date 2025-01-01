@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="http://localhost:4000/assets/fonts/fonts.css"/>
-<link rel="stylesheet" href="http://localhost:4000/assets/style.css"/>
-<link rel="stylesheet" href="http://localhost:4000/assets/js/lity.min.css"/>
+    <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
+<link rel="stylesheet" href="/assets/style.css"/>
+<link rel="stylesheet" href="/assets/js/lity.min.css"/>
 
 
 <link rel='shortcut icon' type='image/jpeg' href='/d2.jpg' />
@@ -22,7 +22,7 @@
     "
 />
 
-<meta property="og:url" content="http://localhost:4000//algs/Prime1.html" />
+<meta property="og:url" content="//algs/Prime1.html" />
 
     <meta property="og:type" content="article" />
 
@@ -44,7 +44,7 @@
     <div class="header">
     <div id="topbar" class="align-items-center justify-content-between h-100">
   <span class="logo" id="topbar-logo">
-    <a href="http://localhost:4000/" class="logo__link">
+    <a href="/" class="logo__link">
       
       <img class="logo__link__img" src="/d3.jpg" />
       
@@ -90,7 +90,7 @@
     <div class="post__meta__category">
       
         
-        <a href="http://localhost:4000/category/algs.html">
+        <a href="/category/algs.html">
           <p class="post__meta__category__title" style="background: var(--c-themeHueOrange)">
             Algorithm
           </p>
@@ -146,7 +146,7 @@
   <li>这样在继续扫描的过程中发现被标记为合数的就直接跳过，直到发现下一个质数，然后重复步骤2直到 $n$</li>
 </ol>
 
-<p>实际上我们标记合数的方法是追踪所有小于它的质数，因为根据之前所讲的<a href="http://localhost:4000/algs/Prime0.html#算式基本定理">正整数唯一分解定理</a>，也就是所有的合数都可以做质因数分解，一定存在一个严格比它小的质数可以除它。这样的话，如果我们是从第一个质数开始，那么实际上：</p>
+<p>实际上我们标记合数的方法是追踪所有小于它的质数，因为根据之前所讲的<a href="/algs/Prime0.html#算式基本定理">正整数唯一分解定理</a>，也就是所有的合数都可以做质因数分解，一定存在一个严格比它小的质数可以除它。这样的话，如果我们是从第一个质数开始，那么实际上：</p>
 
 <ol>
   <li>标记合数的过程不需要从 $2p$ 开始，而是直接从 $p\cdot p$ 开始，因为所有 $\lt p$ 的合数已经被更小的质数标记过了；</li>
@@ -560,7 +560,7 @@
 
 <p><strong>轮子（wheel）</strong>是由头几个质数的乘积构成的一个空间，空间里的数都与这些质数互质。</p>
 
-<p>这头几个质数的乘积叫做质数阶乘，记作 $p_k\sharp = \displaystyle\prod_{i=1}^{k}{p_i} = p_1\times  p_2 \ \times ..\ p_k$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，在前面<a href="http://localhost:4000/algs/Prime0.html">质数基础</a>的<a href="http://localhost:4000/algs/Prime0.html#质性测试">质性测试</a>一节已经接触过这个概念，于是有轮子 $W_k$（第 $k$ 个轮子）：</p>
+<p>这头几个质数的乘积叫做质数阶乘，记作 $p_k\sharp = \displaystyle\prod_{i=1}^{k}{p_i} = p_1\times  p_2 \ \times ..\ p_k$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，在前面<a href="/algs/Prime0.html">质数基础</a>的<a href="/algs/Prime0.html#质性测试">质性测试</a>一节已经接触过这个概念，于是有轮子 $W_k$（第 $k$ 个轮子）：</p>
 
 \[W_k = \lbrace x\vert\  x \bot p_k\sharp,\ (1\leqslant x \leqslant p_k\sharp)  \rbrace\]
 
@@ -1847,13 +1847,13 @@
                 
                 <span class="divider">·</span>
                 
-                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="http://localhost:4000/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
+                <span class="footer__about__theme"><p>theme</p><a id="simplex-logo" href="https://github.com/andreondra/jekyll-theme-simplex" target="_blank"><img alt="Simplex theme logo" src="/assets/img/icons/simplex_logo.svg"/></a><p>by <a href="https://ondrej.golasowski.com/">golas</a></p></span>
         </section>
 </footer>
 
-    <script src="http://localhost:4000/assets/js/jquery.slim.min.js"></script>
-<script src="http://localhost:4000/assets/js/lity.min.js"></script>
-<script src="http://localhost:4000/assets/js/tools.js"></script>
+    <script src="/assets/js/jquery.slim.min.js"></script>
+<script src="/assets/js/lity.min.js"></script>
+<script src="/assets/js/tools.js"></script>
 
 
 <script type="text/javascript" async
@@ -1912,7 +1912,7 @@ See: <https://github.com/christian-fei/Simple-Jekyll-Search>
   SimpleJekyllSearch({
     searchInput: document.getElementById('search-input'),
     resultsContainer: document.getElementById('search-results'),
-    json: "http://localhost:4000/assets/search.json",
+    json: "/assets/search.json",
     searchResultTemplate: '  <div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0 justify-content-center">    <a href="{url}">{title}</a>    <div class="post__meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1">      {categories}    </div>    <p>{snippet}</p>  </div>',
     noResultsText: '<p class="mt-5">No result</p>',
     templateMiddleware: function(prop, value, template) {
