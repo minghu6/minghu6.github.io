@@ -231,7 +231,7 @@
 
 <p><em>Phase-1</em>:  search,  action is set <code class="language-plaintext highlighter-rouge">_UA_SEARCH_PHASE</code>.</p>
 
-<p>从当前PC和(其他)寄存器状态开始, 逐帧展开(函数不断向上退出), 直到个性例程报告成功(在某一帧找到handler) 然后进入<code class="language-plaintext highlighter-rouge">Phase-2</code></p>
+<p>从当前PC和(其他)寄存器状态开始, 逐帧展开(函数不断向上退出)，直到个性例程报告成功(在某一帧找到handler) 然后进入<code class="language-plaintext highlighter-rouge">Phase-2</code></p>
 
 <p>或者失败(所有帧中找不到handler) 调用<code class="language-plaintext highlighter-rouge">terminate()</code></p>
 
@@ -396,7 +396,7 @@ In order to allow <code class="language-plaintext highlighter-rouge">_Unwind_For
 <div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">_Unwind_Resume</span> <span class="p">(</span><span class="k">struct</span> <span class="n">_Unwind_Exception</span> <span class="o">*</span><span class="n">exception_object</span><span class="p">);</span>
 </code></pre></div></div>
 
-<p>恢复异常的传播 e.g. 在部分展开的栈中执行清理代码(clean-up code)后如果不能恢复程序的正常执行, 就会恢复该异常的传播. 具体地就是在执行清理任务的landing pad结尾调用它(<code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>).</p>
+<p>恢复异常的传播 e.g. 在部分展开的栈中执行清理代码(clean-up code)后如果不能恢复程序的正常执行, 就会恢复该异常的传播. 具体地就是在执行清理任务的landing pad结尾调用它 (<code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>)。</p>
 
 <p><img src="https://itanium-cxx-abi.github.io/cxx-abi/warning.gif" alt="&lt;b&gt;NOTE 1&lt;/b&gt;:" /><em><code class="language-plaintext highlighter-rouge">_Unwind_Resume</code>不能用来实现重抛(re-throwing). 这是一个两阶段模型, 之前的unwind session会被关闭. 重抛需要使用<code class="language-plaintext highlighter-rouge">_Unwind_RaiseException</code>.</em></p>
 

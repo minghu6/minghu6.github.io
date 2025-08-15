@@ -107,7 +107,9 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>对于 B 树来说，传统上有一种对节点分裂、合并时性能的改进方法，就是把存储结构由数组改为 TreeMap 。TreeMap 或者有序字典，比如我们前面介绍的所有的 BST，比如红黑树，以及，我们 B 树。</p>
+    <div class="post__content"><p><em>1st revision - 2025-07-024</em></p>
+
+<p>序言</p>
 
 <p>没错，现在我们就是要用前文实现的 B+ 树作为我们新 B+ 树的节点基础。当然这是一个递归的概念，我们也可以继续下去把这个新的 B+ 树的实现作为节点基础实现 B+ 树，如此 $3$ 层、$4$ 层的嵌套。但从 $m$ 常数的角度，两层就够了，再多也没有意义，通常 $m$ 也就是一百左右，次级的 B+ 树的 $m$ 最多也就是就是十几，已经什么空间了，何况因此获得的性能增长也呈指数级下降。</p>
 
@@ -937,131 +939,511 @@
 
 <h2 id="方法统计">方法统计</h2>
 
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">BPT</th>
-      <th style="text-align: center">Tree Map</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center">select/select_mut</td>
-      <td style="text-align: center">select_mut</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">remove etc.</td>
-      <td style="text-align: center">remove</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">insert etc.</td>
-      <td style="text-align: center">insert</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">search_to_leaf_r</td>
-      <td style="text-align: center">low_bound_search</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">*</td>
-      <td style="text-align: center">len</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">*</td>
-      <td style="text-align: center">min</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">promote</td>
-      <td style="text-align: center">split_off</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">unpromote/try_rebalancing</td>
-      <td style="text-align: center">nth</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">unpromote</td>
-      <td style="text-align: center">rank</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">unpromote</td>
-      <td style="text-align: center">push_back</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">unpromote/try_rebalancing</td>
-      <td style="text-align: center">pop_first/pop_last</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">*</td>
-      <td style="text-align: center">min_key</td>
-    </tr>
-    <tr>
-      <td style="text-align: center"> </td>
-      <td style="text-align: center"> </td>
-    </tr>
-  </tbody>
-</table>
+<p>以 Trait 形式总结下作为节点基础的数据结构所需要实现的接口方法</p>
 
-<h2 id="总结">总结</h2>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">trait</span> <span class="n">TreeMap</span><span class="p">:</span> <span class="nb">Sized</span> <span class="p">{</span>
+    <span class="k">type</span> <span class="n">K</span><span class="p">;</span>
+    <span class="k">type</span> <span class="n">V</span><span class="p">;</span>
 
-<p>运行一个简单的基准测试，结果符合预期：</p>
+    <span class="k">fn</span> <span class="nf">new</span><span class="p">()</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">;</span>
 
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: left">环境</th>
-      <th style="text-align: left">值</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: left">CPU</td>
-      <td style="text-align: left">Intel Haswell Core i5-4590</td>
-    </tr>
-    <tr>
-      <td style="text-align: left">Memory</td>
-      <td style="text-align: left">16 GB</td>
-    </tr>
-    <tr>
-      <td style="text-align: left">Key Size</td>
-      <td style="text-align: left">8 Bytes</td>
-    </tr>
-  </tbody>
-</table>
+    <span class="k">fn</span> <span class="nf">len</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">usize</span><span class="p">;</span>
 
-<p>最优配置：</p>
+    <span class="k">fn</span> <span class="nf">is_empty</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.len</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="p">}</span>
 
-<p>$\text{SUB_M} = 20$</p>
+    <span class="k">fn</span> <span class="nf">first</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.nth</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
 
-<p>$10 \leqslant M \leqslant 20$</p>
+    <span class="k">fn</span> <span class="nf">first_value</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.nth</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="nf">.map</span><span class="p">(|(</span><span class="n">_k</span><span class="p">,</span> <span class="n">v</span><span class="p">)|</span> <span class="n">v</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">nth</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">nth_value_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">mut</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="n">rank</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Result</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">borrow</span><span class="p">::</span><span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">;</span>
+
+    <span class="cd">///</span>
+    <span class="cd">/// `Some(Ok(&amp;V)): node.k == k`</span>
+    <span class="cd">///</span>
+    <span class="cd">/// `Some(Err(&amp;V)): node.k &lt; k`</span>
+    <span class="cd">///</span>
+    <span class="cd">/// `None: k &lt; min_key`</span>
+    <span class="k">fn</span> <span class="n">lower_bound_search</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="k">self</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Result</span><span class="o">&lt;&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;&gt;</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">borrow</span><span class="p">::</span><span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">get_min_key</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="n">get</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">borrow</span><span class="p">::</span><span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="n">get_mut</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="k">mut</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">borrow</span><span class="p">::</span><span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">iter</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="p">(</span><span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">drain_all</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="p">(</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">keys</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|(</span><span class="n">k</span><span class="p">,</span> <span class="n">_v</span><span class="p">)|</span> <span class="n">k</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">values</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.map</span><span class="p">(|(</span><span class="n">_k</span><span class="p">,</span> <span class="n">v</span><span class="p">)|</span> <span class="n">v</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">values_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">impl</span> <span class="nb">Iterator</span><span class="o">&lt;</span><span class="n">Item</span> <span class="o">=</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="n">remove</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">borrow</span><span class="p">::</span><span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span> <span class="o">+</span> <span class="o">?</span><span class="nb">Sized</span><span class="p">;</span>
+
+    <span class="cd">///</span>
+    <span class="cd">/// replace `(old_k, v)` to `(new_k, v)`</span>
+    <span class="cd">///</span>
+    <span class="cd">/// if `old_k` == `new_k`, do nothing;</span>
+    <span class="cd">///</span>
+    <span class="cd">/// if `old_k` doesn't exist, do nothing;</span>
+    <span class="cd">///</span>
+    <span class="cd">/// if `new_k` exist,replace and return old value.</span>
+    <span class="cd">///</span>
+    <span class="cd">/// There is a low efficient implementation.</span>
+    <span class="k">fn</span> <span class="n">update_index</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">old_k</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Q</span><span class="p">,</span> <span class="n">new_k</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="o">&gt;</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nn">std</span><span class="p">::</span><span class="nn">borrow</span><span class="p">::</span><span class="n">Borrow</span><span class="o">&lt;</span><span class="n">Q</span><span class="o">&gt;</span> <span class="o">+</span> <span class="nb">Clone</span> <span class="o">+</span> <span class="nb">Ord</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.remove</span><span class="p">(</span><span class="n">old_k</span><span class="p">)</span><span class="nf">.map</span><span class="p">(|</span><span class="n">x</span><span class="p">|</span> <span class="k">self</span><span class="nf">.insert</span><span class="p">(</span><span class="n">new_k</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span><span class="nf">.flatten</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">pop_first</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="k">fn</span> <span class="nf">pop_last</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span>
+
+    <span class="cd">/// k should be less than min_key</span>
+    <span class="k">fn</span> <span class="nf">push_front</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">);</span>
+
+    <span class="cd">/// k should be greate than max_key</span>
+    <span class="k">fn</span> <span class="nf">push_back</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">);</span>
+
+    <span class="cd">/// split as [0, at) and return [at, len)</span>
+    <span class="cd">///</span>
+    <span class="cd">/// # Panics</span>
+    <span class="cd">///</span>
+    <span class="cd">/// Panics if at &gt; len.</span>
+    <span class="k">fn</span> <span class="nf">split_off</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">at</span><span class="p">:</span> <span class="nb">usize</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span><span class="p">;</span>
+
+    <span class="nd">#[cfg(test)]</span>
+    <span class="k">fn</span> <span class="nf">validate</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="nd">assert!</span><span class="p">(</span><span class="k">self</span><span class="nf">.keys</span><span class="p">()</span><span class="nf">.is_sorted</span><span class="p">())</span>
+    <span class="p">}</span>
+
+    <span class="k">fn</span> <span class="nf">with_kv</span><span class="p">(</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="k">Self</span><span class="p">::</span><span class="n">V</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span>
+    <span class="k">where</span>
+        <span class="k">Self</span><span class="p">::</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="k">self</span><span class="nf">.insert</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+        <span class="k">self</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="总结与延伸">总结与延伸</h2>
+
+<h3 id="性能比较">性能比较</h3>
 
 <ol>
-  <li>查询性能非常好，<strong>比 Rust 标准库里 HashMap 的查询速度还要快 25%！</strong>但是这种加速不是 B+ 树结构本身所导致的，而是 Map 的使用使得节点的内存布局在缓存上更有利，也就是单一数组的 TreeMap 比起分离的两个数组更有利，换言之，<strong>直接使用单一数组实现<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的 Map 性能会更好！</strong></li>
-  <li>插、删的性能介于传统 BST 和 B 树、B+ 树之间</li>
+  <li>查询性能非常好，比 Rust 标准库里 HashMap 的查询速度还要快 25%；</li>
+  <li>插、删的性能介于传统 BST 和 B 树、之前版本的 B+ 树之间</li>
 </ol>
 
-<p>这个结果符合了理论和经验上的预期，最后再补充一个对比测试：</p>
+<p>在理论分析和在不同规模测试数据下的性能比较可以发现，这种实现的性能提高并不来源于理论时间复杂度的改善<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>，而是由于 TreeMap 实现的节点的内存布局上更加缓存友好，也即键-值聚合的单一数组比起键-值分离的两个数组更加缓存友好。</p>
 
-<p>B+ Tree <code class="language-plaintext highlighter-rouge">push_back</code>-<code class="language-plaintext highlighter-rouge">pop_first</code> vs Vec <code class="language-plaintext highlighter-rouge">push</code>-<code class="language-plaintext highlighter-rouge">remove(0)</code> on <code class="language-plaintext highlighter-rouge">u64</code></p>
+<h3 id="进一步改进">进一步改进</h3>
+
+<p>我们从中获得启发，如果进一步改进节点内存布局的局部性是不是就会得到一个实践上更好性能的数据结构？ 而显然以 B+ 树为基础的节点局部性不如连续的内存构成的向量。</p>
+
+<p>再进一步考虑，这个单独分配内存空间的向量不如直接在原地划分数组，不过这样需要一个变量手动追踪有效内容长度。</p>
+
+<p><em>特别地，对 Rust 单一所有权的语义机制需要进行特别考虑，可以使用 Option 类型包装，但是需要付出不必要的额外内存代价，而这是作为底层数据结构所不愿看到的，这样就需要使用 MaybeUninit 类型然后自己维护数组操作过程中的单一所有权问题。</em></p>
+
+<p>改进版数据结构<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">3</a></sup>：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">StackVec</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="k">const</span> <span class="n">C</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
+    <span class="n">arr</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">C</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">struct</span> <span class="n">StackVecMap</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">C</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span><span class="p">(</span><span class="n">StackVec</span><span class="o">&lt;</span><span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">C</span><span class="o">&gt;</span><span class="p">);</span>
+
+<span class="k">enum</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">Leaf</span> <span class="p">{</span>
+        <span class="n">entries</span><span class="p">:</span> <span class="n">StackVecMap</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">next</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">Internal</span> <span class="p">{</span>
+        <span class="n">children</span><span class="p">:</span> <span class="n">StackVecMap</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">Box</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(transparent)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">(</span><span class="k">pub</span> <span class="n">K</span><span class="p">,</span> <span class="k">pub</span> <span class="n">V</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>作为对比，Rust 标准库里 <code class="language-plaintext highlighter-rouge">BTreeMap</code> 采取了如下数据结构<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup>：</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// The underlying representation of leaf nodes and part of the representation of internal nodes.</span>
+<span class="k">struct</span> <span class="n">LeafNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="cd">/// We want to be covariant in `K` and `V`.</span>
+    <span class="n">parent</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">NonNull</span><span class="o">&lt;</span><span class="n">InternalNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;&gt;</span><span class="p">,</span>
+    <span class="cd">/// This node's index into the parent node's `edges` array.</span>
+    <span class="cd">/// `*node.parent.edges[node.parent_idx]` should be the same thing as `node`.</span>
+    <span class="cd">/// This is only guaranteed to be initialized when `parent` is non-null.</span>
+    <span class="n">parent_idx</span><span class="p">:</span> <span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="nb">u16</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="cd">/// The number of keys and values this node stores.</span>
+    <span class="n">len</span><span class="p">:</span> <span class="nb">u16</span><span class="p">,</span>
+    <span class="n">keys</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">K</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">CAPACITY</span><span class="p">],</span>
+    <span class="n">vals</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span><span class="p">;</span> <span class="n">CAPACITY</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="nd">#[repr(C)]</span>
+<span class="k">struct</span> <span class="n">InternalNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">LeafNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">edges</span><span class="p">:</span> <span class="p">[</span><span class="n">MaybeUninit</span><span class="o">&lt;</span><span class="n">BoxedNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;&gt;</span><span class="p">;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">B</span><span class="p">],</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>显然这个数据结构相比我们存在一个严重影响局部性的键-值分离的问题，我们在具体的性能基准测试里验证这一点。</p>
+
+<h4 id="测试环境">测试环境</h4>
+
+<p>CPU: Intel Core i5-4590</p>
+
+<p>测试数据集：40 K 8 Byte + 8 Byte 键值对儿的随机数据</p>
+
+<h4 id="查询测试">查询测试</h4>
+
+<p>Std-B：标准库 B 树</p>
+
+<p>B+3-48：我们自己的实现 节点容量 = 48</p>
+
+<p>数据单位：ms / iter</p>
 
 <table>
   <thead>
     <tr>
-      <th style="text-align: center">M</th>
-      <th>batch CroSS</th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td style="text-align: center">105</td>
-      <td>1150</td>
+      <td>No.</td>
+      <td>Std-B</td>
+      <td>B+3-48</td>
+      <td>B+3-48 Rel. Speed</td>
+      <td> </td>
     </tr>
     <tr>
-      <td style="text-align: center">10</td>
-      <td>2500</td>
+      <td>1</td>
+      <td>9.07</td>
+      <td>2.92</td>
+      <td>+211%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>7.69</td>
+      <td>2.93</td>
+      <td>+162%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>7.70</td>
+      <td>2.88</td>
+      <td>+167%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>7.73</td>
+      <td>2.93</td>
+      <td>+164%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>7.78</td>
+      <td>2.91</td>
+      <td>+167%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>7.73</td>
+      <td>2.91</td>
+      <td>+166%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>9.07</td>
+      <td>2.95</td>
+      <td>+207%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>7.75</td>
+      <td>2.96</td>
+      <td>+162%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>7.80</td>
+      <td>2.95</td>
+      <td>+164%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>7.74</td>
+      <td>2.94</td>
+      <td>+163%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>7.75</td>
+      <td>2.93</td>
+      <td>+165%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>7.67</td>
+      <td>2.88</td>
+      <td>+166%</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td>Ave.</td>
+      <td>+172%</td>
+      <td> </td>
     </tr>
   </tbody>
 </table>
 
-<p>也就是说当数据量要足够大才能发挥出算法上的性能才能抵消缓存的优势，而在最佳 M 范围下，数组实现具有明显优势。</p>
+<h4 id="插删测试">插/删测试</h4>
+
+<p>Std-B：标准库 B 树</p>
+
+<p>B+3-48：我们自己的实现 节点容量 = 48</p>
+
+<p>数据单位：ms / iter</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>No.</td>
+      <td>Std-B Insert</td>
+      <td>B+3-48 Insert</td>
+      <td>Std-B Cal. Remove</td>
+      <td>B+3-48 Cal. Remove</td>
+      <td>B+3-48 Insert Rel. Speed</td>
+      <td>B+3-48 Remove Rel. Speed</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>3.95</td>
+      <td>3.78</td>
+      <td>5.98</td>
+      <td>5.47</td>
+      <td>+4%</td>
+      <td>+9%</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>3.75</td>
+      <td>3.62</td>
+      <td>4.66</td>
+      <td>4.76</td>
+      <td>+4%</td>
+      <td>-2%</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>3.70</td>
+      <td>3.64</td>
+      <td>4.70</td>
+      <td>5.63</td>
+      <td>+2%</td>
+      <td>-17%</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>3.97</td>
+      <td>3.60</td>
+      <td>5.13</td>
+      <td>4.83</td>
+      <td>+10%</td>
+      <td>+6%</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>3.72</td>
+      <td>3.72</td>
+      <td>4.79</td>
+      <td>4.77</td>
+      <td>0%</td>
+      <td>+0%</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>4.18</td>
+      <td>3.80</td>
+      <td>5.90</td>
+      <td>6.43</td>
+      <td>+10%</td>
+      <td>-8%</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>3.79</td>
+      <td>3.57</td>
+      <td>5.02</td>
+      <td>5.16</td>
+      <td>+6%</td>
+      <td>-3%</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>3.80</td>
+      <td>3.75</td>
+      <td>5.35</td>
+      <td>4.64</td>
+      <td>+1%</td>
+      <td>+15%</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>3.92</td>
+      <td>3.75</td>
+      <td>5.66</td>
+      <td>5.49</td>
+      <td>+5%</td>
+      <td>+3%</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>3.69</td>
+      <td>3.58</td>
+      <td>4.80</td>
+      <td>4.71</td>
+      <td>+3%</td>
+      <td>+2%</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>4.36</td>
+      <td>3.78</td>
+      <td>5.74</td>
+      <td>5.52</td>
+      <td>+15%</td>
+      <td>+4%</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>4.07</td>
+      <td>3.68</td>
+      <td>4.78</td>
+      <td>4.83</td>
+      <td>+11%</td>
+      <td>-1%</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>Ave.</td>
+      <td>+6%</td>
+      <td>+1%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>考虑到 B 树本身由于键-值直接存储在节点上，相对于 B+ 树，不仅容易实现得多，而且查询时不需要搜索到叶子，而在插删操作时也不需要向上更新键索引，这个测试结果可以说非常令人满意了，平均查询性能超出 1.5 倍，平均插/删性能大致相当，还要略优。</p>
 
 <h2 id="注解">注解</h2>
 
@@ -1070,8 +1452,14 @@
     <li id="fn:1" role="doc-endnote">
       <p>只不过看起来 <code class="language-plaintext highlighter-rouge">split_off</code> 大概也是得自己实现 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
-      <p><code class="language-plaintext highlighter-rouge">比如 Vec&lt;KVEntry&lt;K, V&gt;&gt;</code> <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    <li id="fn:3" role="doc-endnote">
+      <p>$\large \log_2 n = \log_2 2^m \cdot \log_{2^m} n $ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:5" role="doc-endnote">
+      <p>https://github.com/minghu6/rust-minghu6/blob/v0.1.18/coll_st/src/bt/bpt3.rs <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:4" role="doc-endnote">
+      <p>https://github.com/rust-lang/rust/blob/1.88.0/library/alloc/src/collections/btree/node.rs#L50 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>

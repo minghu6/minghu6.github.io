@@ -108,7 +108,7 @@
 
   <div class="post__content_container">
     <div class="post__content"><p>编译实践1：
-学习Linux内核模块开发，需要增加一个<code class="language-plaintext highlighter-rouge">FORCE_UNLOADING</code> feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有OpenSuSE可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。</p>
+学习Linux内核模块开发，需要增加一个<code class="language-plaintext highlighter-rouge">FORCE_UNLOADING</code> feature 以避免安装的模块崩溃时可以强行卸载而不必重启。而好像只有 OpenSuSE 可以通过修改配置文件来动态修改内核配置，而其他发行版只能重新编译内核。</p>
 
 <p><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"><strong>Linux上游源代码（git地址在其页面下方）</strong></a></p>
 
@@ -158,7 +158,7 @@
 
 <ol>
   <li>
-    <p>Linux 68%的代码是驱动相关代码，当然大部分的编译时间也是在编译驱动上，而这一部分也是容易出问题，往往花了几个小时编译发现，后来发现在这里出了错误，这就很难受，需要提前仔细配置。个人经验是不使用 <code class="language-plaintext highlighter-rouge">/boot/config-`uname -r` </code> 作为初始配置，而是使用<code class="language-plaintext highlighter-rouge">make localmodconfig</code> 创建初始配置:<code class="language-plaintext highlighter-rouge">.config</code>文件，使用默认的配置，确保驱动的编译不出问题。然后使用<code class="language-plaintext highlighter-rouge">make menuconfig</code>(shell text) or <code class="language-plaintext highlighter-rouge">make xconfig</code>(qt5 gui) 配置内核其他部分。</p>
+    <p>Linux 大约68%的代码是驱动相关代码，当然大部分的编译时间也是在编译驱动上，而这一部分也是容易出问题，往往花了几个小时编译发现，后来发现在这里出了错误，这就很难受，需要提前仔细配置。个人经验是不使用 <code class="language-plaintext highlighter-rouge">/boot/config-`uname -r` </code> 作为初始配置，而是使用<code class="language-plaintext highlighter-rouge">make localmodconfig</code> 创建初始配置:<code class="language-plaintext highlighter-rouge">.config</code>文件，使用默认的配置，确保驱动的编译不出问题。然后使用<code class="language-plaintext highlighter-rouge">make menuconfig</code>(shell text) or <code class="language-plaintext highlighter-rouge">make xconfig</code>(qt5 gui) 配置内核其他部分。</p>
   </li>
   <li>
     <p>make 使用<code class="language-plaintext highlighter-rouge">-j</code>启用多核编译很重要，如果宿主机器在编译的同时需要运行其他任务，建议少用一个核心，避免机器down掉(然后比如当前用户直接被强制logout)。</p>

@@ -445,7 +445,7 @@
 
 <p><code class="language-plaintext highlighter-rouge">delete-min</code> (<code class="language-plaintext highlighter-rouge">pop</code>): $O(1) $</p>
 
-<h2 id="比较优势">比较优势</h2>
+<h2 id="vs-fibonacci-heap">vs Fibonacci Heap</h2>
 
 <p>一方面，  尽管 Fib 堆也有类似的时间复杂度，但实现上 Dary 堆是一整块连续的内存，而 Fib 堆是经典的链表结构，因此Dary 堆的实际性能比 Fib 堆好一个数量级；</p>
 
@@ -454,6 +454,381 @@
 <p><a href="https://github.com/minghu6/rust-minghu6/tree/v0.1.13/coll_heap/src">完整代码</a></p>
 
 <p>经验上，根据处理数据的规模大小，E 可以选择 $2\dots 5$。</p>
+
+<h2 id="vs-binaryheap">vs BinaryHeap</h2>
+
+<p>与标准库的二叉堆进行比较，不过使用得实际上并不是原堆，而是与标准库二叉堆同等功能的简化版的 d-ary 堆，这是避免额外的 HashMap 操作干扰我们的性能比较，简化版的实现代码如下：</p>
+
+<p>https://github.com/minghu6/rust-minghu6/blob/v0.1.18/coll_heap/src/sdary.rs</p>
+
+<h4 id="测试环境">测试环境</h4>
+
+<p>CPU: Intel Core i5-4590</p>
+
+<p>测试数据集：给定规模的 8 Byte 大小的随机数据集</p>
+
+<h3 id="4k-push-pop">4K push-pop</h3>
+
+<p>Std: 标准库 BinaryHeap</p>
+
+<p>SD-2: 4叉堆</p>
+
+<p>SD-3: 8叉堆</p>
+
+<p>SD-4: 16叉堆</p>
+
+<p>数据单位：ms / iter</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>No.</td>
+      <td>Std</td>
+      <td>SD-2</td>
+      <td>SD-3</td>
+      <td>SD-4</td>
+      <td>SD-2 Rel. Speed</td>
+      <td>SD-3 Rel. Speed</td>
+      <td>SD-4 Rel. Speed</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>0.235</td>
+      <td>0.347</td>
+      <td>0.344</td>
+      <td>0.335</td>
+      <td>-32%</td>
+      <td>-32%</td>
+      <td>-30%</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>0.232</td>
+      <td>0.355</td>
+      <td>0.336</td>
+      <td>0.332</td>
+      <td>-35%</td>
+      <td>-31%</td>
+      <td>-30%</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>0.222</td>
+      <td>0.357</td>
+      <td>0.338</td>
+      <td>0.330</td>
+      <td>-38%</td>
+      <td>-34%</td>
+      <td>-33%</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>0.250</td>
+      <td>0.356</td>
+      <td>0.339</td>
+      <td>0.337</td>
+      <td>-30%</td>
+      <td>-26%</td>
+      <td>-26%</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>0.245</td>
+      <td>0.354</td>
+      <td>0.337</td>
+      <td>0.331</td>
+      <td>-31%</td>
+      <td>-27%</td>
+      <td>-26%</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>0.245</td>
+      <td>0.357</td>
+      <td>0.338</td>
+      <td>0.331</td>
+      <td>-31%</td>
+      <td>-28%</td>
+      <td>-26%</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>Ave.</td>
+      <td>-33%</td>
+      <td>-30%</td>
+      <td>-28%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>显然，在较小规模的数据下标准库二叉堆较好，但差距不大。</p>
+
+<h3 id="400k-push-pop">400K push-pop</h3>
+
+<p>Std: 标准库 BinaryHeap</p>
+
+<p>SD-2: 4叉堆</p>
+
+<p>SD-3: 8叉堆</p>
+
+<p>SD-4: 16叉堆</p>
+
+<p>数据单位：ms / iter</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>No.</td>
+      <td>Std</td>
+      <td>SD-2</td>
+      <td>SD-3</td>
+      <td>SD-4</td>
+      <td>SD-2 Rel. Speed</td>
+      <td>SD-3 Rel. Speed</td>
+      <td>SD-4 Rel. Speed</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>278</td>
+      <td>205</td>
+      <td>171</td>
+      <td>184</td>
+      <td>+36%</td>
+      <td>+63%</td>
+      <td>+51%</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>280</td>
+      <td>203</td>
+      <td>172</td>
+      <td>189</td>
+      <td>+38%</td>
+      <td>+63%</td>
+      <td>+48%</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>278</td>
+      <td>205</td>
+      <td>163</td>
+      <td>182</td>
+      <td>+36%</td>
+      <td>+71%</td>
+      <td>+53%</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>279</td>
+      <td>207</td>
+      <td>167</td>
+      <td>183</td>
+      <td>+35%</td>
+      <td>+67%</td>
+      <td>+52%</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>279</td>
+      <td>206</td>
+      <td>169</td>
+      <td>189</td>
+      <td>+35%</td>
+      <td>+65%</td>
+      <td>+48%</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>283</td>
+      <td>201</td>
+      <td>164</td>
+      <td>184</td>
+      <td>+41%</td>
+      <td>+73%</td>
+      <td>+54%</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>Ave.</td>
+      <td>+37%</td>
+      <td>+67%</td>
+      <td>+51%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在较大规模的数据下8叉堆有明显优势。</p>
+
+<h3 id="4000k-push-pop">4000K push-pop</h3>
+
+<p>Std: 标准库 BinaryHeap</p>
+
+<p>SD-2: 4叉堆</p>
+
+<p>SD-3: 8叉堆</p>
+
+<p>SD-4: 16叉堆</p>
+
+<p>数据单位：ms / iter</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>No.</td>
+      <td>Std</td>
+      <td>SD-2</td>
+      <td>SD-3</td>
+      <td>SD-4</td>
+      <td>SD-2 Rel. Speed</td>
+      <td>SD-3 Rel. Speed</td>
+      <td>SD-4 Rel. Speed</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>6623</td>
+      <td>4433</td>
+      <td>3857</td>
+      <td>4437</td>
+      <td>+49%</td>
+      <td>+72%</td>
+      <td>+49%</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>6539</td>
+      <td>4407</td>
+      <td>3819</td>
+      <td>4470</td>
+      <td>+48%</td>
+      <td>+71%</td>
+      <td>+46%</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>6556</td>
+      <td>4429</td>
+      <td>3835</td>
+      <td>4430</td>
+      <td>+48%</td>
+      <td>+71%</td>
+      <td>+48%</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>6470</td>
+      <td>4399</td>
+      <td>3800</td>
+      <td>4404</td>
+      <td>+47%</td>
+      <td>+70%</td>
+      <td>+47%</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>6453</td>
+      <td>4391</td>
+      <td>3811</td>
+      <td>4405</td>
+      <td>+47%</td>
+      <td>+69%</td>
+      <td>+46%</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>6467</td>
+      <td>4408</td>
+      <td>3818</td>
+      <td>4413</td>
+      <td>+47%</td>
+      <td>+69%</td>
+      <td>+47%</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>Ave.</td>
+      <td>+48%</td>
+      <td>+70%</td>
+      <td>+47%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>而在更大规模的数据下8叉堆基本维持了这种优势。</p>
 </div>
 
     <div id="toc-wrapper" class="pl-0 pr-4 mb-5 post__toc">

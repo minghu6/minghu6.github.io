@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2025-01-01T16:44:34+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Rust 包内资源管理</title><link href="/lang/RustResourceCode.html" rel="alternate" type="text/html" title="Rust 包内资源管理" /><published>2024-12-10T00:00:00+08:00</published><updated>2024-12-10T00:00:00+08:00</updated><id>/lang/RustResourceCode</id><content type="html" xml:base="/lang/RustResourceCode.html"><![CDATA[<h2 id="问题引入">问题引入</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2025-08-15T17:53:06+08:00</updated><id>/feed.xml</id><title type="html">MINGHU6’s Blog</title><subtitle>Coding somethings</subtitle><entry><title type="html">Rust 包内资源管理</title><link href="/lang/RustResourceCode.html" rel="alternate" type="text/html" title="Rust 包内资源管理" /><published>2024-12-10T00:00:00+08:00</published><updated>2024-12-10T00:00:00+08:00</updated><id>/lang/RustResourceCode</id><content type="html" xml:base="/lang/RustResourceCode.html"><![CDATA[<h2 id="问题引入">问题引入</h2>
 
 <p>有时候在一个 Cargo package/workspace 需要放一些供内部使用的非代码文件，这些文件往往是从硬编码的代码里分离出来的，变成可配置的文件，比如测试数据。</p>
 
@@ -1528,7 +1528,7 @@
 
 <p>在向低精度舍入时，可以允许配置多种舍入策略，标准实现应该提供 <code class="language-plaintext highlighter-rouge">roundTiesToEven</code> 策略和 <code class="language-plaintext highlighter-rouge">roundTowardPositive</code> ， <code class="language-plaintext highlighter-rouge">roundTowardNegative</code> 和 <code class="language-plaintext highlighter-rouge">roundTowardZero</code> 这三种有特定舍入方向的策略。</p>
 
-<p>其中 <code class="language-plaintext highlighter-rouge">roundTiesToEven</code> 应该把它作为二进制表示数字的默认策略，十进制的表示数字的舍入策略是语言特定的，但也应当采取该策略。</p>
+<p>其中 <code class="language-plaintext highlighter-rouge">roundTiesToEven</code> 应该把它作为二进制表示数字的默认策略，十进制的表示数字的舍入策略虽然是语言特定的，但也应当采取该策略。</p>
 
 <h5 id="roundtiestoeven"><code class="language-plaintext highlighter-rouge">roundTiesToEven</code></h5>
 
@@ -2315,7 +2315,7 @@
 
 <p><em>在这里我们不讨论这些接口的范畴论（category theory）相应概念的起源，也许有一天我研究了范畴论后，可以在函数式语言的进阶讨论中讨论这些概念，而现在这至少与我们理解这些接口的实际工作无关。</em></p>
 
-<p><em>另一方面范畴论属于哲学数学，可以这么地在抽象地抽象上看问题，但这样有特别的意义吗，它好像还缺乏一个能特别证明它价值的领域。</em></p>
+<p><em>另一方面范畴论属于哲学数学，可以这么地在抽象的抽象上看问题，但这样有特别的意义吗，它好像还缺乏一个能特别证明它价值的领域。</em></p>
 
 <h3 id="所谓函子functor">所谓函子（Functor）</h3>
 
@@ -2614,7 +2614,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p><em>还有一个关于 <a href="https://langdev.stackexchange.com/questions/2675/why-does-haskell-use-the-bind-operation-instead-of-kleisli-composition">Haskell使用 bind 而不是 kleisli-构成</a> 的进阶讨论，回答很深入，但只是标记在这里，不做进一步讨论。</em></p>
+<p><em>还有一个关于<a href="https://langdev.stackexchange.com/questions/2675/why-does-haskell-use-the-bind-operation-instead-of-kleisli-composition">Haskell使用 bind 而不是 kleisli-构成</a> 的进阶讨论，回答很深入，但只是标记在这里，不做进一步讨论。</em></p>
 
 <h2 id="注解">注解</h2>
 

@@ -107,12 +107,14 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>假设对于非负整数，$a$ ,  $b$ ，求它们的最大公约数 $\text{gcd}(a, b)$ ，以下简写作 $g$ 。</p>
+    <div class="post__content"><p><em>质量不满意，需要重写。</em></p>
+
+<p>假设对于非负整数 $a$ ,  $b$ ，求它们的最大公约数 $\text{gcd}(a, b)$ ，以下简写作 $g$ 。</p>
 
 <p>数学上，最大公约数只有对两个非零整数才有意义，但是一般从实现的方面，规定：</p>
 
 <ol>
-  <li>$\text{gcd}(0, b) = a$ ,  $\text{gcd}(a, 0) = a$</li>
+  <li>$\text{gcd}(0, b) = b$ ,  $\text{gcd}(a, 0) = a$</li>
   <li>$\text{gcd}(0, 0) = 0$</li>
 </ol>
 
@@ -127,18 +129,21 @@ a &amp;= ng \\
 b &amp;= mg
 \end{array}\]
 
-<p>$\text{n}$ ,  $\text{m}$ 互质，对于 $a \neq b$ 的情况，不失一般性地假设 $a &gt; b$ ，也就是 $n &gt; m$ ，这样的话，$a-b = (n - m) g$ ，$b=mg$ 也有公约数 $g$<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 。</p>
+<p>$\text{n}$ ,  $\text{m}$ 互质，对于 $a \neq b$ 的情况，不失一般性地假设 $a &gt; b$ ，也就是 $n &gt; m$ ，这样的话，$a-b = (n - m) g$ ，$b=mg$ 也有最大公约数 $g$<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 。</p>
 
-<p>这样取 $a=\text{max}(a-b, b)$ ,  $b=\text{min}(a-b,b)$ ，也就是如果 $n-m &gt; m$ 仍然成立就继续减，否则就是交换 $a$ ,  $b$ 的位置，在这个过程中  $n &gt; \text{max}(n-m,m) = \text{max}(n, m) &gt; \text{max}(n-m, m)$ 系数的上限不断下降，直到 $a=b$ 。</p>
-
-<p>此时也有 $a=g$ ，$b=g$，此时就得出了最大公约数 $g$ 。</p>
+<p>取 $a=\text{max}(a-b, b)$ ,  $b=\text{min}(a-b,b)$ 继续相减，在这个过程中 $n-m \rightarrow 0$，最后得到 $n=m=1$（$=1$ 由最大公约数性质可知） 。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span>
+    <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">:</span> 
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span>
+
     <span class="k">if</span> <span class="n">b</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> 
         <span class="k">while</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span>
             <span class="n">a</span> <span class="o">-=</span> <span class="n">b</span>
+
+            <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">:</span> 
+                <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span>
+
     <span class="k">return</span> <span class="n">a</span>
 </code></pre></div></div>
 
@@ -146,15 +151,31 @@ b &amp;= mg
 
 <p>辗转取余是原始欧几里得算法的变种。</p>
 
-<p>回过去观察相减的过程，如果 $a=qb+r, (q \geqslant 0,\ r &lt; b)$ ,  每次 $a-b$ 就是 $q-1$ ，直到 $q=0$ ，因为 $a=r&lt;b$ 然后就交换 $a,b$ 位置，可以通过取余的操作一步到位的完成，$a \% b$ 直接得到 $r$ , 然后和 $b$ ，即使开始时 $a &lt; b$ , 也不影响 $a\%b$ 的结果。</p>
+<p>回过去观察相减的过程，如果 $a=qb+r\ (q \geqslant 0,\ r &lt; b)$ ,  每次 $a-b$ 就是 $q-1$ ，直到 $q=0$ ，因为 $a=r&lt;b$ 然后就交换 $a,b$ 位置，可以通过取余的操作一步到位的完成，$a \mathbin{\%} b$ 直接得到 $r$ , 然后和 $b$ ，即使开始时 $a &lt; b$ , 也不影响 $a \mathbin{\%} b$ 的结果。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span>
     <span class="k">return</span> <span class="n">a</span>
 </code></pre></div></div>
 
 <p>从实践上看，不考虑特殊指令优化的情况下，这种方法的效率是最佳的。</p>
+
+<p>考虑一种优化。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+	<span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">:</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span>
+        
+    <span class="k">if</span> <span class="n">b</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">a</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span>
+    
+    <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span>
+
+    <span class="k">return</span> <span class="n">a</span>
+</code></pre></div></div>
 
 <h2 id="拓展-gcd">拓展 GCD</h2>
 
