@@ -112,7 +112,7 @@
 <p>Tarjan 其实是老朋友了，之前介绍过的<a href="/algs/FibHeap.html">斐波那契堆</a>（1986），他就是它的两位作者之一， 现在是要介绍他早期（1972、1973）发表的通过图上 DFS 来线性时间解决<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">3</a></sup>：</p>
 
 <ol>
-  <li>在无向图上划分双联通分量</li>
+  <li>在无向图上划分双连通分量</li>
   <li>查找强连通分量</li>
 </ol>
 
@@ -157,7 +157,7 @@
 
 <p>$\text{lowpt}(v)$ 定义为从 $v$ 出发，经过零个或更多的树弧，和最多一条回溯边，所能到达的编号最小的点（我们不妨用 $\text{index}(v)$ 表示 $v$ 点的编号）。</p>
 
-<h2 id="双联通分量">双联通分量</h2>
+<h2 id="双连通分量">双连通分量</h2>
 
 <p>有了前面的知识铺垫，我们可以通过 DFS ，首先来解决在无向图上的双连通分量（biconnected component, bcc）的划分问题，而在具体讨论之前，有必要先理清下概念：</p>
 
@@ -169,15 +169,17 @@
 
 <p><strong>双连通图</strong></p>
 
-<p>双联通图（biconnected graph）大多数情况下和 2-连通图（2-connected graph）是等价的，只在一个例外，就是只包含一条边的图仍然是双联通图，但一般不被视为 2-连通图<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">6</a></sup><sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">7</a></sup>。</p>
+<p>双连通图（biconnected graph）大多数情况下和 2-连通图（2-connected graph）是等价的，只在一个例外，就是只包含一条边的图仍然是双连通图，但一般不被视为 2-连通图<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">6</a></sup><sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">7</a></sup>。</p>
 
 <p>双连通图之所以有这么个特殊例外，就是为了方便把图按双连通分量进行划分，对剩下的散碎边，每条边都可以视为一个最小的双连通分量。</p>
 
 <h3 id="算法">算法</h3>
 
-<p>划分双连通分量的关键在于寻找分量之间的衔接点（articulation point）<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>。</p>
+<p>划分双连通分量的关键在于寻找分量之间的衔接点（articulation point, cut point）<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>。</p>
 
 <p>衔接点可以利用计算的 $\text{lowpt}$ 寻找：在 DFS 构建的有向图 $\text{P}$ 上，如果一个点的 $\text{lowpt}$ 不低于它的父节点的编号，那么它的父节点就是一个衔接点。</p>
+
+<p>如果没有衔接点，那么就是双连通图。</p>
 
 <p>比如，对于下图</p>
 
@@ -187,7 +189,7 @@
 
 <p><img src="/assets/img/tarjandfs/bcc_tree.png" alt="" /></p>
 
-<p>上图 G 点的 $\text{lowpt}(3)=2=\text{index}(2)$ ，因此 $3$ 的父节点 $2$ 就是一个衔接点，如果此时把之前遍历过程中入栈的边 $2\rightarrow 3$ ，$3\rightarrow 4$，$4\rightarrow2$ 从栈顶依次弹出，那么就收集了一个双联通分量的划分。</p>
+<p>上图 G 点的 $\text{lowpt}(3)=2=\text{index}(2)$ ，因此 $3$ 的父节点 $2$ 就是一个衔接点，如果此时把之前遍历过程中入栈的边 $2\rightarrow 3$ ，$3\rightarrow 4$，$4\rightarrow2$ 从栈顶依次弹出，那么就收集了一个双连通分量的划分。</p>
 
 <p>最终如下图：</p>
 
@@ -319,7 +321,7 @@
 
 <p>初始化被访问点的编号 $\text{index}$ 和 $\text{lowpt}$ ，其中 $\text{lowpt}$ 初始化的时候与编号一致。</p>
 
-<p>遍历访问点 $u$ 所有的出边，如果出边的头节点 $v$ 未被编号，就推边入栈，并在 $v$ 上执行 DFS 操作，之后利用 $\text{lowpt}(v)$ 更新 $\text{lowpt}(u)$ ，并检查 $\text{lowpt}(v)$ 是否不小于 $\text{index}(u)$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">9</a></sup>，如果是，就收集栈上的边，直到收集完起点为 $u$ 的边<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">10</a></sup>；</p>
+<p>遍历访问点 $u$ 所有的出边，如果出边的头节点 $v$ 未被编号，就推边入栈，并在 $v$ 上执行 DFS 操作，之后利用 $\text{lowpt}(v)$ 更新 $\text{lowpt}(u)$ ，并检查 $\text{lowpt}(v)$ 是否等于 $\text{index}(u)$ <sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">9</a></sup>，如果是，就收集栈上的边，直到收集完起点为 $u$ 的边<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">10</a></sup>；</p>
 
 <p>如果 $v$ 已被编号，就用它的编号更新 $\text{lowpt}(u)$ ，当然要排除父节点的情况，避免重复访问同一条边。</p>
 
@@ -495,7 +497,7 @@
       <p><a href="https://scholar.google.com/scholar?oi=bibs&amp;cluster=15317103615758324241&amp;btnI=1&amp;hl=en">Algorithm 447: efficient algorithms for graph manipulation</a> J Hopcroft, R Tarjan - Communications of the ACM, 1973 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:9" role="doc-endnote">
-      <p>第二篇论文还提到了在双联通分量上的简单路径划分，但是既缺乏具体解释，流程图也模糊不清，伪代码还是 goto 结构的，令人实在没有时间去看了 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+      <p>第二篇论文还提到了在双连通分量上的简单路径划分，但是既缺乏具体解释，流程图也模糊不清，伪代码还是 goto 结构的，令人实在没有时间去看了 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
     <li id="fn:5" role="doc-endnote">
       <p>“棕榈树”和“叶边”都是作者在论文<sup id="fnref:1:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>里起的形象名字 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>

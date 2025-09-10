@@ -136,7 +136,7 @@
     <p>如果 $e$  在 $T$ 上， 性质1成立；</p>
   </li>
   <li>
-    <p>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），并且一定存在C中$e$ 以外的一条 $U$ 的出边 $f$ ，由于 $e$ 是最小出边，那么 $f$ 一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 是最小生成树。也就是 $e$ 属于一棵生成树，性质1仍然成立。</p>
+    <p>如果 $e$ 不在 $T$ 上，由于 $T$ 是生成树，加入 $e$ 就会构成一个环（不妨标记这个环形路径为 $C$ ），并且一定存在 C 中 $e$ 以外的一条 $U$ 的出边 $f$ ，由于 $e$ 是最小出边，那么 $f$ 一定权重大于等于 $e$ 。因此 $T-f+e$ 不仅是生成树，而且由于权重小于等于 $T$ , 是最小生成树。也就是 $e$ 属于一棵生成树，性质1仍然成立。</p>
   </li>
 </ol>
 
@@ -180,9 +180,10 @@
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_kruskal</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="cm">/* init sorted edge set */</span>
+    <span class="c1">// let mut sorted_edges = FibHeap::new();</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">sorted_edges</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
 
-    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.undir_edges</span><span class="p">()</span> <span class="p">{</span>
         <span class="n">sorted_edges</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">));</span>
     <span class="p">}</span>
 
@@ -191,7 +192,7 @@
     <span class="cm">/* init disjoint set */</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">ds</span> <span class="o">=</span> <span class="nn">UnionFind</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">MergeBy</span><span class="p">::</span><span class="n">SZ</span><span class="p">));</span>
 
-    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">g</span><span class="py">.e</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
         <span class="n">ds</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
     <span class="p">}</span>
 
@@ -250,6 +251,10 @@
 
 <p>而之前我们已经证明了 $F$ 最终所生成的子图 $Y$ 是生成树， 于是有算法产生了一棵最小生成树，证毕。</p>
 
+<h3 id="简单证明">简单证明</h3>
+
+<p>由生成性可知。</p>
+
 <h3 id="时间复杂度">时间复杂度</h3>
 
 <p>假设 $n=\vert V \vert$，$m=\vert E \vert$</p>
@@ -276,62 +281,44 @@
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="nf">mst_prim</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="o">&amp;</span><span class="n">Graph</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">res</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[];</span>
 
-    <span class="cm">/* choose an arbitray node as root */</span>
-
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">viter</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">();</span>
-    <span class="k">let</span> <span class="n">root</span><span class="p">;</span>
-
-    <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">_root</span><span class="p">)</span> <span class="o">=</span> <span class="n">viter</span><span class="nf">.next</span><span class="p">()</span> <span class="p">{</span>
-        <span class="n">root</span> <span class="o">=</span> <span class="n">_root</span><span class="p">;</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="n">res</span><span class="p">;</span>
-    <span class="p">}</span>
-
     <span class="cm">/* setup rest collection */</span>
 
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">rest</span><span class="p">:</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="nb">usize</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nn">HashSet</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">rest</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="kc">true</span><span class="p">;</span> <span class="n">g</span><span class="py">.e</span><span class="nf">.len</span><span class="p">()];</span>
+    <span class="c1">// vertex start from 1</span>
+    <span class="n">rest</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
 
     <span class="cm">/* init dis heap &amp;&amp; dis edge map */</span>
 
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis</span> <span class="o">=</span> <span class="nn">FibHeap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="c1">// let mut dis = FibHeap::new();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis</span> <span class="o">=</span> <span class="nn">DaryHeap</span><span class="p">::</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="o">&gt;</span><span class="p">::</span><span class="nf">with_capacity</span><span class="p">(</span><span class="n">rest</span><span class="nf">.len</span><span class="p">());</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis_edge</span> <span class="o">=</span> <span class="nd">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span> <span class="n">g</span><span class="py">.e</span><span class="nf">.len</span><span class="p">()];</span>
 
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">dis_edge</span> <span class="o">=</span> <span class="nn">HashMap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">u</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
 
-    <span class="n">dis</span><span class="nf">.push</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-    <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nf">Some</span><span class="p">(</span><span class="n">root</span><span class="p">));</span>
+    <span class="k">loop</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="py">.e</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.filter</span><span class="p">(|</span><span class="o">&amp;&amp;</span><span class="n">v</span><span class="p">|</span> <span class="n">rest</span><span class="p">[</span><span class="n">v</span><span class="p">])</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="n">maybe_dis_v</span> <span class="o">=</span> <span class="n">dis</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">v</span><span class="p">)</span><span class="nf">.cloned</span><span class="p">();</span>
 
-    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">viter</span> <span class="p">{</span>
-        <span class="n">rest</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
-        <span class="n">dis</span><span class="nf">.push</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nn">isize</span><span class="p">::</span><span class="n">MAX</span><span class="p">);</span>
-        <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">None</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="k">while</span> <span class="o">!</span><span class="n">rest</span><span class="nf">.is_empty</span><span class="p">()</span> <span class="p">{</span>
-        <span class="c1">// u is current vertex</span>
-        <span class="k">let</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">_uw</span><span class="p">)</span> <span class="o">=</span> <span class="n">dis</span><span class="nf">.pop_item</span><span class="p">()</span><span class="nf">.unwrap</span><span class="p">()</span><span class="nf">.clone</span><span class="p">();</span>
-
-        <span class="c1">// "decrease-key" (It's increase-key actually for min-heap)</span>
-        <span class="n">rest</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="n">u</span><span class="p">);</span>
-
-        <span class="k">let</span> <span class="n">u_pair</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">dis_edge</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">)</span><span class="nf">.unwrap</span><span class="p">();</span>
-
-        <span class="k">if</span> <span class="n">u_pair</span> <span class="o">!=</span> <span class="n">u</span> <span class="p">{</span>
-            <span class="n">res</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">u_pair</span><span class="p">));</span>
-        <span class="p">}</span>
-
-        <span class="c1">// calc adj</span>
-
-        <span class="k">let</span> <span class="n">adjs</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.e</span> <span class="k">=&gt;</span> <span class="n">u</span><span class="p">);</span>
-
-        <span class="cm">/* update dis heap */</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">adjs</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.filter</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">rest</span><span class="nf">.contains</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="p">{</span>
-            <span class="k">let</span> <span class="n">w_uv</span><span class="p">:</span> <span class="nb">isize</span> <span class="o">=</span> <span class="nd">get!</span><span class="p">(</span><span class="n">g</span><span class="py">.w</span> <span class="k">=&gt;</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
-
-            <span class="k">if</span> <span class="n">w_uv</span> <span class="o">&lt;</span> <span class="o">*</span><span class="nd">get!</span><span class="p">(</span><span class="n">dis</span> <span class="k">=&gt;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">dis</span><span class="nf">.decrease_key</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">w_uv</span><span class="p">);</span>
-                <span class="n">dis_edge</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nf">Some</span><span class="p">(</span><span class="n">u</span><span class="p">));</span>
+            <span class="k">if</span> <span class="n">maybe_dis_v</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span>
+                <span class="n">dis</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">g</span><span class="py">.w</span><span class="p">[</span><span class="o">&amp;</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)]);</span>
+                <span class="n">dis_edge</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">dis_v</span><span class="p">)</span> <span class="o">=</span> <span class="n">maybe_dis_v</span>
+                <span class="o">&amp;&amp;</span> <span class="n">g</span><span class="py">.w</span><span class="p">[</span><span class="o">&amp;</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)]</span> <span class="o">&lt;</span> <span class="n">dis_v</span>
+            <span class="p">{</span>
+                <span class="n">dis</span><span class="nf">.decrease_key</span><span class="p">(</span><span class="o">&amp;</span><span class="n">v</span><span class="p">,</span> <span class="n">g</span><span class="py">.w</span><span class="p">[</span><span class="o">&amp;</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)]);</span>
+                <span class="n">dis_edge</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">;</span>
             <span class="p">}</span>
         <span class="p">}</span>
+
+        <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">u_</span><span class="p">,</span> <span class="n">_</span><span class="p">))</span> <span class="o">=</span> <span class="n">dis</span><span class="nf">.pop_item</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">u_</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="n">rest</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+
+        <span class="n">res</span><span class="nf">.push</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">dis_edge</span><span class="p">[</span><span class="n">u</span><span class="p">]));</span>
     <span class="p">}</span>
 
     <span class="n">res</span>
@@ -378,15 +365,15 @@
     <span class="c1">// using lexicograph order</span>
     <span class="k">let</span> <span class="k">mut</span> <span class="n">dsu</span> <span class="o">=</span> <span class="nn">UnionFind</span><span class="p">::</span><span class="nf">new</span><span class="p">(</span><span class="nf">Some</span><span class="p">(</span><span class="nn">MergeBy</span><span class="p">::</span><span class="n">SZ</span><span class="p">));</span>
 
-    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="n">g</span><span class="nf">.vertexs</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="k">in</span> <span class="mi">1</span><span class="o">..</span><span class="n">g</span><span class="py">.e</span><span class="nf">.len</span><span class="p">()</span> <span class="p">{</span>
         <span class="n">dsu</span><span class="nf">.insert</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
     <span class="p">}</span>
 
-    <span class="c1">// components cheapest edges: (weight, usize)</span>
-    <span class="k">let</span> <span class="k">mut</span> <span class="n">cand_edges</span><span class="p">:</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span> <span class="n">g</span><span class="nf">.edges</span><span class="p">()</span><span class="nf">.collect</span><span class="p">();</span>
+    <span class="k">let</span> <span class="k">mut</span> <span class="n">cand_edges</span><span class="p">:</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">isize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span>
+        <span class="n">g</span><span class="nf">.undir_edges</span><span class="p">()</span><span class="nf">.collect</span><span class="p">();</span>
 
     <span class="k">loop</span> <span class="p">{</span>
-        <span class="k">let</span> <span class="k">mut</span> <span class="n">comp_min_edges</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;&gt;</span> <span class="o">=</span>
+        <span class="k">let</span> <span class="k">mut</span> <span class="n">comp_min_edges</span><span class="p">:</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="nb">usize</span><span class="p">,</span> <span class="p">(</span><span class="nb">isize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">,</span> <span class="nb">usize</span><span class="p">)</span><span class="o">&gt;</span> <span class="o">=</span>
             <span class="nn">HashMap</span><span class="p">::</span><span class="nf">new</span><span class="p">();</span>
 
         <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">in</span> <span class="n">cand_edges</span><span class="nf">.iter</span><span class="p">()</span><span class="nf">.cloned</span><span class="p">()</span> <span class="p">{</span>
@@ -397,35 +384,28 @@
                 <span class="k">continue</span><span class="p">;</span>
             <span class="p">}</span>
 
-            <span class="k">let</span> <span class="n">pu_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span>
-                <span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pu</span><span class="p">)</span>
-                <span class="nf">.cloned</span><span class="p">()</span>
-                <span class="nf">.unwrap_or</span><span class="p">(</span><span class="nb">None</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">pu_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pu</span><span class="p">)</span><span class="nf">.cloned</span><span class="p">();</span>
 
             <span class="k">if</span> <span class="n">pu_min_edge</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">pu_min_edge</span> <span class="p">{</span>
-                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pu</span><span class="p">,</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)));</span>
+                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pu</span><span class="p">,(</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
             <span class="p">}</span>
 
-            <span class="k">let</span> <span class="n">pv_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span>
-                <span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pv</span><span class="p">)</span>
-                <span class="nf">.cloned</span><span class="p">()</span>
-                <span class="nf">.unwrap_or</span><span class="p">(</span><span class="nb">None</span><span class="p">);</span>
+            <span class="k">let</span> <span class="n">pv_min_edge</span> <span class="o">=</span> <span class="n">comp_min_edges</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pv</span><span class="p">)</span><span class="nf">.cloned</span><span class="p">();</span>
 
             <span class="k">if</span> <span class="n">pv_min_edge</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">||</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">pv_min_edge</span> <span class="p">{</span>
-                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)));</span>
+                <span class="n">comp_min_edges</span><span class="nf">.insert</span><span class="p">(</span><span class="n">pv</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
             <span class="p">}</span>
         <span class="p">}</span>
 
         <span class="k">let</span> <span class="k">mut</span> <span class="n">continue_flag</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
 
-        <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span> <span class="k">in</span> <span class="n">comp_min_edges</span><span class="nf">.into_iter</span><span class="p">()</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">((</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">=</span> <span class="n">opt</span> <span class="p">{</span>
-                <span class="n">res</span><span class="nf">.insert</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
-                <span class="n">dsu</span><span class="nf">.cunion</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
-                <span class="n">cand_edges</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">));</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="k">in</span> <span class="n">comp_min_edges</span><span class="nf">.into_iter</span><span class="p">()</span> <span class="p">{</span>
+            <span class="c1">// 两个连通分量的最小出边可能相同也可能不同</span>
+            <span class="n">res</span><span class="nf">.insert</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span>
+            <span class="n">dsu</span><span class="nf">.cunion</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span>
+            <span class="n">cand_edges</span><span class="nf">.remove</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">));</span>
 
-                <span class="n">continue_flag</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
-            <span class="p">}</span>
+            <span class="n">continue_flag</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="o">!</span><span class="n">continue_flag</span> <span class="p">{</span>
@@ -433,6 +413,7 @@
         <span class="p">}</span>
     <span class="p">}</span>
 
+    <span class="c1">// res</span>
     <span class="n">res</span><span class="nf">.into_iter</span><span class="p">()</span><span class="nf">.collect</span><span class="p">()</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -479,7 +460,7 @@
 
 <p><br /></p>
 
-<p>好像仅从复杂度上，经典实现里 Prim都是各方最优。</p>
+<p>好像仅从复杂度上，经典实现里 Prim都是各方最优。实际测试也支持了这一点。</p>
 
 <p>从优化实现上，Prim 的优化和 Boruvka 算法的拓展都可以到 $O(m)$ 。</p>
 
