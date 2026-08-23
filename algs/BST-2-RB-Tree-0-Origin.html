@@ -523,7 +523,7 @@
         <span class="k">let</span> <span class="n">p</span> <span class="o">=</span> <span class="nd">paren!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.upgrade</span><span class="p">();</span>
         <span class="k">let</span> <span class="n">z_dir</span> <span class="o">=</span> <span class="k">if</span> <span class="n">p</span><span class="nf">.is_some</span><span class="p">()</span> <span class="p">{</span> <span class="nf">Some</span><span class="p">(</span><span class="nd">index_of_child!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nb">None</span> <span class="p">};</span>
 
-        <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="nd">child!</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span> <span class="nb">Right</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nb">Left</span> <span class="p">});</span>
+        <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="nd">child!</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span> <span class="n">Right</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">Left</span> <span class="p">});</span>
         <span class="nd">subtree_shift!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">child</span><span class="p">);</span>
 
         <span class="k">if</span> <span class="n">z</span><span class="nf">.is_black</span><span class="p">()</span> <span class="p">{</span>
@@ -609,7 +609,7 @@
 
 <h4 id="流程图">流程图</h4>
 
-<p>上述列举的情况虽然多且繁，有些复杂，但通过流程图还是能看得很清楚的。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+<p>上述列举的情况虽然多且繁，有些复杂，但通过流程图还是能看得很清楚的。<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup></p>
 
 <p><img src="/assets/img/bst_rb/remove_control_flow.png" alt="" /></p>
 
@@ -685,7 +685,7 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p><em>用 dot 画图的时候因为一个边指定 portPos后导致 dir 、arrowtail、arrowhead 属性设置都失效的问题，浪费一天时间，没解决，不知道这是什么特性还是 bug ，只能凑活一个图</em> <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

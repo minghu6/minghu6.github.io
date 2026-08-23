@@ -121,7 +121,7 @@
 
 <h3 id="轮筛陷阱">轮筛陷阱</h3>
 
-<p>这个题真是“坑”我不浅，首先 “ prime factors ” 和 Top 3 个质数 2, 3, 5 直接把我引到了“轮筛”这个概念里<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，然后发现 <a href="https://en.wikipedia.org/wiki/Wheel_factorization">轮筛 wiki</a> 里有些概念讲得一带而过、很不清楚<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，于是去查一些介绍质数筛子的教学材料，了解了一些质数筛子，但是轮筛还是不知道，又追到了 Pritchard 的原始论文，最后把他 80s-90s 所有质数筛子论文都看完了，内容详见 <a href="/algs/Prime0.html">质数基础</a>、 <a href="/algs/Prime1.html">质数筛子</a> 和 <a href="/algs/Prime2.html">质数筛子拓展</a> ，回来发现本题和轮筛、和质数筛子、甚至和质数本身就没什么关系，真是一种幽默了。</p>
+<p>这个题真是“坑”我不浅，首先 “ prime factors ” 和 Top 3 个质数 2, 3, 5 直接把我引到了“轮筛”这个概念里<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>，然后发现 <a href="https://en.wikipedia.org/wiki/Wheel_factorization">轮筛 wiki</a> 里有些概念讲得一带而过、很不清楚<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，于是去查一些介绍质数筛子的教学材料，了解了一些质数筛子，但是轮筛还是不知道，又追到了 Pritchard 的原始论文，最后把他 80s-90s 所有质数筛子论文都看完了，内容详见 <a href="/algs/Prime0.html">质数基础</a>、 <a href="/algs/Prime1.html">质数筛子</a> 和 <a href="/algs/Prime2.html">质数筛子拓展</a> ，回来发现本题和轮筛、和质数筛子、甚至和质数本身就没什么关系，真是一种幽默了。</p>
 
 <h3 id="gpf-陷阱">GPF 陷阱</h3>
 
@@ -144,28 +144,28 @@
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">N</span> <span class="o">=</span> <span class="mi">1690</span>
 
 <span class="k">def</span> <span class="nf">gen_ugly_numbers</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-    <span class="s">""" n &gt;= 1 """</span>
+    <span class="sh">"""</span><span class="s"> n &gt;= 1 </span><span class="sh">"""</span>
 
     <span class="n">ugly_numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">probheap</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">ugly_numbers</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+    <span class="k">while</span> <span class="nf">len</span><span class="p">(</span><span class="n">ugly_numbers</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
         <span class="n">last</span> <span class="o">=</span> <span class="n">ugly_numbers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="n">cur</span> <span class="o">=</span> <span class="n">heappushpop</span><span class="p">(</span><span class="n">probheap</span><span class="p">,</span> <span class="n">last</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="nf">heappushpop</span><span class="p">(</span><span class="n">probheap</span><span class="p">,</span> <span class="n">last</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
 
         <span class="k">while</span> <span class="n">cur</span> <span class="o">==</span> <span class="n">last</span><span class="p">:</span>
-            <span class="n">cur</span> <span class="o">=</span> <span class="n">heappop</span><span class="p">(</span><span class="n">probheap</span><span class="p">)</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="nf">heappop</span><span class="p">(</span><span class="n">probheap</span><span class="p">)</span>
 
-        <span class="n">heappush</span><span class="p">(</span><span class="n">probheap</span><span class="p">,</span> <span class="n">last</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="n">heappush</span><span class="p">(</span><span class="n">probheap</span><span class="p">,</span> <span class="n">last</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="nf">heappush</span><span class="p">(</span><span class="n">probheap</span><span class="p">,</span> <span class="n">last</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="nf">heappush</span><span class="p">(</span><span class="n">probheap</span><span class="p">,</span> <span class="n">last</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 
-        <span class="n">ugly_numbers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
+        <span class="n">ugly_numbers</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ugly_numbers</span>
 
 
-<span class="n">UGLY_NUMBERS</span> <span class="o">=</span> <span class="n">gen_ugly_numbers</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+<span class="n">UGLY_NUMBERS</span> <span class="o">=</span> <span class="nf">gen_ugly_numbers</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -192,7 +192,7 @@
 
 
 <span class="k">def</span> <span class="nf">gen_ugly_numbers</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-    <span class="s">""" n &gt;= 1 """</span>
+    <span class="sh">"""</span><span class="s"> n &gt;= 1 </span><span class="sh">"""</span>
 
     <span class="n">ugly_numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
@@ -202,9 +202,9 @@
     <span class="n">nxt_m3</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">nxt_m5</span> <span class="o">=</span> <span class="mi">5</span>
 
-    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">ugly_numbers</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="n">cur</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nxt_m2</span><span class="p">,</span> <span class="n">nxt_m3</span><span class="p">,</span> <span class="n">nxt_m5</span><span class="p">)</span>
-        <span class="n">ugly_numbers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
+    <span class="k">while</span> <span class="nf">len</span><span class="p">(</span><span class="n">ugly_numbers</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">nxt_m2</span><span class="p">,</span> <span class="n">nxt_m3</span><span class="p">,</span> <span class="n">nxt_m5</span><span class="p">)</span>
+        <span class="n">ugly_numbers</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">cur</span> <span class="o">==</span> <span class="n">nxt_m2</span><span class="p">:</span>
             <span class="n">i_m2</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -222,7 +222,7 @@
     <span class="k">return</span> <span class="n">ugly_numbers</span>
 
 
-<span class="n">UGLY_NUMBERS</span> <span class="o">=</span> <span class="n">gen_ugly_numbers</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+<span class="n">UGLY_NUMBERS</span> <span class="o">=</span> <span class="nf">gen_ugly_numbers</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -237,10 +237,10 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>如果题目的质因数限制在 2, 3, 5 以外，而不是以内，就可以用轮筛的方法解决 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>因为根本就有内在问题，没法儿实用；现在看了那么多论文我也学乖了，凡是有用的一定有具体实现，没有给具体实现的大概率是水论文 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

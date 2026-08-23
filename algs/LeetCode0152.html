@@ -135,27 +135,27 @@
 
 <p>这样只需要记录负数的坐标（不需要记全，对于超过了两个的，只需要记录第一个和最后一个负数的坐标即可）。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="nb">reduce</span>
-<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">mul</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="n">functools</span> <span class="kn">import</span> <span class="nb">reduce</span>
+<span class="kn">from</span> <span class="n">operator</span> <span class="kn">import</span> <span class="n">mul</span>
 
 
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">nums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nf">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="n">neg</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">zero</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
     <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">nums</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">nums</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nf">len</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">neg</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">neg</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">neg</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">i</span><span class="o">-</span><span class="n">zero</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
@@ -163,27 +163,27 @@
             <span class="k">elif</span> <span class="n">i</span><span class="o">-</span><span class="n">zero</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">cand</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span> <span class="c1">#  i-zero &gt; 2
-</span>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">cand</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">zero</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">])</span>
-                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+</span>                <span class="k">if</span> <span class="nf">len</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">cand</span> <span class="o">=</span> <span class="nf">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">zero</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="nf">len</span><span class="p">(</span><span class="n">neg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="n">zero</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]]:</span>
-                        <span class="n">cand1</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">zero</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+                        <span class="n">cand1</span> <span class="o">=</span> <span class="nf">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">zero</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">cand1</span> <span class="o">=</span> <span class="mi">0</span>
 
                     <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">]:</span>
-                        <span class="n">cand2</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">])</span>
+                        <span class="n">cand2</span> <span class="o">=</span> <span class="nf">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">])</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">cand2</span> <span class="o">=</span> <span class="mi">0</span>
 
-                    <span class="n">cand</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cand1</span><span class="p">,</span> <span class="n">cand2</span><span class="p">)</span>
+                    <span class="n">cand</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">cand1</span><span class="p">,</span> <span class="n">cand2</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">cand1</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">zero</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">neg</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
-                    <span class="n">cand2</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">])</span>
-                    <span class="n">cand</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cand1</span><span class="p">,</span> <span class="n">cand2</span><span class="p">)</span>
+                    <span class="n">cand1</span> <span class="o">=</span> <span class="nf">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">zero</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">neg</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+                    <span class="n">cand2</span> <span class="o">=</span> <span class="nf">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">nums</span><span class="p">[</span><span class="n">neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">cand</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">cand1</span><span class="p">,</span> <span class="n">cand2</span><span class="p">)</span>
 
             <span class="n">zero</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="n">neg</span><span class="p">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="n">neg</span><span class="p">.</span><span class="nf">clear</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">ans</span> <span class="o">&lt;</span> <span class="n">cand</span><span class="p">:</span>
                 <span class="n">ans</span> <span class="o">=</span> <span class="n">cand</span>
@@ -245,13 +245,13 @@
 
 <p>由于实际上的差异只是由，也可以不考虑正负值的变化情况，直接从前缀和后缀两个方向计算累乘，当发现累积归为 0 时，就改乘为赋值。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">nums</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">prefix</span> <span class="o">=</span> <span class="n">postfix</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">ans</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">nums</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">prefix</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -262,7 +262,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">postfix</span> <span class="o">*=</span> <span class="n">nums</span><span class="p">[</span><span class="o">~</span><span class="n">i</span><span class="p">]</span>
 
-        <span class="n">ans</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">postfix</span><span class="p">)</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">postfix</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ans</span>
 </code></pre></div></div>

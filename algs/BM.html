@@ -376,9 +376,9 @@ i \gets \texttt{patlen} \\
 
 <h3 id="历史细节">历史细节</h3>
 
-<p>发表在 1977 年 10 月的 <em>Communications of the ACM</em> 上的在 Boyer、Moor 的论文<sup id="fnref:1977BM" role="doc-noteref"><a href="#fn:1977BM" class="footnote" rel="footnote">1</a></sup>只描述了一个静态表，并没有说明如何生成它。</p>
+<p>发表在 1977 年 10 月的 <em>Communications of the ACM</em> 上的在 Boyer、Moor 的论文<sup id="fnref:1977BM"><a href="#fn:1977BM" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>只描述了一个静态表，并没有说明如何生成它。</p>
 
-<p>对 $\texttt{delta2}$ 具体实现的讨论反而出现在 1977 年 6 月 Knuth、Morris、Pratt 在 <em>SIAM Journal on Computing</em> 上正式联合发表KMP算法的 <em>Fast Pattern Matching in Strings</em><sup id="fnref:1977KMP" role="doc-noteref"><a href="#fn:1977KMP" class="footnote" rel="footnote">2</a></sup> （除 KMP 外，还有若干字符串匹配的算法构想和介绍，其中就包括了 BM 算法），这听力来有点儿魔幻：</p>
+<p>对 $\texttt{delta2}$ 具体实现的讨论反而出现在 1977 年 6 月 Knuth、Morris、Pratt 在 <em>SIAM Journal on Computing</em> 上正式联合发表KMP算法的 <em>Fast Pattern Matching in Strings</em><sup id="fnref:1977KMP"><a href="#fn:1977KMP" class="footnote" rel="footnote" role="doc-noteref">2</a></sup> （除 KMP 外，还有若干字符串匹配的算法构想和介绍，其中就包括了 BM 算法），这听力来有点儿魔幻：</p>
 
 <ol>
   <li>
@@ -481,7 +481,7 @@ pub fn build_delta2_table_naive(p: &amp;'a [impl Eq]) -&gt; Vec&lt;usize&gt; {
 
 <p>需要指出的是，虽然 1977 年 Knuth 提出了这个构建方法，然而他的原始版本的构建算法存在一个缺陷，会产生不出符合定义的 $\texttt{delta2}$。</p>
 
-<p>Rytter 在 1980 年 <em>SIAM Journal on Computing</em> 上发表的文章 <sup id="fnref:1980Rytter" role="doc-noteref"><a href="#fn:1980Rytter" class="footnote" rel="footnote">3</a></sup> 对此提出了修正，但是 Rytter 这篇文章在细节上还有令人疑惑的地方，包括不限于</p>
+<p>Rytter 在 1980 年 <em>SIAM Journal on Computing</em> 上发表的文章 <sup id="fnref:1980Rytter"><a href="#fn:1980Rytter" class="footnote" rel="footnote" role="doc-noteref">3</a></sup> 对此提出了修正，但是 Rytter 这篇文章在细节上还有令人疑惑的地方，包括不限于</p>
 
 <ul>
   <li>示例中奇怪的 $\Delta_2$ 数值（不清楚他依据的 $\texttt{delta2}$ 是否和最终版 $\texttt{delta2}$ 的定义有差别，但我实在不想因为这事儿继续考古了😱）</li>
@@ -1059,7 +1059,7 @@ pub fn build_delta2_table_naive(p: &amp;'a [impl Eq]) -&gt; Vec&lt;usize&gt; {
 
 <h3 id="bmhbnfs-算法">BMHBNFS 算法</h3>
 
-<p><em>是 CPython 实现 <code class="language-plaintext highlighter-rouge">stringlib</code> 模块时用到的 <code class="language-plaintext highlighter-rouge">find</code> 的算法<sup id="fnref:B5S" role="doc-noteref"><a href="#fn:B5S" class="footnote" rel="footnote">4</a></sup>，似乎国内更有名气，不清楚为何叫这个名字，怎么就“AKA”了，以下简称 B5S。</em></p>
+<p><em>是 CPython 实现 <code class="language-plaintext highlighter-rouge">stringlib</code> 模块时用到的 <code class="language-plaintext highlighter-rouge">find</code> 的算法<sup id="fnref:B5S"><a href="#fn:B5S" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>，似乎国内更有名气，不清楚为何叫这个名字，怎么就“AKA”了，以下简称 B5S。</em></p>
 
 <h4 id="既要快">既要快</h4>
 
@@ -1081,7 +1081,7 @@ pub fn build_delta2_table_naive(p: &amp;'a [impl Eq]) -&gt; Vec&lt;usize&gt; {
 
 <p>一个标准的 Bloom 过滤器，要达到最佳 FP 概率，需要使用多个哈希函数做多次检查，但由此带来的时间常数是不可接受的。</p>
 
-<p>这里简单地通过一个掩码把一部分二进制位映射到数据里，而目前已知最快的非加密哈希算法 xxHash<sup id="fnref:xxHash" role="doc-noteref"><a href="#fn:xxHash" class="footnote" rel="footnote">5</a></sup>，所需时间都要高一个数量级。</p>
+<p>这里简单地通过一个掩码把一部分二进制位映射到数据里，而目前已知最快的非加密哈希算法 xxHash<sup id="fnref:xxHash"><a href="#fn:xxHash" class="footnote" rel="footnote" role="doc-noteref">5</a></sup>，所需时间都要高一个数量级。</p>
 
 <p>考虑做一个 $8$ bit 数据的字母表，一般情况需要 $2^8 = 256$ 个 <code class="language-plaintext highlighter-rouge">bool</code> 空间，用 bit 代替 byte 做存储，可以省掉 $3$ 个信息位，如果再舍弃其中 $2$ 个信息位，那么就只需要 $2^{8-5} = 2^3 = 8$ 个字节也就是一个 <code class="language-plaintext highlighter-rouge">u64</code> 。</p>
 
@@ -1459,34 +1459,34 @@ p^{\texttt{patlen}-k} &amp; \text{for} &amp; \texttt{patlen} - m \leqslant k \le
 
 <p>然后我们就可以通过Python上的<code class="language-plaintext highlighter-rouge">plotnine</code>图形包看一下计算的数据（并用高斯过程回归拟合曲线）：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
-<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">import</span> <span class="nn">hy</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">from</span> <span class="n">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="n">hy</span>
 
-<span class="kn">from</span> <span class="nn">my_prob</span> <span class="kn">import</span> <span class="n">bm_rate</span><span class="p">,</span> <span class="n">sbm_rate</span><span class="p">,</span> <span class="n">kmp_rate</span>
+<span class="kn">from</span> <span class="n">my_prob</span> <span class="kn">import</span> <span class="n">bm_rate</span><span class="p">,</span> <span class="n">sbm_rate</span><span class="p">,</span> <span class="n">kmp_rate</span>
 
 
-<span class="n">theme_update</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s">"SimHei"</span><span class="p">))</span>
+<span class="nf">theme_update</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="nf">element_text</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="sh">"</span><span class="s">SimHei</span><span class="sh">"</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-    <span class="n">model_range</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">'rate'</span><span class="p">:[],</span> <span class="s">'alg'</span><span class="p">:[],</span> <span class="s">'patlen'</span><span class="p">:[]}</span>
-    <span class="n">categories_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">bm_rate</span><span class="p">,</span> <span class="s">'BoyerMoore'</span><span class="p">),</span>
-                       <span class="p">(</span><span class="n">sbm_rate</span><span class="p">,</span> <span class="s">'S BoyerMoore'</span><span class="p">),</span>
-                       <span class="p">(</span><span class="n">kmp_rate</span><span class="p">,</span> <span class="s">'KMP'</span><span class="p">),</span>
-                       <span class="p">(</span><span class="k">lambda</span> <span class="n">patlen</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">patlen</span><span class="p">,</span> <span class="s">'$</span><span class="se">\\</span><span class="s">frac{1}{patlen}$'</span><span class="p">)]</span>
+    <span class="n">model_range</span> <span class="o">=</span> <span class="nf">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="sh">'</span><span class="s">rate</span><span class="sh">'</span><span class="p">:[],</span> <span class="sh">'</span><span class="s">alg</span><span class="sh">'</span><span class="p">:[],</span> <span class="sh">'</span><span class="s">patlen</span><span class="sh">'</span><span class="p">:[]}</span>
+    <span class="n">categories_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">bm_rate</span><span class="p">,</span> <span class="sh">'</span><span class="s">BoyerMoore</span><span class="sh">'</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">sbm_rate</span><span class="p">,</span> <span class="sh">'</span><span class="s">S BoyerMoore</span><span class="sh">'</span><span class="p">),</span>
+                       <span class="p">(</span><span class="n">kmp_rate</span><span class="p">,</span> <span class="sh">'</span><span class="s">KMP</span><span class="sh">'</span><span class="p">),</span>
+                       <span class="p">(</span><span class="k">lambda</span> <span class="n">patlen</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">patlen</span><span class="p">,</span> <span class="sh">'</span><span class="s">$</span><span class="se">\\</span><span class="s">frac{1}{patlen}$</span><span class="sh">'</span><span class="p">)]</span>
 
     <span class="k">for</span> <span class="n">alg_fun</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">categories_list</span><span class="p">:</span>
-        <span class="n">data</span><span class="p">[</span><span class="s">'rate'</span><span class="p">].</span><span class="n">extend</span><span class="p">([</span><span class="n">alg_fun</span><span class="p">(</span>\<span class="n">texttt</span><span class="p">{</span><span class="n">patlen</span><span class="p">},</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">patlen</span> <span class="ow">in</span> <span class="n">model_range</span><span class="p">])</span>
-        <span class="n">data</span><span class="p">[</span><span class="s">'alg'</span><span class="p">].</span><span class="n">extend</span><span class="p">([</span><span class="n">label</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">model_range</span><span class="p">])</span>
-        <span class="n">data</span><span class="p">[</span><span class="s">'patlen'</span><span class="p">].</span><span class="n">extend</span><span class="p">(</span><span class="n">model_range</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="sh">'</span><span class="s">rate</span><span class="sh">'</span><span class="p">].</span><span class="nf">extend</span><span class="p">([</span><span class="nf">alg_fun</span><span class="p">(</span>\<span class="n">texttt</span><span class="p">{</span><span class="n">patlen</span><span class="p">},</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">patlen</span> <span class="ow">in</span> <span class="n">model_range</span><span class="p">])</span>
+        <span class="n">data</span><span class="p">[</span><span class="sh">'</span><span class="s">alg</span><span class="sh">'</span><span class="p">].</span><span class="nf">extend</span><span class="p">([</span><span class="n">label</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">model_range</span><span class="p">])</span>
+        <span class="n">data</span><span class="p">[</span><span class="sh">'</span><span class="s">patlen</span><span class="sh">'</span><span class="p">].</span><span class="nf">extend</span><span class="p">(</span><span class="n">model_range</span><span class="p">)</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="nc">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s">'patlen'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'rate'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'alg'</span><span class="p">))</span>
-            <span class="o">+</span> <span class="n">geom_point</span><span class="p">()</span>
-            <span class="o">+</span> <span class="n">geom_smooth</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'gpr'</span><span class="p">)</span>
-            <span class="o">+</span> <span class="n">labs</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s">'Algs'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'$patlen$'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'$</span><span class="se">\\</span><span class="s">frac{cost}{skip}$'</span><span class="p">))</span>
+    <span class="nf">return </span><span class="p">(</span><span class="nf">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="sh">'</span><span class="s">patlen</span><span class="sh">'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sh">'</span><span class="s">rate</span><span class="sh">'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="sh">'</span><span class="s">alg</span><span class="sh">'</span><span class="p">))</span>
+            <span class="o">+</span> <span class="nf">geom_point</span><span class="p">()</span>
+            <span class="o">+</span> <span class="nf">geom_smooth</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="sh">'</span><span class="s">gpr</span><span class="sh">'</span><span class="p">)</span>
+            <span class="o">+</span> <span class="nf">labs</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="sh">'</span><span class="s">Algs</span><span class="sh">'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="sh">'</span><span class="s">$patlen$</span><span class="sh">'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sh">'</span><span class="s">$</span><span class="se">\\</span><span class="s">frac{cost}{skip}$</span><span class="sh">'</span><span class="p">))</span>
 </code></pre></div></div>
 
 <p><code class="language-plaintext highlighter-rouge">plot(1/256, '$p= \\frac{1}{256}$')</code>：</p>
@@ -1519,19 +1519,19 @@ p^{\texttt{patlen}-k} &amp; \text{for} &amp; \texttt{patlen} - m \leqslant k \le
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1977BM" role="doc-endnote">
+    <li id="fn:1977BM">
       <p>https://dl.acm.org/doi/10.1145/359842.359859 <a href="#fnref:1977BM" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:1977KMP" role="doc-endnote">
+    <li id="fn:1977KMP">
       <p>https://epubs.siam.org/doi/abs/10.1137/0206024 <a href="#fnref:1977KMP" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:1980Rytter" role="doc-endnote">
+    <li id="fn:1980Rytter">
       <p>https://epubs.siam.org/doi/10.1137/0209037 <a href="#fnref:1980Rytter" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:B5S" role="doc-endnote">
+    <li id="fn:B5S">
       <p>https://web.archive.org/web/20040907193754/http://effbot.org/zone/stringlib.htm <a href="#fnref:B5S" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:xxHash" role="doc-endnote">
+    <li id="fn:xxHash">
       <p>https://cyan4973.github.io/xxHash/ <a href="#fnref:xxHash" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

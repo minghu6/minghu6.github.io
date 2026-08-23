@@ -127,7 +127,7 @@
 
 <h3 id="区间闭合性">区间闭合性</h3>
 
-<p>前面讲对于小矩形 $[x, y, a, b]$ 更新 $y$ 轴上的区间 $[y, b]$ ，但这是不准确的，因为对于完美矩形，小矩形紧挨着的情况是正确的<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">1</a></sup>而不是错误的，因此不能用两端闭合的区间表示，而需要用半闭半开区间，不妨用底部闭合顶部开放的区间<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>，这样就是更新区间 $[y, b-1]$ 。</p>
+<p>前面讲对于小矩形 $[x, y, a, b]$ 更新 $y$ 轴上的区间 $[y, b]$ ，但这是不准确的，因为对于完美矩形，小矩形紧挨着的情况是正确的<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>而不是错误的，因此不能用两端闭合的区间表示，而需要用半闭半开区间，不妨用底部闭合顶部开放的区间<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，这样就是更新区间 $[y, b-1]$ 。</p>
 
 <p>同样对于扫描线的 $x$ 轴来说，也需要半闭半开区间来容纳小矩形的边紧挨的情况。</p>
 
@@ -135,34 +135,34 @@
 
 <p>照例，建树的那一轴，这里是 $y$ 轴，其上的数据需要离散化处理，但有点儿意外得是，给定的小矩形列表并没有按照任何一个轴来排序，这是什么用意呢，暗示了什么呢？暂且按下不表，我们这次要手动排序了。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">sortedcontainers</span> <span class="kn">import</span> <span class="n">SortedList</span><span class="p">,</span> <span class="n">SortedSet</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">typing</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="n">sortedcontainers</span> <span class="kn">import</span> <span class="n">SortedList</span><span class="p">,</span> <span class="n">SortedSet</span>
 
 
 <span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">isRectangleCover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">isRectangleCover</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="n">y_data</span> <span class="o">=</span> <span class="n">SortedSet</span><span class="p">()</span>
+    <span class="n">y_data</span> <span class="o">=</span> <span class="nc">SortedSet</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rectangles</span><span class="p">:</span>
-        <span class="n">y_data</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-        <span class="n">y_data</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="n">y_data</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">y_data</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 
-    <span class="n">y_map</span> <span class="o">=</span> <span class="p">{</span> <span class="n">y</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">y_data</span><span class="p">)}</span>
+    <span class="n">y_map</span> <span class="o">=</span> <span class="p">{</span> <span class="n">y</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">y_data</span><span class="p">)}</span>
 
     <span class="c1"># ...
 </span></code></pre></div></div>
 
-<p>$x$ 轴也要排序，在计算小矩形面积之和的遍历过程中顺便进行在线地对矩形的竖边按照 $x$ 坐标排序，理论上应当比完整列表上的排序快，$x$ 坐标分为了小矩形的入边和出边，分别用 <code class="language-plaintext highlighter-rouge">ent</code> 和 <code class="language-plaintext highlighter-rouge">ex</code> 表示<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">3</a></sup>。</p>
+<p>$x$ 轴也要排序，在计算小矩形面积之和的遍历过程中顺便进行在线地对矩形的竖边按照 $x$ 坐标排序，理论上应当比完整列表上的排序快，$x$ 坐标分为了小矩形的入边和出边，分别用 <code class="language-plaintext highlighter-rouge">ent</code> 和 <code class="language-plaintext highlighter-rouge">ex</code> 表示<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="c1"># ... def solve
 </span>    
     <span class="n">area_sum</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">ent</span> <span class="o">=</span> <span class="n">SortedList</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">ex</span> <span class="o">=</span> <span class="n">SortedList</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ent</span> <span class="o">=</span> <span class="nc">SortedList</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ex</span> <span class="o">=</span> <span class="nc">SortedList</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rectangles</span><span class="p">:</span>
         <span class="n">area_sum</span> <span class="o">+=</span> <span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">y</span><span class="p">)</span>
@@ -170,8 +170,8 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">y_map</span><span class="p">[</span><span class="n">y</span><span class="p">]</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">y_map</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
 
-        <span class="n">ent</span><span class="p">.</span><span class="n">add</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
-        <span class="n">ex</span><span class="p">.</span><span class="n">add</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+        <span class="n">ent</span><span class="p">.</span><span class="nf">add</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+        <span class="n">ex</span><span class="p">.</span><span class="nf">add</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
 
     <span class="k">del</span> <span class="n">y_map</span>
     
@@ -205,18 +205,18 @@
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="c1"># ... def solve
 </span>
-    <span class="n">segtree</span> <span class="o">=</span> <span class="n">SegmentTree</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_data</span><span class="p">))</span>
+    <span class="n">segtree</span> <span class="o">=</span> <span class="nc">SegmentTree</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">y_data</span><span class="p">))</span>
 
     <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">j_end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+    <span class="n">j_end</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">ent</span><span class="p">:</span>
         <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">j_end</span> <span class="ow">and</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">:</span>
-            <span class="n">segtree</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+            <span class="n">segtree</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
             <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">segtree</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="n">segtree</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">False</span>
 
@@ -224,43 +224,43 @@
 
 
 <span class="k">class</span> <span class="nc">SegmentTree</span><span class="p">:</span>
-    <span class="s">"""DFS型"""</span>
+    <span class="sh">"""</span><span class="s">DFS型</span><span class="sh">"""</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">range_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">marked</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">root</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">range_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">range_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">marked</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">root</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">range_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-        <span class="s">"""It would raise when try to mark an occupied position"""</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">_update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">root</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="sh">"""</span><span class="s">It would raise when try to mark an occupied position</span><span class="sh">"""</span>
+        <span class="n">self</span><span class="p">.</span><span class="nf">_update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="o">*</span><span class="n">self</span><span class="p">.</span><span class="n">root</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">tl</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="n">r</span><span class="p">:</span>
             <span class="k">return</span>
 
         <span class="n">range_len</span> <span class="o">=</span> <span class="n">tr</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="n">tl</span> <span class="ow">and</span> <span class="n">r</span> <span class="o">==</span> <span class="n">tr</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># can't catch class don't inherrit from BaseException
 </span>                <span class="c1"># however so what we could use except to catch
-</span>                <span class="k">raise</span> <span class="s">"Occupied"</span>
+</span>                <span class="k">raise</span> <span class="sh">"</span><span class="s">Occupied</span><span class="sh">"</span>
 
             <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
-                <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">range_len</span>
+                <span class="n">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">range_len</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">tl</span> <span class="o">+</span> <span class="n">tr</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
             <span class="n">sub_l</span> <span class="o">=</span> <span class="p">(</span><span class="n">mid</span> <span class="o">-</span> <span class="n">tl</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">range_len</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="s">"Occupied"</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">range_len</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="sh">"</span><span class="s">Occupied</span><span class="sh">"</span>
 
-            <span class="bp">self</span><span class="p">.</span><span class="n">_update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">mid</span><span class="p">),</span> <span class="n">val</span><span class="p">,</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">_update</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">)</span>
+            <span class="n">self</span><span class="p">.</span><span class="nf">_update</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nf">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">mid</span><span class="p">),</span> <span class="n">val</span><span class="p">,</span> <span class="n">tl</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">self</span><span class="p">.</span><span class="nf">_update</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">mid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">]</span>
+            <span class="n">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">self</span><span class="p">.</span><span class="n">marked</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">sub_l</span><span class="p">]</span>
 </code></pre></div></div>
 
 <h3 id="解树状数组">解⒈⒉：树状数组</h3>
@@ -270,53 +270,53 @@
 <p>具体算法的公式<a href="/algs/FenwickTree.html">这里</a>的有关章节已有详细介绍，就不再赘述。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="c1"># ... def solve
-</span>    <span class="n">cobit</span> <span class="o">=</span> <span class="n">CoBIT</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_data</span><span class="p">))</span>
+</span>    <span class="n">cobit</span> <span class="o">=</span> <span class="nc">CoBIT</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">y_data</span><span class="p">))</span>
 
     <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">j_end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+    <span class="n">j_end</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">ent</span><span class="p">:</span>
         <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">j_end</span> <span class="ow">and</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">:</span>
-            <span class="n">cobit</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">cobit</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">if</span> <span class="n">cobit</span><span class="p">.</span><span class="n">query</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cobit</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">False</span>
 
-        <span class="n">cobit</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cobit</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="bp">True</span>
 
 
 <span class="k">class</span> <span class="nc">CoBIT</span><span class="p">:</span>
-    <span class="s">"""Range Update &amp; Range Query"""</span>
+    <span class="sh">"""</span><span class="s">Range Update &amp; Range Query</span><span class="sh">"""</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">range_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">b1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">b2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">range_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">b1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">b2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">range_len</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="s">"""range add x for [l, r]"""</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sh">"""</span><span class="s">range add x for [l, r]</span><span class="sh">"""</span>
 
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">CoBIT</span><span class="p">.</span><span class="nf">_add</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">CoBIT</span><span class="p">.</span><span class="nf">_add</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span><span class="p">)</span>
 
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">CoBIT</span><span class="p">.</span><span class="n">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">CoBIT</span><span class="p">.</span><span class="nf">_add</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">CoBIT</span><span class="p">.</span><span class="nf">_add</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">r</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">prefix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">prefix</span><span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="nf">prefix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="n">self</span><span class="p">.</span><span class="nf">prefix</span><span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span> <span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">CoBIT</span><span class="p">.</span><span class="n">_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">-</span> <span class="n">CoBIT</span><span class="p">.</span><span class="n">_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">i</span> <span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">CoBIT</span><span class="p">.</span><span class="nf">_prefix</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">-</span> <span class="n">CoBIT</span><span class="p">.</span><span class="nf">_prefix</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">b2</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
-    <span class="o">@</span><span class="nb">staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_add</span><span class="p">(</span><span class="n">bit</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">bit</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nf">len</span><span class="p">(</span><span class="n">bit</span><span class="p">):</span>
             <span class="n">bit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="o">@</span><span class="nb">staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_prefix</span><span class="p">(</span><span class="n">bit</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -335,28 +335,28 @@
 
 <p>在面积相等情况下，重叠与否的充分必要条件是：如果点位于大矩形的四角，那么它们只能出现 $1$ 次；如果位于边上，只能出现 $2$ 次；如果位于其他位置，也就是大矩形内部，那么只能出现 $2$ 或 $4$ 次。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">typing</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="n">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
 
 
 <span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">isRectangleCover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">isRectangleCover</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">rectangles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="n">vertexs</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
-    <span class="n">min_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">"inf"</span><span class="p">)</span>
-    <span class="n">min_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">"inf"</span><span class="p">)</span>
+    <span class="n">vertexs</span> <span class="o">=</span> <span class="nc">Counter</span><span class="p">()</span>
+    <span class="n">min_x</span> <span class="o">=</span> <span class="nf">float</span><span class="p">(</span><span class="sh">"</span><span class="s">inf</span><span class="sh">"</span><span class="p">)</span>
+    <span class="n">min_y</span> <span class="o">=</span> <span class="nf">float</span><span class="p">(</span><span class="sh">"</span><span class="s">inf</span><span class="sh">"</span><span class="p">)</span>
     <span class="n">max_a</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">max_b</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">area_sum</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rectangles</span><span class="p">:</span>
-        <span class="n">min_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="n">min_y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="n">max_a</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_a</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-        <span class="n">max_b</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_b</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">min_x</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">min_y</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">max_a</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">max_a</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+        <span class="n">max_b</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">max_b</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
         <span class="n">vertexs</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">vertexs</span><span class="p">[(</span><span class="n">a</span><span class="p">,</span> <span class="n">y</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -370,7 +370,7 @@
     <span class="k">if</span> <span class="n">area_sum</span> <span class="o">!=</span> <span class="n">cover_area</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">False</span>
 
-    <span class="k">for</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">),</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">vertexs</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nf">for </span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">),</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">vertexs</span><span class="p">.</span><span class="nf">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">x0</span> <span class="ow">in</span> <span class="p">(</span><span class="n">min_x</span><span class="p">,</span> <span class="n">max_a</span><span class="p">)</span> <span class="ow">and</span> <span class="n">y0</span> <span class="ow">in</span> <span class="p">(</span><span class="n">min_y</span><span class="p">,</span> <span class="n">max_b</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">False</span>
@@ -384,7 +384,7 @@
     <span class="k">return</span> <span class="bp">True</span>
 </code></pre></div></div>
 
-<p>这里面 <code class="language-plaintext highlighter-rouge">Counter</code> 这个类比较甜，它实际上起到了一个提供默认值的默认数组的功能<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">4</a></sup>。</p>
+<p>这里面 <code class="language-plaintext highlighter-rouge">Counter</code> 这个类比较甜，它实际上起到了一个提供默认值的默认数组的功能<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>。</p>
 
 <h2 id="解微积分">解③：微积分</h2>
 
@@ -394,16 +394,16 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>唯一正确的 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>当然也可以选择顶部闭合、底部开放，这没什么区别 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>用 <code class="language-plaintext highlighter-rouge">ex</code> 而不是 <code class="language-plaintext highlighter-rouge">exit</code> 主要是为了避免和 Python 关键字冲突，（这个冲突）会造成代码高亮上的问题 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>我是真的服了，在习惯了 Rust 风格库的事无巨细，我从来发现 Python 的库提供的 API 如此匮乏，<code class="language-plaintext highlighter-rouge">DefaultDict</code> 居然只提供c传默认值构造方法的参数而没有提供传一个固定默认值的参数 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

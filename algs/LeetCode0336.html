@@ -147,7 +147,7 @@
 
 <h2 id="解-trie">解① Trie：</h2>
 
-<p>当提到多个子串的比较时，我们就可以想到前缀树（Trie）这种思路<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，我们用它保存每个单词的后缀<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>。</p>
+<p>当提到多个子串的比较时，我们就可以想到前缀树（Trie）这种思路<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>，我们用它保存每个单词的后缀<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>。</p>
 
 <p>如果作为前缀的单词长度 $\geqslant$ 作为后缀的单词长度：</p>
 
@@ -310,11 +310,11 @@
 
 <p>总地来说 Trie 也并不能特别地节省内存，总长度为 $n$ 的串存储到 Trie 上也仍然需要 $O(n)$ 的时间复杂度，唯一明显好处是可以缩短单词地匹配范围，把单词比较次数从原来的 $O(n^2)$ 降低为 $O(n)$ 。</p>
 
-<p>对于本题，Rust Trie 实现大概是 276 ms / 373 MB 的水平<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">3</a></sup>。</p>
+<p>对于本题，Rust Trie 实现大概是 276 ms / 373 MB 的水平<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>。</p>
 
 <p>这个级别的内存消耗显然过分了，特别是对于 Rust 而言，按照以往经验，一个好的 Rust 题解的内存消耗应该在 10 MB 以内，几百 MB 的消耗与其他语言相比也非常糟糕；</p>
 
-<p>时间性能勉强还算可以，我知道 C++ 的题解里的最好地有 200+ ms ，而 Java 的题解最好地可以达到 100+ ms<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">4</a></sup> ，相较之下，这个表现显然还不够好。</p>
+<p>时间性能勉强还算可以，我知道 C++ 的题解里的最好地有 200+ ms ，而 Java 的题解最好地可以达到 100+ ms<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">4</a></sup> ，相较之下，这个表现显然还不够好。</p>
 
 <h2 id="解-长度基数">解② 长度基数：</h2>
 
@@ -402,7 +402,7 @@
 
 <p>这个方法的思路并没有出现在热门题解中，是我从 Python 的最佳提交中看来的，非常简单，而且具有通用性，在很多其他问题上也有这样的处理思路。</p>
 
-<p>如果把所有单词的正串和反串放在一起排序，那么按照字符串比较的字典序<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，会有如下几个关键性质：</p>
+<p>如果把所有单词的正串和反串放在一起排序，那么按照字符串比较的字典序<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup>，会有如下几个关键性质：</p>
 
 <ol>
   <li>
@@ -610,19 +610,19 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>很多批量查询地算法都使用了这种结构，比如基于KMP 前缀数组和 Trie 的 AC 自动机（AC Automaton） <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>或者每个单词串的反串儿的前缀 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>有一种看起来会节省内存的调整是把节点上为孩子预先分配的数组结构换成哈希表，但这不改变结构的本质上，毕竟哈希表的基础也是数组，只是时间与空间的平衡因子不同，实际测试结果也支持了这样的判断：换成哈希表后消耗的空间减半，但运行时间加倍 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>很符合我对 C++ 的一贯想象，值得一提的是 LeetCode 平台使用得还是 clang ，如果是 gnu g++ 那局面更不敢想象了 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>线性结构的比较默认采用字典序，它可以这样理解：从首元素开始两两比较，直到发现不同元素或者两个串都耗尽，较短的那一个串后面补空，相当于是权值最小的元素。但是有时候有些领域为了它们的某些方便，会判断较短的串一定比较长的串要小，但这种比较方法不能称之为字典序 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

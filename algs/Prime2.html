@@ -163,7 +163,7 @@
 
 <h2 id="bengelloun-增量筛">Bengelloun 增量筛（√√√）</h2>
 
-<p>Bengelloun 增量筛<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup><sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup><sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，也可以称为 LPF 增量筛，基于最小质因数分解 $c = \texttt{lpf}(c)\cdot f$ ，使用固定 $f$ 而在 $p$ 上遍历的思路。<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">4</a></sup></p>
+<p>Bengelloun 增量筛<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup><sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup><sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>，也可以称为 LPF 增量筛，基于最小质因数分解 $c = \texttt{lpf}(c)\cdot f$ ，使用固定 $f$ 而在 $p$ 上遍历的思路。<sup id="fnref:6"><a href="#fn:6" class="footnote" rel="footnote" role="doc-noteref">4</a></sup></p>
 
 <h4 id="思路分析">思路分析</h4>
 
@@ -242,7 +242,7 @@
 
 <h2 id="gpf-增量筛">GPF 增量筛（√√√）</h2>
 
-<p>GPF 增量筛<sup id="fnref:2:1" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>，和<a href="/algs/Prime1.html#gpf-筛子">普通 GPF 筛子</a>一样基于最大质因数分解 $c = f\cdot\texttt{gpf}(c)$，但主要以 $f$ 为常量，以 $p \geqslant \texttt{gpf}(f)$ 为增量。</p>
+<p>GPF 增量筛<sup id="fnref:2:1"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，和<a href="/algs/Prime1.html#gpf-筛子">普通 GPF 筛子</a>一样基于最大质因数分解 $c = f\cdot\texttt{gpf}(c)$，但主要以 $f$ 为常量，以 $p \geqslant \texttt{gpf}(f)$ 为增量。</p>
 
 <h4 id="思路分析-1">思路分析</h4>
 
@@ -252,7 +252,7 @@
 
 <p>于是我们考虑固定 $f$ ，那么显然 $p$ 有一个确定的值的顺序，开始值是 $p=\texttt{gpf}(f)$ ，按照求解出的质数顺序逐步增加即可。</p>
 
-<p>但是 $c = f\cdot\texttt{gpf}(f)$ 本身又该如何标记呢？这下只能重新固定 $p$ ，由前一个满足 $\texttt{gpf}(f) = p $ 的 $f$ <sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">5</a></sup> 来标记，而满足条件的最小的 $f=p$ ，需要我们手动进行标记。</p>
+<p>但是 $c = f\cdot\texttt{gpf}(f)$ 本身又该如何标记呢？这下只能重新固定 $p$ ，由前一个满足 $\texttt{gpf}(f) = p $ 的 $f$ <sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">5</a></sup> 来标记，而满足条件的最小的 $f=p$ ，需要我们手动进行标记。</p>
 
 <p>让我们把问题总结一下：</p>
 
@@ -323,7 +323,7 @@
 
 <p>根据增量筛的语义，应当在生成一个质数后，在下一个质数生成时对数组 <code class="language-plaintext highlighter-rouge">gpf</code> 进行扩容。</p>
 
-<p>扩容大小做如下分析，如果当前生成的质数是 $n$ ，那么下一个质数 $\lt 2n$ <sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">6</a></sup> 。</p>
+<p>扩容大小做如下分析，如果当前生成的质数是 $n$ ，那么下一个质数 $\lt 2n$ <sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">6</a></sup> 。</p>
 
 <p>而且可以发现，每个数字标记的合数不超过自身的 $2$ 倍，分析如下：</p>
 
@@ -612,22 +612,22 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>S.A. Bengelloun. An Incremental Primal Sieve. 1986. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>Paul Pritchard. LINEAR PRIME-NUMBER SIEVES: A FAMILY TREE. 1987. <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:2:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>不知道为什么，在 Pritchard 的论文引用里，Bengelloun 一律被写作 Bengalloun <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
+    <li id="fn:6">
       <p>对于增量筛子，固定 $f$ 而在 $p$ 上遍历的算法设计本身就有天然优势 ，所以后面 GPF 增量筛子也采用了这种设计，原因的具体分析二者也是相似的，所以这里省略了，直接参考 GPF 增量筛子即可。 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>寻找 $f$ 这一步的复杂度分析本质上还要研究邻近质数的相关规律，但现在数学上好像还不能把这个规律搞得很清楚，不过根据经验判断，这一步的时间复杂度近似常量。同时这一步，只发生在遇到 $n = f’\cdot p^2,\ \texttt{gpf}(f’) = p$ 的时候。 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>根据前文介绍过<a href="/algs/Prime0.html#伯特兰-切比雪夫定理">伯特兰-切比雪夫定理</a> <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

@@ -182,7 +182,7 @@
 
 <h3 id="串哈希算法">串哈希算法</h3>
 
-<p>如果只考虑求取最长回文串，可以使用<a href="/algs/StringHash.html">串哈希</a>的方法<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">1</a></sup>，分别预处理正向的串的哈希和反向串的哈希，实现 $O(1)$ 复杂度的回文串检查，这样对于模式串上的每个位置采用<a href="/algs/BinaryLifting.html">二进制提升（Binary Lifting）</a>的方法，测试出每个位置上的<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>最长回文串，当然这需要分奇数轴和偶数轴分别求解。</p>
+<p>如果只考虑求取最长回文串，可以使用<a href="/algs/StringHash.html">串哈希</a>的方法<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>，分别预处理正向的串的哈希和反向串的哈希，实现 $O(1)$ 复杂度的回文串检查，这样对于模式串上的每个位置采用<a href="/algs/BinaryLifting.html">二进制提升（Binary Lifting）</a>的方法，测试出每个位置上的<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>最长回文串，当然这需要分奇数轴和偶数轴分别求解。</p>
 
 <p>注意当检查子串 $s[i..i+d-1]$ 是否是回文时：</p>
 
@@ -314,7 +314,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h3 id="串哈希-dp">串哈希 DP<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">3</a></sup></h3>
+<h3 id="串哈希-dp">串哈希 DP<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">3</a></sup></h3>
 
 <p>介绍参考<a href="/algs/StringDP.html">串上DP</a>的相关章节</p>
 
@@ -469,7 +469,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h4 id="统一实现">统一实现<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup><sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></h4>
+<h4 id="统一实现">统一实现<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">4</a></sup><sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup></h4>
 
 <p>另外有一种借助字符串构造，利用求奇数轴的单个函数求 $d_1$ 和 $d_2$ 的方法。</p>
 
@@ -590,7 +590,7 @@
 
 \[d_1[i] = \lfloor {(d_1'[2i] + 1)}/ {2} \rfloor\]
 
-<p>$d_2$ 上的字符对应着 s’ 上的 <code class="language-plaintext highlighter-rouge">'#'</code> ，表示它本来应该是 $s$ 上的字符的空隙，分别在 $1,\ 3,\ 5,\ \dots,\ 2i-1$ <sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>，而 $s’$ 上的值恰好就应该是原来 $s$ 上的两倍，因此可以得到：</p>
+<p>$d_2$ 上的字符对应着 s’ 上的 <code class="language-plaintext highlighter-rouge">'#'</code> ，表示它本来应该是 $s$ 上的字符的空隙，分别在 $1,\ 3,\ 5,\ \dots,\ 2i-1$ <sup id="fnref:6"><a href="#fn:6" class="footnote" rel="footnote" role="doc-noteref">6</a></sup>，而 $s’$ 上的值恰好就应该是原来 $s$ 上的两倍，因此可以得到：</p>
 
 \[d_2[i] = d_1'[2i-1] / 2\]
 
@@ -646,7 +646,7 @@
 
 <h3 id="一般性方法">一般性方法</h3>
 
-<p>可以采用朴素地 $O(n^2)$ 的算法，或者前面介绍的 $O(n)$ 地求取所有本质不同子串的方法，然后寻找同时是前缀的最长回文子串，除此之外这里特别介绍一个利用回文反转相同的性质，通过构造字符串利用 KMP 前缀函数求解的方法。<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup></p>
+<p>可以采用朴素地 $O(n^2)$ 的算法，或者前面介绍的 $O(n)$ 地求取所有本质不同子串的方法，然后寻找同时是前缀的最长回文子串，除此之外这里特别介绍一个利用回文反转相同的性质，通过构造字符串利用 KMP 前缀函数求解的方法。<sup id="fnref:7"><a href="#fn:7" class="footnote" rel="footnote" role="doc-noteref">7</a></sup></p>
 
 <h3 id="构造串kmp">构造串+KMP</h3>
 
@@ -658,25 +658,25 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>对于朴素串哈希来说，也可以求解本质不同回文串，这里缩小问题是为了方便引出下面的 DP 版串哈希算法 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>以该位置为对称轴 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>https://oi-wiki.org/string/hash/#%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>https://cp-algorithms.com/string/manacher.html#working-with-parities <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>https://oi-wiki.org/string/manacher/#%E7%BB%9F%E4%B8%80%E5%A4%84%E7%90%86 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
+    <li id="fn:6">
       <p>注意，按照我们前面的规定， $d_2$ 采取得是插入序，它的有效值是从 $1$ 开始取的 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:7" role="doc-endnote">
+    <li id="fn:7">
       <p>但是这道题的测试数据非常宽松，反而是朴素算法的性能最好 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

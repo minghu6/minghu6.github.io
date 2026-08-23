@@ -107,9 +107,9 @@
   
 
   <div class="post__content_container">
-    <div class="post__content"><p>本章介绍线性时间复杂度的后缀排序的就地算法<sup id="fnref:in-place-sa-sort" role="doc-noteref"><a href="#fn:in-place-sa-sort" class="footnote" rel="footnote">1</a></sup>（Optimal In-Place Suffix Sorting）。</p>
+    <div class="post__content"><p>本章介绍线性时间复杂度的后缀排序的就地算法<sup id="fnref:in-place-sa-sort"><a href="#fn:in-place-sa-sort" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>（Optimal In-Place Suffix Sorting）。</p>
 
-<p>本章<strong>只建议</strong>在<strong>非常非常熟悉</strong>SA-IS<sup id="fnref:nzc09a" role="doc-noteref"><a href="#fn:nzc09a" class="footnote" rel="footnote">2</a></sup><sup id="fnref:sa-is" role="doc-noteref"><a href="#fn:sa-is" class="footnote" rel="footnote">3</a></sup>的前提下阅读。</p>
+<p>本章<strong>只建议</strong>在<strong>非常非常熟悉</strong>SA-IS<sup id="fnref:nzc09a"><a href="#fn:nzc09a" class="footnote" rel="footnote" role="doc-noteref">2</a></sup><sup id="fnref:sa-is"><a href="#fn:sa-is" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>的前提下阅读。</p>
 
 <h2 id="全局设定">全局设定</h2>
 
@@ -367,7 +367,7 @@ $$ -->
 
 <p>这一部分就是利用前面用过的内部计数器技巧，进行原地版的诱导排序。</p>
 
-<p>假如我们已经有排好序的LMS后缀（在桶尾），来诱导L型后缀<sup id="fnref:induced-sort" role="doc-noteref"><a href="#fn:induced-sort" class="footnote" rel="footnote">4</a></sup>：</p>
+<p>假如我们已经有排好序的LMS后缀（在桶尾），来诱导L型后缀<sup id="fnref:induced-sort"><a href="#fn:induced-sort" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>：</p>
 
 <p><img src="/assets/img/sa16/sa16_13.png" alt="" /></p>
 
@@ -425,7 +425,7 @@ $$ -->
 
 <h4 id="实现">实现</h4>
 
-<p>时间性能上和 SA-IS 没有显著差别，空间占用变为不到原来的 $\large\frac{1}{3}$ （代码量多 1 倍），算是不愧为原文 Optimal In-Place Suffix Sorting <sup id="fnref:in-place-sa-sort:1" role="doc-noteref"><a href="#fn:in-place-sa-sort" class="footnote" rel="footnote">1</a></sup>的标题。</p>
+<p>时间性能上和 SA-IS 没有显著差别，空间占用变为不到原来的 $\large\frac{1}{3}$ （代码量多 1 倍），算是不愧为原文 Optimal In-Place Suffix Sorting <sup id="fnref:in-place-sa-sort:1"><a href="#fn:in-place-sa-sort" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>的标题。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="n">max</span><span class="p">;</span>
 <span class="k">use</span> <span class="nn">std</span><span class="p">::</span><span class="nn">cmp</span><span class="p">::</span><span class="n">Ordering</span><span class="p">;</span>
@@ -955,7 +955,7 @@ $$ -->
 
 <p>使用复杂方法解决复杂问题，通过分治，解决空间紧张的问题。</p>
 
-<p>算法实现的难点在于在 $\texttt{SA}$ 上构建BitMaps<sup id="fnref:np12" role="doc-noteref"><a href="#fn:np12" class="footnote" rel="footnote">5</a></sup>，来替代本来由重命名后的T所指示的指示桶尾/桶头的位置。</p>
+<p>算法实现的难点在于在 $\texttt{SA}$ 上构建BitMaps<sup id="fnref:np12"><a href="#fn:np12" class="footnote" rel="footnote" role="doc-noteref">5</a></sup>，来替代本来由重命名后的T所指示的指示桶尾/桶头的位置。</p>
 
 <p>这里的BitMaps指得是使用比特向量（bit vector）表示的有序字典（multiset），是一种紧凑型结构（compact data structure）。</p>
 
@@ -971,19 +971,19 @@ $$ -->
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:in-place-sa-sort" role="doc-endnote">
+    <li id="fn:in-place-sa-sort">
       <p>Li, Zhize; Li, Jian; Huo, Hongwei (2016). <em>Optimal In-Place Suffix Sorting</em>. Proceedings of the 25th International Symposium on String Processing and Information Retrieval (SPIRE). Lecture Notes in Computer Science. 11147. Springer. pp. 268–284. arXiv:1610.08305. doi:10.1007/978-3-030-00479-8_22. ISBN:978-3-030-00478-1. <a href="#fnref:in-place-sa-sort" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:in-place-sa-sort:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
     </li>
-    <li id="fn:nzc09a" role="doc-endnote">
+    <li id="fn:nzc09a">
       <p>Ge Nong, Sen Zhang, and Wai Hong Chan. Linear suffix array construction by almost pure induced-sorting. In Data Compression Conference (DCC), pages 193–202. IEEE, 2009. <a href="#fnref:nzc09a" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:sa-is" role="doc-endnote">
+    <li id="fn:sa-is">
       <p>推荐阅读 <a href="https://riteme.site/blog/2016-6-19/sais.html">博文</a> 和它的 <a href="https://github.com/riteme/riteme.github.io/issues/28">issue列表</a> <a href="#fnref:sa-is" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:induced-sort" role="doc-endnote">
+    <li id="fn:induced-sort">
       <p>如果是LML后缀，就先诱导S型后缀，唯一区别是计算LML后缀时需要将警戒哨也算进去。 <a href="#fnref:induced-sort" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:np12" role="doc-endnote">
+    <li id="fn:np12">
       <p>Gonzalo Navarro and Eliana Providel. Fast, small, simple rank/select on bitmaps. In Proc. 11th International Symposium on Experimental Algorithms (SEA), pages 295–306, 2012. <a href="#fnref:np12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

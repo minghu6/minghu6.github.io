@@ -123,7 +123,7 @@
 
 <p><em>这个模块就是一个连同命令行接口和文档注解都不超过 400 代码的单文件。</em></p>
 
-<p><em>从语法上看，就有将近 10 年的未被修改过<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">1</a></sup>，而从 API 的设计理念上<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>，核心逻辑可能写在上个世纪。</em></p>
+<p><em>从语法上看，就有将近 10 年的未被修改过<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>，而从 API 的设计理念上<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，核心逻辑可能写在上个世纪。</em></p>
 
 <p>它的命令行接口让用户指定作为时间观测次数的大轮次次数 <code class="language-plaintext highlighter-rouge">repeat</code> 和作为每次观测时运行的小轮次次数 <code class="language-plaintext highlighter-rouge">number</code> ，分别提供了 <code class="language-plaintext highlighter-rouge">default_repeat = 5</code> 和<code class="language-plaintext highlighter-rouge">default_number = 1000_000</code> 的默认值。</p>
 
@@ -133,12 +133,12 @@
 
 <p>从 $1$ 开始，累积交替地以 $\times 2,\ \times 5$ 的次数运行测试目标，直到总运行时间超过 $0.2$ s 。</p>
 
-<p><em>另外在测试开始运行的时候 opt-in 地禁止 GC。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">3</a></sup></em></p>
+<p><em>另外在测试开始运行的时候 opt-in 地禁止 GC。<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">3</a></sup></em></p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># In class Timer
 </span>
-<span class="k">def</span> <span class="nf">autorange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="s">"""Return the number of loops and time taken so that total time &gt;= 0.2.
+<span class="k">def</span> <span class="nf">autorange</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sh">"""</span><span class="s">Return the number of loops and time taken so that total time &gt;= 0.2.
 
 	Calls the timeit method with increasing numbers from the sequence
     1, 2, 5, 10, 20, 50, ... until the time taken is at least 0.2
@@ -146,16 +146,16 @@
 
     If *callback* is given and is not None, it will be called after
     each trial with two arguments: ``callback(number, time_taken)``.
-    """</span>
+    </span><span class="sh">"""</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span>
             <span class="n">number</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">j</span>
-            <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">timeit</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+            <span class="n">time_taken</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">timeit</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">callback</span><span class="p">:</span>
-                <span class="n">callback</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">)</span>
+                <span class="nf">callback</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">time_taken</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">)</span>
+                    <span class="nf">return </span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">)</span>
                 <span class="n">i</span> <span class="o">*=</span> <span class="mi">10</span>
 </code></pre></div></div>
 
@@ -163,25 +163,25 @@
 
 <p>相比之下，Rust 内置的 <code class="language-plaintext highlighter-rouge">test</code> crate 实现的 micro-benchmarking 逻辑就体面得多。</p>
 
-<p><strong>首先确定初始的每轮运行次数 <code class="language-plaintext highlighter-rouge">n</code><sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">4</a></sup>：</strong></p>
+<p><strong>首先确定初始的每轮运行次数 <code class="language-plaintext highlighter-rouge">n</code><sup id="fnref:8"><a href="#fn:8" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>：</strong></p>
 
 <ol>
-  <li>运行一次目标，得到测量时间 <code class="language-plaintext highlighter-rouge">ns_single</code> ns ，如果 $\lt 1$ 就补足为 $1$ ；<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></li>
+  <li>运行一次目标，得到测量时间 <code class="language-plaintext highlighter-rouge">ns_single</code> ns ，如果 $\lt 1$ 就补足为 $1$ ；<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup></li>
   <li><code class="language-plaintext highlighter-rouge">n = 1000_000 / ns_single</code> 得到 $1$ ms 内的运行次数，如果 $\lt 1$ 就补足为 $1$ 。</li>
 </ol>
 
-<p><strong>然后逐步统计学取样，直到稳定地得到相对稳定的<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup>观测统计或者超时<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">7</a></sup>：</strong></p>
+<p><strong>然后逐步统计学取样，直到稳定地得到相对稳定的<sup id="fnref:6"><a href="#fn:6" class="footnote" rel="footnote" role="doc-noteref">6</a></sup>观测统计或者超时<sup id="fnref:10"><a href="#fn:10" class="footnote" rel="footnote" role="doc-noteref">7</a></sup>：</strong></p>
 
-<p>以 $50$ 为一轮的取样数，<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">8</a></sup></p>
+<p>以 $50$ 为一轮的取样数，<sup id="fnref:7"><a href="#fn:7" class="footnote" rel="footnote" role="doc-noteref">8</a></sup></p>
 
 <p>每一轮的迭代的运行次数仍然遵循交替 $\times 2,\ \times 5$ 的规律，</p>
 
-<p>每次取样完后，通过 <code class="language-plaintext highlighter-rouge">stats::winsorize(samples, 5.0)</code> 去掉前 5% 和后 5%的取样结果<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup> ，</p>
+<p>每次取样完后，通过 <code class="language-plaintext highlighter-rouge">stats::winsorize(samples, 5.0)</code> 去掉前 5% 和后 5%的取样结果<sup id="fnref:9"><a href="#fn:9" class="footnote" rel="footnote" role="doc-noteref">9</a></sup> ，</p>
 
 <p>这样如果相邻两轮的观测统计 <code class="language-plaintext highlighter-rouge">summ</code> 和 <code class="language-plaintext highlighter-rouge">summ5</code> 满足以下条件：</p>
 
 <ol>
-  <li>前一轮 <code class="language-plaintext highlighter-rouge">summ</code> 的绝对偏差的中位数<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">10</a></sup> 占这个中位数本身的百分比 $\lt 1\%$ ；</li>
+  <li>前一轮 <code class="language-plaintext highlighter-rouge">summ</code> 的绝对偏差的中位数<sup id="fnref:12"><a href="#fn:12" class="footnote" rel="footnote" role="doc-noteref">10</a></sup> 占这个中位数本身的百分比 $\lt 1\%$ ；</li>
   <li>前一轮 <code class="language-plaintext highlighter-rouge">summ</code> 和这一轮 <code class="language-plaintext highlighter-rouge">summ5</code> 的两个中位数的差小于 <code class="language-plaintext highlighter-rouge">summ5</code> 的绝对偏差的中位数</li>
 </ol>
 
@@ -189,7 +189,7 @@
 
 <p>否则检测总运行时间是否超时，超时也返回统计结果，</p>
 
-<p>否则进行下一轮<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup>。</p>
+<p>否则进行下一轮<sup id="fnref:11"><a href="#fn:11" class="footnote" rel="footnote" role="doc-noteref">11</a></sup>。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">fn</span> <span class="n">iter</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">F</span><span class="o">&gt;</span><span class="p">(</span><span class="n">inner</span><span class="p">:</span> <span class="o">&amp;</span><span class="k">mut</span> <span class="n">F</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nn">stats</span><span class="p">::</span><span class="n">Summary</span>
 <span class="k">where</span>
@@ -273,9 +273,9 @@
 
 <h3 id="实操">实操</h3>
 
-<p>直接参照 Rust <code class="language-plaintext highlighter-rouge">test</code> 里的实现做一个 Python 的版本<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">12</a></sup>。</p>
+<p>直接参照 Rust <code class="language-plaintext highlighter-rouge">test</code> 里的实现做一个 Python 的版本<sup id="fnref:14"><a href="#fn:14" class="footnote" rel="footnote" role="doc-noteref">12</a></sup>。</p>
 
-<p>好消息是 Python 内置的 <code class="language-plaintext highlighter-rouge">statistics</code> 模块把 Rust <code class="language-plaintext highlighter-rouge">test</code> 里面花两百行代码实现的统计方法<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">13</a></sup>都实现了，这为我们省去了很多功夫。</p>
+<p>好消息是 Python 内置的 <code class="language-plaintext highlighter-rouge">statistics</code> 模块把 Rust <code class="language-plaintext highlighter-rouge">test</code> 里面花两百行代码实现的统计方法<sup id="fnref:13"><a href="#fn:13" class="footnote" rel="footnote" role="doc-noteref">13</a></sup>都实现了，这为我们省去了很多功夫。</p>
 
 <p><em>这里只列举核心的方法，完整框架参考<a href="https://github.com/minghu6/py-minghu6">项目所在仓库</a>  。</em></p>
 
@@ -284,7 +284,7 @@
 <p>首先定义一个测试方法应该返回的基本数据结构 <code class="language-plaintext highlighter-rouge">CaseStats</code> ：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CaseStats</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
-    <span class="s">"""case -&gt; module -&gt; benchmark -(archiving)&gt; records"""</span>
+    <span class="sh">"""</span><span class="s">case -&gt; module -&gt; benchmark -(archiving)&gt; records</span><span class="sh">"""</span>
 
     <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">ave</span><span class="p">:</span> <span class="nb">int</span>
@@ -302,58 +302,58 @@
 
 <p>首先是需要的一系列统计方法：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
-<span class="kn">from</span> <span class="nn">statistics</span> <span class="kn">import</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">median</span><span class="p">,</span> <span class="n">StatisticsError</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
+<span class="kn">from</span> <span class="n">statistics</span> <span class="kn">import</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">median</span><span class="p">,</span> <span class="n">StatisticsError</span>
 
 
 <span class="k">class</span> <span class="nc">SampleStats</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="o">@</span><span class="n">cache</span>
-    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nf">max</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="o">@</span><span class="n">cache</span>
-    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nf">min</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="o">@</span><span class="n">cache</span>
-    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nf">median</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="o">@</span><span class="n">cache</span>
-    <span class="k">def</span> <span class="nf">median_abs_dev</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">median_abs_dev</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">median_abs_dev</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nf">median_abs_dev</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">samples</span><span class="p">)</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="o">@</span><span class="n">cache</span>
-    <span class="k">def</span> <span class="nf">median_abs_dev_pct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-        <span class="s">""" 0.01 stand for 1% """</span>
+    <span class="nd">@property</span>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">median_abs_dev_pct</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
+        <span class="sh">"""</span><span class="s"> 0.01 stand for 1% </span><span class="sh">"""</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">median_abs_dev</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">median</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">median_abs_dev</span> <span class="o">/</span> <span class="n">self</span><span class="p">.</span><span class="n">median</span>
 
 <span class="k">def</span> <span class="nf">winsoring</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-    <span class="s">""" [Winsoring](https://en.wikipedia.org/wiki/Winsorizing) high e/n and low e/n
+    <span class="sh">"""</span><span class="s"> [Winsoring](https://en.wikipedia.org/wiki/Winsorizing) high e/n and low e/n
 
     in-place
-    """</span>
+    </span><span class="sh">"""</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">StatisticsError</span><span class="p">(</span><span class="s">'must satisfy 2 * e &lt; n'</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="nc">StatisticsError</span><span class="p">(</span><span class="sh">'</span><span class="s">must satisfy 2 * e &lt; n</span><span class="sh">'</span><span class="p">)</span>
 
     <span class="c1"># percentiles
-</span>    <span class="n">pcts</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+</span>    <span class="n">pcts</span> <span class="o">=</span> <span class="nf">quantiles</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
 
     <span class="n">lo</span> <span class="o">=</span> <span class="n">pcts</span><span class="p">[</span><span class="n">e</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">hi</span> <span class="o">=</span> <span class="n">pcts</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">e</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">:</span>
             <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hi</span>
 
@@ -362,84 +362,84 @@
 
 
 <span class="k">def</span> <span class="nf">median_abs_dev</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Number</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-    <span class="n">x0</span> <span class="o">=</span> <span class="n">median</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="nf">median</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">median</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">),</span> <span class="n">samples</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="nf">median</span><span class="p">(</span><span class="nf">list</span><span class="p">(</span><span class="nf">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nf">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">),</span> <span class="n">samples</span><span class="p">)))</span>
 </code></pre></div></div>
 
 <p>一个便于观测时间的方法，利用了 Python 上文管理器的 <code class="language-plaintext highlighter-rouge">with</code> 语法：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Watch</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s">".2f"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="s">"""
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="sh">"</span><span class="s">.2f</span><span class="sh">"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="sh">"""</span><span class="s">
         :fmt: format float number of (s/ms/us)
-        """</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span>
+        </span><span class="sh">"""</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span>
 
-    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="n">perf_counter_ns</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="nf">perf_counter_ns</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">self</span>
 
-    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="n">perf_counter_ns</span><span class="p">()</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">start</span>
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="nf">perf_counter_ns</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">self</span><span class="p">.</span><span class="n">start</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="k">def</span> <span class="nf">nanos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nanos</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_nanos</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="k">def</span> <span class="nf">micros</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">micros</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="k">def</span> <span class="nf">millis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000_000</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">millis</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000_000</span>
 
-    <span class="o">@</span><span class="nb">property</span>
-    <span class="k">def</span> <span class="nf">secs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000_000_000</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">secs</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_nanos</span> <span class="o">/</span> <span class="mi">1000_000_000</span>
 </code></pre></div></div>
 
 <p>然后我们可以写性能统计取样的方法：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">SAMPLE_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
-<span class="n">WINSORING_PERCENTILE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">'n'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">'e'</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+<span class="n">WINSORING_PERCENTILE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="sh">'</span><span class="s">n</span><span class="sh">'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="sh">'</span><span class="s">e</span><span class="sh">'</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
 
 <span class="k">def</span> <span class="nf">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">BenchCase</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SampleStats</span><span class="p">:</span>
     <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">SAMPLE_SIZE</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SAMPLE_SIZE</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-                <span class="n">f</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">SAMPLE_SIZE</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nc">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="nf">f</span><span class="p">()</span>
 
         <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span> <span class="o">//</span> <span class="n">n</span>
 
-    <span class="n">winsoring</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="o">**</span><span class="n">WINSORING_PERCENTILE</span><span class="p">)</span>
+    <span class="nf">winsoring</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="o">**</span><span class="n">WINSORING_PERCENTILE</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">SampleStats</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nc">SampleStats</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 </code></pre></div></div>
 
 <h3 id="主过程">主过程</h3>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">run_a_benchmark</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">BenchCase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SampleStats</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
-        <span class="n">f</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nc">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+        <span class="nf">f</span><span class="p">()</span>
 
     <span class="n">tot</span> <span class="o">=</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span>
 
     <span class="k">if</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="nb">RuntimeError</span><span class="p">(</span><span class="s">"It's just impossible for CPython"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="nc">RuntimeError</span><span class="p">(</span><span class="sh">"</span><span class="s">It</span><span class="sh">'</span><span class="s">s just impossible for CPython</span><span class="sh">"</span><span class="p">)</span>
 
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1000_000</span> <span class="o">/</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nf">int</span><span class="p">(</span><span class="nf">max</span><span class="p">(</span><span class="mi">1000_000</span> <span class="o">/</span> <span class="n">w</span><span class="p">.</span><span class="n">nanos</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
-            <span class="n">summ</span> <span class="o">=</span> <span class="n">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
-            <span class="n">summ5</span> <span class="o">=</span> <span class="n">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nc">Watch</span><span class="p">()</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="n">summ</span> <span class="o">=</span> <span class="nf">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">summ5</span> <span class="o">=</span> <span class="nf">sampling</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">millis</span> <span class="o">&gt;</span> <span class="mi">200</span>
+        <span class="nf">if </span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">millis</span> <span class="o">&gt;</span> <span class="mi">200</span>
             <span class="ow">and</span> <span class="n">summ</span><span class="p">.</span><span class="n">median_abs_dev_pct</span> <span class="o">&lt;</span> <span class="mf">1.0</span>
             <span class="ow">and</span> <span class="n">summ</span><span class="p">.</span><span class="n">median</span> <span class="o">-</span> <span class="n">summ5</span><span class="p">.</span><span class="n">median</span> <span class="o">&lt;</span> <span class="n">summ5</span><span class="p">.</span><span class="n">median_abs_dev</span>
            <span class="p">):</span>
@@ -458,43 +458,43 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>PEP484 Was accepted in Python 3.5 which was released in <strong>September 2015</strong> <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>居然是传一个代码片段的字符串，和一个上下文环境的字典，非常地不正规，完全是 Python 2 那个时代的流行时尚 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>禁止 GC 可以排除由于 GC 带来的观测指标的波动，但长时间不 GC 会降低本身就很有限的性能。基本上这种操作仍然没有太大意义，外部的干扰因素有很多，应该通过统计学办法来排除干扰。 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:8" role="doc-endnote">
+    <li id="fn:8">
       <p>相当于 <code class="language-plaintext highlighter-rouge">timeit</code> 里的 <code class="language-plaintext highlighter-rouge">number</code> <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>这是 CPython 永远不用担心的问题。 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
+    <li id="fn:6">
       <p>这不是中文语法错误，“稳定地”指相邻迭代的两轮观测统计的“平均值”相近，“稳定的”指一轮观测统计内部的“方差”小。 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:10" role="doc-endnote">
+    <li id="fn:10">
       <p>3 s <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:7" role="doc-endnote">
+    <li id="fn:7">
       <p>相当于 <code class="language-plaintext highlighter-rouge">timeit</code> 里 <code class="language-plaintext highlighter-rouge">repeat=50</code> <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:9" role="doc-endnote">
+    <li id="fn:9">
       <p>通过分别把 $\lt 5\%$ 和 $\gt 95\%$ 的样本值修改为 $=5\%$ 和 $= 95\%$ 的样本值 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:12" role="doc-endnote">
+    <li id="fn:12">
       <p>绝对偏差的中位数，<a href="https://en.wikipedia.org/wiki/Median_absolute_deviation">Median absolute deviation</a> ，$\texttt{MAD} = \texttt{median}(\vert X_i-\texttt{median}(X) \vert)$，方法分类上属于 <a href="https://en.wikipedia.org/wiki/Average_absolute_deviation">Average absolute deviation</a> ，是一种被认为比样本方差和标准差更有鲁棒性的估算标量。 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:11" role="doc-endnote">
+    <li id="fn:11">
       <p>这里还细心检查了 <code class="language-plaintext highlighter-rouge">loop</code> 代码的下一次执行，也就是 <code class="language-plaintext highlighter-rouge">n * 2 * 5</code> 后是否会溢出，如果会溢出也提前返回。 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:14" role="doc-endnote">
+    <li id="fn:14">
       <p>假设环境是 Python 3.12 <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:13" role="doc-endnote">
+    <li id="fn:13">
       <p>Rust 的问题，或者说这是个组织结构问题，在于我们知道它的源代码结构非常地迭床架屋，里面充斥着形形色色重新发明的轮子和仅限内部使用的范用工具，从 DRY 的角度看这是双重的折磨，一方面轮子不应该重新发明，而应该使用一个范用库；另一方面，发明的范用工具，应该开放为范用库。而这二百多行代码就属于前者–重新造的轮子。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

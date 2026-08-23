@@ -723,8 +723,8 @@
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
 <span class="nd">#[derive(Clone,</span> <span class="nd">Copy,</span> <span class="nd">PartialEq,</span> <span class="nd">Eq,</span> <span class="nd">Debug)]</span>
 <span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span> <span class="k">enum</span> <span class="n">Dir</span> <span class="p">{</span>
-    <span class="nb">Left</span><span class="p">,</span>
-    <span class="nb">Right</span><span class="p">,</span>
+    <span class="n">Left</span><span class="p">,</span>
+    <span class="n">Right</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="k">pub</span><span class="p">(</span><span class="k">crate</span><span class="p">)</span> <span class="k">use</span> <span class="nn">Dir</span><span class="p">::</span><span class="o">*</span><span class="p">;</span>
 
@@ -732,13 +732,13 @@
 <span class="k">impl</span> <span class="n">Dir</span> <span class="p">{</span>
     <span class="k">fn</span> <span class="nf">rev</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="k">Self</span> <span class="p">{</span>
         <span class="k">match</span> <span class="k">self</span> <span class="p">{</span>
-            <span class="nb">Left</span> <span class="k">=&gt;</span> <span class="nb">Right</span><span class="p">,</span>
-            <span class="nb">Right</span> <span class="k">=&gt;</span> <span class="nb">Left</span><span class="p">,</span>
+            <span class="n">Left</span> <span class="k">=&gt;</span> <span class="n">Right</span><span class="p">,</span>
+            <span class="n">Right</span> <span class="k">=&gt;</span> <span class="n">Left</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">}</span>
 
     <span class="k">fn</span> <span class="nf">is_left</span><span class="p">(</span><span class="o">&amp;</span><span class="k">self</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="nb">bool</span> <span class="p">{</span>
-        <span class="nd">matches!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="nb">Left</span><span class="p">)</span>
+        <span class="nd">matches!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">Left</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -787,14 +787,14 @@
 
 <span class="nd">macro_rules!</span> <span class="n">conn_left</span> <span class="p">{</span>
     <span class="p">(</span><span class="nv">$paren:expr</span><span class="p">,</span> <span class="nv">$child</span><span class="p">:</span> <span class="n">expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="nd">conn_child!</span><span class="p">(</span><span class="nv">$paren</span><span class="p">,</span> <span class="nv">$child</span><span class="p">,</span> <span class="nb">Left</span><span class="p">)</span>
+        <span class="nd">conn_child!</span><span class="p">(</span><span class="nv">$paren</span><span class="p">,</span> <span class="nv">$child</span><span class="p">,</span> <span class="n">Left</span><span class="p">)</span>
     <span class="p">};</span>
 <span class="p">}</span>
 
 
 <span class="nd">macro_rules!</span> <span class="n">conn_right</span> <span class="p">{</span>
     <span class="p">(</span><span class="nv">$paren:expr</span><span class="p">,</span> <span class="nv">$child</span><span class="p">:</span> <span class="n">expr</span><span class="p">)</span> <span class="k">=&gt;</span> <span class="p">{</span>
-        <span class="nd">conn_child!</span><span class="p">(</span><span class="nv">$paren</span><span class="p">,</span> <span class="nv">$child</span><span class="p">,</span> <span class="nb">Right</span><span class="p">)</span>
+        <span class="nd">conn_child!</span><span class="p">(</span><span class="nv">$paren</span><span class="p">,</span> <span class="nv">$child</span><span class="p">,</span> <span class="n">Right</span><span class="p">)</span>
     <span class="p">};</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -810,9 +810,9 @@
             <span class="k">let</span> <span class="n">child</span> <span class="o">=</span> <span class="o">&amp;</span><span class="nv">$child</span><span class="p">;</span>
 
             <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">paren</span><span class="p">)</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nb">Left</span>
+                <span class="n">Left</span>
             <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nd">right!</span><span class="p">(</span><span class="n">paren</span><span class="p">)</span><span class="nf">.rc_eq</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nb">Right</span>
+                <span class="n">Right</span>
             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
                 <span class="nd">unreachable!</span><span class="p">()</span>
             <span class="p">}</span>

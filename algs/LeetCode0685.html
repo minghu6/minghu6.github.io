@@ -139,14 +139,14 @@
 
 <h3 id="python-实现">Python 实现</h3>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
 <span class="c1"># O(n)
 </span><span class="k">def</span> <span class="nf">findRedundantDirectedConnection</span><span class="p">(</span><span class="n">edges</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
     <span class="n">vmap</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># vertice map
 </span>    <span class="n">rvmap</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># recersed vertice map
 </span>
-    <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+    <span class="kn">from</span> <span class="n">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
     <span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
         <span class="n">Ein1</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">Ein2</span> <span class="o">=</span> <span class="mi">2</span>
@@ -157,11 +157,11 @@
 
     <span class="c1"># O(E)
 </span>    <span class="k">for</span> <span class="n">u</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="n">l</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">vmap</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">l</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
         <span class="n">vmap</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span>
 
-        <span class="k">if</span> <span class="n">rvmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">rvmap</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
             <span class="n">mode</span> <span class="o">=</span> <span class="n">Mode</span><span class="p">.</span><span class="n">Ein2</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">u</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">v</span>
@@ -170,37 +170,37 @@
 
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="n">Mode</span><span class="p">.</span><span class="n">Ein2</span><span class="p">:</span>
         <span class="k">def</span> <span class="nf">outd</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="k">return</span> <span class="nf">len</span><span class="p">(</span><span class="n">vmap</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">[]))</span>
         <span class="k">def</span> <span class="nf">ind</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">rvmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">rvmap</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="mi">1</span>
 
         <span class="n">start2</span> <span class="o">=</span> <span class="n">rvmap</span><span class="p">[</span><span class="n">end</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">start</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="p">[]):</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">start2</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="k">if</span> <span class="n">start2</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="p">[]):</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">start2</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">ind</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">outd</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nf">ind</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nf">outd</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">start2</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">ind</span><span class="p">(</span><span class="n">start2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">outd</span><span class="p">(</span><span class="n">start2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nf">ind</span><span class="p">(</span><span class="n">start2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nf">outd</span><span class="p">(</span><span class="n">start2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
 
         <span class="c1"># then anyway, use the latter (no cycle)
 </span>        <span class="k">return</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
 
     <span class="c1"># Exact one circle structure
-</span>    <span class="n">cirset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+</span>    <span class="n">cirset</span> <span class="o">=</span> <span class="nf">set</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">is_circle_v</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">visset</span><span class="p">):</span>
         <span class="k">nonlocal</span> <span class="n">cirset</span>
 
-        <span class="n">visset</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">vmap</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">visset</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">vmap</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="p">[])</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Noncircle
+        <span class="k">if</span> <span class="nf">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Noncircle
 </span>            <span class="k">return</span> <span class="bp">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
@@ -208,22 +208,22 @@
                     <span class="n">cirset</span> <span class="o">=</span> <span class="n">visset</span>
                     <span class="k">return</span> <span class="bp">True</span>
             <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">is_circle_v</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">visset</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nf">is_circle_v</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">visset</span><span class="p">):</span>
                     <span class="k">return</span> <span class="bp">True</span>
 
             <span class="k">return</span> <span class="bp">False</span>
 
-    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">is_circle_v</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">set</span><span class="p">()):</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vmap</span><span class="p">.</span><span class="nf">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nf">is_circle_v</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nf">set</span><span class="p">()):</span>
             <span class="k">break</span>
 
-    <span class="k">for</span> <span class="n">u</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">edges</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">u</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nf">reversed</span><span class="p">(</span><span class="n">edges</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">cirset</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cirset</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span>
 
 
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="sh">'</span><span class="s">__main__</span><span class="sh">'</span><span class="p">:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]]),</span>
         <span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">]]),</span>
@@ -232,15 +232,15 @@
     <span class="p">]</span>
 
     <span class="k">for</span> <span class="n">output</span><span class="p">,</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">findRedundantDirectedConnection</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="nf">findRedundantDirectedConnection</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">res</span> <span class="o">!=</span> <span class="n">output</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="sa">f</span><span class="s">'expect </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s"> found </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s">'</span>
+            <span class="k">raise</span> <span class="sa">f</span><span class="sh">'</span><span class="s">expect </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s"> found </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="sh">'</span>
 
-    <span class="n">findRedundantDirectedConnection</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="nf">findRedundantDirectedConnection</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">]])</span>
 </code></pre></div></div>
 
-<h2 id="解-并查集反引用表">解②： 并查集<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>+反引用表</h2>
+<h2 id="解-并查集反引用表">解②： 并查集<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>+反引用表</h2>
 
 <h3 id="思路-1">思路</h3>
 
@@ -250,7 +250,7 @@
 
 <ol>
   <li>
-    <p>只需要当发现双头节点的时候，跳过去，不进行 Union ，相当于删除双头节点<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>的两条边里顺序靠后的那一条，在这种情况下如果仍然发现有一条边的两个点在并查集里有一样的根，那么这条边就是环上的一条边，而且是环上顺序最后的一条边<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>；</p>
+    <p>只需要当发现双头节点的时候，跳过去，不进行 Union ，相当于删除双头节点<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>的两条边里顺序靠后的那一条，在这种情况下如果仍然发现有一条边的两个点在并查集里有一样的根，那么这条边就是环上的一条边，而且是环上顺序最后的一条边<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>；</p>
   </li>
   <li>
     <p>这样当我们通过反引用表找到了双头节点，并通过反引用表与并查集的配合找到了环上最后的边的时候，甚至可以提前退出循环，都不需要读完全部的边</p>
@@ -401,22 +401,22 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>这里对并查集的维护没有根据树的大小或者树高来选择合并的顺序，这主要是考虑到路径压缩已经足够优化，按照经验，再维护并查集树的平衡未必有明显的好处，相比花费额外的 $O(\text{n})$ 的空间<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup> ，并不值当。</p>
+<p>这里对并查集的维护没有根据树的大小或者树高来选择合并的顺序，这主要是考虑到路径压缩已经足够优化，按照经验，再维护并查集树的平衡未必有明显的好处，相比花费额外的 $O(\text{n})$ 的空间<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">4</a></sup> ，并不值当。</p>
 
 <h2 id="注解">注解</h2>
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>有很多别名：UnionFind, MergeFind, Disjoint Set, Disjoint Set Union … <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>如果有双头节点的话 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>排除了双头节点的情况，也就是环上最后一条边一定是符合有向环的顺序的 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>相当于原来一半的空间花费 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

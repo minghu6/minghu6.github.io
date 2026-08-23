@@ -124,23 +124,23 @@
 
 <h2 id="2-definition">2. Definition</h2>
 
-<p>发送方最大分片大小（Sender Maximum Segment Size, SMSS）<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup></p>
+<p>发送方最大分片大小（Sender Maximum Segment Size, SMSS）<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup></p>
 
-<p>接收方最大分片大小（Receiver Maximum Segment Size, RMSS）<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
+<p>接收方最大分片大小（Receiver Maximum Segment Size, RMSS）<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup></p>
 
 <p>最大段（Full Sized Segment）</p>
 
 <p>接收方窗口（Receiver Window, rwnd）</p>
 
-<p>拥塞窗口（Congestion Window, cwnd）<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></p>
+<p>拥塞窗口（Congestion Window, cwnd）<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup></p>
 
-<p>初始窗口（Initial Window, IW）<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+<p>初始窗口（Initial Window, IW）<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">4</a></sup></p>
 
-<p>丢失窗口（Lost Window, LW）<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup></p>
+<p>丢失窗口（Lost Window, LW）<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup></p>
 
-<p>重启窗口（Restart Window, RW）<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup></p>
+<p>重启窗口（Restart Window, RW）<sup id="fnref:6"><a href="#fn:6" class="footnote" rel="footnote" role="doc-noteref">6</a></sup></p>
 
-<p>飞行尺寸（FlightSize）<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup></p>
+<p>飞行尺寸（FlightSize）<sup id="fnref:7"><a href="#fn:7" class="footnote" rel="footnote" role="doc-noteref">7</a></sup></p>
 
 <p>重复确认（Duplicate Acknowledgement）:</p>
 
@@ -175,20 +175,20 @@ else:
 
 <p>建立TCP链接的两个ACK不能用来增加cwnd的大小。等等IW设置详见<a href="https://datatracker.ietf.org/doc/html/rfc3390">RFC3390</a>。</p>
 
-<p>ssthresh的初始值可以任意高<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>
+<p>ssthresh的初始值可以任意高<sup id="fnref:8"><a href="#fn:8" class="footnote" rel="footnote" role="doc-noteref">8</a></sup>
 慢启动算法启动标准：<code class="language-plaintext highlighter-rouge">cwnd &lt; ssthresh</code>
 拥塞避免算法标准：<code class="language-plaintext highlighter-rouge">cwnd &gt; ssthresh</code>
 二选一都可以：<code class="language-plaintext highlighter-rouge">cwnd = ssthresh</code></p>
 
 <p>在慢启动的时候，每次ACK，cwnd的增加不超过SMSS bytes，当cwnd超过<code class="language-plaintext highlighter-rouge">ssthresh</code>或者拥塞重新被检测到的时候，退出慢启动。
-传统TCP实现每次正好增加SMSS，但是我们推荐使用： <code class="language-plaintext highlighter-rouge">cwnd += min(N, SMSS)</code>,N是被新的ACK新确认的未确认数据的大小。<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">9</a></sup></p>
+传统TCP实现每次正好增加SMSS，但是我们推荐使用： <code class="language-plaintext highlighter-rouge">cwnd += min(N, SMSS)</code>,N是被新的ACK新确认的未确认数据的大小。<sup id="fnref:13"><a href="#fn:13" class="footnote" rel="footnote" role="doc-noteref">9</a></sup></p>
 
-<p>在拥塞避免的时候，每过一个往返时间<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">10</a></sup>，cwnd可以增加一个full-sized segment<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">11</a></sup>大小；
+<p>在拥塞避免的时候，每过一个往返时间<sup id="fnref:12"><a href="#fn:12" class="footnote" rel="footnote" role="doc-noteref">10</a></sup>，cwnd可以增加一个full-sized segment<sup id="fnref:9"><a href="#fn:9" class="footnote" rel="footnote" role="doc-noteref">11</a></sup>大小；
 应该（SHOULD）每一个来回的时间，增加<code class="language-plaintext highlighter-rouge">min(N, SMSS)</code>
 但是不管怎样，每次cwnd不能增加超过SMSS。</p>
 
-<p>或者每当收到一个不重复的ACK数据报，就增加一个<code class="language-plaintext highlighter-rouge">SMSS * SMSS / cwnd</code>大小<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">12</a></sup>；
-还有的方法是增加新的被ACK确认的数据大小，直到cwnd增加到SMSS。<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">13</a></sup></p>
+<p>或者每当收到一个不重复的ACK数据报，就增加一个<code class="language-plaintext highlighter-rouge">SMSS * SMSS / cwnd</code>大小<sup id="fnref:10"><a href="#fn:10" class="footnote" rel="footnote" role="doc-noteref">12</a></sup>；
+还有的方法是增加新的被ACK确认的数据大小，直到cwnd增加到SMSS。<sup id="fnref:11"><a href="#fn:11" class="footnote" rel="footnote" role="doc-noteref">13</a></sup></p>
 
 <p>同样地，当检测到拥塞发生的时候，算法终止。</p>
 
@@ -219,22 +219,22 @@ else:
 
 <ol>
   <li>
-    <p>在发送方收到第一个和第二个重复ack时，应该发送一个之前未发送数据的分片<sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">14</a></sup></p>
+    <p>在发送方收到第一个和第二个重复ack时，应该发送一个之前未发送数据的分片<sup id="fnref:14"><a href="#fn:14" class="footnote" rel="footnote" role="doc-noteref">14</a></sup></p>
   </li>
   <li>
     <p>当收到第三个重复的ack时，一个TCP必须把ssthresh设置为不超过<code class="language-plaintext highlighter-rouge">max(FlightSize/2, 2*SMSS)</code></p>
   </li>
   <li>
-    <p>开始在SND.UNA<sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">15</a></sup>丢失的分片必须被重传，并且cwnd设置为<code class="language-plaintext highlighter-rouge">ssthresh + 3*SMSS</code>。<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">16</a></sup></p>
+    <p>开始在SND.UNA<sup id="fnref:15"><a href="#fn:15" class="footnote" rel="footnote" role="doc-noteref">15</a></sup>丢失的分片必须被重传，并且cwnd设置为<code class="language-plaintext highlighter-rouge">ssthresh + 3*SMSS</code>。<sup id="fnref:16"><a href="#fn:16" class="footnote" rel="footnote" role="doc-noteref">16</a></sup></p>
   </li>
   <li>
-    <p>对于每一个额外的重复ACK（在第三个之后）cwnd必须增加SMSS。<sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">17</a></sup></p>
+    <p>对于每一个额外的重复ACK（在第三个之后）cwnd必须增加SMSS。<sup id="fnref:17"><a href="#fn:17" class="footnote" rel="footnote" role="doc-noteref">17</a></sup></p>
   </li>
   <li>
     <p>当之前未发送的数据可用，并且cwnd新值和接收方窗口允许时，TCP应该发送<code class="language-plaintext highlighter-rouge">1*SMSS</code>bytes数据。</p>
   </li>
   <li>
-    <p>当下一个ack到达并确认之前未确认的数据时，TCP必须将cwnd设置为ssthresh（set by step-2）<sup id="fnref:18" role="doc-noteref"><a href="#fn:18" class="footnote" rel="footnote">18</a></sup><sup id="fnref:19" role="doc-noteref"><a href="#fn:19" class="footnote" rel="footnote">19</a></sup></p>
+    <p>当下一个ack到达并确认之前未确认的数据时，TCP必须将cwnd设置为ssthresh（set by step-2）<sup id="fnref:18"><a href="#fn:18" class="footnote" rel="footnote" role="doc-noteref">18</a></sup><sup id="fnref:19"><a href="#fn:19" class="footnote" rel="footnote" role="doc-noteref">19</a></sup></p>
   </li>
 </ol>
 
@@ -254,61 +254,61 @@ else:
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>最大分片的负载大小，不包括TCP/IP headers。这个数值基于MTU、PMTUD、RMSS或者其他因素。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>由TCP MSS option决定，如果没有设置，则为536 bytes（TCP安全最大值） <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>限制TCP发送数据的状态变量，TCP发送数据的大小受cwnd和rwnd的双重限制 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>发送方的三次握手后的拥塞窗口 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>在重传计时器发现包的丢失时的拥塞窗口的大小 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
+    <li id="fn:6">
       <p>在一个慢启动算法里，在一段停当（idle）的时间后，启动重传时的拥塞窗口大小 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:7" role="doc-endnote">
+    <li id="fn:7">
       <p>已发送，但尚未被ack确认的数据数量，也就是“飞行中“的数据包 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:8" role="doc-endnote">
+    <li id="fn:8">
       <p>Slow Start Threshold <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:13" role="doc-endnote">
+    <li id="fn:13">
       <p>这么做是为了增加鲁棒性针对一些行为不端的接收方方通过同一分片的多次的ACK响应（ACK Division），每个ack仅是数据的一部分，每个ACK都会使得发送方窗口增加SMSS，结果使得发送方使用过大的发送窗口 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:12" role="doc-endnote">
+    <li id="fn:12">
       <p>round-trip time, RTT <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:9" role="doc-endnote">
+    <li id="fn:9">
       <p>包含当前允许发送的最大数据的分片，比如包含SMSS bytes的数据 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:10" role="doc-endnote">
+    <li id="fn:10">
       <p>当cwnd非常大的时候，比如比<code class="language-plaintext highlighter-rouge">SMSS*SMSS</code> 还要大的时候，应该算为至少1 byte；同时更旧实现会增加一个额外常数，但这是错误的会导致性能损失 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:11" role="doc-endnote">
+    <li id="fn:11">
       <p>缺点是需要维护一个额外的状态变量 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:14" role="doc-endnote">
+    <li id="fn:14">
       <p>On the first and second duplicate ACKs received at a sender, a TCP SHOULD send a segment of previously unsent data per [RFC3042] provided that the receiver’s advertised window allows, the total FlightSize would remain less than or equal to cwnd plus 2*SMSS, and that new data is available for transmission <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:15" role="doc-endnote">
+    <li id="fn:15">
       <p>Sender Unknowledge <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:16" role="doc-endnote">
+    <li id="fn:16">
       <p>这人为地夸大了cwnd已经离开网络被接收方缓存3个分片 <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:17" role="doc-endnote">
+    <li id="fn:17">
       <p>这人为地夸大了cwnd为了反映离开网络的额外分片。为了防止这一机制被接收方滥用，可以限制cwnd扩大的次数为未接收分片的数量。Note: When an advanced loss recovery mechanism (such as outlined in section 4.3) is not in use, this increase in FlightSize can cause equation (4) to slightly inflate cwnd and ssthresh, as some of the segments between SND.UNA and SND.NXT are assumed to have left the network but are still reflected in FlightSize. <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:18" role="doc-endnote">
+    <li id="fn:18">
       <p>这被叫做窗口紧缩（deflating） <a href="#fnref:18" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:19" role="doc-endnote">
+    <li id="fn:19">
       <p>这个ack应该是由step-3的重传引发的。除此之外，这个ack应该确认所有在丢失的分片和收到的第三个重复的分片发送的所有中间分片，如果中间没有丢失 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

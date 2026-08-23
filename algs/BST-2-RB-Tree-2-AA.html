@@ -263,7 +263,7 @@
     <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">==</span> <span class="n">t</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">{</span>
         <span class="nd">debug_assert!</span><span class="p">(</span><span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_some</span><span class="p">());</span>
 
-        <span class="n">t</span> <span class="o">=</span> <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="nb">Right</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">Right</span><span class="p">)</span>
     <span class="p">}</span>
 
     <span class="n">t</span>
@@ -284,7 +284,7 @@
     <span class="k">let</span> <span class="n">right</span> <span class="o">=</span> <span class="nd">right!</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
 
     <span class="k">if</span> <span class="n">right</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">right!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="nf">.lv</span><span class="p">()</span> <span class="o">==</span> <span class="n">t</span><span class="nf">.lv</span><span class="p">()</span> <span class="p">{</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="nb">Left</span><span class="p">);</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="nd">rotate!</span><span class="p">(</span><span class="k">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">Left</span><span class="p">);</span>
 
         <span class="nd">lv!</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nd">lv!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>  <span class="c1">// t == right</span>
     <span class="p">}</span>
@@ -417,7 +417,7 @@
                 <span class="p">);</span>
             <span class="p">}</span>
 
-            <span class="k">let</span> <span class="n">nil_dir</span> <span class="o">=</span> <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span> <span class="nb">Left</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nb">Right</span> <span class="p">};</span>
+            <span class="k">let</span> <span class="n">nil_dir</span> <span class="o">=</span> <span class="k">if</span> <span class="nd">left!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="nf">.is_none</span><span class="p">()</span> <span class="p">{</span> <span class="n">Left</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="n">Right</span> <span class="p">};</span>
             <span class="k">let</span> <span class="n">l</span> <span class="o">=</span> <span class="k">if</span> <span class="n">nil_dir</span><span class="nf">.is_left</span><span class="p">()</span>
             <span class="p">{</span> <span class="nd">bst_successor!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="nd">bst_predecessor!</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="p">};</span>
 

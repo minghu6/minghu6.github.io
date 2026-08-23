@@ -211,7 +211,7 @@
 
 <p><strong>背景：</strong></p>
 
-<p>使用串哈希的方法<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 寻找模式串中最长的回文串。</p>
+<p>使用串哈希的方法<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup> 寻找模式串中最长的回文串。</p>
 
 <p><strong>举例：</strong></p>
 
@@ -234,7 +234,7 @@
 
 <p>和 KMP 前缀数组的计算非常类似，而且更简单，首先最右匹配是前一个位置的后缀上的最长回文，$i_0=i-1$ 。</p>
 
-<p>记 $R[i-1]$ 为 $R_0$ ，不管是奇数回文还是偶数回文，总有 $R[i] \leqslant R_0 + 2$ ，然后遂行朴素算法从长度为 $R_0 + 2$ 开始的后缀子串开始检查，如果不是回文，就一步步缩小长度直到 $1$ <sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>。</p>
+<p>记 $R[i-1]$ 为 $R_0$ ，不管是奇数回文还是偶数回文，总有 $R[i] \leqslant R_0 + 2$ ，然后遂行朴素算法从长度为 $R_0 + 2$ 开始的后缀子串开始检查，如果不是回文，就一步步缩小长度直到 $1$ <sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>。</p>
 
 <p><strong>复杂度分析：</strong></p>
 
@@ -248,7 +248,7 @@
 
 <ol>
   <li>奇数回文的半径包含轴点本身，因此最小长度为 1；</li>
-  <li>由于偶数回文的轴是两点间的空而不是点，因此这里规定空的坐标表示是它后面点的坐标，也就是和插入序<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>一样，这样 $d_2[0]$ 就是未定义的，不妨规定 $d_2[0]=0$ ，$0$ 也是偶数回文的最小长度。</li>
+  <li>由于偶数回文的轴是两点间的空而不是点，因此这里规定空的坐标表示是它后面点的坐标，也就是和插入序<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>一样，这样 $d_2[0]$ 就是未定义的，不妨规定 $d_2[0]=0$ ，$0$ 也是偶数回文的最小长度。</li>
 </ol>
 
 <p><strong>背景：</strong></p>
@@ -318,13 +318,13 @@ s[6]=\text{a-a} &amp;aa &amp;d_2[6]=1\\
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>给模式串所有前缀建立滚动式哈希 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>长度为 $1$ 的串此时必然是回文 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>在一个有序向量上搜索某个元素，如果没有相等元素，就返回一个位置，使得如果在这个位置插入被搜索值后仍能维持向量有序，这里简称为插入序 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

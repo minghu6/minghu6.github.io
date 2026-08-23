@@ -129,7 +129,7 @@ a &amp;= ng \\
 b &amp;= mg
 \end{array}\]
 
-<p>$\text{n}$ ,  $\text{m}$ 互质，对于 $a \neq b$ 的情况，不失一般性地假设 $a &gt; b$ ，也就是 $n &gt; m$ ，这样的话，$a-b = (n - m) g$ ，$b=mg$ 也有最大公约数 $g$<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> 。</p>
+<p>$\text{n}$ ,  $\text{m}$ 互质，对于 $a \neq b$ 的情况，不失一般性地假设 $a &gt; b$ ，也就是 $n &gt; m$ ，这样的话，$a-b = (n - m) g$ ，$b=mg$ 也有最大公约数 $g$<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup> 。</p>
 
 <p>取 $a=\text{max}(a-b, b)$ ,  $b=\text{min}(a-b,b)$ 继续相减，在这个过程中 $n-m \rightarrow 0$，最后得到 $n=m=1$（$=1$ 由最大公约数性质可知） 。</p>
 
@@ -179,7 +179,7 @@ b &amp;= mg
 
 <h2 id="拓展-gcd">拓展 GCD</h2>
 
-<p>拓展 gcd 是在求解最大公约数的同时求解出一组解 $(x,y)$ 使得 $ax+by = \text{gcd}(a,b)$ <sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
+<p>拓展 gcd 是在求解最大公约数的同时求解出一组解 $(x,y)$ 使得 $ax+by = \text{gcd}(a,b)$ <sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup></p>
 
 <h3 id="递归">递归</h3>
 
@@ -204,12 +204,12 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">ext_gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">=</span> <span class="n">ext_gcd</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span><span class="p">)</span>
+        <span class="nf">return </span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">=</span> <span class="nf">ext_gcd</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span><span class="p">)</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">y1</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="p">(</span><span class="n">a</span><span class="o">/</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span>
     
-    <span class="k">return</span> <span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="nf">return </span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </code></pre></div></div>
 
 <h2 id="展开">展开</h2>
@@ -240,10 +240,10 @@ y_0 &amp;= x_1-\lfloor \frac{a_0}{b_0} \rfloor b_0y_1\\
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>但是后面可以发现，实际上应该有 $\text{gcd}(a-b, b)=\text{gcd}(a,b)$ 但是我们不能证明它 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>显然对于非零的$a,b$，$x, y$ 应该是一正一负两个整数 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

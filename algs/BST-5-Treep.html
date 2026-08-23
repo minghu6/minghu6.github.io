@@ -192,11 +192,11 @@
 
         <span class="k">if</span> <span class="n">left</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">w!</span><span class="p">(</span><span class="n">left</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_w</span> <span class="p">{</span>
             <span class="n">max_w</span> <span class="o">=</span> <span class="nd">w!</span><span class="p">(</span><span class="n">left</span><span class="p">);</span>
-            <span class="n">max_child</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">(</span><span class="nb">Left</span><span class="p">);</span>
+            <span class="n">max_child</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">(</span><span class="n">Left</span><span class="p">);</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="n">right</span><span class="nf">.is_some</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nd">w!</span><span class="p">(</span><span class="n">right</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_w</span> <span class="p">{</span>
-            <span class="n">max_child</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">(</span><span class="nb">Right</span><span class="p">);</span>
+            <span class="n">max_child</span> <span class="o">=</span> <span class="nf">Some</span><span class="p">(</span><span class="n">Right</span><span class="p">);</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="k">let</span> <span class="nf">Some</span><span class="p">(</span><span class="n">child_dir</span><span class="p">)</span> <span class="o">=</span> <span class="n">max_child</span> <span class="p">{</span>

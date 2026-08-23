@@ -117,11 +117,11 @@
 
 <p>这道题令人有些五味杂陈，说它是一道不好的题有它不好的理由，说它是一道好的题有好的理由，它好还是不好可能取决于你做题的流程。</p>
 
-<p>不好的说，这道题并不是那种抽象得非常干净的题目，它更像是现实中的问题，有开放式的解决方法，可能涉及多方面知识，主要时间需要用在考虑核心算法无关的处理细节。作为那种习惯性地先成功提交，然后才回去看解析和答案的人来说这种题是非常煎熬的而且花费时间的，除非你已经很熟悉了这个套路<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup><sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup>。</p>
+<p>不好的说，这道题并不是那种抽象得非常干净的题目，它更像是现实中的问题，有开放式的解决方法，可能涉及多方面知识，主要时间需要用在考虑核心算法无关的处理细节。作为那种习惯性地先成功提交，然后才回去看解析和答案的人来说这种题是非常煎熬的而且花费时间的，除非你已经很熟悉了这个套路<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup><sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>。</p>
 
-<p>好的说，如果你实现就清楚这个套路，做过类似的题目，那么标准答案至少在形式上也是很简洁的<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></p>
+<p>好的说，如果你实现就清楚这个套路，做过类似的题目，那么标准答案至少在形式上也是很简洁的<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup></p>
 
-<p>另外，当看到文本串与模式串的长度都不超过 $20$ 的条件时，就可以想到，不管这道题的本意如何，标准解法是什么，几乎一定存在一种自然解法，性能不劣于标准解法。<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+<p>另外，当看到文本串与模式串的长度都不超过 $20$ 的条件时，就可以想到，不管这道题的本意如何，标准解法是什么，几乎一定存在一种自然解法，性能不劣于标准解法。<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">4</a></sup></p>
 
 <p><strong>Tips：</strong></p>
 
@@ -131,7 +131,7 @@
 
 <p><strong>基于固定串匹配的自然解法</strong></p>
 
-<p>这是我的自然解法，考虑得并不是标准解法里的字符匹配的模型<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>，而是考虑模式匹配或者子串匹配的思路，这也应该是初学者自然的思路。</p>
+<p>这是我的自然解法，考虑得并不是标准解法里的字符匹配的模型<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup>，而是考虑模式匹配或者子串匹配的思路，这也应该是初学者自然的思路。</p>
 
 <p><strong>模式串</strong>里有两种模式匹配，一种是长度固定的串，就是所有普通字符加上 <code class="language-plaintext highlighter-rouge">.</code> 符号，匹配这种长度固定的串是很容易的，可以用如下的方法：</p>
 
@@ -167,7 +167,7 @@
 
 <p><strong>划分出模式串中中间的固定串</strong></p>
 
-<p>我们真正关心得应该是夹在不定串之间的那些固定串，因为模式串两端的固定串是可以简单匹配确定的<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">6</a></sup></p>
+<p>我们真正关心得应该是夹在不定串之间的那些固定串，因为模式串两端的固定串是可以简单匹配确定的<sup id="fnref:6"><a href="#fn:6" class="footnote" rel="footnote" role="doc-noteref">6</a></sup></p>
 
 <p>在搜索固定串的位置之前，需要先检查所有其他的情况：有零个不定串或者一个不定串</p>
 
@@ -253,7 +253,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>用一个嵌套的数组 <code class="language-plaintext highlighter-rouge">fixed_pats_pos</code> 来依次保存每个固定串的可能在文本串上的可能位置<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">7</a></sup><sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">8</a></sup>，如果发现有个固定串没有合适的位置，那就可以提前返回失败了：</p>
+<p>用一个嵌套的数组 <code class="language-plaintext highlighter-rouge">fixed_pats_pos</code> 来依次保存每个固定串的可能在文本串上的可能位置<sup id="fnref:7"><a href="#fn:7" class="footnote" rel="footnote" role="doc-noteref">7</a></sup><sup id="fnref:8"><a href="#fn:8" class="footnote" rel="footnote" role="doc-noteref">8</a></sup>，如果发现有个固定串没有合适的位置，那就可以提前返回失败了：</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="k">mut</span> <span class="n">start</span> <span class="o">=</span> <span class="n">head</span><span class="p">;</span>
 <span class="k">let</span> <span class="k">mut</span> <span class="n">end</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">tail</span> <span class="o">-</span> <span class="n">fixed_pats_tot</span><span class="p">;</span>
@@ -348,7 +348,7 @@
 
 <p>可以直观地发现，有大量可以简单避免的无效匹配，如果某级从某个位置开始的后面所有可能匹配都失败了，那么下次再有从这一级的该位置开始的搜索就可以直接跳过。</p>
 
-<p>可以直接用一个全局数组<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">9</a></sup>记录失败情况，并用栈追踪级别和位置，以在全局数组上更新：</p>
+<p>可以直接用一个全局数组<sup id="fnref:9"><a href="#fn:9" class="footnote" rel="footnote" role="doc-noteref">9</a></sup>记录失败情况，并用栈追踪级别和位置，以在全局数组上更新：</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="n">MAX_S_LEN</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
 <span class="k">const</span> <span class="n">MAX_LV</span><span class="p">:</span> <span class="nb">usize</span> <span class="o">=</span> <span class="n">MAX_S_LEN</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
@@ -432,7 +432,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>如果不计预先搜索固定串的开销<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">10</a></sup>，那么有失败记录的实现的时间复杂度就是 $O(nm)$ ，与标准实现的一样。</p>
+<p>如果不计预先搜索固定串的开销<sup id="fnref:10"><a href="#fn:10" class="footnote" rel="footnote" role="doc-noteref">10</a></sup>，那么有失败记录的实现的时间复杂度就是 $O(nm)$ ，与标准实现的一样。</p>
 
 <p>它的运行时间稳定在 $0$ ms，还要优于简单形式的标准实现。</p>
 
@@ -611,7 +611,7 @@
 
 <h3 id="外分组实现2">外分组实现2</h3>
 
-<p>可以参考上面通过延迟更新<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">11</a></sup>来节省外分组实现的一个数组的空间：</p>
+<p>可以参考上面通过延迟更新<sup id="fnref:11"><a href="#fn:11" class="footnote" rel="footnote" role="doc-noteref">11</a></sup>来节省外分组实现的一个数组的空间：</p>
 
 <p>具体说就是用当前数组保存之前的数组，用上一轮的数组保存上两轮的数组，只有在当前数组更新的时候，才把当前数组保存的内容更新到上一轮数组。</p>
 
@@ -679,37 +679,37 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>或者用一个该题目下某用户的留言– “脑子充满了 DP” <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>这道题有 10k 的支持，但也有 1k 的反对 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>只有一种可能你会做得很利落，那就是你之前根本就做过类似的，这能称得上是好的题目吗？ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>这就更把人引到沟里去了，因为自然解法考虑的细节就更多了 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>因为事先我并不熟悉这个套路，应该说套路记得我，但我不记得它 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
+    <li id="fn:6">
       <p>不存在可以认为是空串的情况 <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:7" role="doc-endnote">
+    <li id="fn:7">
       <p>显然它的长度比之前保存不定串位置的数组 <code class="language-plaintext highlighter-rouge">random_pats</code> 少 $1$ <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:8" role="doc-endnote">
+    <li id="fn:8">
       <p>它至少应该在上一个固定串的后面，并且保证后面有足够的空间放置其他的固定串 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:9" role="doc-endnote">
+    <li id="fn:9">
       <p>可以在多个测试用例里共享使用 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:10" role="doc-endnote">
+    <li id="fn:10">
       <p>这个开销显然很小 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:11" role="doc-endnote">
+    <li id="fn:11">
       <p>延迟更新、惰性更新、滚动数组，可以有很多说法儿来描述这件事儿 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

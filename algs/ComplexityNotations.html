@@ -113,7 +113,7 @@
 
 <h2 id="o-记号">$O$ 记号</h2>
 
-<p>开始叫做 big-O<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，后经过 Knuth 整理，也可以表示为 big Omicron 。</p>
+<p>开始叫做 big-O<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>，后经过 Knuth 整理，也可以表示为 big Omicron 。</p>
 
 <h3 id="形式化描述">形式化描述</h3>
 
@@ -133,7 +133,7 @@
 
 <p>等价于：</p>
 
-<p>$\forall \epsilon \gt 0,\ \exists x_0$ ，使得所有 $x \geqslant x_0$ ，都有 $\vert f(x)\vert \leqslant \epsilon g(x)$ ， 其中函数 $g(x)$ 对于足够大的 $x$ 来说总是正数。<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
+<p>$\forall \epsilon \gt 0,\ \exists x_0$ ，使得所有 $x \geqslant x_0$ ，都有 $\vert f(x)\vert \leqslant \epsilon g(x)$ ， 其中函数 $g(x)$ 对于足够大的 $x$ 来说总是正数。<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup></p>
 
 <p>这个定义形式上就类似微分里面的上极限的定义。</p>
 
@@ -147,7 +147,7 @@
 
 <h3 id="与-o-的关系">与 $O$ 的关系</h3>
 
-<p>记号描述得其实是一种集合成员与集合的概念，这样我们就清楚了 big-O 实际上就是同阶函数和更高阶函数 $o$ 两个不相交集合的并集 <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>。</p>
+<p>记号描述得其实是一种集合成员与集合的概念，这样我们就清楚了 big-O 实际上就是同阶函数和更高阶函数 $o$ 两个不相交集合的并集 <sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>。</p>
 
 <h2 id="omega--omega-记号">$\Omega$ &amp; $\omega$ 记号</h2>
 
@@ -210,13 +210,13 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>根据 <a href="https://en.wikipedia.org/wiki/Big_O_notation#History_(Bachmann%E2%80%93Landau,_Hardy,_and_Vinogradov_notations)">wiki</a> 的说法， big-O 来源于德语 “Ordnung”，用来表示近似阶的意思。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>显然这里的 $\epsilon$ 和 big-O 形式化定义里面的 $M$ 是一样的，只是作为一种对使用传统的尊重，大写英文字母用作某个常数而 $\epsilon$ 用作任意（小）的数字。 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>很容易搞混得是 $f(x)\sim g(x)$ 描述得是等价关系 $\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = 1$ 而不是同阶关系 $\displaystyle \lim_{x\to\infty}{\frac{f(x)}{g(x)}} = C \gt 0 $，缺少一个描述同阶关系的记号有点儿别扭。 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

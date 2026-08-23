@@ -111,7 +111,7 @@
 
 <h2 id="前言">前言</h2>
 
-<p>本篇作为一个阶段性的总结篇，介绍一个 Clojure 里的基于前缀树（Trie）的持久化向量（Vector）的实现<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> ，以下用 TrieVec 简称。</p>
+<p>本篇作为一个阶段性的总结篇，介绍一个 Clojure 里的基于前缀树（Trie）的持久化向量（Vector）的实现<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup> ，以下用 TrieVec 简称。</p>
 
 <p>一方面，Vector 作为函数式编程语言里的允许随机读写的数据结构，本身有很重要的意义，没有它，传统的用类 C 描述的算法就无法落地；</p>
 
@@ -149,7 +149,7 @@
 
 <h3 id="树">树</h3>
 
-<p>这里有一个优化的小改动<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup>，就是把 TrieVec 最后一个节点（Bucket）从 Trie 中单独拿出来，作为尾节点，这会使得 Clojure 里像 <code class="language-plaintext highlighter-rouge">conj</code> 这样等价于 push 的操作在常量时间里完成。我们计算 TrieVec 的结构时候需要把尾部节点的长度扣除。</p>
+<p>这里有一个优化的小改动<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，就是把 TrieVec 最后一个节点（Bucket）从 Trie 中单独拿出来，作为尾节点，这会使得 Clojure 里像 <code class="language-plaintext highlighter-rouge">conj</code> 这样等价于 push 的操作在常量时间里完成。我们计算 TrieVec 的结构时候需要把尾部节点的长度扣除。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Clone)]</span>
 <span class="k">pub</span> <span class="k">struct</span> <span class="n">PTrieVec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
@@ -227,7 +227,7 @@
 
 <p>由于存在持久与易变版本间的转换，一个节点可能是持久版本的节点，也可能是历史上不同线程创建的易变节点。</p>
 
-<p>这里使用 <code class="language-plaintext highlighter-rouge">u64</code> <sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup>表示的 Thread id 作为标志，表示历史上创建易变节点的线程，Thread id 都大于 0 ，于是我们可以用 0 来表示持久版本的节点。</p>
+<p>这里使用 <code class="language-plaintext highlighter-rouge">u64</code> <sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>表示的 Thread id 作为标志，表示历史上创建易变节点的线程，Thread id 都大于 0 ，于是我们可以用 0 来表示持久版本的节点。</p>
 
 <p>这样对于可编辑节点需要满足：</p>
 
@@ -288,7 +288,7 @@
 
 <h3 id="节点包装">节点包装</h3>
 
-<p>考虑到持久化数据结构的跨线程使用的情况，节点包装里面的引用计数器将不再采用之前的 <code class="language-plaintext highlighter-rouge">std::rc::Rc</code> ，而改用同步版本的 <code class="language-plaintext highlighter-rouge">std::sync::Arc</code> <sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">4</a></sup> 。</p>
+<p>考虑到持久化数据结构的跨线程使用的情况，节点包装里面的引用计数器将不再采用之前的 <code class="language-plaintext highlighter-rouge">std::rc::Rc</code> ，而改用同步版本的 <code class="language-plaintext highlighter-rouge">std::sync::Arc</code> <sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">4</a></sup> 。</p>
 
 <p>但即使如此，由于 Rust 的严格限制，我们仍然不能把 <code class="language-plaintext highlighter-rouge">Node</code> 跨线程使用，即使我们确信作为持久化的结构时，是可以这样安全使用的。在 <code class="language-plaintext highlighter-rouge">std::sync</code> 的包里有各种各样的同步手段：</p>
 
@@ -1042,7 +1042,7 @@
     <p>使用 <code class="language-plaintext highlighter-rouge">self.cnt - 2</code> 作为对 Trie 上最后一个节点的访问索引，因为此时原尾节点上只有一个元素，因此 Trie 上有 <code class="language-plaintext highlighter-rouge">self.cnt - 1</code> 个元素；</p>
   </li>
   <li>
-    <p>弹出尾节点可能会产生空路径，也就是唯一的子节点为空的节点，空路径可能会一路向上延伸，直到根节点<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>。对应推入尾节点时有根溢出的情况，这时应该叫做根不足吧😀。</p>
+    <p>弹出尾节点可能会产生空路径，也就是唯一的子节点为空的节点，空路径可能会一路向上延伸，直到根节点<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup>。对应推入尾节点时有根溢出的情况，这时应该叫做根不足吧😀。</p>
 
     <p>从结构上进行判断的话，需要从尾部再回溯到根，由于 Trie 节点没有对父节点的反向引用，所以在自顶向下过程中还要保存一下整条节点路径，然后进行检查。</p>
 
@@ -1504,19 +1504,19 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>参考自 <a href="https://hypirion.com/musings/understanding-persistent-vector-pt-1">hyPiRion 介绍的系列博文</a> 和 <a href="https://github.com/clojure/clojure/blob/clojure-1.11.0-alpha2/src/jvm/clojure/lang/PersistentVector.java">Clojure 源代码</a> <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>https://hypirion.com/musings/understanding-persistent-vector-pt-3#the-rationale-for-tails <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>在原版 Clojure 的 Java 里，标志使用了原子类型，这主要是担心易变类型在跨线程使用时重新变为持久类型时的竞争问题，但是由于 Rust 的编程模型限制了易变类型不允许跨线程使用，因此就不需要变为原子类型 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>Atomic Rc <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>对于树高至少为 $2$ 作为的 Trie 来讲，空路径应该是根节点的第二个孩子， <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

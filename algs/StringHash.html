@@ -111,13 +111,13 @@
 
 <p>字符串哈希是从 <a href="https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm">Rabin-Karp 算法 (1987)</a> 衍生出来的，用于解决基于字符串子串比较问题的一种思路。</p>
 
-<p>RK 算法使用了一个简单的多项式滚动哈希算法<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，对于任意子串 $\text{substr}[l..r]$ ，它的哈希值可以由两端对应的前缀字符串       $\text{substr}[0..l-1]$ 和 $\text{substr}[0..r]$ 的哈希值计算得到，也就是说如果提前计算了字符串所有前缀的哈希，那么它的任意子串的哈希都可以在常量时间计算得到。</p>
+<p>RK 算法使用了一个简单的多项式滚动哈希算法<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>，对于任意子串 $\text{substr}[l..r]$ ，它的哈希值可以由两端对应的前缀字符串       $\text{substr}[0..l-1]$ 和 $\text{substr}[0..r]$ 的哈希值计算得到，也就是说如果提前计算了字符串所有前缀的哈希，那么它的任意子串的哈希都可以在常量时间计算得到。</p>
 
 <p>同时作为滚动哈希，每个前缀 $\text{substr}[0..i]$ 的哈希也可以由子前缀 $\text{substr}[0..i-1]$ 直接计算得出，这样就可以在 $O(n)$ 的时间计算出所有前缀的哈希，并用 $O(1)$ 的时间做子串的比较。</p>
 
 <p>下面介绍这个哈希算法：</p>
 
-<h3 id="哈希算法">哈希算法<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup><sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup></h3>
+<h3 id="哈希算法">哈希算法<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup><sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup></h3>
 
 <p>对于串 $s$</p>
 
@@ -130,7 +130,7 @@
 
 <p>一般可以令 $p$ 为字母表（alphabet）大小的质数，比如对于只包含小写字母的串，$p=31$；对于大小写字母，$p=53$ 。</p>
 
-<p>$m$ 作为模除运算的除数，需要是一个很大的整数，因为两个随机字符串发生哈希碰撞的概率 $\approx \frac{1}{m}$，可以取 $2^{64}$ ，这样做的好处是用 <code class="language-plaintext highlighter-rouge">u64</code> 保存数值时不需要显式地进行取模运算，等待数值自然溢出即可，但这样必然存在方法，用来构造无关于 $p$ 的产生哈希碰撞的字符串，更好的方法是选取一个大素数，比如 $10^9 + 9$ ，这个大小的素数有一个好处，就是确保 <code class="language-plaintext highlighter-rouge">u64</code> 类型足以容纳计算结果而不会溢出<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup></p>
+<p>$m$ 作为模除运算的除数，需要是一个很大的整数，因为两个随机字符串发生哈希碰撞的概率 $\approx \frac{1}{m}$，可以取 $2^{64}$ ，这样做的好处是用 <code class="language-plaintext highlighter-rouge">u64</code> 保存数值时不需要显式地进行取模运算，等待数值自然溢出即可，但这样必然存在方法，用来构造无关于 $p$ 的产生哈希碰撞的字符串，更好的方法是选取一个大素数，比如 $10^9 + 9$ ，这个大小的素数有一个好处，就是确保 <code class="language-plaintext highlighter-rouge">u64</code> 类型足以容纳计算结果而不会溢出<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">4</a></sup></p>
 
 <p>$s[i]$ 是在位置 $i$ 处字符的值，这个值是字符在字母表里的排名，而一般空串的哈希值为 $0$ ，因此字符的排名最好从 $1$ 开始，来避免字母表里最小字符与与空串的值相同。</p>
 
@@ -175,7 +175,7 @@
 
 <h3 id="哈希碰撞">哈希碰撞</h3>
 
-<p>用哈希来做串的映射时总要考虑串不同但哈希值相同的情况，在广泛地基于概率的算法与数据结构<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup>中习惯用假阳性（False Positive）来表示这种情况。</p>
+<p>用哈希来做串的映射时总要考虑串不同但哈希值相同的情况，在广泛地基于概率的算法与数据结构<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup>中习惯用假阳性（False Positive）来表示这种情况。</p>
 
 <h4 id="大量比较">大量比较</h4>
 
@@ -432,19 +432,19 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>注意区别于同作者的另一个更正式的多项式滚动哈希算法，<a href="https://en.wikipedia.org/wiki/Rabin_fingerprint">Rabin fingerprint</a> ，据说有一些 RK 算法的实现在内部使用了这个算法而不是原始提出的更简单的那一个。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>https://cp-algorithms.com/string/string-hashing.html <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>https://oi-wiki.org/string/hash/ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>$2^{64} \approx 2^4 \cdot (10^3)^6 = 16 \cdot 10^{18} $ <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>比如前面<a href="/algs/BM.html">Boyer-Moore算法</a>里介绍过的 Bloom Filter <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

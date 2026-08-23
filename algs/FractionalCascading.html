@@ -219,7 +219,7 @@
 
 <p>这样如果我们查找 $q=45$ ，发现落到 $46$ 的位置，就直接使用 $46$ 的索引统计 $q=45$ 的索引结果即可。</p>
 
-<p>这种做法，花费 $kn \cdot (k-1)\log n$ 的预处理时间，和 $kN$ <sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>的空间，以实现 $O(\text{log}N)$ 时间复杂度的单次查询。</p>
+<p>这种做法，花费 $kn \cdot (k-1)\log n$ 的预处理时间，和 $kN$ <sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>的空间，以实现 $O(\text{log}N)$ 时间复杂度的单次查询。</p>
 
 <p>这样，单次查询的时间复杂度，从 $O(k\log n)$ 变为 $O(\log kn)$ , 相当于把 $k$ 放进了 log 里，性能得到了提升。</p>
 
@@ -229,13 +229,13 @@
 
 <p>那么如何<em>在尽量保持改进的查询时间复杂度的情况下</em>降低空间复杂度呢？ 这才引出来，我们分片 · 级联的技术。</p>
 
-<p><strong>分片</strong>指得是分片取样（fractional sampling），<strong>级联</strong>（cascading）指得是并不同时保存所有 $k$ 个列表的索引信息，而只是保存紧邻下一级的索引信息，然后一层层进行连锁。<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
+<p><strong>分片</strong>指得是分片取样（fractional sampling），<strong>级联</strong>（cascading）指得是并不同时保存所有 $k$ 个列表的索引信息，而只是保存紧邻下一级的索引信息，然后一层层进行连锁。<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup></p>
 
 <p>具体说就是：</p>
 
 <ol>
   <li>构建一个预处理的列表 $M$ ，它的每一级 $M_i$ 都是由对应 $L_i$ 和下一级的 $M_{i+1}$ 中的元素构成，$M_i$ 存储元素本身以及每个元素在 $L_i$ 上的索引位置和 $M_{i+1}$ 上索引位置，这样一直到最后一级 $M_k$ ，因为没有下一级，所以只保存 $L_k$ 的元素，这体现了级联；</li>
-  <li>次一级的 $M_{i+1}$ 里面不是每个元素都提升到 $M_i$ 里，而是两两取样<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，</li>
+  <li>次一级的 $M_{i+1}$ 里面不是每个元素都提升到 $M_i$ 里，而是两两取样<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>，</li>
 </ol>
 
 <p>例如上述例子为</p>
@@ -309,7 +309,7 @@
     <p>对 $M_1$ ，进行二分查找，发现最小的 $\geqslant 45$ 的是 $64[1,5]$ ，于是对于 $L_1$ 的<strong>结果是 $1$</strong>，然后从 $M_2[5]$ 开始，直接根据所属分片的级联的信息，就像拉拉链一样，最多经过 $f-1$ 次比较就可以得到结果；</p>
   </li>
   <li>
-    <p>然后比较 $M_2[5]$ 和它的前一项 $M_2[4]$ <sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup>发现 $M_2[5]=62[3,3]$ 是最小的 $\geqslant q$ 的一项，于是 $L_2$ 的<strong>结果是 $3$</strong>；</p>
+    <p>然后比较 $M_2[5]$ 和它的前一项 $M_2[4]$ <sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>发现 $M_2[5]=62[3,3]$ 是最小的 $\geqslant q$ 的一项，于是 $L_2$ 的<strong>结果是 $3$</strong>；</p>
   </li>
   <li>
     <p>比较 $M_3[3]$ 和 $M_3[2]$，发现 $M_3[3] =62[2,3]$ 是最小的 $\geqslant q$ 的项，于是 $L_3$ 的<strong>结果是 $2$</strong>；</p>
@@ -351,7 +351,7 @@
     <p>但另一方面，如果 $k$ 相对 $n$ 较大，那分片级联相比于原始算法就没有优势，甚至更慢。</p>
   </li>
   <li>
-    <p>而在几乎所有的情况下，只要 $k$ 不是特别小，改进算法还是最快的，是快好几倍的<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">5</a></sup> 。因为很明显，对于 $\text{log}N$ ,即使 $N$ 取一个 <code class="language-plaintext highlighter-rouge">u64</code> 能表示的最大值，也就是相当于 $k=64$ 的大小，因此只要稍微大一点的 $k$ 都会使得查询性能不如改进算法</p>
+    <p>而在几乎所有的情况下，只要 $k$ 不是特别小，改进算法还是最快的，是快好几倍的<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">5</a></sup> 。因为很明显，对于 $\text{log}N$ ,即使 $N$ 取一个 <code class="language-plaintext highlighter-rouge">u64</code> 能表示的最大值，也就是相当于 $k=64$ 的大小，因此只要稍微大一点的 $k$ 都会使得查询性能不如改进算法</p>
   </li>
 </ol>
 
@@ -703,19 +703,19 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>假设元素类型也是和索引位置一样的类型 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>总感觉分片级联就像斐波那契堆一样，对复杂度采取逐级抵抗的办法，应该进行可以一些类比 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>两两取样也就是分片的大小为 $2$ ，当然也可以选择其他的分片大小 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>因为分片大小是 $2$ ，所以比较两项，如果分片大小是 $4$ 那就比较 $4$ 项 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>可以视作对应分片 $f=1$ 的情况，虽然此时耗费多一半的空间 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

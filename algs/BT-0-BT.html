@@ -131,7 +131,7 @@
   <li>叶子节点的键数 $N_{\large\text{key}} \in [1,m)$</li>
 </ol>
 
-<p>其中根节点比较特殊，对于高度大于 $1$ 的 B 树，根节点显然属于是中间节点，但它可以像叶子节点一样最少只有单键<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>。因此一些介绍里把 internal 节点的概念定义为不包括根节点，而另外的介绍里则保留这种矛盾，这是让初学者很困惑的一个地方。</p>
+<p>其中根节点比较特殊，对于高度大于 $1$ 的 B 树，根节点显然属于是中间节点，但它可以像叶子节点一样最少只有单键<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>。因此一些介绍里把 internal 节点的概念定义为不包括根节点，而另外的介绍里则保留这种矛盾，这是让初学者很困惑的一个地方。</p>
 
 <p>而中间节点的最小键数 $\lceil {\large\frac{m}{2}}\rceil-1$  ，是由一个溢出节点的分裂过程推导出的：</p>
 
@@ -150,14 +150,14 @@
 <p>当插入某个键后发现节点溢出了，就要分裂节点：</p>
 
 <ol>
-  <li>把中间的一个键提升到父节点，其余的键分到左右两个新节点<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup> ；</li>
+  <li>把中间的一个键提升到父节点，其余的键分到左右两个新节点<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup> ；</li>
   <li>递归地在父节点上调用，直到根节点；</li>
-  <li>当根节点溢出时，中间的键单独构成一个新节点，作为新的根节点<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">3</a></sup>，算法终止</li>
+  <li>当根节点溢出时，中间的键单独构成一个新节点，作为新的根节点<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>，算法终止</li>
 </ol>
 
 <h3 id="删除">删除</h3>
 
-<p>当删除某个键后发现节点不足，就要<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">4</a></sup>：</p>
+<p>当删除某个键后发现节点不足，就要<sup id="fnref:10"><a href="#fn:10" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>：</p>
 
 <ol>
   <li>尝试<strong>节点重平衡</strong>；</li>
@@ -192,16 +192,16 @@
 <p>递归地<strong>合并节点</strong>：</p>
 
 <ol>
-  <li>把左邻居节点、对应父节点的键和目标节点合并<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">5</a></sup>；</li>
+  <li>把左邻居节点、对应父节点的键和目标节点合并<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">5</a></sup>；</li>
   <li>递归地在父节点上调用，直到根节点；</li>
-  <li>当根节点的键不足时，弹出它的孩子<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">6</a></sup>作为新的根节点<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">7</a></sup></li>
+  <li>当根节点的键不足时，弹出它的孩子<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">6</a></sup>作为新的根节点<sup id="fnref:6"><a href="#fn:6" class="footnote" rel="footnote" role="doc-noteref">7</a></sup></li>
 </ol>
 
 <h2 id="实现-数据结构">实现-&gt;数据结构</h2>
 
 <h3 id="辅助宏">辅助宏</h3>
 
-<p>就像前文二叉搜索树那样，我们首先通过一个宏，来描述这个系列的 B 树的代码结构，来避免无谓的重复<sup id="fnref:7" role="doc-noteref"><a href="#fn:7" class="footnote" rel="footnote">8</a></sup>：</p>
+<p>就像前文二叉搜索树那样，我们首先通过一个宏，来描述这个系列的 B 树的代码结构，来避免无谓的重复<sup id="fnref:7"><a href="#fn:7" class="footnote" rel="footnote" role="doc-noteref">8</a></sup>：</p>
 
 <p>其中 M 表示阶数，这也暗示我们的节点将不再像二叉搜索树那样在字段名上分出键和孩子的顺序，而是采用更一般化地安排。</p>
 
@@ -371,7 +371,7 @@
 
 <ol>
   <li>普通的 B 树就像二叉搜索树一样直接把键值存在一起，这里用 <code class="language-plaintext highlighter-rouge">KVEntry</code> 把它们直接放到一起便于集中管理，<code class="language-plaintext highlighter-rouge">KVEntry</code> 是一个以第一个元素为排序键的二元组。</li>
-  <li>对节点内键的存储使用了连续地址的向量结构，这是我在实现时的第一选择，在经典的 CPU 架构下，这样不超过 $100$ 个 指针宽度的数组的读写是最优的<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">9</a></sup></li>
+  <li>对节点内键的存储使用了连续地址的向量结构，这是我在实现时的第一选择，在经典的 CPU 架构下，这样不超过 $100$ 个 指针宽度的数组的读写是最优的<sup id="fnref:8"><a href="#fn:8" class="footnote" rel="footnote" role="doc-noteref">9</a></sup></li>
 </ol>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">impl_node!</span><span class="p">();</span>
@@ -426,7 +426,7 @@
 
 <h2 id="实现-基础方法">实现-&gt;基础方法</h2>
 
-<p>如果是从二叉搜索树第一次接触到 B 树这样的 $m$ 路搜索树（$m \geqslant 3$），会感到很多观念上的不适应，一些基础操作到底怎么实现，难以想得很清楚<sup id="fnref:9" role="doc-noteref"><a href="#fn:9" class="footnote" rel="footnote">10</a></sup>。</p>
+<p>如果是从二叉搜索树第一次接触到 B 树这样的 $m$ 路搜索树（$m \geqslant 3$），会感到很多观念上的不适应，一些基础操作到底怎么实现，难以想得很清楚<sup id="fnref:9"><a href="#fn:9" class="footnote" rel="footnote" role="doc-noteref">10</a></sup>。</p>
 
 <p>一个关键的区别在于二叉搜索树一个节点只有一个键，在这种情况下，键就是节点，节点就是键，找到了节点就找到了键，反之亦然。</p>
 
@@ -854,7 +854,7 @@
 
 <p>对节点的重平衡当初是用宏来描述的，但完全可以替换成一般的方法。</p>
 
-<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="k">crate</span><span class="p">::</span><span class="nn">bst</span><span class="p">::{</span><span class="nb">Left</span><span class="p">,</span> <span class="nb">Right</span><span class="p">};</span>
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">use</span> <span class="k">crate</span><span class="p">::</span><span class="nn">bst</span><span class="p">::{</span><span class="n">Left</span><span class="p">,</span> <span class="n">Right</span><span class="p">};</span>
 
 
 <span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BT</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>
@@ -869,11 +869,11 @@
         <span class="cm">/* Check if siblings has remains */</span>
 
         <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
-            <span class="nd">try_node_redistribution!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">Left</span><span class="p">);</span>
+            <span class="nd">try_node_redistribution!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">Left</span><span class="p">);</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">{</span>
-            <span class="nd">try_node_redistribution!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">Right</span><span class="p">);</span>
+            <span class="nd">try_node_redistribution!</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">Right</span><span class="p">);</span>
         <span class="p">}</span>
 
         <span class="nf">Err</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">))</span>
@@ -1184,34 +1184,34 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>这是为了让插入提升能够在根节点处终止 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>当然实际上其中一个节点可以是旧节点的重新利用 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>这个过程在很多实现里被惯例地称为 <code class="language-plaintext highlighter-rouge">push_new_level</code> 之类的名字 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:10" role="doc-endnote">
+    <li id="fn:10">
       <p>也可以采用惰性删除的方法，但这里就不介绍了 <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>当然也可以合并目标节点、父节点键和右邻居节点 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>根节点键不足的时候也就是只有空节点和一个孩子的情况 <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
+    <li id="fn:6">
       <p>这个降低树高的过程可以称为 <code class="language-plaintext highlighter-rouge">pop_level</code> <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:7" role="doc-endnote">
+    <li id="fn:7">
       <p>如果可以，我不愿意多打哪怕一个重复的字符 <a href="#fnref:7" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:8" role="doc-endnote">
+    <li id="fn:8">
       <p>后面的以一种实现的性能测试实际完全验证了我的这种认识 <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:9" role="doc-endnote">
+    <li id="fn:9">
       <p>对于我来讲，想不清楚的就躺床上慢慢想，这也是笛卡尔思考问题的办法，当初解析几何的想法就是在床上想出来的 <a href="#fnref:9" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

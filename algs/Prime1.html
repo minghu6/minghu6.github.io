@@ -209,7 +209,7 @@
 
 <h3 id="复杂度分析">复杂度分析</h3>
 
-<p>每查找到一个质数 $p$ ，就需要 $N/p$ 的操作次数，因此总的操作数为 $\displaystyle \sum_{ p\leqslant \sqrt{N}}  N/p $ 。而根据已知的结论，来自<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>  chapter 22 的：$\displaystyle \sum_{p \leqslant x} \frac{1}{p} = \log\log x + O(1)$ ，可以得到算法的最坏时间复杂度为 $O(N\log\log N)$ 。</p>
+<p>每查找到一个质数 $p$ ，就需要 $N/p$ 的操作次数，因此总的操作数为 $\displaystyle \sum_{ p\leqslant \sqrt{N}}  N/p $ 。而根据已知的结论，来自<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>  chapter 22 的：$\displaystyle \sum_{p \leqslant x} \frac{1}{p} = \log\log x + O(1)$ ，可以得到算法的最坏时间复杂度为 $O(N\log\log N)$ 。</p>
 
 <h3 id="算法评价">算法评价</h3>
 
@@ -285,7 +285,7 @@
 
 <h2 id="sundaram-筛子">Sundaram 筛子（√√√）</h2>
 
-<p>Sundaram 筛子<sup id="fnref:12" role="doc-noteref"><a href="#fn:12" class="footnote" rel="footnote">2</a></sup> ，是基于奇数因子分解 $2k+1$ 的筛子。</p>
+<p>Sundaram 筛子<sup id="fnref:12"><a href="#fn:12" class="footnote" rel="footnote" role="doc-noteref">2</a></sup> ，是基于奇数因子分解 $2k+1$ 的筛子。</p>
 
 <p>方法是检查所有 $i + j + 2ij\quad (1\leqslant i \leqslant j)$ 形式的数字，筛掉所有奇数里的合数。</p>
 
@@ -357,7 +357,7 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>这里注解了一段乘法改加法的代码，在一些经典算法论文，通常是上世纪九十年代以前的那些，很喜欢搞乘法变加法的优化，但现在应该被视为过早优化，因为乘法很容易，也很普遍地在更低层次的软件和硬件上做优化，在应用端算法上做加法替代实现反而构成了一种明显的反优化。<sup id="fnref:21" role="doc-noteref"><a href="#fn:21" class="footnote" rel="footnote">3</a></sup></p>
+<p>这里注解了一段乘法改加法的代码，在一些经典算法论文，通常是上世纪九十年代以前的那些，很喜欢搞乘法变加法的优化，但现在应该被视为过早优化，因为乘法很容易，也很普遍地在更低层次的软件和硬件上做优化，在应用端算法上做加法替代实现反而构成了一种明显的反优化。<sup id="fnref:21"><a href="#fn:21" class="footnote" rel="footnote" role="doc-noteref">3</a></sup></p>
 
 <p>另一方面，除法倒是还有算法上优化的必要。</p>
 
@@ -373,7 +373,7 @@
 
 <p>仔细考虑下，前面E-筛子的计算过程还有重复的操作，就是有一些合数比如 $C = p_m^i\cdot p_n^j\cdot p_q^k,\ (p_m\neq p_n\neq p_q)$ 它会被不同的质数 $p_m, p_n, p_q$ 重复标记，这也是它超线性时间复杂的原因。</p>
 
-<p>Mairson 筛子<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">4</a></sup>的实质是取消这些重复标记的过程，把问题转化为线性，为此每用一个质数 $p$ 标记完一些合数后，就要把这些合数排除在后续的标记范围里。</p>
+<p>Mairson 筛子<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>的实质是取消这些重复标记的过程，把问题转化为线性，为此每用一个质数 $p$ 标记完一些合数后，就要把这些合数排除在后续的标记范围里。</p>
 
 <p>道理都懂，问题是怎么排除，Mairson 很实在地给出了具体的数据结构，也是大家根据这个具体情况自然而然能想到的，即，一个基于数组的双向链表：</p>
 
@@ -462,7 +462,7 @@
 
 <h3 id="算法改进-1">算法改进</h3>
 
-<p>如果可以从由 $p$ 组成的最大的那个合数开始逆序标记，那么就可以立刻删除 $p\cdot f$ 而不需要先收集起来。<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">5</a></sup></p>
+<p>如果可以从由 $p$ 组成的最大的那个合数开始逆序标记，那么就可以立刻删除 $p\cdot f$ 而不需要先收集起来。<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">5</a></sup></p>
 
 <p>这可以带来一些性能的提升和空间的节省。</p>
 
@@ -497,7 +497,7 @@
 <span class="c1">//...</span>
 </code></pre></div></div>
 
-<p>有一个观察，但是还无法证明，链表上相邻的两个数不会被同一个 $p$ 标记<sup id="fnref:11" role="doc-noteref"><a href="#fn:11" class="footnote" rel="footnote">6</a></sup>，那么下一轮的 <code class="language-plaintext highlighter-rouge">f_max = backward[f_max]</code> 。</p>
+<p>有一个观察，但是还无法证明，链表上相邻的两个数不会被同一个 $p$ 标记<sup id="fnref:11"><a href="#fn:11" class="footnote" rel="footnote" role="doc-noteref">6</a></sup>，那么下一轮的 <code class="language-plaintext highlighter-rouge">f_max = backward[f_max]</code> 。</p>
 
 <p>这样改进后的完整算法如下：</p>
 
@@ -554,13 +554,13 @@
 
 <h2 id="轮子与轮筛-">轮子与轮筛（-）</h2>
 
-<p>（纯）轮筛<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">7</a></sup><sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">8</a></sup> 是假的，<strong>但轮子（族）是真的</strong>。</p>
+<p>（纯）轮筛<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">7</a></sup><sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">8</a></sup> 是假的，<strong>但轮子（族）是真的</strong>。</p>
 
 <h3 id="定义轮子">定义轮子</h3>
 
 <p><strong>轮子（wheel）</strong>是由头几个质数的乘积构成的一个空间，空间里的数都与这些质数互质。</p>
 
-<p>这头几个质数的乘积叫做质数阶乘，记作 $p_k\sharp = \displaystyle\prod_{i=1}^{k}{p_i} = p_1\times  p_2 \ \times ..\ p_k$ <sup id="fnref:14" role="doc-noteref"><a href="#fn:14" class="footnote" rel="footnote">9</a></sup>，在前面<a href="/algs/Prime0.html">质数基础</a>的<a href="/algs/Prime0.html#质性测试">质性测试</a>一节已经接触过这个概念，于是有轮子 $W_k$（第 $k$ 个轮子）：</p>
+<p>这头几个质数的乘积叫做质数阶乘，记作 $p_k\sharp = \displaystyle\prod_{i=1}^{k}{p_i} = p_1\times  p_2 \ \times ..\ p_k$ <sup id="fnref:14"><a href="#fn:14" class="footnote" rel="footnote" role="doc-noteref">9</a></sup>，在前面<a href="/algs/Prime0.html">质数基础</a>的<a href="/algs/Prime0.html#质性测试">质性测试</a>一节已经接触过这个概念，于是有轮子 $W_k$（第 $k$ 个轮子）：</p>
 
 \[W_k = \lbrace x\vert\  x \bot p_k\sharp,\ (1\leqslant x \leqslant p_k\sharp)  \rbrace\]
 
@@ -576,7 +576,7 @@
 
 <p>首先，我们知道 $W_1 = \lbrace 1 \rbrace$；</p>
 
-<p>其次，Pritchard 给出了一个非常形象的示意图来演示如何通过“滚动”和删除一些点，从 $W_k$ 构造出 $W_{k+1}$<sup id="fnref:5:1" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">8</a></sup></p>
+<p>其次，Pritchard 给出了一个非常形象的示意图来演示如何通过“滚动”和删除一些点，从 $W_k$ 构造出 $W_{k+1}$<sup id="fnref:5:1"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">8</a></sup></p>
 
 <h4 id="图-轮子" align="center">图-轮子</h4>
 <p align="center">
@@ -669,7 +669,7 @@
 
 <p>Pritchard 可能为他的轮筛小发现高兴坏了，竟然昏了头，提出了一个纯轮筛的算法。</p>
 
-<p>他的想法是这样的，既然 $W_k$ 可以直接发现 $\lt p_{k+1}^2$ 范围内的所有质数，那么只要造一个足够大的轮子，使得 $N \lt p_{k+1}^2$，然后让它滚起来，滚到 $N$，是不是就可以解决问题了。<sup id="fnref:16" role="doc-noteref"><a href="#fn:16" class="footnote" rel="footnote">10</a></sup></p>
+<p>他的想法是这样的，既然 $W_k$ 可以直接发现 $\lt p_{k+1}^2$ 范围内的所有质数，那么只要造一个足够大的轮子，使得 $N \lt p_{k+1}^2$，然后让它滚起来，滚到 $N$，是不是就可以解决问题了。<sup id="fnref:16"><a href="#fn:16" class="footnote" rel="footnote" role="doc-noteref">10</a></sup></p>
 
 <p>Pritchard 还引用了他心爱的 $p\cdot f$  的“乘法改加法”（下面会讲）的算法（负）优化，指出在结合了此等优化的前提下，算法操作的平均时间复杂度可以达到 $\Theta(\frac{N}{\log\log N}) $ 。</p>
 
@@ -869,7 +869,7 @@
 
 <h2 id="分段固定轮筛">分段固定轮筛（√√√√）</h2>
 
-<p>分段固定轮筛（SFWS，Segmented Fixed-Wheel Sieve）<sup id="fnref:6" role="doc-noteref"><a href="#fn:6" class="footnote" rel="footnote">11</a></sup>顾名思义，是在一个固定大小的轮子粗筛后的结果上再做第二步筛选，过程使用了分段技术。</p>
+<p>分段固定轮筛（SFWS，Segmented Fixed-Wheel Sieve）<sup id="fnref:6"><a href="#fn:6" class="footnote" rel="footnote" role="doc-noteref">11</a></sup>顾名思义，是在一个固定大小的轮子粗筛后的结果上再做第二步筛选，过程使用了分段技术。</p>
 
 <h4 id="具体思路">具体思路</h4>
 
@@ -1104,7 +1104,7 @@
 
 <p>除此之外，可以观察到 $\textit{WG}[i]$ 总是偶数，利用这个性质可以节约一半的预计算值的存储空间。</p>
 
-<p><em>但是显见地在代码里我们没用这个优化，因为在付出了代码复杂化、空间占用地代价后，得到了一个更慢的时间性能上的表现。<sup id="fnref:20" role="doc-noteref"><a href="#fn:20" class="footnote" rel="footnote">12</a></sup></em></p>
+<p><em>但是显见地在代码里我们没用这个优化，因为在付出了代码复杂化、空间占用地代价后，得到了一个更慢的时间性能上的表现。<sup id="fnref:20"><a href="#fn:20" class="footnote" rel="footnote" role="doc-noteref">12</a></sup></em></p>
 
 <h3 id="复杂度分析-4">复杂度分析</h3>
 
@@ -1122,7 +1122,7 @@
 
 <h2 id="mairson-对偶筛">Mairson 对偶筛（√√√）</h2>
 
-<p>Mairson 对偶筛<sup id="fnref:8" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">13</a></sup>，对偶（dual）意指把原来算法外层对 $p$ 的遍历和内层对 $f$ 的遍历对调，变成外层对 $f$ 遍历内层对 $p$ 遍历。<sup id="fnref:17" role="doc-noteref"><a href="#fn:17" class="footnote" rel="footnote">14</a></sup></p>
+<p>Mairson 对偶筛<sup id="fnref:8"><a href="#fn:8" class="footnote" rel="footnote" role="doc-noteref">13</a></sup>，对偶（dual）意指把原来算法外层对 $p$ 的遍历和内层对 $f$ 的遍历对调，变成外层对 $f$ 遍历内层对 $p$ 遍历。<sup id="fnref:17"><a href="#fn:17" class="footnote" rel="footnote" role="doc-noteref">14</a></sup></p>
 
 <p>基于最小质因数分解，$c = \texttt{lpf}(c) \cdot f$  做筛选。</p>
 
@@ -1186,7 +1186,7 @@
 
 <p>如果从最小的质数开始增序迭代，直到第一个能整除 $f$ 的质数，这就是所有 $\leqslant \texttt{lpf}(f)$ 的质数。</p>
 
-<p>但是另一方面我们其实注解了检测整除的代码，这是因为相对于乘法和加法，除法还是一种代价较高的算术运算，提前跳出的好处比不上一直做取余检测的代价，注掉代码不影响正确性却会使得性能获得可察觉的改善。<sup id="fnref:18" role="doc-noteref"><a href="#fn:18" class="footnote" rel="footnote">15</a></sup></p>
+<p>但是另一方面我们其实注解了检测整除的代码，这是因为相对于乘法和加法，除法还是一种代价较高的算术运算，提前跳出的好处比不上一直做取余检测的代价，注掉代码不影响正确性却会使得性能获得可察觉的改善。<sup id="fnref:18"><a href="#fn:18" class="footnote" rel="footnote" role="doc-noteref">15</a></sup></p>
 
 <h3 id="算法变种">算法变种</h3>
 
@@ -1244,11 +1244,11 @@
 
 <p>原始算法时间性能也非常好，比 Eratosthenes 筛子快一点，比 Sundram 筛子慢一点。</p>
 
-<p>变种算法也即 <a href="https://cp-algorithms.com/algebra/prime-sieve-linear.html">cp-algorithms</a> 里介绍的线性筛子算法，在算法比较的结论上没有变化，但比原始算法要快。<sup id="fnref:19" role="doc-noteref"><a href="#fn:19" class="footnote" rel="footnote">16</a></sup></p>
+<p>变种算法也即 <a href="https://cp-algorithms.com/algebra/prime-sieve-linear.html">cp-algorithms</a> 里介绍的线性筛子算法，在算法比较的结论上没有变化，但比原始算法要快。<sup id="fnref:19"><a href="#fn:19" class="footnote" rel="footnote" role="doc-noteref">16</a></sup></p>
 
 <h2 id="gpf-筛子">GPF 筛子（√√）</h2>
 
-<p>GPF 筛子<sup id="fnref:8:1" role="doc-noteref"><a href="#fn:8" class="footnote" rel="footnote">13</a></sup>，是基于最大质因数分解， $c = f\cdot \texttt{gpf(c)}$ 的质数筛子。</p>
+<p>GPF 筛子<sup id="fnref:8:1"><a href="#fn:8" class="footnote" rel="footnote" role="doc-noteref">13</a></sup>，是基于最大质因数分解， $c = f\cdot \texttt{gpf(c)}$ 的质数筛子。</p>
 
 <p>从最小的质数 $p = 2$ 开始，收集所有使得 $ f \cdot p \leqslant N$ ，并且 $\texttt{gpf}(f) \leqslant p$ 的 $f$ ，划掉对应的 $c = f \cdot p$ ，最后得到质数。</p>
 
@@ -1315,7 +1315,7 @@
 
 <h2 id="atkin-筛子">Atkin 筛子（?）</h2>
 
-<p>Atkin 筛子<sup id="fnref:10" role="doc-noteref"><a href="#fn:10" class="footnote" rel="footnote">17</a></sup>，是一种二元二次型筛子。</p>
+<p>Atkin 筛子<sup id="fnref:10"><a href="#fn:10" class="footnote" rel="footnote" role="doc-noteref">17</a></sup>，是一种二元二次型筛子。</p>
 
 <p>它的思路还是挺先进的，先用一个 2-3-5 筛子在模 60 的余数上，得到</p>
 
@@ -1343,7 +1343,7 @@
 
 <p>首先，这三个方程里的 $(x, y)$ ，就像 <a href="#sundaram-筛子">Sundaram 筛子</a> 一样，都是实在的正整数；</p>
 
-<p>其次，为什么是这三个方程，为什么是奇数个解，为什么<strong>方程-3</strong>要求 $x \gt y$，为什么还要校验不含质数平方因子，原文里有解释<sup id="fnref:13" role="doc-noteref"><a href="#fn:13" class="footnote" rel="footnote">18</a></sup> 。</p>
+<p>其次，为什么是这三个方程，为什么是奇数个解，为什么<strong>方程-3</strong>要求 $x \gt y$，为什么还要校验不含质数平方因子，原文里有解释<sup id="fnref:13"><a href="#fn:13" class="footnote" rel="footnote" role="doc-noteref">18</a></sup> 。</p>
 
 <h3 id="原始实现">原始实现（×）</h3>
 
@@ -1713,7 +1713,7 @@
 
 <h4 id="算法评价-8">算法评价</h4>
 
-<p>速度很快算是第二档，但本身既无法分片又不如 Eratosthenes 筛子那么简单直观，这就使得它实际没有任何可提之处，权列在此，以为参考。<sup id="fnref:22" role="doc-noteref"><a href="#fn:22" class="footnote" rel="footnote">19</a></sup></p>
+<p>速度很快算是第二档，但本身既无法分片又不如 Eratosthenes 筛子那么简单直观，这就使得它实际没有任何可提之处，权列在此，以为参考。<sup id="fnref:22"><a href="#fn:22" class="footnote" rel="footnote" role="doc-noteref">19</a></sup></p>
 
 <h2 id="尾声">尾声</h2>
 
@@ -1723,64 +1723,64 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>G. H. Hardy and E. M. Wright. An Introduction to the Theory of Numbers. 1962. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:12" role="doc-endnote">
+    <li id="fn:12">
       <p>好家伙，论文都到二战前了，原始作者是印度学生 Sundaram ，找不到电子版，实际参考的是 <a href="https://en.wikipedia.org/wiki/Sieve_of_Sundaram">wiki</a> 。 <a href="#fnref:12" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:21" role="doc-endnote">
+    <li id="fn:21">
       <p>从另一方面说，在 CPython 上的实现倒还能体现这种优化的作用 <a href="#fnref:21" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>Harry G. Mairson. Some new upper bounds on the generation of prime numbers. 1977. <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>J.Misra. An Exercise in Program Explanation.  1979. <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:11" role="doc-endnote">
+    <li id="fn:11">
       <p>形式地说，任意两个相邻的最小质因数为 $p_i$ 的自然数之间，至少存在一个最小质因数为 $p_j \gt p_i$ 的自然数。 <a href="#fnref:11" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>Paul Pritchard. A Sublinear Additive Sieve for Finding Prime Numbers. 1981. <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
-      <p>Paul Pritchard. Explaining the Wheel Sieve. 1982. <sup id="fnref:15" role="doc-noteref"><a href="#fn:15" class="footnote" rel="footnote">20</a></sup> <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:5:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+    <li id="fn:5">
+      <p>Paul Pritchard. Explaining the Wheel Sieve. 1982. <sup id="fnref:15"><a href="#fn:15" class="footnote" rel="footnote" role="doc-noteref">20</a></sup> <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:5:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
     </li>
-    <li id="fn:14" role="doc-endnote">
+    <li id="fn:14">
       <p>这里使用 量词 $k$ 而不是上下文惯用的 $n$ 有两方面考虑，一方面是和 <em>Explaining the Wheel Sieve</em> 原文的用法保持一致；另一方面 有些终结的意味的 $n$ ，$k$ 是更能暗示处于中间过程的一个“量词”，在轮子上和质数阶乘上使用更合适。 <a href="#fnref:14" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:16" role="doc-endnote">
+    <li id="fn:16">
       <p>这简直就是经典科幻小说家会干的事 <a href="#fnref:16" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:6" role="doc-endnote">
+    <li id="fn:6">
       <p>Paul Pritchard. Fast Compact Prime Number Sieves (among Others). 1983. <a href="#fnref:6" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:20" role="doc-endnote">
+    <li id="fn:20">
       <p>在 CPython 上的实现只在很大的轮子上和很大的输入数据的规模上有微弱优势 <a href="#fnref:20" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:8" role="doc-endnote">
+    <li id="fn:8">
       <p>Paul Pritchard. LINEAR PRIME-NUMBER SIEVES: A FAMILY TREE. 1987. <a href="#fnref:8" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:8:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
     </li>
-    <li id="fn:17" role="doc-endnote">
+    <li id="fn:17">
       <p>原文作者会为每个既有算法考虑它的对偶算法 <a href="#fnref:17" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:18" role="doc-endnote">
+    <li id="fn:18">
       <p>在 CPython 上的实现如果留着这段代码反而会带来显著的性能提升，这几乎反向明示了 CPython 并没有对乘法有什么优化 <a href="#fnref:18" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:19" role="doc-endnote">
+    <li id="fn:19">
       <p>在 CPython 上的实现也同意这个结论 <a href="#fnref:19" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:10" role="doc-endnote">
+    <li id="fn:10">
       <p>A. O. L. Atkin and D. J. Bernstein. Prime Sieves Using Binary Quadratic Forms. 2003. <a href="#fnref:10" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:13" role="doc-endnote">
+    <li id="fn:13">
       <p>但它使用了我不熟悉的数学工具（抽象代数等），所不了解的数学知识（数论），而且写得看起来也并不打算真的想让人了解。 <a href="#fnref:13" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:22" role="doc-endnote">
+    <li id="fn:22">
       <p>并且因为包含过多的算术运算，在 CPython 上的实现非常低效 <a href="#fnref:22" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:15" role="doc-endnote">
+    <li id="fn:15">
       <p>这个论文里数学符号的排版字体真的抽象，首先这个字符 <img src="/assets/img/prime_sieves/charR.png" alt="" /> 是什么？ 版上打眼一看都缩缩成一团了，还以为是个花体 $A$ 呢，仔细看不是，难道是什么大写希腊字母的花体么，因为拜占庭作为中世纪西方数学教育翻译的主要材料来源地之一，使得作为传统，西方人写数学符号都好整个希腊字母，但仔细对了一遍也不像，后来通过谷歌识图对比类似结果，算是确认这是个 $R$ 。 如果提前知道它是个 $R$ ，那它看起来还挺像个 $R$ 的，可这个字符<img src="/assets/img/prime_sieves/charS.png" alt="" />又是什么？它看起来像 $y$ 又像 $g$ ，这下谷歌识图也识不出来了，只能在专门的字体网站做 AI 识图，然后发现这居然是个 $S$ ，S 它是你么，它说它舅（就) 是我。这个字体名叫 <em>OriginalScriptStd</em> ，英文草书说是。 <a href="#fnref:15" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

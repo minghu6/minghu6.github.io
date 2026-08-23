@@ -472,7 +472,7 @@
 
 <h3 id="节点提升">节点提升</h3>
 
-<p>到目前位置 TreeMap 的节点实现给我们增加了很多麻烦，但当分裂节点的时候，就很简单了<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>，这里的 <code class="language-plaintext highlighter-rouge">split_off</code> 的表现和 <code class="language-plaintext highlighter-rouge">Vec</code> 的一致。</p>
+<p>到目前位置 TreeMap 的节点实现给我们增加了很多麻烦，但当分裂节点的时候，就很简单了<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>，这里的 <code class="language-plaintext highlighter-rouge">split_off</code> 的表现和 <code class="language-plaintext highlighter-rouge">Vec</code> 的一致。</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">impl</span><span class="o">&lt;</span><span class="n">K</span><span class="p">:</span> <span class="nb">Ord</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="n">BPT2</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span> <span class="p">{</span>    
 	<span class="k">fn</span> <span class="nf">promote</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span> <span class="k">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">)</span>
@@ -1081,7 +1081,7 @@
   <li>插、删的性能介于传统 BST 和 B 树、之前版本的 B+ 树之间</li>
 </ol>
 
-<p>在理论分析和在不同规模测试数据下的性能比较可以发现，这种实现的性能提高并不来源于理论时间复杂度的改善<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">2</a></sup>，而是由于 TreeMap 实现的节点的内存布局上更加缓存友好，也即键-值聚合的单一数组比起键-值分离的两个数组更加缓存友好。</p>
+<p>在理论分析和在不同规模测试数据下的性能比较可以发现，这种实现的性能提高并不来源于理论时间复杂度的改善<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，而是由于 TreeMap 实现的节点的内存布局上更加缓存友好，也即键-值聚合的单一数组比起键-值分离的两个数组更加缓存友好。</p>
 
 <h3 id="进一步改进">进一步改进</h3>
 
@@ -1091,7 +1091,7 @@
 
 <p><em>特别地，对 Rust 单一所有权的语义机制需要进行特别考虑，可以使用 Option 类型包装，但是需要付出不必要的额外内存代价，而这是作为底层数据结构所不愿看到的，这样就需要使用 MaybeUninit 类型然后自己维护数组操作过程中的单一所有权问题。</em></p>
 
-<p>改进版数据结构<sup id="fnref:5" role="doc-noteref"><a href="#fn:5" class="footnote" rel="footnote">3</a></sup>：</p>
+<p>改进版数据结构<sup id="fnref:5"><a href="#fn:5" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>：</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">pub</span> <span class="k">struct</span> <span class="n">StackVec</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="k">const</span> <span class="n">C</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="n">len</span><span class="p">:</span> <span class="nb">usize</span><span class="p">,</span>
@@ -1104,12 +1104,12 @@
 <span class="k">enum</span> <span class="n">Node</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="k">const</span> <span class="n">M</span><span class="p">:</span> <span class="nb">usize</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="n">Leaf</span> <span class="p">{</span>
         <span class="n">entries</span><span class="p">:</span> <span class="n">StackVecMap</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="n">next</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
-        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+        <span class="n">next</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">Internal</span> <span class="p">{</span>
         <span class="n">children</span><span class="p">:</span> <span class="n">StackVecMap</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">OwnedPtr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">M</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="nb">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+        <span class="n">paren</span><span class="p">:</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">Ptr</span><span class="o">&lt;</span><span class="k">Self</span><span class="o">&gt;&gt;</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 
@@ -1119,14 +1119,14 @@
 <span class="p">}</span>
 
 <span class="nd">#[repr(transparent)]</span>
-<span class="k">pub</span> <span class="k">struct</span> <span class="nb">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">Ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="o">?</span><span class="nb">Sized</span><span class="o">&gt;</span> <span class="p">{</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">NonNull</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="k">pub</span> <span class="k">struct</span> <span class="n">KVEntry</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span><span class="p">(</span><span class="k">pub</span> <span class="n">K</span><span class="p">,</span> <span class="k">pub</span> <span class="n">V</span><span class="p">);</span>
 </code></pre></div></div>
 
-<p>作为对比，Rust 标准库里 <code class="language-plaintext highlighter-rouge">BTreeMap</code> 采取了如下数据结构<sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">4</a></sup>：</p>
+<p>作为对比，Rust 标准库里 <code class="language-plaintext highlighter-rouge">BTreeMap</code> 采取了如下数据结构<sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>：</p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// The underlying representation of leaf nodes and part of the representation of internal nodes.</span>
 <span class="k">struct</span> <span class="n">LeafNode</span><span class="o">&lt;</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="p">{</span>
@@ -1449,16 +1449,16 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>只不过看起来 <code class="language-plaintext highlighter-rouge">split_off</code> 大概也是得自己实现 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>$\large \log_2 n = \log_2 2^m \cdot \log_{2^m} n $ <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:5" role="doc-endnote">
+    <li id="fn:5">
       <p>https://github.com/minghu6/rust-minghu6/blob/v0.1.18/coll_st/src/bt/bpt3.rs <a href="#fnref:5" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>https://github.com/rust-lang/rust/blob/1.88.0/library/alloc/src/collections/btree/node.rs#L50 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

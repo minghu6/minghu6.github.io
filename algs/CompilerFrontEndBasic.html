@@ -139,7 +139,7 @@
 
 <p>可以用后缀表达式也就是逆波兰式（Reverse Polish Notation，RPN）也就是后根序（Post-order，LRN（left right node））遍历的形式方便地表示这棵树。</p>
 
-<p>如下是代码片段，完整见<sup id="fnref:m6parser-kit" role="doc-noteref"><a href="#fn:m6parser-kit" class="footnote" rel="footnote">1</a></sup></p>
+<p>如下是代码片段，完整见<sup id="fnref:m6parser-kit"><a href="#fn:m6parser-kit" class="footnote" rel="footnote" role="doc-noteref">1</a></sup></p>
 
 <div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cd">/// Return Reverse Polish Notation (RPN) form (or Post-order, LRN(left right node) traversal)</span>
 <span class="k">pub</span> <span class="k">fn</span> <span class="n">parse_infix_expr</span><span class="o">&lt;</span><span class="n">O</span><span class="p">:</span> <span class="n">Bop</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">bops</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">O</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">pris</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">-&gt;</span> <span class="n">InfixExpr</span><span class="o">&lt;</span><span class="n">O</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="p">{</span>
@@ -190,7 +190,7 @@
 
 <h3 id="ll1">LL(1)</h3>
 
-<p>参考<sup id="fnref:rust-ll1engine" role="doc-noteref"><a href="#fn:rust-ll1engine" class="footnote" rel="footnote">2</a></sup></p>
+<p>参考<sup id="fnref:rust-ll1engine"><a href="#fn:rust-ll1engine" class="footnote" rel="footnote" role="doc-noteref">2</a></sup></p>
 
 <h3 id="lln">LL(n)</h3>
 
@@ -202,10 +202,10 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:m6parser-kit" role="doc-endnote">
+    <li id="fn:m6parser-kit">
       <p>https://github.com/minghu6/m6parserkit <a href="#fnref:m6parser-kit" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:rust-ll1engine" role="doc-endnote">
+    <li id="fn:rust-ll1engine">
       <p>https://github.com/minghu6/rust-ll1engine <a href="#fnref:rust-ll1engine" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

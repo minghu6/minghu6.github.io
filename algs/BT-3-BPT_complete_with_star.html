@@ -522,13 +522,13 @@
         <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
     <span class="p">{</span>
         <span class="c1">// Try left first</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">Left</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Left</span><span class="p">)</span> <span class="p">{</span>
             <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
         <span class="p">}</span>
 
         <span class="c1">// Try right then</span>
         <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
-            <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">Right</span><span class="p">)</span>
+            <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">Right</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
         <span class="p">}</span>
@@ -837,13 +837,13 @@
         <span class="n">K</span><span class="p">:</span> <span class="nb">Clone</span><span class="p">,</span>
     <span class="p">{</span>
         <span class="c1">// Try left first</span>
-        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution_eager</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">Left</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution_eager</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Left</span><span class="p">)</span> <span class="p">{</span>
             <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
         <span class="p">}</span>
 
         <span class="c1">// Try right then</span>
         <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nd">children!</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="nf">.len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
-            <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution_eager</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">Right</span><span class="p">)</span>
+            <span class="o">&amp;&amp;</span> <span class="k">Self</span><span class="p">::</span><span class="nf">try_node_redistribution_eager</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">Right</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
         <span class="p">}</span>

@@ -139,31 +139,31 @@
 
 <p>对于反序，就是检查$s_1[0..i-1]$ 能够变换到 $s_2[n-i..n-1]$；以及 $s_1[i..n-1]$ 能够变换到 $s_2[0..n-i-1]$ 。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">functools</span> <span class="kn">import</span> <span class="n">cache</span>
 
-<span class="o">@</span><span class="n">cache</span>
+<span class="nd">@cache</span>
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="k">if</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">s2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nf">sorted</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span> <span class="o">!=</span> <span class="nf">sorted</span><span class="p">(</span><span class="n">s2</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">False</span>
 
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">s1</span> <span class="o">==</span> <span class="n">s2</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span> <span class="p">:])</span>
-            <span class="ow">and</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[:</span> <span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">])</span>
-            <span class="ow">or</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
-            <span class="ow">and</span> <span class="n">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="nf">if </span><span class="p">(</span>
+            <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">i</span> <span class="p">:])</span>
+            <span class="ow">and</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[:</span> <span class="n">n</span> <span class="o">-</span> <span class="n">i</span><span class="p">])</span>
+            <span class="ow">or</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">s2</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+            <span class="ow">and</span> <span class="nf">solve</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">i</span><span class="p">:],</span> <span class="n">s2</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
         <span class="p">):</span>
             <span class="k">return</span> <span class="bp">True</span>
 
     <span class="k">return</span> <span class="bp">False</span>
 </code></pre></div></div>
 
-<p>特别地，这里检查了字符集合是否相等，作为一个快速失败地（预测）优化<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>。</p>
+<p>特别地，这里检查了字符集合是否相等，作为一个快速失败地（预测）优化<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>。</p>
 
 <p>运行时间：58 ms (beats 78.15%, ~100%)，内存占用：17.9 MB (beats 36.12%, ~100%)。</p>
 
@@ -171,7 +171,7 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>而用 <code class="language-plaintext highlighter-rouge">sorted</code> 比 <code class="language-plaintext highlighter-rouge">set</code> 明显要快，对于本题的最终结果的影响是差了 20 ms 。 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>

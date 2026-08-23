@@ -115,7 +115,7 @@
 
 <p><a href="https://github.com/minghu6/leet-code/tree/v0.1.11/0042_trapping_rain_water/py0042">源代码</a></p>
 
-<p>如果能知到每个单位区间左边和右边的最大高度，取其最小值，就是该单位的存雨量。<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup><sup id="fnref:4" role="doc-noteref"><a href="#fn:4" class="footnote" rel="footnote">2</a></sup></p>
+<p>如果能知到每个单位区间左边和右边的最大高度，取其最小值，就是该单位的存雨量。<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup><sup id="fnref:4"><a href="#fn:4" class="footnote" rel="footnote" role="doc-noteref">2</a></sup></p>
 
 <h3 id="链接题目">链接题目</h3>
 
@@ -130,7 +130,7 @@
     <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># peak
 </span>    <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nf">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
@@ -139,14 +139,14 @@
                 <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">)))</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="nf">sum</span><span class="p">(</span><span class="nf">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nf">range</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">)))</span>
             <span class="n">k</span> <span class="o">=</span> <span class="n">i</span>
 
     <span class="n">mode</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="n">oldk</span> <span class="o">=</span> <span class="n">k</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">oldk</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">oldk</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
@@ -155,7 +155,7 @@
                 <span class="n">mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mode</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">)))</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="nf">sum</span><span class="p">(</span><span class="nf">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nf">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">)))</span>
             <span class="n">k</span> <span class="o">=</span> <span class="n">i</span>
 
     <span class="k">return</span> <span class="n">ans</span>
@@ -163,7 +163,7 @@
 
 <p>但是必须吐槽得是本来 <code class="language-plaintext highlighter-rouge">mode</code> 采用得是枚举类型：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 
 <span class="k">class</span> <span class="nc">Mode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 	<span class="n">Down</span> <span class="o">=</span> <span class="mi">0</span>
@@ -176,7 +176,7 @@
 
 <h2 id="解双指针">解②双指针：</h2>
 
-<p>假设我们事先找到序列里的最大高度<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">3</a></sup> $h_\text{max}$：</p>
+<p>假设我们事先找到序列里的最大高度<sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">3</a></sup> $h_\text{max}$：</p>
 
 <p>那么在它的左边，从头开始扫描，维护一个到当前位置 $i$ 为止的前缀最大值 $h_\text{left} = \max\lbrace {h_0 \dots h_i}\rbrace$，每个位置的积水就是 $h_\text{left}-h_i$ ；</p>
 
@@ -186,7 +186,7 @@
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">lf</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">rh</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">rh</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="n">lf_max</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span>
     <span class="n">rh_max</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]</span>
     <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
@@ -196,13 +196,13 @@
             <span class="n">ans</span> <span class="o">+=</span> <span class="n">lf_max</span> <span class="o">-</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">]</span>
 
             <span class="n">lf</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lf_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">lf_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">])</span>
+            <span class="n">lf_max</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">lf_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">lf</span><span class="p">])</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ans</span> <span class="o">+=</span> <span class="n">rh_max</span> <span class="o">-</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">]</span>
 
             <span class="n">rh</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="n">rh_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rh_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">])</span>
+            <span class="n">rh_max</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="n">rh_max</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">rh</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">ans</span>
 </code></pre></div></div>
@@ -213,31 +213,31 @@
 
 <p>单调栈，Monotonic Stack，这是第一次遇到可以恰当地套用这个算法思想的题目。</p>
 
-<p>回到双向扫描的思路，只要序列一直保持不增<sup id="fnref:3" role="doc-noteref"><a href="#fn:3" class="footnote" rel="footnote">4</a></sup>，就（把索引位置）入栈，直到遇到一个大于栈顶元素（对应高度）的值 $h_i$，然后弹出所有（对应高度）不超过 $h_i$ 的栈元素，于是可以利用这些元素<strong>水平地</strong>计算积雨。</p>
+<p>回到双向扫描的思路，只要序列一直保持不增<sup id="fnref:3"><a href="#fn:3" class="footnote" rel="footnote" role="doc-noteref">4</a></sup>，就（把索引位置）入栈，直到遇到一个大于栈顶元素（对应高度）的值 $h_i$，然后弹出所有（对应高度）不超过 $h_i$ 的栈元素，于是可以利用这些元素<strong>水平地</strong>计算积雨。</p>
 
 <p>每一层的高度是（弹出的）相邻栈元素对应的高度差，长度是每个栈元素 $k_0$ 的前一个栈元素 $k_1$ 与当前位置 $i$ 的差减一：$i-k_1-1$ 。</p>
 
 <p>并且注意，如果在弹出不超过 $h_i$ 的元素后，栈中还有元素，那么弹出的最后一个元素到栈顶元素还有一段积雨，高度差则是 $h[i]-h_\text{last}$。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">pairwise</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">itertools</span> <span class="kn">import</span> <span class="n">pairwise</span>
 
 <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ans</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nf">len</span><span class="p">(</span><span class="n">h</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">h</span><span class="p">[</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]:</span>
-            <span class="n">cache</span> <span class="o">=</span> <span class="p">[</span><span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">()]</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="p">[</span><span class="n">stack</span><span class="p">.</span><span class="nf">pop</span><span class="p">()]</span>
 
             <span class="k">while</span> <span class="n">stack</span> <span class="ow">and</span> <span class="n">h</span><span class="p">[</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">&lt;=</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                <span class="n">cache</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">())</span>
+                <span class="n">cache</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">stack</span><span class="p">.</span><span class="nf">pop</span><span class="p">())</span>
 
-            <span class="n">ans</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">cache</span><span class="p">)))</span>
+            <span class="n">ans</span> <span class="o">+=</span> <span class="nf">sum</span><span class="p">(</span><span class="nf">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="nf">pairwise</span><span class="p">(</span><span class="n">cache</span><span class="p">)))</span>
 
             <span class="k">if</span> <span class="n">stack</span><span class="p">:</span>
                <span class="n">ans</span> <span class="o">+=</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">cache</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">stack</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ans</span>
 </code></pre></div></div>
@@ -248,16 +248,16 @@
 
 <div class="footnotes" role="doc-endnotes">
   <ol>
-    <li id="fn:1" role="doc-endnote">
+    <li id="fn:1">
       <p>由此可以推出，当用两个数组分别记录某个位置的前缀的高度最大值和后缀的高度最大值，然后分别从左扫描和从右扫描，计算完这个数组，这就是所谓 DP 的思路，真是什么玩意儿！ <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:4" role="doc-endnote">
+    <li id="fn:4">
       <p>这个背景看起来就像是扫描线问题会经常出现的，不过扫描线问题的关键是存在多栋区间重叠的建筑，查询某个点的数据 <a href="#fnref:4" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:2" role="doc-endnote">
+    <li id="fn:2">
       <p>若高度不唯一，任选其一即可 <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
-    <li id="fn:3" role="doc-endnote">
+    <li id="fn:3">
       <p>相等元素也需要入栈，为了正确计算每一层的积水 <a href="#fnref:3" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
